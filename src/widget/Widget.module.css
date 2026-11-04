@@ -217,3 +217,21 @@
 button.note:hover {
   text-decoration: underline;
 }
+
+/* стекло: размытие рабочего стола даёт Windows, здесь только лёгкий тон для читаемости.
+   Углы окна скругляет Windows 11 (8px), карточка повторяет их */
+:global(html[data-glass]) .card {
+  border-radius: 8px;
+  background: rgba(20, 20, 22, 0.42);
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: light) {
+  :global(html[data-glass]:not([data-theme="dark"])) .card {
+    background: rgba(255, 255, 255, 0.5);
+  }
+}
+
+:global(html[data-glass][data-theme="light"]) .card {
+  background: rgba(255, 255, 255, 0.5);
+}

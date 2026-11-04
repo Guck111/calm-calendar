@@ -16,6 +16,7 @@ use tauri::{AppHandle, Manager};
 const CLIENT_FILE: &str = "google-client.json";
 const ACCOUNT_FILE: &str = "account.json";
 const WIDGET_FILE: &str = "widget.json";
+const SETTINGS_FILE: &str = "settings.json";
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ClientConfig {
@@ -160,6 +161,32 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
             let _ = std::fs::write(dir.join(WIDGET_FILE), text);
         }
     }
+}
+
+/// Общие настройки оформления
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub struct Settings {
+    pub glass: bool,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self { glass: true }
+    }
+}
+
+pub fn load_settings(app: &AppHandle) -> Settings {
+    config_dir(app)
+        .ok()
+        .and_then(|d| std::fs::read_to_string(d.join(SETTINGS_FILE)).ok())
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default()
+}
+
+pub fn save_settings(app: &AppHandle, settings: Settings) -> Result<()> {
+    let path = config_dir(app)?.join(SETTINGS_FILE);
+    std::fs::write(path, serde_json::to_string_pretty(&settings)?)?;
+    Ok(())
 }
 
 #[cfg(test)]

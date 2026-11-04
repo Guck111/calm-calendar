@@ -32,6 +32,8 @@ thiserror = "2"
 # Токен входа хранится в системном хранилище паролей
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3", features = ["windows-native"] }
+# скруглённые углы и без рамки для окна виджета (DWM)
+windows-sys = { version = "0.61", features = ["Win32_Graphics_Dwm"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", features = ["apple-native"] }

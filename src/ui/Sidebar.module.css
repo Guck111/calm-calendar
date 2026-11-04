@@ -6,7 +6,8 @@
   gap: 18px;
   padding: 14px 14px 12px;
   border-right: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--chrome);
+  transition: background 0.2s;
   overflow-y: auto;
 }
 

@@ -63,6 +63,18 @@ fn open_main(app: AppHandle, date: Option<String>) {
     desktop::show_main(&app, date);
 }
 
+#[tauri::command]
+fn get_settings(app: AppHandle) -> config::Settings {
+    config::load_settings(&app)
+}
+
+#[tauri::command]
+fn set_glass(app: AppHandle, enabled: bool) -> Result<()> {
+    config::save_settings(&app, config::Settings { glass: enabled })?;
+    desktop::apply_glass(&app, enabled);
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -101,7 +113,9 @@ pub fn run() {
             sign_in,
             sign_out,
             google_request,
-            open_main
+            open_main,
+            get_settings,
+            set_glass
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

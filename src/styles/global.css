@@ -16,13 +16,18 @@
   --radius: 10px;
   --radius-sm: 6px;
   --hour: 52px;
+  /* фоны панелей и сетки; при включённом стекле становятся полупрозрачными */
+  --app-bg: var(--bg);
+  --chrome: var(--surface);
+  --canvas: var(--surface);
+  --canvas-dim: var(--bg);
 
   color-scheme: light;
   font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.4;
   color: var(--text);
-  background: var(--bg);
+  background: var(--app-bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -126,4 +131,21 @@ html[data-window="widget"] body,
 html[data-window="widget"] #root {
   background: transparent;
   height: auto;
+}
+
+/* стекло в главном окне: только пока окно в фокусе, иначе Windows гасит размытие */
+html[data-window="main"][data-glass][data-focused] {
+  --app-bg: transparent;
+  --chrome: color-mix(in srgb, var(--surface) 45%, transparent);
+  --canvas: color-mix(in srgb, var(--surface) 78%, transparent);
+  --canvas-dim: color-mix(in srgb, var(--bg) 55%, transparent);
+}
+
+html[data-window="main"][data-glass][data-focused] body {
+  background: transparent;
+}
+
+html,
+body {
+  transition: background 0.2s;
 }

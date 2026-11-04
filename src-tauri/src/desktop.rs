@@ -5,6 +5,7 @@ use crate::config::{self, WidgetSettings};
 use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::window::{Color, Effect, EffectsBuilder};
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 use tauri_plugin_autostart::ManagerExt;
 
@@ -41,6 +42,59 @@ pub fn apply_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
+/// Стекло: размытие того, что под окном, средствами Windows.
+/// Главное окно — Acrylic (гаснет без фокуса, интерфейс подставляет непрозрачный фон),
+/// виджет — Blur: он почти всегда без фокуса, а Blur в этом случае не выключается.
+pub fn apply_glass(app: &AppHandle, enabled: bool) {
+    let clear = Color(0, 0, 0, 0);
+    if let Some(w) = window(app, MAIN) {
+        let _ = if enabled {
+            w.set_effects(EffectsBuilder::new().effect(Effect::Acrylic).color(clear).build())
+        } else {
+            w.set_effects(None)
+        };
+    }
+    if let Some(w) = window(app, WIDGET) {
+        let _ = if enabled {
+            w.set_effects(EffectsBuilder::new().effect(Effect::Blur).color(clear).build())
+        } else {
+            w.set_effects(None)
+        };
+        round_corners(&w);
+    }
+    let _ = app.emit("glass-changed", enabled);
+}
+
+/// Окно без рамки в Windows 11 по умолчанию квадратное: просим DWM скруглить углы и убрать рамку
+#[cfg(windows)]
+fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
+    use windows_sys::Win32::Graphics::Dwm::{
+        DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND,
+        DwmSetWindowAttribute,
+    };
+    let Ok(hwnd) = w.hwnd() else { return };
+    let corner = DWMWCP_ROUND;
+    let border = DWMWA_COLOR_NONE;
+    // на Windows 10 атрибутов нет — вызовы просто вернут ошибку
+    unsafe {
+        DwmSetWindowAttribute(
+            hwnd.0 as _,
+            DWMWA_WINDOW_CORNER_PREFERENCE as u32,
+            &corner as *const _ as *const core::ffi::c_void,
+            std::mem::size_of_val(&corner) as u32,
+        );
+        DwmSetWindowAttribute(
+            hwnd.0 as _,
+            DWMWA_BORDER_COLOR as u32,
+            &border as *const _ as *const core::ffi::c_void,
+            std::mem::size_of_val(&border) as u32,
+        );
+    }
+}
+
+#[cfg(not(windows))]
+fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
+
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let hidden = std::env::args().any(|a| a == HIDDEN_ARG);
     if !hidden {
@@ -48,6 +102,7 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     }
     let widget = config::load_widget(app);
     apply_widget(app, widget);
+    apply_glass(app, config::load_settings(app).glass);
     build_tray(app, widget)
 }
 

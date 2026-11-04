@@ -4,6 +4,7 @@ import { $cursor, $view, nextClicked, prevClicked, todayClicked, viewChanged } f
 import { viewTitle, type ViewMode } from "../shared/lib/date";
 import { useEffect, useState, type JSX } from "react";
 import { Button, cx } from "./Button";
+import { SettingsButton } from "./Settings";
 import { followTheme, nextTheme, readTheme, saveTheme, themeLabel, type Theme } from "../shared/lib/theme";
 import { Auto, ChevronLeft, ChevronRight, Moon, Refresh, Sun } from "./icons";
 import s from "./Toolbar.module.css";
@@ -73,6 +74,7 @@ export const Toolbar = () => {
       >
         <Refresh />
       </Button>
+      <SettingsButton />
       <div className={s.segmented} role="tablist" aria-label="Вид">
         {VIEWS.map((v) => (
           <button

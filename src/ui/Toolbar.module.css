@@ -5,7 +5,8 @@
   height: 56px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--chrome);
+  transition: background 0.2s;
 }
 
 .nav {

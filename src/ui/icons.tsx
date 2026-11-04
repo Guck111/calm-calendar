@@ -75,3 +75,11 @@ export const Auto = ({ size = 16 }: P) => (
     <path d="M8 2.5v11a5.5 5.5 0 0 0 0-11Z" fill="currentColor" />
   </svg>
 );
+
+export const Gear = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <circle cx="8" cy="8" r="2.2" />
+    <path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1M11.3 4.7l1.1-1.1" />
+    <circle cx="8" cy="8" r="4.4" />
+  </svg>
+);
