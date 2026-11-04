@@ -60,7 +60,7 @@ export const $month = createStore(startOfMonth(new Date()))
 export const $isCurrentMonth = combine($month, $today, isSameMonth);
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
-export const $signedIn = $status.map((s) => Boolean(s?.signedIn));
+export const $signedIn = $status.map((s) => Boolean(s?.signedIn) && s?.clientSource !== "none");
 
 const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => !s.signedIn });
 

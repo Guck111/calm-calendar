@@ -21,7 +21,8 @@ export const saveClientFx = createEffect<{ clientId: string; clientSecret: strin
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
 
-export const $signedIn = $status.map((s) => Boolean(s?.signedIn));
+// без клиента OAuth токен не обновить, поэтому вход без клиента не считается действующим
+export const $signedIn = $status.map((s) => Boolean(s?.signedIn) && s?.clientSource !== "none");
 export const $email = $status.map((s) => s?.email ?? null);
 
 export const $editingClient = createStore(false)
