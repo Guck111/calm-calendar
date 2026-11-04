@@ -1,21 +1,17 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { App } from "./app/App";
+import { Widget } from "./widget/Widget";
 import "./styles/global.css";
 
+// одна страница на два окна: главное и виджет (?window=widget)
 const isWidget = new URLSearchParams(window.location.search).get("window") === "widget";
 document.documentElement.dataset.window = isWidget ? "widget" : "main";
 
-const root = createRoot(document.getElementById("root") as HTMLElement);
+const Root = isWidget ? Widget : App;
 
-// у виджета своя лёгкая модель: модели главного окна в нём не загружаются
-const load = isWidget
-  ? import("./widget/Widget").then((m) => m.Widget)
-  : import("./app/App").then((m) => m.App);
-
-void load.then((Root) =>
-  root.render(
-    <StrictMode>
-      <Root />
-    </StrictMode>,
-  ),
+createRoot(document.getElementById("root") as HTMLElement).render(
+  <StrictMode>
+    <Root />
+  </StrictMode>,
 );
