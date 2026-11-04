@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# файл клиента OAuth, скачанный из Google Cloud
+client_secret*.json
