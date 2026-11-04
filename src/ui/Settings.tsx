@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { glassSupported, initGlass, setGlass } from "../shared/lib/glass";
+import { useUnit } from "effector-react";
+import { reloadRequested } from "../model/events";
+import { inTauri } from "../shared/api/bus";
+import { glassSupported, initGlass, readSettings, setGlass, setNotifications } from "../shared/lib/glass";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Button, cx } from "./Button";
 import { Close, Gear } from "./icons";
@@ -14,7 +17,25 @@ const THEMES: { id: Theme; label: string }[] = [
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
   const [glass, setGlassState] = useState(false);
+  const [notify, setNotify] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const reschedule = useUnit(reloadRequested);
+
+  useEffect(() => {
+    void readSettings().then((st) => setNotify(st.notifications));
+  }, []);
+
+  const toggleNotify = async (enabled: boolean) => {
+    setNotify(enabled);
+    setError(null);
+    try {
+      await setNotifications(enabled);
+      if (enabled) reschedule();
+    } catch {
+      setError("Не удалось переключить уведомления");
+      setNotify(!enabled);
+    }
+  };
 
   useEffect(() => followTheme(setTheme), []);
   useEffect(() => initGlass(setGlassState), []);
@@ -82,6 +103,24 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
               checked={glass}
               disabled={!glassSupported}
               onChange={(e) => void toggleGlass(e.target.checked)}
+            />
+          </label>
+        </section>
+
+        <section className={s.section}>
+          <label className={s.toggle}>
+            <span>
+              <b>Уведомления о событиях</b>
+              <small>
+                По напоминаниям из Google Календаря: время задаётся в Google у события или у календаря по умолчанию.
+              </small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={notify}
+              disabled={!inTauri}
+              onChange={(e) => void toggleNotify(e.target.checked)}
             />
           </label>
           {error && <p className={s.error}>{error}</p>}

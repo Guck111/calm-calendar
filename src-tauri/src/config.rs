@@ -165,13 +165,15 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
 
 /// Общие настройки оформления
 #[derive(Clone, Copy, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Settings {
     pub glass: bool,
+    pub notifications: bool,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { glass: true }
+        Self { glass: true, notifications: true }
     }
 }
 

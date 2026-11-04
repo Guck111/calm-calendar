@@ -4,6 +4,7 @@ import { $cursor, $view, nextClicked, prevClicked, todayClicked, viewChanged } f
 import { viewTitle, type ViewMode } from "../shared/lib/date";
 import { useEffect, useState, type JSX } from "react";
 import { Button, cx } from "./Button";
+import { Search } from "./Search";
 import { SettingsButton } from "./Settings";
 import { followTheme, nextTheme, readTheme, saveTheme, themeLabel, type Theme } from "../shared/lib/theme";
 import { Auto, ChevronLeft, ChevronRight, Moon, Refresh, Sun } from "./icons";
@@ -63,6 +64,7 @@ export const Toolbar = () => {
       </div>
       <h2 className={s.title}>{viewTitle(view, cursor)}</h2>
       <div className={s.spacer} />
+      <Search />
       <ThemeButton />
       <Button
         variant="ghost"

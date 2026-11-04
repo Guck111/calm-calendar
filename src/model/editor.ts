@@ -12,7 +12,7 @@ import {
 import { broadcast } from "../shared/api/bus";
 import { sessionLost } from "./auth";
 import { $writableCalendars } from "./calendars";
-import { reloadRequested } from "./events";
+import { actionFailed, eventShifted, reloadRequested } from "./events";
 
 export const eventOpened = createEvent<CalendarEvent>();
 export const slotClicked = createEvent<{ start: Date; allDay?: boolean }>();
@@ -20,11 +20,19 @@ export const createClicked = createEvent();
 export const draftChanged = createEvent<Partial<EventDraft>>();
 export const editorClosed = createEvent();
 export const editClicked = createEvent();
+/** открыть форму с готовым черновиком (из быстрого создания) */
+export const draftOpened = createEvent<EventDraft>();
 export const editCancelled = createEvent();
 export const saveClicked = createEvent();
 export const deleteClicked = createEvent();
 
 export const saveFx = createEffect<EventDraft, void, AppError>(saveEvent);
+
+/** перетаскивание в сетке: новое время сохраняем сразу, без формы */
+export const eventMoved = createEvent<{ event: CalendarEvent; start: Date; end: Date }>();
+export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
+  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+);
 export const deleteFx = createEffect<EventDraft, void, AppError>((d) =>
   deleteEvent(d.originalCalendarId ?? d.calendarId, d.id ?? ""),
 );
@@ -100,16 +108,17 @@ export const validate = (d: EventDraft): string | null => {
 /** событие, открытое для просмотра (до перехода в правку) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
-  .reset([slotClicked, createClicked, editorClosed, saveFx.done, deleteFx.done]);
+  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteFx.done]);
 
 /** просмотр существующего события или форма правки и создания */
 export const $mode = createStore<"view" | "edit">("view")
   .on(eventOpened, () => "view")
-  .on([slotClicked, createClicked, editClicked], () => "edit")
+  .on([slotClicked, createClicked, editClicked, draftOpened], () => "edit")
   .on(editCancelled, () => "view");
 
 export const $draft = createStore<EventDraft | null>(null)
   .on(eventOpened, (_, e) => fromEvent(e))
+  .on(draftOpened, (_, d) => d)
   .on(draftChanged, (d, patch) => (d ? applyChange(d, patch) : d))
   .reset([editorClosed, saveFx.done, deleteFx.done]);
 
@@ -140,7 +149,7 @@ sample({
 
 export const $editorError = createStore<string | null>(null)
   .on([saveFx.failData, deleteFx.failData], (_, e) => e.message)
-  .reset([eventOpened, slotClicked, createClicked, editClicked, editCancelled, editorClosed, saveFx, deleteFx]);
+  .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteFx]);
 
 export const $busy = sample({
   source: { save: saveFx.pending, del: deleteFx.pending },
@@ -172,14 +181,28 @@ sample({
   target: deleteFx,
 });
 
-sample({ clock: [saveFx.done, deleteFx.done], target: reloadRequested });
+sample({ clock: eventMoved, target: moveFx });
+sample({
+  clock: eventMoved,
+  fn: ({ event, start, end }) => ({ key: event.key, start, end }),
+  target: eventShifted,
+});
+// при ошибке событие вернётся на место после перечитывания
+sample({
+  clock: moveFx.failData,
+  fn: (e) => `Не удалось перенести событие: ${e.message}`,
+  target: actionFailed,
+});
+
+sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally], target: reloadRequested });
+moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 
 // виджет перечитает события
-saveFx.done.watch(() => broadcast("events-changed"));
-deleteFx.done.watch(() => broadcast("events-changed"));
+saveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
+deleteFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 
 sample({
-  clock: [saveFx.failData, deleteFx.failData],
+  clock: [saveFx.failData, deleteFx.failData, moveFx.failData],
   filter: (e) => e.kind === "not_signed_in",
   target: sessionLost,
 });

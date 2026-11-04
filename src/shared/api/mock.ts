@@ -15,7 +15,7 @@ let signedIn = true;
 let seq = 100;
 
 const calendars = [
-  { id: "me@example.com", summary: "Личное", backgroundColor: "#4f8ef7", accessRole: "owner", primary: true, selected: true },
+  { id: "me@example.com", summary: "Личное", backgroundColor: "#4f8ef7", accessRole: "owner", primary: true, selected: true, defaultReminders: [{ method: "popup", minutes: 10 }] },
   { id: "work", summary: "Работа", backgroundColor: "#e8a33d", accessRole: "owner", selected: true },
   { id: "sport", summary: "Спорт", backgroundColor: "#3fb27f", accessRole: "writer", selected: true },
   { id: "pl#holiday", summary: "Праздники в Польше", backgroundColor: "#b07be8", accessRole: "reader", selected: true },
@@ -60,7 +60,8 @@ const google = (method: string, path: string, query: [string, string][] = [], bo
     const items = list.filter((e) => {
       const start = new Date(time(e.start as Json));
       const end = new Date(time(e.end as Json));
-      return start < new Date(q.timeMax) && end > new Date(q.timeMin);
+      const text = q.q ? String(e.summary ?? "").toLowerCase().includes(q.q.toLowerCase()) : true;
+      return text && start < new Date(q.timeMax) && end > new Date(q.timeMin);
     });
     return { items };
   }

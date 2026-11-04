@@ -1,7 +1,9 @@
 import { useUnit } from "effector-react";
-import { useLayoutEffect, useRef, type MouseEvent } from "react";
-import { $calendarById } from "../model/calendars";
-import { eventOpened, slotClicked } from "../model/editor";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { $calendarById, $writableCalendars } from "../model/calendars";
+import type { CalendarEvent } from "../shared/api/types";
+import { shiftEvent, snap, type DragMode } from "../shared/lib/drag";
+import { eventMoved, eventOpened, slotClicked } from "../model/editor";
 import { $events } from "../model/events";
 import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import {
@@ -23,6 +25,18 @@ const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const SNAP_MINUTES = 30;
 
 const hourLabel = (h: number) => `${String(h).padStart(2, "0")}:00`;
+/** сдвиг мыши, после которого клик считается перетаскиванием */
+const DRAG_THRESHOLD = 4;
+
+type Drag = {
+  event: CalendarEvent;
+  mode: DragMode;
+  x0: number;
+  y0: number;
+  minutes: number;
+  days: number;
+  moved: boolean;
+};
 
 export const TimeGrid = () => {
   const [view, cursor, today, now, events, calendars] = useUnit([
@@ -33,9 +47,74 @@ export const TimeGrid = () => {
     $events,
     $calendarById,
   ]);
-  const [openEvent, createAt, openDay] = useUnit([eventOpened, slotClicked, dayOpened]);
+  const [openEvent, createAt, openDay, move, writable] = useUnit([
+    eventOpened,
+    slotClicked,
+    dayOpened,
+    eventMoved,
+    $writableCalendars,
+  ]);
   const days = viewDays(view, cursor);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const editable = new Set(writable.map((c) => c.id));
+
+  // пока тянем, показываем событие на новом месте
+  const shown = drag?.moved
+    ? events.map((e) =>
+        e.key === drag.event.key ? { ...e, ...shiftEvent(drag.event, drag.mode, drag.minutes, drag.days) } : e,
+      )
+    : events;
+
+  const startDrag = (event: CalendarEvent, mode: DragMode) => (e: PointerEvent<HTMLElement>) => {
+    if (e.button !== 0 || !editable.has(event.calendarId)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    setDrag({ event, mode, x0: e.clientX, y0: e.clientY, minutes: 0, days: 0, moved: false });
+  };
+
+  // слушаем всё окно: при переносе в другой день блок события пересоздаётся в другой колонке
+  const dragRef = useRef(drag);
+  dragRef.current = drag;
+  const dragging = drag !== null;
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: globalThis.PointerEvent) => {
+      const d = dragRef.current;
+      if (!d || !bodyRef.current) return;
+      const rect = bodyRef.current.getBoundingClientRect();
+      const dx = e.clientX - d.x0;
+      const dy = e.clientY - d.y0;
+      const moved = d.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
+      const columnWidth = (rect.width - 56) / days.length;
+      const minutes = snap((dy / rect.height) * MINUTES_IN_DAY);
+      const dayShift = d.mode === "move" ? Math.round(dx / columnWidth) : 0;
+      if (moved !== d.moved || minutes !== d.minutes || dayShift !== d.days) {
+        setDrag({ ...d, moved, minutes, days: dayShift });
+      }
+    };
+    const onUp = () => {
+      const d = dragRef.current;
+      setDrag(null);
+      if (!d) return;
+      if (!d.moved) {
+        openEvent(d.event);
+        return;
+      }
+      if (d.minutes === 0 && d.days === 0) return;
+      move({ event: d.event, ...shiftEvent(d.event, d.mode, d.minutes, d.days) });
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrag(null);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [dragging, days.length, move, openEvent]);
 
   // при открытии прокручиваем к 7 утра, а если на экране сегодня и уже вечер — ближе к текущему часу
   const showsToday = days.some((d) => isSameDay(d, today));
@@ -57,7 +136,7 @@ export const TimeGrid = () => {
     createAt({ start });
   };
 
-  const allDayRows = days.map((d) => eventsForDay(events, d).filter(isAllDayLike));
+  const allDayRows = days.map((d) => eventsForDay(shown, d).filter(isAllDayLike));
   const hasAllDay = allDayRows.some((r) => r.length);
   const columns = { gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` };
 
@@ -100,7 +179,7 @@ export const TimeGrid = () => {
       )}
 
       <div className={s.scroll} ref={scrollRef}>
-        <div className={s.body} style={columns}>
+        <div className={cx(s.body, drag?.moved && s.dragging)} style={columns} ref={bodyRef}>
           <div className={s.hours}>
             {HOURS.map((h) => (
               <span key={h} className={s.hour}>
@@ -112,12 +191,14 @@ export const TimeGrid = () => {
             const isToday = isSameDay(day, today);
             return (
               <div key={day.getTime()} className={s.column} onClick={onColumnClick(day)}>
-                {layoutDay(events, day).map(({ event, startMin, endMin, column, columns: count }) => {
+                {layoutDay(shown, day).map(({ event, startMin, endMin, column, columns: count }) => {
                   const short = endMin - startMin < 45;
+                  const canDrag = editable.has(event.calendarId);
+                  const isDragged = drag?.moved && drag.event.key === event.key;
                   return (
                     <button
                       key={event.key}
-                      className={cx(s.event, short && s.short)}
+                      className={cx(s.event, short && s.short, canDrag && s.draggable, isDragged && s.dragged)}
                       style={{
                         ...eventStyle(calendars.get(event.calendarId)),
                         top: `${(startMin / MINUTES_IN_DAY) * 100}%`,
@@ -125,7 +206,9 @@ export const TimeGrid = () => {
                         left: `calc(${(column / count) * 100}% + 1px)`,
                         width: `calc(${100 / count}% - 3px)`,
                       }}
-                      onClick={() => openEvent(event)}
+                      onPointerDown={startDrag(event, "move")}
+                      // клик мышью по своему событию обрабатывает перетаскивание; здесь — клавиатура и чужие календари
+                      onClick={(e) => (e.detail === 0 || !canDrag) && openEvent(event)}
                       title={`${formatTime(event.start)}–${formatTime(event.end)} ${event.title}`}
                     >
                       <span className={s.eventTitle}>
@@ -135,6 +218,13 @@ export const TimeGrid = () => {
                       <span className={s.eventTime}>
                         {formatTime(event.start)}–{formatTime(event.end)}
                       </span>
+                      {canDrag && (
+                        <span
+                          className={s.resize}
+                          onPointerDown={startDrag(event, "resize")}
+                          aria-hidden
+                        />
+                      )}
                     </button>
                   );
                 })}

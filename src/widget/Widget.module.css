@@ -67,6 +67,26 @@
   margin: 0 -4px 6px 2px;
 }
 
+.countdown {
+  margin: -10px 0 14px 2px;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.countdown b {
+  font-weight: 600;
+}
+
+.countdownText {
+  color: var(--muted);
+}
+
+.quick {
+  margin-top: 12px;
+}
+
 .month {
   flex: 1;
   text-align: left;

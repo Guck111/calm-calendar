@@ -17,7 +17,12 @@ import {
 import { overlapsDay } from "../shared/lib/layout";
 import { cx } from "../ui/Button";
 import { ChevronLeft, ChevronRight } from "../ui/icons";
+import { QuickAdd } from "../ui/QuickAdd";
+import { broadcast } from "../shared/api/bus";
+import { saveEvent } from "../shared/api/calendar";
+import { countdown } from "./countdown";
 import {
+  $calendars,
   $colors,
   $error,
   $isCurrentMonth,
@@ -106,7 +111,7 @@ const useWidgetEffects = (cardRef: RefObject<HTMLDivElement | null>) => {
 
 /** перетаскивание окна за любое место карточки, кроме кнопок */
 const startDrag = async (e: MouseEvent) => {
-  if (e.button !== 0 || !inTauri || (e.target as HTMLElement).closest("button")) return;
+  if (e.button !== 0 || !inTauri || (e.target as HTMLElement).closest("button, input")) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
   await getCurrentWindow().startDragging();
 };
@@ -115,7 +120,7 @@ export const Widget = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   useWidgetEffects(cardRef);
   const [refresh, shift, reset] = useUnit([refreshRequested, monthShifted, monthReset]);
-  const [status, signedIn, now, today, month, isCurrent, monthEvents, allUpcoming, colors, error, loading] = useUnit([
+  const [status, signedIn, now, today, month, isCurrent, monthEvents, allUpcoming, colors, error, loading, calendars] = useUnit([
     $status,
     $signedIn,
     $now,
@@ -127,7 +132,10 @@ export const Widget = () => {
     $colors,
     $error,
     $loading,
+    $calendars,
   ]);
+  const writable = calendars.filter((c) => c.accessRole === "owner" || c.accessRole === "writer");
+  const soon = countdown(allUpcoming, now);
 
   const days = monthGrid(month);
   const eventDays = new Set(
@@ -148,6 +156,11 @@ export const Widget = () => {
       <div className={s.date}>
         {formatWeekdayLong(now)}, {formatDayMonth(now)}
       </div>
+      {soon && (
+        <div className={s.countdown}>
+          <b>{soon.title}</b> <span className={s.countdownText}>{soon.text}</span>
+        </div>
+      )}
 
       <div className={s.monthBar}>
         <button
@@ -207,6 +220,24 @@ export const Widget = () => {
             </li>
           ))}
         </ul>
+      )}
+
+      {signedIn && (
+        <div className={s.quick}>
+          <QuickAdd
+            variant="widget"
+            calendars={writable}
+            onCreate={async (draft) => {
+              await saveEvent(draft);
+              refresh();
+              broadcast("events-changed", { from: "widget" });
+            }}
+            onExpand={(draft) => {
+              openMain(draft.startDate);
+              broadcast("open-draft", draft);
+            }}
+          />
+        </div>
       )}
     </div>
   );

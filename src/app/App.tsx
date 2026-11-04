@@ -3,8 +3,11 @@ import { useEffect } from "react";
 import { subscribe } from "../shared/api/bus";
 import { fromDateKey } from "../shared/lib/date";
 import { $signedIn, $status, appStarted } from "../model/auth";
-import { createClicked, $draft } from "../model/editor";
-import { $loadError, refreshRequested } from "../model/events";
+import { $draft, draftOpened } from "../model/editor";
+import { quickFocusRequested } from "../model/quick";
+import "../model/reminders";
+import type { EventDraft } from "../shared/api/types";
+import { $loadError, refreshRequested, reloadRequested } from "../model/events";
 import {
   $view,
   dayOpened,
@@ -35,10 +38,10 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
     nextClicked,
     todayClicked,
     viewChanged,
-    createClicked,
+    quickFocusRequested,
   ]);
 
-  const openDay = useUnit(dayOpened);
+  const [openDay, openDraft, reload] = useUnit([dayOpened, draftOpened, reloadRequested]);
 
   useEffect(() => start(), [start]);
 
@@ -46,8 +49,20 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get("date");
     if (fromQuery) openDay(fromDateKey(fromQuery));
-    return subscribe<{ date: string }>("open-date", ({ date }) => openDay(fromDateKey(date)));
-  }, [openDay]);
+    const offDate = subscribe<{ date: string }>("open-date", ({ date }) => openDay(fromDateKey(date)));
+    // Ctrl+Enter в строке виджета: открыть форму с заполненными полями
+    const offDraft = subscribe<EventDraft>("open-draft", (draft) => {
+      openDay(fromDateKey(draft.startDate));
+      openDraft(draft);
+    });
+    // событие создали из виджета
+    const offChanged = subscribe<{ from?: string }>("events-changed", (p) => p?.from !== "main" && reload());
+    return () => {
+      offDate();
+      offDraft();
+      offChanged();
+    };
+  }, [openDay, openDraft, reload]);
 
   useEffect(() => {
     // тикаем ровно на границе минуты, чтобы линия «сейчас» не отставала

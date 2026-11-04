@@ -29,7 +29,14 @@ export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ ca
   return { events, failed, id };
 });
 
+/** действие с событием не удалось — показываем в полосе ошибок */
+export const actionFailed = createEvent<string>();
+
+/** событие уже передвинуто на экране, ещё до ответа Google */
+export const eventShifted = createEvent<{ key: string; start: Date; end: Date }>();
+
 export const $events = createStore<CalendarEvent[]>([])
+  .on(eventShifted, (list, { key, start, end }) => list.map((e) => (e.key === key ? { ...e, start, end } : e)))
   // ответ на устаревший запрос (уже перелистнули дальше) не применяем
   .on(fetchEventsFx.doneData, (state, r) => (r.id === lastRequestId ? r.events : state))
   .reset(signOutFx.finally);
@@ -43,6 +50,7 @@ export const $loadError = createStore<string | null>(null)
   })
   .on(fetchEventsFx.failData, (_, e) => e.message)
   .on(fetchCalendarsFx.failData, (_, e) => e.message)
+  .on(actionFailed, (_, m) => m)
   .reset(signOutFx.finally);
 
 sample({

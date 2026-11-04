@@ -1,8 +1,10 @@
 import { useUnit } from "effector-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { $email, signOutClicked } from "../model/auth";
-import { $calendarsWithVisibility, calendarToggled } from "../model/calendars";
-import { createClicked } from "../model/editor";
+import { $calendarsWithVisibility, $writableCalendars, calendarToggled } from "../model/calendars";
+import { createClicked, draftOpened } from "../model/editor";
+import { quickCreateFx, quickFocusRequested } from "../model/quick";
+import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
 import {
   addMonths,
@@ -84,13 +86,30 @@ const CalendarList = () => {
   );
 };
 
+const SidebarQuickAdd = () => {
+  const [writable, create, expand] = useUnit([$writableCalendars, quickCreateFx, draftOpened]);
+  const ref = useRef<QuickAddHandle>(null);
+  useEffect(() => quickFocusRequested.watch(() => ref.current?.focus()), []);
+  return (
+    <QuickAdd
+      ref={ref}
+      calendars={writable}
+      onCreate={async (draft) => {
+        await create(draft);
+      }}
+      onExpand={(draft) => expand(draft)}
+    />
+  );
+};
+
 export const Sidebar = () => {
   const [email, create, signOut] = useUnit([$email, createClicked, signOutClicked]);
   return (
     <aside className={s.sidebar}>
-      <Button variant="primary" className={s.create} onClick={() => create()} title="Новое событие (N)">
+      <Button variant="primary" className={s.create} onClick={() => create()} title="Новое событие">
         <Plus /> Создать
       </Button>
+      <SidebarQuickAdd />
       <MiniMonth />
       <CalendarList />
       <div className={s.account}>

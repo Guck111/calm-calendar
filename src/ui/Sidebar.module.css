@@ -12,6 +12,7 @@
 }
 
 .create {
+  margin-bottom: -6px;
   height: 40px;
   align-self: flex-start;
   padding: 0 18px 0 14px;

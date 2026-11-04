@@ -9,6 +9,8 @@ export type Calendar = {
   primary: boolean;
   /** включён ли календарь в самом Google */
   selected: boolean;
+  /** напоминания по умолчанию, минуты до начала */
+  defaultReminders: number[];
 };
 
 export type CalendarEvent = {
@@ -25,6 +27,8 @@ export type CalendarEvent = {
   description?: string;
   htmlLink?: string;
   recurring: boolean;
+  /** минуты до начала; "default" — как задано у календаря */
+  reminders?: number[] | "default";
 };
 
 /** Черновик для формы создания и правки события */

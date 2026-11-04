@@ -3,6 +3,7 @@ mod desktop;
 mod error;
 mod google;
 mod oauth;
+mod reminders;
 
 use config::ClientSource;
 use error::Result;
@@ -70,8 +71,35 @@ fn get_settings(app: AppHandle) -> config::Settings {
 
 #[tauri::command]
 fn set_glass(app: AppHandle, enabled: bool) -> Result<()> {
-    config::save_settings(&app, config::Settings { glass: enabled })?;
+    let settings = config::Settings { glass: enabled, ..config::load_settings(&app) };
+    config::save_settings(&app, settings)?;
     desktop::apply_glass(&app, enabled);
+    Ok(())
+}
+
+#[tauri::command]
+async fn set_notifications(
+    app: AppHandle,
+    reminders: State<'_, reminders::Reminders>,
+    enabled: bool,
+) -> Result<()> {
+    let settings = config::Settings { notifications: enabled, ..config::load_settings(&app) };
+    config::save_settings(&app, settings)?;
+    if !enabled {
+        reminders.replace(Vec::new()).await;
+    }
+    Ok(())
+}
+
+/// Новое расписание напоминаний целиком; при выключенных уведомлениях игнорируется
+#[tauri::command]
+async fn schedule_reminders(
+    app: AppHandle,
+    reminders: State<'_, reminders::Reminders>,
+    items: Vec<reminders::Reminder>,
+) -> Result<()> {
+    let enabled = config::load_settings(&app).notifications;
+    reminders.replace(if enabled { items } else { Vec::new() }).await;
     Ok(())
 }
 
@@ -83,6 +111,7 @@ pub fn run() {
             desktop::show_main(app, None);
         }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
                 // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
@@ -94,8 +123,10 @@ pub fn run() {
             Some(vec![desktop::HIDDEN_ARG]),
         ))
         .manage(Auth::new())
+        .manage(reminders::Reminders::default())
         .setup(|app| {
             desktop::setup(app.handle())?;
+            reminders::start(app.handle().clone());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -115,7 +146,9 @@ pub fn run() {
             google_request,
             open_main,
             get_settings,
-            set_glass
+            set_glass,
+            set_notifications,
+            schedule_reminders
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

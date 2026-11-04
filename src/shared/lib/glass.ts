@@ -10,6 +10,21 @@ const setAttr = (enabled: boolean) => {
   else delete root.dataset.glass;
 };
 
+export type AppSettings = { glass: boolean; notifications: boolean };
+
+export const readSettings = async (): Promise<AppSettings> => {
+  if (!inTauri) return { glass: false, notifications: false };
+  try {
+    return await invoke<AppSettings>("get_settings");
+  } catch {
+    return { glass: false, notifications: false };
+  }
+};
+
+export const setNotifications = async (enabled: boolean): Promise<void> => {
+  if (inTauri) await invoke("set_notifications", { enabled });
+};
+
 export const readGlass = async (): Promise<boolean> => {
   if (!inTauri) return false;
   try {

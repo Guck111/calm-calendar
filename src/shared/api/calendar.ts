@@ -15,7 +15,14 @@ type RawCalendar = {
   primary?: boolean;
   selected?: boolean;
   hidden?: boolean;
+  defaultReminders?: RawReminder[];
 };
+
+type RawReminder = { method?: string; minutes?: number };
+
+// всплывающие напоминания; письма на почту уведомлением не показываем
+const popupMinutes = (list: RawReminder[] | undefined): number[] =>
+  (list ?? []).filter((r) => r.method === "popup" && typeof r.minutes === "number").map((r) => r.minutes as number);
 
 type RawTime = { date?: string; dateTime?: string; timeZone?: string };
 
@@ -29,6 +36,7 @@ type RawEvent = {
   start?: RawTime;
   end?: RawTime;
   recurringEventId?: string;
+  reminders?: { useDefault?: boolean; overrides?: RawReminder[] };
 };
 
 const enc = encodeURIComponent;
@@ -52,6 +60,7 @@ const toCalendar = (raw: RawCalendar): Calendar => ({
   accessRole: raw.accessRole,
   primary: Boolean(raw.primary),
   selected: Boolean(raw.selected),
+  defaultReminders: popupMinutes(raw.defaultReminders),
 });
 
 const roleOrder = (c: Calendar): number => (c.primary ? 0 : c.accessRole === "owner" ? 1 : 2);
@@ -90,6 +99,7 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEven
     description: raw.description,
     htmlLink: raw.htmlLink,
     recurring: Boolean(raw.recurringEventId),
+    reminders: raw.reminders?.useDefault === false ? popupMinutes(raw.reminders.overrides) : "default",
   };
 };
 
@@ -104,6 +114,29 @@ export const listEvents = async (calendarId: string, range: DateRange): Promise<
     maxResults: "2500",
   });
   return raw.flatMap((e) => toCalendarEvent(calendarId, e) ?? []);
+};
+
+const SEARCH_SPAN_DAYS = 730;
+const SEARCH_LIMIT = 50;
+
+/** Поиск по названию, описанию и месту — силами Google, за два года в обе стороны */
+export const searchEvents = async (calendarId: string, query: string, now: Date): Promise<CalendarEvent[]> => {
+  const page = await googleRequest<Page<RawEvent>>("GET", eventsPath(calendarId), {
+    q: query,
+    singleEvents: "true",
+    orderBy: "startTime",
+    timeMin: addDays(now, -SEARCH_SPAN_DAYS).toISOString(),
+    timeMax: addDays(now, SEARCH_SPAN_DAYS).toISOString(),
+    maxResults: String(SEARCH_LIMIT),
+  });
+  return (page.items ?? []).flatMap((e) => toCalendarEvent(calendarId, e) ?? []);
+};
+
+/** Ближайшие будущие сначала, потом прошедшие от новых к старым */
+export const sortByRelevance = (events: CalendarEvent[], now: Date): CalendarEvent[] => {
+  const future = events.filter((e) => e.end >= now).sort((a, b) => a.start.getTime() - b.start.getTime());
+  const past = events.filter((e) => e.end < now).sort((a, b) => b.start.getTime() - a.start.getTime());
+  return [...future, ...past];
 };
 
 /** Тело запроса для events.insert / events.patch. Лишнее поле обнуляем явно,
