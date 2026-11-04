@@ -25,6 +25,7 @@ describe("напоминания", () => {
       new Date(2026, 10, 4, 18, 30).getTime(),
     ]);
     expect(list[0]).toMatchObject({ title: "Урок", body: "Через 10 мин · 19:00–19:50" });
+    expect(list[0].privateBody).not.toContain("Урок");
   });
 
   it("свои напоминания события заменяют настройки календаря", () => {

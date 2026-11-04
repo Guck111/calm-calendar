@@ -23,12 +23,29 @@ fn parse_method(method: &str) -> Result<Method> {
 }
 
 fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
-    if !path.starts_with(ALLOWED_PREFIX) || path.contains("..") || path.contains("://") {
-        return Err(Error::Other("Недопустимый путь API".into()));
+    let rejected = || Error::Other("Недопустимый путь API".into());
+    // идентификаторы календарей и событий кодируются целиком, поэтому точек-сегментов,
+    // обратных слешей, «?» и «#» в пути быть не может — ни открытых, ни закодированных
+    let lower = path.to_ascii_lowercase();
+    if !path.starts_with(ALLOWED_PREFIX)
+        || path.contains("..")
+        || path.contains("://")
+        || lower.contains("%2e")
+        || lower.contains("%2f%2e")
+        || path.contains('\\')
+        || path.contains('?')
+        || path.contains('#')
+    {
+        return Err(rejected());
     }
     let mut url = Url::parse(&format!("{API_BASE}{path}"))?;
-    if url.host_str() != Some("www.googleapis.com") {
-        return Err(Error::Other("Недопустимый адрес API".into()));
+    // окончательная проверка — по уже разобранному адресу, после нормализации пути
+    if url.scheme() != "https"
+        || url.host_str() != Some("www.googleapis.com")
+        || !url.path().starts_with(ALLOWED_PREFIX)
+        || url.path().split('/').any(|seg| seg == "." || seg == "..")
+    {
+        return Err(rejected());
     }
     if !query.is_empty() {
         url.query_pairs_mut().extend_pairs(query.iter());
@@ -99,6 +116,20 @@ mod tests {
         assert!(build_url("/oauth2/v1/userinfo", &[]).is_err());
         assert!(build_url("/calendar/v3/../../x", &[]).is_err());
         assert!(build_url("/calendar/v3/@evil.com/x", &[]).is_ok_and(|u| u.host_str() == Some("www.googleapis.com")));
+    }
+
+    #[test]
+    fn rejects_encoded_dot_segments() {
+        for p in [
+            "/calendar/v3/%2e%2e/%2e%2e/oauth2/v2/userinfo",
+            "/calendar/v3/%2E%2E/x",
+            "/calendar/v3/.%2e/x",
+            "/calendar/v3/calendars\\..\\x",
+            "/calendar/v3/x?alt=media",
+            "/calendar/v3/x#frag",
+        ] {
+            assert!(build_url(p, &[]).is_err(), "{p} должен отклоняться");
+        }
     }
 
     #[test]

@@ -91,6 +91,12 @@ async fn set_notifications(
     Ok(())
 }
 
+#[tauri::command]
+fn set_private_notifications(app: AppHandle, enabled: bool) -> Result<()> {
+    let settings = config::Settings { private_notifications: enabled, ..config::load_settings(&app) };
+    config::save_settings(&app, settings)
+}
+
 /// Новое расписание напоминаний целиком; при выключенных уведомлениях игнорируется
 #[tauri::command]
 async fn schedule_reminders(
@@ -148,6 +154,7 @@ pub fn run() {
             get_settings,
             set_glass,
             set_notifications,
+            set_private_notifications,
             schedule_reminders
         ])
         .run(tauri::generate_context!())

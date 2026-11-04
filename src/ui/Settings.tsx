@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 import { reloadRequested } from "../model/events";
 import { inTauri } from "../shared/api/bus";
-import { glassSupported, initGlass, readSettings, setGlass, setNotifications } from "../shared/lib/glass";
+import {
+  glassSupported,
+  initGlass,
+  readSettings,
+  setGlass,
+  setNotifications,
+  setPrivateNotifications,
+} from "../shared/lib/glass";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Button, cx } from "./Button";
 import { Close, Gear } from "./icons";
@@ -18,12 +25,26 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
   const [glass, setGlassState] = useState(false);
   const [notify, setNotify] = useState(false);
+  const [privateNotify, setPrivateNotify] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const reschedule = useUnit(reloadRequested);
 
   useEffect(() => {
-    void readSettings().then((st) => setNotify(st.notifications));
+    void readSettings().then((st) => {
+      setNotify(st.notifications);
+      setPrivateNotify(st.private_notifications);
+    });
   }, []);
+
+  const togglePrivate = async (enabled: boolean) => {
+    setPrivateNotify(enabled);
+    try {
+      await setPrivateNotifications(enabled);
+    } catch {
+      setError("Не удалось сохранить настройку");
+      setPrivateNotify(!enabled);
+    }
+  };
 
   const toggleNotify = async (enabled: boolean) => {
     setNotify(enabled);
@@ -121,6 +142,22 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
               checked={notify}
               disabled={!inTauri}
               onChange={(e) => void toggleNotify(e.target.checked)}
+            />
+          </label>
+          <label className={s.toggle}>
+            <span>
+              <b>Скрывать названия в уведомлениях</b>
+              <small>
+                Вместо названия — «Событие» и время. Пригодится, если Windows показывает уведомления на экране
+                блокировки.
+              </small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={privateNotify}
+              disabled={!inTauri || !notify}
+              onChange={(e) => void togglePrivate(e.target.checked)}
             />
           </label>
           {error && <p className={s.error}>{error}</p>}

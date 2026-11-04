@@ -15,6 +15,9 @@ pub struct Reminder {
     pub key: String,
     pub title: String,
     pub body: String,
+    /// текст без названия и места — для режима «скрывать названия»
+    #[serde(default)]
+    pub private_body: Option<String>,
     /// момент показа, миллисекунды Unix
     pub at: i64,
 }
@@ -47,12 +50,18 @@ impl Reminders {
     async fn fire_due(&self, app: &AppHandle) -> Option<i64> {
         let now = now_ms();
         let items = self.items.lock().await.clone();
+        let private = crate::config::load_settings(app).private_notifications;
         let mut shown = self.shown.lock().await;
         let due: Vec<&Reminder> = items.iter().filter(|r| r.at <= now && !shown.contains(&r.key)).collect();
         for r in due {
             shown.insert(r.key.clone());
             if now - r.at <= LATE_LIMIT_MS {
-                let _ = app.notification().builder().title(&r.title).body(&r.body).show();
+                let (title, body) = if private {
+                    ("Событие", r.private_body.as_deref().unwrap_or("Скоро начнётся"))
+                } else {
+                    (r.title.as_str(), r.body.as_str())
+                };
+                let _ = app.notification().builder().title(title).body(body).show();
             }
         }
         // чтобы множество не росло бесконечно, забываем ключи, которых нет в расписании
@@ -84,7 +93,7 @@ mod tests {
     use super::*;
 
     fn r(key: &str, at: i64) -> Reminder {
-        Reminder { key: key.into(), title: String::new(), body: String::new(), at }
+        Reminder { key: key.into(), title: String::new(), body: String::new(), private_body: None, at }
     }
 
     #[test]

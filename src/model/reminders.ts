@@ -11,7 +11,7 @@ import { reloadRequested } from "./events";
 
 const WINDOW_MS = 48 * 60 * 60_000;
 
-export type Reminder = { key: string; title: string; body: string; at: number };
+export type Reminder = { key: string; title: string; body: string; privateBody: string; at: number };
 
 const before = (minutes: number): string => {
   if (minutes === 0) return "Начинается сейчас";
@@ -47,6 +47,7 @@ export const buildReminders = (
           key: `${e.key}\u0000${e.start.getTime()}\u0000${m}`,
           title: e.title,
           body: `${before(m)} · ${when}${e.location ? ` · ${e.location}` : ""}`,
+          privateBody: `${before(m)} · ${when}`,
           at,
         },
       ];
@@ -60,7 +61,9 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
   const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   const items = buildReminders(events, calendars, now);
-  if (inTauri) await invoke("schedule_reminders", { items });
+  // в Rust поля называются по-другому (snake_case)
+  const payload = items.map(({ privateBody, ...r }) => ({ ...r, private_body: privateBody }));
+  if (inTauri) await invoke("schedule_reminders", { items: payload });
   return items.length;
 });
 

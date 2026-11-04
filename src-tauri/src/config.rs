@@ -169,11 +169,13 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
 pub struct Settings {
     pub glass: bool,
     pub notifications: bool,
+    /// не показывать название и место события в уведомлении (оно бывает видно на экране блокировки)
+    pub private_notifications: bool,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { glass: true, notifications: true }
+        Self { glass: true, notifications: true, private_notifications: false }
     }
 }
 

@@ -30,6 +30,8 @@ const ID_SCOPES: [&str; 2] = ["openid", "email"];
 const KEYRING_SERVICE: &str = "com.arseni.calmcalendar";
 const KEYRING_USER: &str = "google-refresh-token";
 const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
+/// браузер присылает запрос сразу; соединение, которое молчит дольше, — не браузер
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 
 struct AccessToken {
     value: String,
@@ -117,42 +119,62 @@ async fn read_request_line(stream: &mut TcpStream) -> Option<String> {
     text.lines().next().map(str::to_owned)
 }
 
-/// Ждёт, пока браузер вернётся на 127.0.0.1 с кодом авторизации.
-async fn wait_for_code(listener: &TcpListener, expected_state: &str) -> Result<String> {
-    loop {
-        let (mut stream, _) = listener.accept().await?;
-        let Some(line) = read_request_line(&mut stream).await else {
-            continue;
-        };
-        // "GET /?code=...&state=... HTTP/1.1"
-        let target = line.split_whitespace().nth(1).unwrap_or("");
-        let Ok(url) = Url::parse(&format!("http://127.0.0.1{target}")) else {
-            respond(&mut stream, "400 Bad Request", PAGE_FAIL).await;
-            continue;
-        };
-        if url.path() != "/" {
-            // например, запрос favicon.ico
-            respond(&mut stream, "404 Not Found", "").await;
-            continue;
-        }
-        let param = |name: &str| {
-            url.query_pairs()
-                .find(|(k, _)| k == name)
-                .map(|(_, v)| v.into_owned())
-        };
-        if param("state").as_deref() != Some(expected_state) {
-            respond(&mut stream, "400 Bad Request", PAGE_FAIL).await;
-            continue;
-        }
-        if let Some(err) = param("error") {
-            respond(&mut stream, "200 OK", PAGE_FAIL).await;
-            return Err(Error::Denied(err));
-        }
-        if let Some(code) = param("code") {
-            respond(&mut stream, "200 OK", PAGE_OK).await;
-            return Ok(code);
-        }
+/// Разбирает один запрос браузера. None — запрос не тот (чужой, favicon, неверный state).
+async fn handle_redirect(mut stream: TcpStream, expected_state: String) -> Option<Result<String>> {
+    // молчащее соединение от другой программы закрываем, а не ждём
+    let Ok(Some(line)) = tokio::time::timeout(REQUEST_TIMEOUT, read_request_line(&mut stream)).await else {
+        return None;
+    };
+    // "GET /?code=...&state=... HTTP/1.1"
+    let target = line.split_whitespace().nth(1).unwrap_or("");
+    let Ok(url) = Url::parse(&format!("http://127.0.0.1{target}")) else {
         respond(&mut stream, "400 Bad Request", PAGE_FAIL).await;
+        return None;
+    };
+    if url.path() != "/" {
+        // например, запрос favicon.ico
+        respond(&mut stream, "404 Not Found", "").await;
+        return None;
+    }
+    let param = |name: &str| {
+        url.query_pairs()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.into_owned())
+    };
+    if param("state").as_deref() != Some(expected_state.as_str()) {
+        respond(&mut stream, "400 Bad Request", PAGE_FAIL).await;
+        return None;
+    }
+    if let Some(err) = param("error") {
+        respond(&mut stream, "200 OK", PAGE_FAIL).await;
+        return Some(Err(Error::Denied(err)));
+    }
+    if let Some(code) = param("code") {
+        respond(&mut stream, "200 OK", PAGE_OK).await;
+        return Some(Ok(code));
+    }
+    respond(&mut stream, "400 Bad Request", PAGE_FAIL).await;
+    None
+}
+
+/// Ждёт, пока браузер вернётся на 127.0.0.1 с кодом авторизации.
+/// Каждое соединение обрабатывается отдельно, поэтому медленное или чужое не задерживает браузер.
+async fn wait_for_code(listener: &TcpListener, expected_state: &str) -> Result<String> {
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<Result<String>>(1);
+    loop {
+        tokio::select! {
+            accepted = listener.accept() => {
+                let (stream, _) = accepted?;
+                let tx = tx.clone();
+                let state = expected_state.to_owned();
+                tokio::spawn(async move {
+                    if let Some(result) = handle_redirect(stream, state).await {
+                        let _ = tx.send(result).await;
+                    }
+                });
+            }
+            Some(result) = rx.recv() => return result,
+        }
     }
 }
 
@@ -333,6 +355,25 @@ mod tests {
             Some("a@b.com")
         );
         assert_eq!(email_from_id_token("broken"), None);
+    }
+
+    #[tokio::test]
+    async fn silent_connection_does_not_block_browser() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let waiter = tokio::spawn(async move { wait_for_code(&listener, "st").await });
+
+        // чужая программа подключилась и молчит
+        let _silent = TcpStream::connect(addr).await.unwrap();
+        // чужой запрос с неверным state игнорируется
+        let mut wrong = TcpStream::connect(addr).await.unwrap();
+        wrong.write_all(b"GET /?code=evil&state=bad HTTP/1.1\r\n\r\n").await.unwrap();
+        // браузер приходит следом и не ждёт молчащее соединение
+        let mut browser = TcpStream::connect(addr).await.unwrap();
+        browser.write_all(b"GET /?code=good&state=st HTTP/1.1\r\n\r\n").await.unwrap();
+
+        let code = tokio::time::timeout(Duration::from_secs(2), waiter).await.unwrap().unwrap().unwrap();
+        assert_eq!(code, "good");
     }
 
     #[test]
