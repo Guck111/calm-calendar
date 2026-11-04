@@ -43,27 +43,86 @@ pub fn apply_widget(app: &AppHandle, settings: WidgetSettings) {
 }
 
 /// Стекло: размытие того, что под окном, средствами Windows.
-/// Главное окно — Acrylic (гаснет без фокуса, интерфейс подставляет непрозрачный фон),
-/// виджет — Blur: он почти всегда без фокуса, а Blur в этом случае не выключается.
+/// Главное окно — системный Acrylic (гаснет без фокуса, интерфейс подставляет непрозрачный фон).
+/// Виджет почти всегда без фокуса, поэтому ему нужен «старый» Acrylic через accent policy:
+/// он не выключается у неактивного окна. Эффект Blur в новых сборках Windows 11 даёт чёрный фон.
 pub fn apply_glass(app: &AppHandle, enabled: bool) {
-    let clear = Color(0, 0, 0, 0);
     if let Some(w) = window(app, MAIN) {
         let _ = if enabled {
-            w.set_effects(EffectsBuilder::new().effect(Effect::Acrylic).color(clear).build())
+            w.set_effects(
+                EffectsBuilder::new()
+                    .effect(Effect::Acrylic)
+                    .color(Color(0, 0, 0, 0))
+                    .build(),
+            )
         } else {
             w.set_effects(None)
         };
     }
     if let Some(w) = window(app, WIDGET) {
-        let _ = if enabled {
-            w.set_effects(EffectsBuilder::new().effect(Effect::Blur).color(clear).build())
-        } else {
-            w.set_effects(None)
-        };
+        set_accent_acrylic(&w, enabled);
         round_corners(&w);
     }
     let _ = app.emit("glass-changed", enabled);
 }
+
+/// Включает или выключает Acrylic через недокументированную, но давно стабильную
+/// функцию user32 SetWindowCompositionAttribute (её же используют window-vibrancy и Rainmeter-скины)
+#[cfg(windows)]
+fn set_accent_acrylic<R: Runtime>(w: &WebviewWindow<R>, enabled: bool) {
+    use std::ffi::c_void;
+    use windows_sys::Win32::System::LibraryLoader::{GetProcAddress, LoadLibraryW};
+
+    #[repr(C)]
+    struct AccentPolicy {
+        accent_state: u32,
+        accent_flags: u32,
+        gradient_color: u32,
+        animation_id: u32,
+    }
+    #[repr(C)]
+    struct CompositionData {
+        attribute: u32,
+        data: *mut c_void,
+        size: usize,
+    }
+    type SetWindowCompositionAttribute = unsafe extern "system" fn(*mut c_void, *mut CompositionData) -> i32;
+
+    const WCA_ACCENT_POLICY: u32 = 19;
+    const ACCENT_DISABLED: u32 = 0;
+    const ACCENT_ENABLE_ACRYLICBLURBEHIND: u32 = 4;
+    // цвет в формате 0xAABBGGRR; почти прозрачный тон, основной цвет задаёт CSS.
+    // Совсем нулевая прозрачность на части сборок Windows ломает эффект
+    const TINT: u32 = 0x10_00_00_00;
+
+    let Ok(hwnd) = w.hwnd() else { return };
+    let name: Vec<u16> = "user32.dll\0".encode_utf16().collect();
+    unsafe {
+        let user32 = LoadLibraryW(name.as_ptr());
+        if user32.is_null() {
+            return;
+        }
+        let Some(proc) = GetProcAddress(user32, c"SetWindowCompositionAttribute".as_ptr().cast()) else {
+            return;
+        };
+        let set: SetWindowCompositionAttribute = std::mem::transmute(proc);
+        let mut policy = AccentPolicy {
+            accent_state: if enabled { ACCENT_ENABLE_ACRYLICBLURBEHIND } else { ACCENT_DISABLED },
+            accent_flags: 0,
+            gradient_color: TINT,
+            animation_id: 0,
+        };
+        let mut data = CompositionData {
+            attribute: WCA_ACCENT_POLICY,
+            data: &mut policy as *mut _ as *mut c_void,
+            size: std::mem::size_of::<AccentPolicy>(),
+        };
+        set(hwnd.0 as _, &mut data);
+    }
+}
+
+#[cfg(not(windows))]
+fn set_accent_acrylic<R: Runtime>(_w: &WebviewWindow<R>, _enabled: bool) {}
 
 /// Окно без рамки в Windows 11 по умолчанию квадратное: просим DWM скруглить углы и убрать рамку
 #[cfg(windows)]
