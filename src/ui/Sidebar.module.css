@@ -1,0 +1,169 @@
+.sidebar {
+  width: 248px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 14px 14px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+}
+
+.create {
+  height: 40px;
+  align-self: flex-start;
+  padding: 0 18px 0 14px;
+  border-radius: 20px;
+}
+
+.mini {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.miniHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 4px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.miniHead button {
+  width: 26px;
+  height: 26px;
+}
+
+.miniGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.miniWeekday {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 2px 0 4px;
+}
+
+.miniDay {
+  height: 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--text);
+  position: relative;
+}
+
+.miniDay:hover {
+  background: var(--surface-2);
+}
+
+.inRange {
+  background: var(--accent-soft);
+}
+
+.outside {
+  color: var(--text-3);
+}
+
+.today::after {
+  content: "";
+  position: absolute;
+  inset: 2px 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  z-index: -1;
+}
+
+.today {
+  color: var(--accent-text);
+  font-weight: 600;
+  z-index: 0;
+}
+
+.calendars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heading {
+  margin: 0 0 4px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.calendar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.calendar:hover {
+  background: var(--surface-2);
+}
+
+.calendar input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.calendar:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 4px;
+  border: 2px solid;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signOut {
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  padding: 2px 4px;
+}
+
+.signOut:hover {
+  color: var(--text);
+  text-decoration: underline;
+}

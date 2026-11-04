@@ -1,0 +1,97 @@
+.screen {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.logo {
+  align-self: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.text {
+  margin: 0;
+  color: var(--text-2);
+  text-align: center;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.field input,
+.field textarea {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12.5px;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.wide {
+  height: 40px;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.link {
+  border: 0;
+  background: none;
+  color: var(--text-3);
+  font-size: 12.5px;
+  text-decoration: underline;
+  align-self: center;
+}

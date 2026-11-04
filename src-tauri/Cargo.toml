@@ -1,0 +1,45 @@
+[package]
+name = "calm-calendar"
+version = "0.1.0"
+description = "Calendar for Windows without ads"
+authors = ["Arseni"]
+edition = "2024"
+
+[lib]
+# Суффикс _lib нужен, чтобы имя библиотеки не конфликтовало с бинарником на Windows
+name = "calm_calendar_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["net", "io-util", "time", "sync", "macros"] }
+sha2 = "0.10"
+base64 = "0.22"
+rand = "0.8"
+url = "2"
+thiserror = "2"
+
+# Токен входа хранится в системном хранилище паролей
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", features = ["apple-native"] }
+
+# На Linux пока без системного хранилища (только для разработки)
+[target.'cfg(all(not(windows), not(target_os = "macos")))'.dependencies]
+keyring = { version = "3" }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
