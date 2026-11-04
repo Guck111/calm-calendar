@@ -46,6 +46,16 @@ npm run tauri build    # установщики в src-tauri\target\release\bund
 
 `npm run dev` открывает интерфейс на http://localhost:1420 с подставными календарями и событиями (`src/shared/api/mock.ts`). В сборку приложения подставные данные не попадают.
 
+## Выпуск версии
+
+На каждый пуш в `main` GitHub запускает только тесты (`ci`). Установщики собирает `release`:
+
+1. Поменяй версию в `package.json`, `src-tauri/tauri.conf.json` и `src-tauri/Cargo.toml`.
+2. Закоммить и поставь тег: `git tag v0.2.0` и `git push origin main v0.2.0`.
+3. Через 10–15 минут в разделе Releases появится релиз с `.exe` и `.msi`.
+
+Собрать без тега: Actions → release → Run workflow. Установщики будут в Artifacts этого запуска.
+
 ## Проверки
 
 ```powershell
