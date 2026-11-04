@@ -1,4 +1,5 @@
 mod config;
+mod desktop;
 mod error;
 mod google;
 mod oauth;
@@ -8,7 +9,9 @@ use error::Result;
 use oauth::Auth;
 use serde::Serialize;
 use serde_json::Value;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, WindowEvent};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_window_state::StateFlags;
 
 #[derive(Serialize)]
 struct AuthStatus {
@@ -54,17 +57,51 @@ async fn google_request(
     google::request(&app, &auth, &method, &path, query.unwrap_or_default(), body).await
 }
 
+/// Открыть главное окно из виджета, при необходимости сразу на нужном дне ("2026-11-04")
+#[tauri::command]
+fn open_main(app: AppHandle, date: Option<String>) {
+    desktop::show_main(&app, date);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // повторный запуск (например, ярлыком) не создаёт вторую копию, а показывает окно
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            desktop::show_main(app, None);
+        }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
+                .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
+                .build(),
+        )
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![desktop::HIDDEN_ARG]),
+        ))
         .manage(Auth::new())
+        .setup(|app| {
+            desktop::setup(app.handle())?;
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            // крестик главного окна прячет его в трей, выход — через меню трея
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == desktop::MAIN {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             auth_status,
             save_client_config,
             sign_in,
             sign_out,
-            google_request
+            google_request,
+            open_main
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

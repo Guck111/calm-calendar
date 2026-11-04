@@ -9,6 +9,7 @@ import {
   toDateKey,
   toTimeKey,
 } from "../shared/lib/date";
+import { broadcast } from "../shared/api/bus";
 import { sessionLost } from "./auth";
 import { $writableCalendars } from "./calendars";
 import { reloadRequested } from "./events";
@@ -18,6 +19,8 @@ export const slotClicked = createEvent<{ start: Date; allDay?: boolean }>();
 export const createClicked = createEvent();
 export const draftChanged = createEvent<Partial<EventDraft>>();
 export const editorClosed = createEvent();
+export const editClicked = createEvent();
+export const editCancelled = createEvent();
 export const saveClicked = createEvent();
 export const deleteClicked = createEvent();
 
@@ -94,10 +97,30 @@ export const validate = (d: EventDraft): string | null => {
   return null;
 };
 
+/** событие, открытое для просмотра (до перехода в правку) */
+export const $opened = createStore<CalendarEvent | null>(null)
+  .on(eventOpened, (_, e) => e)
+  .reset([slotClicked, createClicked, editorClosed, saveFx.done, deleteFx.done]);
+
+/** просмотр существующего события или форма правки и создания */
+export const $mode = createStore<"view" | "edit">("view")
+  .on(eventOpened, () => "view")
+  .on([slotClicked, createClicked, editClicked], () => "edit")
+  .on(editCancelled, () => "view");
+
 export const $draft = createStore<EventDraft | null>(null)
   .on(eventOpened, (_, e) => fromEvent(e))
   .on(draftChanged, (d, patch) => (d ? applyChange(d, patch) : d))
   .reset([editorClosed, saveFx.done, deleteFx.done]);
+
+// «Отмена» в форме существующего события возвращает исходные значения
+sample({
+  clock: editCancelled,
+  source: $opened,
+  filter: Boolean,
+  fn: (e) => fromEvent(e as CalendarEvent),
+  target: $draft,
+});
 
 const $defaultCalendarId = $writableCalendars.map((list) => list[0]?.id ?? "");
 
@@ -117,7 +140,7 @@ sample({
 
 export const $editorError = createStore<string | null>(null)
   .on([saveFx.failData, deleteFx.failData], (_, e) => e.message)
-  .reset([eventOpened, slotClicked, createClicked, editorClosed, saveFx, deleteFx]);
+  .reset([eventOpened, slotClicked, createClicked, editClicked, editCancelled, editorClosed, saveFx, deleteFx]);
 
 export const $busy = sample({
   source: { save: saveFx.pending, del: deleteFx.pending },
@@ -150,6 +173,10 @@ sample({
 });
 
 sample({ clock: [saveFx.done, deleteFx.done], target: reloadRequested });
+
+// виджет перечитает события
+saveFx.done.watch(() => broadcast("events-changed"));
+deleteFx.done.watch(() => broadcast("events-changed"));
 
 sample({
   clock: [saveFx.failData, deleteFx.failData],

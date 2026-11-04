@@ -1,10 +1,13 @@
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
+import { subscribe } from "../shared/api/bus";
+import { fromDateKey } from "../shared/lib/date";
 import { $signedIn, $status, appStarted } from "../model/auth";
 import { createClicked, $draft } from "../model/editor";
 import { $loadError, refreshRequested } from "../model/events";
 import {
   $view,
+  dayOpened,
   minuteTicked,
   nextClicked,
   prevClicked,
@@ -35,7 +38,16 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
     createClicked,
   ]);
 
+  const openDay = useUnit(dayOpened);
+
   useEffect(() => start(), [start]);
+
+  // виджет просит открыть конкретный день
+  useEffect(() => {
+    const fromQuery = new URLSearchParams(window.location.search).get("date");
+    if (fromQuery) openDay(fromDateKey(fromQuery));
+    return subscribe<{ date: string }>("open-date", ({ date }) => openDay(fromDateKey(date)));
+  }, [openDay]);
 
   useEffect(() => {
     // тикаем ровно на границе минуты, чтобы линия «сейчас» не отставала

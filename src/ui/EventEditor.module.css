@@ -163,3 +163,55 @@
     transform: translateY(6px) scale(0.99);
   }
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.viewTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 2px;
+  font-size: 19px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.when {
+  margin: -6px 0 0 2px;
+  color: var(--text-2);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0 2px;
+}
+
+.details dt {
+  color: var(--text-3);
+  font-size: 12.5px;
+  padding-top: 1px;
+}
+
+.details dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  user-select: text;
+}
+
+.description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 200px;
+  overflow-y: auto;
+  align-items: flex-start !important;
+}

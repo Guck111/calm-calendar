@@ -1,5 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
 import * as bridge from "../shared/api/bridge";
+import { broadcast } from "../shared/api/bus";
 import type { AppError, AuthStatus } from "../shared/api/types";
 
 export const appStarted = createEvent();
@@ -46,3 +47,7 @@ sample({
   clock: [signInFx.finally, signOutFx.finally, saveClientFx.done],
   target: fetchStatusFx,
 });
+
+// виджет живёт в отдельном окне и узнаёт о входе и выходе отсюда
+signInFx.done.watch(() => broadcast("auth-changed"));
+signOutFx.finally.watch(() => broadcast("auth-changed"));

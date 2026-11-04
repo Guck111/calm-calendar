@@ -100,3 +100,11 @@ textarea,
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* окно виджета прозрачное: видна только карточка */
+html[data-window="widget"],
+html[data-window="widget"] body,
+html[data-window="widget"] #root {
+  background: transparent;
+  height: auto;
+}

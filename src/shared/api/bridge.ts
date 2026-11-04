@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { AppError, AuthStatus } from "./types";
+import { inTauri } from "./bus";
 
 export const isAppError = (e: unknown): e is AppError =>
   typeof e === "object" && e !== null && "kind" in e && "message" in e;
@@ -7,7 +8,6 @@ export const isAppError = (e: unknown): e is AppError =>
 export const toAppError = (e: unknown): AppError =>
   isAppError(e) ? e : { kind: "other", message: e instanceof Error ? e.message : String(e) };
 
-const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 // в браузере без Tauri (npm run dev) работаем на подставных данных
 const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {

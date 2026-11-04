@@ -1,6 +1,16 @@
+import { allSettled, fork } from "effector";
 import { describe, expect, it } from "vitest";
-import { applyChange, validate } from "./editor";
-import type { EventDraft } from "../shared/api/types";
+import type { CalendarEvent, EventDraft } from "../shared/api/types";
+import {
+  $draft,
+  $mode,
+  applyChange,
+  draftChanged,
+  editCancelled,
+  editClicked,
+  eventOpened,
+  validate,
+} from "./editor";
 
 const base: EventDraft = {
   calendarId: "primary",
@@ -34,5 +44,36 @@ describe("форма события", () => {
     expect(validate({ ...base, endTime: "08:00" })).not.toBeNull();
     expect(validate({ ...base, allDay: true, endDate: "2026-11-04" })).toBeNull();
     expect(validate({ ...base, calendarId: "" })).not.toBeNull();
+  });
+});
+
+const event: CalendarEvent = {
+  key: "c\u0000e1",
+  id: "e1",
+  calendarId: "c",
+  title: "Польский",
+  start: new Date(2026, 10, 7, 14, 30),
+  end: new Date(2026, 10, 7, 16, 30),
+  allDay: false,
+  recurring: false,
+};
+
+describe("просмотр и правка события", () => {
+  it("клик по событию открывает просмотр, «Редактировать» — форму", async () => {
+    const scope = fork();
+    await allSettled(eventOpened, { scope, params: event });
+    expect(scope.getState($mode)).toBe("view");
+    await allSettled(editClicked, { scope });
+    expect(scope.getState($mode)).toBe("edit");
+  });
+
+  it("«Отмена» возвращает к просмотру и отбрасывает несохранённые правки", async () => {
+    const scope = fork();
+    await allSettled(eventOpened, { scope, params: event });
+    await allSettled(editClicked, { scope });
+    await allSettled(draftChanged, { scope, params: { title: "Другое" } });
+    await allSettled(editCancelled, { scope });
+    expect(scope.getState($mode)).toBe("view");
+    expect(scope.getState($draft)?.title).toBe("Польский");
   });
 });

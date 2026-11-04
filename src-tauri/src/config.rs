@@ -15,6 +15,7 @@ use tauri::{AppHandle, Manager};
 
 const CLIENT_FILE: &str = "google-client.json";
 const ACCOUNT_FILE: &str = "account.json";
+const WIDGET_FILE: &str = "widget.json";
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ClientConfig {
@@ -129,6 +130,35 @@ pub fn save_account(app: &AppHandle, account: &Account) -> Result<()> {
 pub fn clear_account(app: &AppHandle) {
     if let Ok(dir) = config_dir(app) {
         let _ = std::fs::remove_file(dir.join(ACCOUNT_FILE));
+    }
+}
+
+/// Настройки окна-виджета: показан ли он и держится ли поверх окон
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub struct WidgetSettings {
+    pub visible: bool,
+    pub on_top: bool,
+}
+
+impl Default for WidgetSettings {
+    fn default() -> Self {
+        Self { visible: true, on_top: false }
+    }
+}
+
+pub fn load_widget(app: &AppHandle) -> WidgetSettings {
+    config_dir(app)
+        .ok()
+        .and_then(|d| std::fs::read_to_string(d.join(WIDGET_FILE)).ok())
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default()
+}
+
+pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
+    if let Ok(dir) = config_dir(app) {
+        if let Ok(text) = serde_json::to_string_pretty(&settings) {
+            let _ = std::fs::write(dir.join(WIDGET_FILE), text);
+        }
     }
 }
 
