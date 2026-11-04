@@ -26,8 +26,9 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* тема: data-theme="light" | "dark" на <html>, без атрибута — как в системе */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #161618;
     --surface: #1e1e21;
     --surface-2: #26262a;
@@ -44,6 +45,24 @@
     --shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #161618;
+  --surface: #1e1e21;
+  --surface-2: #26262a;
+  --border: #2e2e33;
+  --border-strong: #3c3c42;
+  --text: #ececef;
+  --text-2: #a8a8b0;
+  --text-3: #6e6e76;
+  --accent: #6f9bff;
+  --accent-soft: #24304a;
+  --accent-text: #0d1424;
+  --danger: #ff6b6b;
+  --now: #ff5a5f;
+  --shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
 }
 
 *,

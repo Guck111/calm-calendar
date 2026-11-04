@@ -55,3 +55,23 @@ export const Repeat = ({ size = 12 }: P) => (
     <path d="M3 7V6a2 2 0 0 1 2-2h7.5M10.5 2 12.5 4l-2 2M13 9v1a2 2 0 0 1-2 2H3.5M5.5 14l-2-2 2-2" />
   </svg>
 );
+
+export const Sun = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <circle cx="8" cy="8" r="3" />
+    <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1" />
+  </svg>
+);
+
+export const Moon = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5Z" />
+  </svg>
+);
+
+export const Auto = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <circle cx="8" cy="8" r="5.5" />
+    <path d="M8 2.5v11a5.5 5.5 0 0 0 0-11Z" fill="currentColor" />
+  </svg>
+);

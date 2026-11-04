@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-export type BusEvent = "events-changed" | "auth-changed" | "open-date";
+export type BusEvent = "events-changed" | "auth-changed" | "open-date" | "theme-changed";
 
 export const broadcast = (name: BusEvent, payload?: unknown): void => {
   if (inTauri) void emit(name, payload);

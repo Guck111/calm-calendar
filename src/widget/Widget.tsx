@@ -16,16 +16,23 @@ import {
 } from "../shared/lib/date";
 import { overlapsDay } from "../shared/lib/layout";
 import { cx } from "../ui/Button";
+import { ChevronLeft, ChevronRight } from "../ui/icons";
 import {
-  $data,
+  $colors,
   $error,
+  $isCurrentMonth,
   $loading,
+  $month,
+  $monthEvents,
   $now,
   $signedIn,
   $status,
   $today,
+  $upcoming,
   authChanged,
   minuteTicked,
+  monthReset,
+  monthShifted,
   refreshRequested,
   VISIBILITY_KEY,
   widgetStarted,
@@ -107,27 +114,31 @@ const startDrag = async (e: MouseEvent) => {
 export const Widget = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   useWidgetEffects(cardRef);
-  const refresh = useUnit(refreshRequested);
-  const [status, signedIn, now, today, data, error, loading] = useUnit([
+  const [refresh, shift, reset] = useUnit([refreshRequested, monthShifted, monthReset]);
+  const [status, signedIn, now, today, month, isCurrent, monthEvents, allUpcoming, colors, error, loading] = useUnit([
     $status,
     $signedIn,
     $now,
     $today,
-    $data,
+    $month,
+    $isCurrentMonth,
+    $monthEvents,
+    $upcoming,
+    $colors,
     $error,
     $loading,
   ]);
 
-  const days = monthGrid(today);
+  const days = monthGrid(month);
   const eventDays = new Set(
-    days.filter((d) => data.events.some((e) => overlapsDay(e, d))).map((d) => d.getTime()),
+    days.filter((d) => monthEvents.some((e) => overlapsDay(e, d))).map((d) => d.getTime()),
   );
-  const upcoming = data.events
+  const upcoming = allUpcoming
     .filter((e) => e.end > now)
     .sort((a, b) => a.start.getTime() - b.start.getTime() || Number(b.allDay) - Number(a.allDay))
     .slice(0, MAX_EVENTS);
 
-  const color = (e: CalendarEvent) => ({ "--c": data.colors[e.calendarId] ?? "var(--accent)" }) as CSSProperties;
+  const color = (e: CalendarEvent) => ({ "--c": colors[e.calendarId] ?? "var(--accent)" }) as CSSProperties;
 
   return (
     <div className={s.card} ref={cardRef} onMouseDown={startDrag}>
@@ -138,7 +149,22 @@ export const Widget = () => {
         {formatWeekdayLong(now)}, {formatDayMonth(now)}
       </div>
 
-      <div className={s.month}>{formatMonthYear(today)}</div>
+      <div className={s.monthBar}>
+        <button
+          className={cx(s.month, !isCurrent && s.monthOther)}
+          onClick={() => reset()}
+          title={isCurrent ? undefined : "Вернуться к текущему месяцу"}
+          disabled={isCurrent}
+        >
+          {formatMonthYear(month)}
+        </button>
+        <button className={s.arrow} onClick={() => shift(-1)} aria-label="Предыдущий месяц">
+          <ChevronLeft size={14} />
+        </button>
+        <button className={s.arrow} onClick={() => shift(1)} aria-label="Следующий месяц">
+          <ChevronRight size={14} />
+        </button>
+      </div>
       <div className={s.grid}>
         {WEEKDAYS.map((d) => (
           <span key={d} className={s.weekday}>
@@ -148,7 +174,7 @@ export const Widget = () => {
         {days.map((d) => (
           <button
             key={d.getTime()}
-            className={cx(s.day, !isSameMonth(d, today) && s.outside, isSameDay(d, today) && s.today)}
+            className={cx(s.day, !isSameMonth(d, month) && s.outside, isSameDay(d, today) && s.today)}
             onClick={() => openMain(toDateKey(d))}
             title="Открыть день в календаре"
           >

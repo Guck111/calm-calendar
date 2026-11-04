@@ -1,10 +1,10 @@
 // Модель виджета. Окно виджета — отдельная страница со своим состоянием,
 // поэтому здесь своя лёгкая модель поверх тех же запросов к Google.
-import { createEffect, createEvent, createStore, sample } from "effector";
+import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { getAuthStatus } from "../shared/api/bridge";
 import { listCalendars, listEvents } from "../shared/api/calendar";
-import type { AppError, AuthStatus, CalendarEvent } from "../shared/api/types";
-import { addDays, monthGrid, startOfDay } from "../shared/lib/date";
+import type { AppError, AuthStatus, Calendar, CalendarEvent } from "../shared/api/types";
+import { addDays, addMonths, isSameMonth, monthGrid, startOfDay, startOfMonth, type DateRange } from "../shared/lib/date";
 import { readJson } from "../shared/lib/storage";
 
 export const VISIBILITY_KEY = "calm.calendarVisibility";
@@ -14,55 +14,110 @@ export const widgetStarted = createEvent();
 export const authChanged = createEvent();
 export const refreshRequested = createEvent();
 export const minuteTicked = createEvent<Date>();
+export const monthShifted = createEvent<1 | -1>();
+export const monthReset = createEvent();
 
 export const fetchStatusFx = createEffect<void, AuthStatus, AppError>(getAuthStatus);
 
-export type WidgetData = { events: CalendarEvent[]; colors: Record<string, string> };
-
-/** события с начала сетки текущего месяца и на полтора месяца вперёд */
-export const fetchEventsFx = createEffect<Date, WidgetData, AppError>(async (today) => {
+/** только календари, включённые в главном окне */
+export const fetchCalendarsFx = createEffect<void, Calendar[], AppError>(async () => {
   const calendars = await listCalendars();
   const visibility = readJson<Record<string, boolean>>(VISIBILITY_KEY, {});
-  const visible = calendars.filter((c) => visibility[c.id] ?? c.selected);
-  const gridEnd = addDays(monthGrid(today)[41], 1);
-  const ahead = addDays(startOfDay(today), LOOK_AHEAD_DAYS);
-  const range = { start: monthGrid(today)[0], end: gridEnd > ahead ? gridEnd : ahead };
-  const results = await Promise.allSettled(visible.map((c) => listEvents(c.id, range)));
-  const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  if (visible.length && results.every((r) => r.status === "rejected")) {
-    const first = results[0] as PromiseRejectedResult;
-    throw first.reason as AppError;
+  return calendars.filter((c) => visibility[c.id] ?? c.selected);
+});
+
+const loadRange = async (calendars: Calendar[], range: DateRange): Promise<CalendarEvent[]> => {
+  const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
+  if (calendars.length && results.every((r) => r.status === "rejected")) {
+    throw (results[0] as PromiseRejectedResult).reason as AppError;
   }
-  return { events, colors: Object.fromEntries(calendars.map((c) => [c.id, c.color])) };
+  return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+};
+
+/** ближайшие события для списка внизу */
+export const fetchUpcomingFx = createEffect<{ calendars: Calendar[]; today: Date }, CalendarEvent[], AppError>(
+  ({ calendars, today }) => loadRange(calendars, { start: today, end: addDays(today, LOOK_AHEAD_DAYS) }),
+);
+
+/** события сетки показанного месяца — для точек */
+export const fetchMonthFx = createEffect<
+  { calendars: Calendar[]; month: Date },
+  { month: Date; events: CalendarEvent[] },
+  AppError
+>(async ({ calendars, month }) => {
+  const grid = monthGrid(month);
+  const events = await loadRange(calendars, { start: grid[0], end: addDays(grid[41], 1) });
+  return { month, events };
 });
 
 export const $now = createStore(new Date()).on(minuteTicked, (_, d) => d);
 export const $today = $now.map(startOfDay);
 
+export const $month = createStore(startOfMonth(new Date()))
+  .on(monthShifted, (m, step) => addMonths(m, step))
+  .on(monthReset, () => startOfMonth(new Date()));
+
+export const $isCurrentMonth = combine($month, $today, isSameMonth);
+
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
 export const $signedIn = $status.map((s) => Boolean(s?.signedIn));
 
-export const $data = createStore<WidgetData>({ events: [], colors: {} })
-  .on(fetchEventsFx.doneData, (_, d) => d)
-  .reset(fetchStatusFx.doneData.filter({ fn: (s) => !s.signedIn }));
+const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => !s.signedIn });
+
+export const $calendars = createStore<Calendar[]>([]).on(fetchCalendarsFx.doneData, (_, c) => c).reset(signedOut);
+
+export const $colors = $calendars.map((list) => Object.fromEntries(list.map((c) => [c.id, c.color])));
+
+export const $upcoming = createStore<CalendarEvent[]>([])
+  .on(fetchUpcomingFx.doneData, (_, e) => e)
+  .reset(signedOut);
+
+export const $monthEvents = createStore<CalendarEvent[]>([]).reset(signedOut);
+
+// пока грузится новый месяц, точки старого не показываем
+sample({ clock: $month.updates, fn: () => [], target: $monthEvents });
 
 export const $error = createStore<string | null>(null)
-  .on(fetchEventsFx.doneData, () => null)
-  .on(fetchEventsFx.failData, (_, e) => e.message);
+  .on(fetchUpcomingFx.doneData, () => null)
+  .on([fetchCalendarsFx.failData, fetchUpcomingFx.failData], (_, e) => e.message);
 
-export const $loading = fetchEventsFx.pending;
+export const $loading = fetchUpcomingFx.pending;
 
 sample({ clock: [widgetStarted, authChanged], target: fetchStatusFx });
 
 sample({
   clock: [fetchStatusFx.doneData, refreshRequested],
-  source: { signedIn: $signedIn, now: $now },
-  filter: ({ signedIn }) => signedIn,
-  fn: ({ now }) => now,
-  target: fetchEventsFx,
+  source: $signedIn,
+  filter: Boolean,
+  target: fetchCalendarsFx,
 });
 
-// с наступлением нового дня перечитываем: сменился месяц или диапазон
+sample({
+  clock: fetchCalendarsFx.doneData,
+  source: $today,
+  fn: (today, calendars) => ({ calendars, today }),
+  target: fetchUpcomingFx,
+});
+
+sample({
+  clock: [fetchCalendarsFx.doneData, $month.updates],
+  source: { calendars: $calendars, month: $month, signedIn: $signedIn },
+  filter: ({ signedIn }) => signedIn,
+  fn: ({ calendars, month }) => ({ calendars, month }),
+  target: fetchMonthFx,
+});
+
+// ответ по месяцу, который уже перелистнули, не применяем
+sample({
+  clock: fetchMonthFx.doneData,
+  source: $month,
+  filter: (month, r) => month.getTime() === r.month.getTime(),
+  fn: (_, r) => r.events,
+  target: $monthEvents,
+});
+
+// с наступлением нового дня возвращаемся к текущему месяцу и перечитываем
+sample({ clock: $today.updates, target: monthReset });
 sample({
   clock: $today.updates,
   source: $signedIn,
@@ -71,7 +126,7 @@ sample({
 });
 
 sample({
-  clock: fetchEventsFx.failData,
+  clock: [fetchCalendarsFx.failData, fetchUpcomingFx.failData],
   filter: (e) => e.kind === "not_signed_in",
   target: authChanged,
 });
