@@ -33,6 +33,8 @@ export type EuVocab = {
   months: string[];
   /** связка между днём и месяцем: «13 de marzo» */
   of?: string;
+  /** окончание порядкового числа: «1er mars» */
+  ordinal?: string;
   /** «13/11» или немецкое «13.11.» (точка в конце обязательна, иначе это время 13.11) */
   numericDate: "slash" | "dot";
   /** 7 дней недели с понедельника */
@@ -74,6 +76,7 @@ export const makeEuParser = (v: EuVocab) => {
   const monthIndex = (s: string) => v.months.findIndex((m) => new RegExp(`^(?:${m})`, "iu").test(s));
   const OF = v.of ? `(?:\\s+(?:${v.of}))?` : "";
   const YEAR = `(?:,?${OF}\\s+(\\d{4}))?`;
+  const ORD = v.ordinal ? `(?:${v.ordinal})?` : "";
   const DAY = "(0?[1-9]|[12]\\d|3[01])";
   const MON = "(0?[1-9]|1[0-2])";
   const year = (s?: string) => (s ? (s.length === 2 ? 2000 + Number(s) : Number(s)) : null);
@@ -96,7 +99,7 @@ export const makeEuParser = (v: EuVocab) => {
     if (after) return { date: addDays(today, Number(after[1]) * (after[3] ? 7 : 1)) };
 
     // «13 de marzo», «13 mars 2027», «13. März»
-    const named = cut.take(re(`(\\d{1,2})\\.?${OF}\\s+${MONTH}${YEAR}`));
+    const named = cut.take(re(`(\\d{1,2})${ORD}\\.?${OF}\\s+${MONTH}${YEAR}`));
     if (named && monthIndex(named[2]) >= 0) {
       return { date: upcomingDate(today, monthIndex(named[2]), Number(named[1]), year(named[3])) };
     }
@@ -152,32 +155,29 @@ export const makeEuParser = (v: EuVocab) => {
       if (validTime(h, m) && validTime(endH, endM)) return { h, m, endH, endM };
     }
 
-    // «19:30», «à 19h30», «um 7.30 Uhr»
-    const exact = cut.take(re(`${AT}(\\d{1,2})[:.h](\\d{2})${HW}${PART}`));
-    if (exact) {
-      const h = withPart(Number(exact[1]), exact[3], evening);
-      const m = Number(exact[2]);
-      if (validTime(h, m)) return { h, m };
-    }
-    // «19h», «19 Uhr»
-    const marked = cut.take(re(`${AT}(\\d{1,2})\\s*(?:${v.hourWord})${PART}`));
-    if (marked) {
-      const h = withPart(Number(marked[1]), marked[2], evening);
-      if (validTime(h, 0)) return { h, m: 0 };
-    }
-    // «a las 7», «à 7 heures», «a las 7 de la tarde»
-    const afterAt = cut.take(
-      re(`(?:${v.at})\\s+(\\d{1,2})${v.hourWordAfterAt ? `(?:\\s*(?:${v.hourWordAfterAt}))?` : ""}${PART}${NOT_DURATION}`),
-    );
-    if (afterAt) {
-      const h = withPart(Number(afterAt[1]), afterAt[2], evening);
-      if (validTime(h, 0)) return { h, m: 0 };
-    }
-    // «7 de la tarde» без предлога
-    const parted = cut.take(re(`(\\d{1,2})\\s*(${v.am}|${v.pm})`));
-    if (parted) {
-      const h = withPart(Number(parted[1]), parted[2], evening);
-      if (validTime(h, 0)) return { h, m: 0 };
+    // Одиночное время. Берём то, что раньше в строке: «9h sport 1h30» — это 9:00 и полтора часа.
+    const singles: [RegExp, (m: RegExpMatchArray) => [number, number]][] = [
+      // «19:30», «à 19h30», «um 7.30 Uhr»
+      [re(`${AT}(\\d{1,2})[:.h](\\d{2})${HW}${PART}`), (m) => [withPart(Number(m[1]), m[3], evening), Number(m[2])]],
+      // «19h», «19 Uhr»
+      [re(`${AT}(\\d{1,2})\\s*(?:${v.hourWord})${PART}`), (m) => [withPart(Number(m[1]), m[2], evening), 0]],
+      // «a las 7», «à 7 heures», «a las 7 de la tarde»
+      [
+        re(`(?:${v.at})\\s+(\\d{1,2})${v.hourWordAfterAt ? `(?:\\s*(?:${v.hourWordAfterAt}))?` : ""}${PART}${NOT_DURATION}`),
+        (m) => [withPart(Number(m[1]), m[2], evening), 0],
+      ],
+      // «7 de la tarde» без предлога
+      [re(`(\\d{1,2})\\s*(${v.am}|${v.pm})`), (m) => [withPart(Number(m[1]), m[2], evening), 0]],
+    ];
+    const found = singles
+      .map(([r, read]) => ({ r, read, at: cut.text.match(r)?.index }))
+      .filter((x): x is typeof x & { at: number } => x.at !== undefined)
+      .sort((a, b) => a.at - b.at);
+    for (const { r, read } of found) {
+      const m = cut.take(r);
+      if (!m) continue;
+      const [h, min] = read(m);
+      if (validTime(h, min)) return { h, m: min };
     }
     return null;
   };
@@ -201,7 +201,7 @@ export const makeEuParser = (v: EuVocab) => {
     v.dayAfterTomorrow,
     v.tonight,
     ...v.weekdays.map((w) => `${opt(v.on)}(?:${w})`),
-    `\\d{1,2}\\.?${OF}\\s+(?:${alt(v.months)})[\\p{L}]*\\.?`,
+    `\\d{1,2}${ORD}\\.?${OF}\\s+(?:${alt(v.months)})[\\p{L}]*\\.?`,
   ].join("|");
   const BARE_HOUR = new RegExp(
     `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,/h])${NOT_DURATION}(?!\\s*(?:${v.hourWord}))${v.of ? `(?!\\s+(?:${v.of})\\s)` : ""}(?!\\.?\\s*(?:${alt(v.months)}))`,

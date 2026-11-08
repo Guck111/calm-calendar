@@ -31,6 +31,7 @@
   <Resources>
     <Resource Language="en-us" />
     <Resource Language="es-es" />
+    <Resource Language="fr-fr" />
   </Resources>
 
   <Applications>

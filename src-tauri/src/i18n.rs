@@ -10,10 +10,11 @@ pub enum Lang {
     En,
     Ru,
     Es,
+    Fr,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -83,6 +84,21 @@ impl Lang {
                 },
                 signed_in: "Listo. Puedes cerrar esta pestaña y volver a la aplicación.",
                 sign_in_failed: "No se pudo iniciar sesión. Vuelve a la aplicación e inténtalo de nuevo.",
+            },
+            Lang::Fr => Texts {
+                code: "fr",
+                hl: "fr",
+                langid: 0x0c,
+                rtl: false,
+                tray: TrayText {
+                    open: "Ouvrir l’agenda",
+                    widget: "Widget de bureau",
+                    on_top: "Widget toujours au premier plan",
+                    autostart: "Lancer au démarrage de Windows",
+                    quit: "Quitter",
+                },
+                signed_in: "C’est fait. Vous pouvez fermer cet onglet et revenir à l’application.",
+                sign_in_failed: "La connexion a échoué. Revenez à l’application et réessayez.",
             },
         }
     }

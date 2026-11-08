@@ -6,6 +6,7 @@ import { addDays, formatTime, formatWeekdayDayMonth, startOfDay, toDateKey, toTi
 import { normalizeInput, type QuickCalendar, type QuickResult } from "./quick-core";
 import { parseQuickEn } from "./quick-en";
 import { parseQuickRu } from "./quick-ru";
+import { parseQuickFr } from "./quick-fr";
 import { parseQuickEs } from "./quick-es";
 
 export type { QuickCalendar, QuickResult } from "./quick-core";
@@ -17,6 +18,7 @@ const PARSERS: Record<Lang, Parser> = {
   en: parseQuickEn,
   ru: parseQuickRu,
   es: parseQuickEs,
+  fr: parseQuickFr,
 };
 
 export const parseQuick = (
