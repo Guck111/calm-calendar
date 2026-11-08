@@ -1,0 +1,41 @@
+name: pages
+
+# Сайт приложения (папка site/) на GitHub Pages: главная, политика конфиденциальности, условия
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/configure-pages@v5
+
+      # в сайт попадают только страницы, стили и картинки; исходники текстов и README остаются в репозитории
+      - name: Collect site files
+        run: |
+          mkdir -p _site
+          cp site/*.html site/*.css site/*.png site/*.ico _site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

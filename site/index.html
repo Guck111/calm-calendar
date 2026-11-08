@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calm Calendar — a calm, ad-free calendar for Windows</title>
+  <meta name="description" content="Calm Calendar is an ad-free desktop calendar for Windows that shows your Google Calendar in day, week and month views, with a desktop widget and quick add.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="Calm Calendar">
+  <meta property="og:description" content="A calm, ad-free calendar for Windows that works with Google Calendar.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="icon-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="Calm Calendar, home">
+        <img src="icon.png" width="32" height="32" alt="">
+        <span>Calm Calendar</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="terms.html">Terms</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- 1. Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <img class="hero-icon" src="icon.png" width="128" height="128" alt="Calm Calendar app icon: a calendar with a leaf in the corner">
+        <h1 id="hero-title">Calm Calendar</h1>
+        <p class="lead">An ad-free desktop calendar for Windows that shows your Google Calendar in day, week and month views, with a desktop widget and quick add.</p>
+
+        <div class="cta">
+          <span class="cta-store">
+            <a class="btn btn-primary" href="#" aria-disabled="true" aria-describedby="store-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1 12H5L4 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+              Get it from Microsoft Store
+            </a>
+            <span class="badge" id="store-soon">Coming soon</span>
+          </span>
+          <a class="btn btn-secondary" href="https://github.com/Guck111/calm-calendar/releases">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            Download from GitHub
+          </a>
+        </div>
+
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshot-week-dark.png" media="(prefers-color-scheme: dark)">
+            <img src="screenshot-week.png" width="2880" height="1800" alt="Calm Calendar window showing a week view with a sidebar of calendars and colored events for each day" fetchpriority="high">
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2. Features -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="features-title">Everything you need, nothing you don't</h2>
+          <p>A native Windows window for your Google Calendar. No ads, no feeds, no clutter.</p>
+        </div>
+
+        <div class="features-layout">
+          <ul class="feature-grid">
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M9.5 10v10M14.5 10v10"/></svg>
+              </div>
+              <h3>Day, week and month views</h3>
+              <p>Your Google Calendar in a fast native window. Drag events to move or resize them.</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="10" r="3.5"/><path d="M12 8.3V10l1.1.8M7.5 17h9"/></svg>
+              </div>
+              <h3>Desktop widget</h3>
+              <p>Clock, a countdown to your next event, a mini month and upcoming events right on the desktop.</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3"/><path d="M7 12h6M17 10.5v3"/></svg>
+              </div>
+              <h3>Quick add</h3>
+              <p>Type “tomorrow 7pm gym 50 min” and press Enter. English and Russian.</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+              </div>
+              <h3>Reminders</h3>
+              <p>Your Google Calendar reminders as Windows notifications.</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.1 4.5 4.5 0 0 0 7 18Z"/><path d="M4 4l16 16"/></svg>
+              </div>
+              <h3>Works offline</h3>
+              <p>Shows the last loaded schedule when you have no connection.</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3>Private by design</h3>
+              <p>No ads, no tracking, no servers of ours. Your data goes only between your PC and Google.</p>
+            </li>
+          </ul>
+
+          <figure class="widget-shot">
+            <picture>
+              <source srcset="screenshot-widget-dark.png" media="(prefers-color-scheme: dark)">
+              <img src="screenshot-widget.png" width="600" height="1202" loading="lazy" alt="Calm Calendar desktop widget with a clock, a countdown to the next event, a mini month calendar and a list of upcoming events">
+            </picture>
+            <figcaption>The desktop widget</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Google data (required for Google OAuth verification) -->
+    <section class="section data-band" id="google-data" aria-labelledby="google-data-title">
+      <div class="wrap">
+        <div class="card data-card">
+          <h2 id="google-data-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V6l-7-3Z"/><path d="M12 10v5M12 7.5v.01"/></svg>
+            How Calm Calendar uses your Google data
+          </h2>
+          <p>Calm Calendar signs in with your Google account and asks for two calendar permissions:</p>
+          <ul class="scope-list">
+            <li>
+              <strong>See the list of your calendars</strong>
+              <span>to show your calendars with their names and colors and let you hide or show each one.</span>
+            </li>
+            <li>
+              <strong>View and edit events on your calendars</strong>
+              <span>to show your events and to create, edit, move and delete events when you do so in the app, and to show reminder notifications.</span>
+            </li>
+          </ul>
+          <p>Sign-in also shares your Google account email address, so the app can show which account you are signed in with.</p>
+          <p>Everything runs on your computer. The app talks directly to Google; we never receive, store or share your data. You can sign out or remove access at any time.</p>
+          <p class="more"><a href="privacy.html">Read the full Privacy Policy</a></p>
+          <p class="small-print">Calm Calendar's use and transfer of information received from Google APIs to any other app will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="faq-title">Questions</h2>
+        </div>
+        <div class="faq">
+          <details class="card">
+            <summary>Is it free?</summary>
+            <div><p>Yes. Calm Calendar is free and has no ads.</p></div>
+          </details>
+          <details class="card">
+            <summary>Which Windows versions are supported?</summary>
+            <div><p>Windows 10 version 1809 or later, and Windows 11.</p></div>
+          </details>
+          <details class="card">
+            <summary>Does it work with Outlook?</summary>
+            <div><p>Not yet. Calm Calendar works with Google Calendar only.</p></div>
+          </details>
+          <details class="card">
+            <summary>How do I remove my data?</summary>
+            <div><p>Sign out in the app: this revokes access and deletes the saved data from your computer. You can also remove access at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© 2026 Arseni</p>
+      <nav aria-label="Footer">
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Use</a></li>
+          <li><a href="mailto:support@example.com">support@example.com</a></li>
+          <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# Website kit
+# Website
 
 Everything the Calm Calendar website needs, ready to hand to a designer or to Claude Design.
 
@@ -17,7 +17,7 @@ Everything the Calm Calendar website needs, ready to hand to a designer or to Cl
 | `apple-touch-icon.png` | 180×180 | `<link rel="apple-touch-icon">` |
 | `favicon.ico`, `favicon-32.png` | 16–256, 32×32 | Favicon |
 
-Screenshots are taken at 2× from the real interface with English sample data (no real accounts), with the clock set to Wednesday 9:50 AM of the current week. To retake them, run `npm run dev` and then `node scripts/screenshots.mjs docs/site-kit`.
+Screenshots are taken at 2× from the real interface with English sample data (no real accounts), with the clock set to Wednesday 9:50 AM of the current week. To retake them, run `npm run dev` and then `node scripts/screenshots.mjs site`.
 
 ## Texts
 

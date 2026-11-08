@@ -1,5 +1,5 @@
 // Screenshots of the UI with English mock data (for the website and the Store listing).
-// Start the dev server first (npm run dev), then: node scripts/screenshots.mjs docs/site-kit
+// Start the dev server first (npm run dev), then: node scripts/screenshots.mjs site
 import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
