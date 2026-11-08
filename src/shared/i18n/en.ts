@@ -62,7 +62,7 @@ export const en: Dict = {
   editor: {
     allDayDate: (date: string) => `${date}, all day`,
     delete: "Delete",
-    confirmDelete: "Delete for sure?",
+    confirmDelete: "Click again to delete",
     openInGoogle: "Open in Google Calendar",
     inGoogle: "In Google",
     recurring: "Recurring event.",
