@@ -2,7 +2,7 @@
 
 An ad-free calendar for Windows that works with Google Calendar. Day, week and month views, a desktop widget, quick add from a single line, reminders as Windows notifications, drag and drop, and search.
 
-The interface and quick add work in English and Russian: the language follows Windows and can be changed in Settings → Language. Dates follow the region: in en-US the week starts on Sunday and times use AM/PM.
+The interface and quick add work in 11 languages: English, Russian, Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic (right to left) and Bengali. The language follows Windows and can be changed in Settings → Language. Dates follow the region: in en-US the week starts on Sunday and times use AM/PM.
 
 Stack: Tauri 2 (Rust), React 19, TypeScript, Effector, CSS Modules. Dates use plain `Date` and `Intl`, no date libraries.
 
@@ -52,6 +52,22 @@ Russian:
 - Duration: `50 мин`, `2 ч`, `1,5 часа`, `полчаса`. One hour by default. No time means an all-day event.
 - `#работа` picks a calendar by the start of its name, `@Гдыня` sets the location (`@Офис_Гдыня` for a name with a space).
 - `Enter` creates the event, `Ctrl+Enter` opens the full form with the fields filled in.
+
+Other languages follow the same idea, with their own words for dates, times and durations (each has tests in `src/shared/lib/quick-xx.test.ts`):
+
+| Language | Example |
+|---|---|
+| Spanish | `mañana a las 19:00 clase de inglés 50 min` |
+| French | `demain 19h cours d'anglais 50 min` |
+| Portuguese | `amanhã 19h aula de inglês 50 min` |
+| German | `morgen 19 Uhr Englischkurs 50 min` |
+| Japanese | `明日19時 英会話 50分` |
+| Chinese | `明天晚上7点 英语课 50分钟` |
+| Hindi | `कल शाम 7 बजे इंग्लिश क्लास 50 मिनट` |
+| Arabic | `غدًا الساعة 7 مساءً درس إنجليزي 50 دقيقة` |
+| Bengali | `কাল সন্ধ্যা 7টায় ইংরেজি ক্লাস 50 মিনিট` |
+
+Digits of any script (Arabic-Indic, Devanagari, Bengali, full-width) are understood. Shared engines: `quick-eu.ts` (Spanish, French, Portuguese, German, Arabic), `quick-cjk.ts` (Japanese, Chinese), `quick-indic.ts` (Hindi, Bengali).
 
 Examples: `tomorrow 7pm English class 50 min #personal`, `завтра 19:00 английский 50 мин #личное`.
 
@@ -112,7 +128,7 @@ npm run tauri build    # installers in src-tauri\target\release\bundle\
 Every push to `main` runs tests only (the `ci` workflow). Installers come from the `release` workflow:
 
 1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`.
-2. Commit and tag: `git tag v0.2.0` and `git push origin main v0.2.0`.
+2. Commit and tag: `git tag v0.3.0` and `git push origin main v0.3.0`.
 3. In 10–15 minutes a release with `.exe` and `.msi` appears under Releases.
 
 To build without a tag: Actions → release → Run workflow. The installers will be in that run's Artifacts.
