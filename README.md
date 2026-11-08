@@ -2,7 +2,7 @@
 
 An ad-free calendar for Windows that works with Google Calendar. Day, week and month views, a desktop widget, quick add from a single line, reminders as Windows notifications, drag and drop, and search.
 
-The interface is in Russian, and so is the quick add syntax.
+The interface and quick add work in English and Russian: the language follows Windows and can be changed in Settings → Language. Dates follow the region: in en-US the week starts on Sunday and times use AM/PM.
 
 Stack: Tauri 2 (Rust), React 19, TypeScript, Effector, CSS Modules. Dates use plain `Date` and `Intl`, no date libraries.
 
@@ -37,7 +37,15 @@ Settings (gear icon in the toolbar) → "Эффект стекла", on by defau
 
 ### Quick add
 
-A field under the "Создать" button and in the widget; `N` focuses it. Type the event on one line and a preview shows how it was understood.
+A field under the "Create" button and in the widget; `N` focuses it. Type the event on one line and a preview shows how it was understood. The field understands the interface language.
+
+English:
+
+- Date: `today`, `tonight`, `tomorrow`, `the day after tomorrow`, `fri`, `on Friday`, `next wed` (skips today), `Nov 5`, `5th of November`, `in 3 days`, `in 2 weeks`. No date means today, or tomorrow if the time has already passed.
+- Time: `7pm`, `7:30 am`, `19:00`, `at 7`, `noon`, `7-9pm`, `from 2 to 3:30pm`, `11am-1pm`, and `fri 18` (a number right after a day is an hour). `tonight at 8` means 20:00.
+- Duration: `50 min`, `2h`, `1.5 hours`, `half an hour`.
+
+Russian:
 
 - Date: `сегодня`, `завтра`, `послезавтра`, `пт`, `в пятницу`, `5 ноября`, `05.11`, `через 3 дня`. No date means today, or tomorrow if the time has already passed.
 - Time: `19:00`, `в 19`, `в 7 вечера`, `с 19 до 21`, `19-21`, and `пт 18` (a number right after a day is an hour).
@@ -45,7 +53,7 @@ A field under the "Создать" button and in the widget; `N` focuses it. Typ
 - `#работа` picks a calendar by the start of its name, `@Гдыня` sets the location (`@Офис_Гдыня` for a name with a space).
 - `Enter` creates the event, `Ctrl+Enter` opens the full form with the fields filled in.
 
-Example: `завтра 19:00 английский 50 мин #личное`.
+Examples: `tomorrow 7pm English class 50 min #personal`, `завтра 19:00 английский 50 мин #личное`.
 
 ### Reminders
 

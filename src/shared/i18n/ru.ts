@@ -82,6 +82,7 @@ export const ru = {
     widgetPlaceholder: "+ Новое событие",
     label: "Быстрое создание события",
     keys: "Enter — создать · Ctrl+Enter — подробнее",
+    nextDay: "(на следующий день)",
   },
   search: {
     placeholder: "Поиск (Ctrl+F)",

@@ -54,6 +54,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* AM/PM рядом с крупными часами */
+.period {
+  margin-left: 6px;
+  font-size: 20px;
+  font-weight: 400;
+}
+
 .date {
   margin: -4px 0 16px 2px;
   font-size: 15px;

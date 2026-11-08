@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { buildReminders } from "../../model/reminders";
 import { countdown } from "../../widget/countdown";
 import type { CalendarEvent } from "../api/types";
+import { parseQuick } from "../lib/quick";
 import { formatHour, formatTime, startOfWeek, toDateKey, viewTitle, weekdayLabels } from "../lib/date";
 import { en } from "./en";
 import { setLang, t } from "./index";
@@ -58,6 +59,16 @@ describe("English, US region", () => {
     const [r] = buildReminders([later], [], now);
     expect(plain(r.body)).toBe("In 1 h 30 min · 8:05 PM–9:00 PM");
     expect(r.privateTitle).toBe("Event");
+  });
+});
+
+describe("quick add with a Sunday-first region", () => {
+  it("still finds the right weekday", () => {
+    setLang("en", "en-US");
+    const wednesday = new Date(2026, 10, 4, 18, 0);
+    expect(parseQuick("fri gym", wednesday).start).toEqual(new Date(2026, 10, 6));
+    expect(parseQuick("sun brunch", wednesday).start).toEqual(new Date(2026, 10, 8));
+    expect(parseQuick("в пятницу ужин", wednesday, [], "ru").start).toEqual(new Date(2026, 10, 6));
   });
 });
 

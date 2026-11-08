@@ -85,6 +85,7 @@ export const en: Dict = {
     widgetPlaceholder: "+ New event",
     label: "Quick add an event",
     keys: "Enter to add · Ctrl+Enter for details",
+    nextDay: "(next day)",
   },
   search: {
     placeholder: "Search (Ctrl+F)",

@@ -137,6 +137,17 @@ export const formatFullDate = (d: Date): string =>
 /** «09:30» или «9:30 AM» по региону */
 export const formatTime = (d: Date): string =>
   fmt({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" })(d);
+/** Время для крупных часов: цифры отдельно от AM/PM, чтобы набрать их мельче */
+export const formatClock = (d: Date): { time: string; period: string } => {
+  const parts = formatter({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" }).formatToParts(d);
+  const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
+  const time = parts
+    .filter((p) => p.type !== "dayPeriod")
+    .map((p) => p.value)
+    .join("")
+    .trim();
+  return { time, period };
+};
 /** подпись часа в сетке: «09:00» или «9 AM» */
 export const formatHour = (h: number): string =>
   uses12h() ? fmt({ hour: "numeric" })(new Date(2000, 0, 1, h)) : `${pad(h)}:00`;

@@ -5,6 +5,7 @@ import { openMain, subscribe, inTauri } from "../shared/api/bus";
 import type { CalendarEvent } from "../shared/api/types";
 import {
   addDays,
+  formatClock,
   formatDayMonth,
   formatMonthYear,
   formatTime,
@@ -135,6 +136,7 @@ export const Widget = () => {
   ]);
   const writable = calendars.filter((c) => c.accessRole === "owner" || c.accessRole === "writer");
   const soon = countdown(allUpcoming, now);
+  const clock = formatClock(now);
 
   const days = monthGrid(month);
   const eventDays = new Set(
@@ -150,7 +152,8 @@ export const Widget = () => {
   return (
     <div className={s.card} ref={cardRef} onMouseDown={startDrag}>
       <button className={s.clock} onClick={() => openMain()} title={t.common.openCalendar}>
-        {formatTime(now)}
+        {clock.time}
+        {clock.period && <span className={s.period}>{clock.period}</span>}
       </button>
       <div className={s.date}>
         {formatWeekdayLong(now)}, {formatDayMonth(now)}

@@ -1,24 +1,30 @@
-// Разбор события из одной строки: «завтра 19:00 английский 50 мин #личное @Гдыня».
+// Разбор события из одной строки: «завтра 19:00 английский 50 мин #личное @Гдыня»
+// или по-английски «tomorrow 7pm English class 50 min #personal». Язык — как у интерфейса.
 // Распознанные куски вырезаются из строки, остаток становится названием.
-import { addDays, addMinutes, startOfDay, toDateKey, toTimeKey, weekdayIndex } from "./date";
+import { lang as uiLang, t, type Lang } from "../i18n";
+import { addDays, formatTime, formatWeekdayDayMonth, startOfDay, toDateKey, toTimeKey } from "./date";
+import {
+  L,
+  R,
+  assemble,
+  cleanTitle,
+  cutter,
+  nextWeekday,
+  re,
+  takeTags,
+  upcomingDate,
+  validTime,
+  type Cut,
+  type QuickCalendar,
+  type QuickResult,
+  type TimeRange,
+} from "./quick-core";
+import { parseQuickEn } from "./quick-en";
 
-export type QuickCalendar = { id: string; name: string };
-
-export type QuickResult = {
-  title: string;
-  start: Date;
-  end: Date;
-  allDay: boolean;
-  calendarId?: string;
-  location?: string;
-};
-
-// \b в JS не понимает кириллицу, поэтому границы слова — через юникод-классы
-const L = "(?<![\\p{L}\\d])";
-const R = "(?![\\p{L}\\d])";
-const re = (body: string) => new RegExp(`${L}${body}${R}`, "iu");
+export type { QuickCalendar, QuickResult } from "./quick-core";
 
 const MONTHS = ["янв", "фев", "мар", "апр", "ма[йя]", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+/** с понедельника */
 const WEEKDAYS = [
   "пн|пон(?:едельник)?",
   "вт|втор(?:ник)?",
@@ -29,26 +35,6 @@ const WEEKDAYS = [
   "вс|воскр(?:есенье)?",
 ];
 
-const DEFAULT_MINUTES = 60;
-
-type Cut = { text: string; take: (r: RegExp) => RegExpMatchArray | null };
-
-const cutter = (input: string): Cut => {
-  const state = { text: ` ${input} ` };
-  return {
-    get text() {
-      return state.text;
-    },
-    take(r: RegExp) {
-      const m = state.text.match(r);
-      if (m && m.index !== undefined) {
-        state.text = `${state.text.slice(0, m.index)} ${state.text.slice(m.index + m[0].length)}`;
-      }
-      return m;
-    },
-  };
-};
-
 const toHour = (h: number, part?: string): number => {
   if (!part) return h;
   const p = part.toLowerCase();
@@ -56,11 +42,6 @@ const toHour = (h: number, part?: string): number => {
   if (p.startsWith("ноч") && h === 12) return 0;
   return h;
 };
-
-const validTime = (h: number, m: number) => h >= 0 && h <= 23 && m >= 0 && m <= 59;
-
-const withTime = (day: Date, h: number, m: number) =>
-  new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
 
 const parseDate = (cut: Cut, now: Date): Date | null => {
   const today = startOfDay(now);
@@ -79,33 +60,24 @@ const parseDate = (cut: Cut, now: Date): Date | null => {
   const named = cut.take(re(`(\\d{1,2})\\s+(${MONTHS.join("|")})[\\p{L}]*(?:\\s+(\\d{4}))?`));
   if (named) {
     const month = MONTHS.findIndex((m) => new RegExp(`^${m}`, "iu").test(named[2]));
-    const explicitYear = named[3] ? Number(named[3]) : null;
-    const d = new Date(explicitYear ?? today.getFullYear(), month, Number(named[1]));
-    return !explicitYear && d < today ? new Date(d.getFullYear() + 1, month, d.getDate()) : d;
+    return upcomingDate(today, month, Number(named[1]), named[3] ? Number(named[3]) : null);
   }
 
   // «05.11», «5.11.2026» — дата, если месяц от 1 до 12; «в 10.30» — это время, не трогаем
   const dotted = cut.take(re("(?<!в\\s)(0?[1-9]|[12]\\d|3[01])\\.(0?[1-9]|1[0-2])(?:\\.(\\d{4}))?"));
   if (dotted) {
-    const [day, month] = [Number(dotted[1]), Number(dotted[2])];
-    const explicitYear = dotted[3] ? Number(dotted[3]) : null;
-    const d = new Date(explicitYear ?? today.getFullYear(), month - 1, day);
-    return !explicitYear && d < today ? new Date(d.getFullYear() + 1, month - 1, day) : d;
+    return upcomingDate(today, Number(dotted[2]) - 1, Number(dotted[1]), dotted[3] ? Number(dotted[3]) : null);
   }
 
   // «пт», «в пятницу» — ближайший такой день, включая сегодня
   for (let i = 0; i < WEEKDAYS.length; i++) {
-    if (cut.take(re(`(?:во?\\s+)?(?:${WEEKDAYS[i]})`))) {
-      return addDays(today, (i - weekdayIndex(today) + 7) % 7);
-    }
+    if (cut.take(re(`(?:во?\\s+)?(?:${WEEKDAYS[i]})`))) return nextWeekday(today, i);
   }
   return null;
 };
 
 const PART = "(утра|дня|вечера|ночи)";
 const CLOCK = "(\\d{1,2})(?:[:.](\\d{2}))?";
-
-type TimeRange = { h: number; m: number; endH?: number; endM?: number };
 
 const parseTime = (cut: Cut): TimeRange | null => {
   // «с 19 до 21», «19:00-20:30», «19–21»
@@ -140,21 +112,6 @@ const parseDuration = (cut: Cut): number | null => {
   return Math.round(d[2].toLowerCase().startsWith("ч") ? n * 60 : n);
 };
 
-const findCalendar = (tag: string, calendars: QuickCalendar[]): string | undefined => {
-  const t = tag.toLowerCase();
-  const byStart = calendars.find((c) => c.name.toLowerCase().startsWith(t));
-  return (byStart ?? calendars.find((c) => c.name.toLowerCase().includes(t)))?.id;
-};
-
-const cleanTitle = (text: string): string =>
-  text
-    .replace(/\s+/g, " ")
-    .trim()
-    // висящие предлоги по краям после вырезания даты и времени
-    .replace(/^(?:в|во|с|на|до)\s+/iu, "")
-    .replace(/\s+(?:в|во|с|на|до)$/iu, "")
-    .trim();
-
 // «пт 18 кино», «завтра 9 зарядка»: число сразу после дня — это час
 const DAY_WORDS = [
   "сегодня",
@@ -169,40 +126,21 @@ const BARE_HOUR = new RegExp(
   "iu",
 );
 
-export const parseQuick = (input: string, now: Date, calendars: QuickCalendar[] = []): QuickResult => {
+const parseQuickRu = (input: string, now: Date, calendars: QuickCalendar[]): QuickResult => {
   const cut = cutter(input.replace(BARE_HOUR, (_, day: string, hour: string) => `${day} в ${hour}`));
-
-  const tag = cut.take(/(?:^|\s)#(\S+)/u);
-  const calendarId = tag ? findCalendar(tag[1], calendars) : undefined;
-  const place = cut.take(/(?:^|\s)@(\S+)/u);
-  const location = place ? place[1].replace(/_/g, " ") : undefined;
-
+  const tags = takeTags(cut, calendars);
   const date = parseDate(cut, now);
   const time = parseTime(cut);
   const duration = parseDuration(cut);
-  const title = cleanTitle(cut.text);
-
-  if (!time) {
-    const day = date ?? startOfDay(now);
-    return { title, start: day, end: addDays(day, 1), allDay: true, calendarId, location };
-  }
-
-  let day = date ?? startOfDay(now);
-  let start = withTime(day, time.h, time.m);
-  // без даты и со временем, которое уже прошло, — значит завтра
-  if (!date && start < now) {
-    day = addDays(day, 1);
-    start = withTime(day, time.h, time.m);
-  }
-  let end =
-    time.endH !== undefined
-      ? withTime(day, time.endH, time.endM ?? 0)
-      : addMinutes(start, duration ?? DEFAULT_MINUTES);
-  // «23-1»: конец на следующий день
-  if (end <= start) end = addDays(end, 1);
-
-  return { title, start, end, allDay: false, calendarId, location };
+  return assemble({ title: cleanTitle(cut.text, "в|во|с|на|до"), date, time, duration, ...tags }, now);
 };
+
+export const parseQuick = (
+  input: string,
+  now: Date,
+  calendars: QuickCalendar[] = [],
+  language: Lang = uiLang,
+): QuickResult => (language === "en" ? parseQuickEn : parseQuickRu)(input, now, calendars);
 
 /** Черновик формы из разобранной строки */
 export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => ({
@@ -221,10 +159,8 @@ export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => ({
 
 /** «Чт, 5 ноября · 19:00–19:50» для подсказки под строкой */
 export const quickWhen = (r: QuickResult): string => {
-  const day = new Intl.DateTimeFormat("ru-RU", { weekday: "short", day: "numeric", month: "long" }).format(r.start);
-  const cap = day.charAt(0).toUpperCase() + day.slice(1);
-  if (r.allDay) return `${cap} · весь день`;
-  const t = (d: Date) => toTimeKey(d);
+  const day = formatWeekdayDayMonth(r.start);
+  if (r.allDay) return `${day} · ${t.common.allDayLower}`;
   const nextDay = startOfDay(r.end).getTime() !== startOfDay(r.start).getTime();
-  return `${cap} · ${t(r.start)}–${t(r.end)}${nextDay ? " (на следующий день)" : ""}`;
+  return `${day} · ${formatTime(r.start)}–${formatTime(r.end)}${nextDay ? ` ${t.quick.nextDay}` : ""}`;
 };
