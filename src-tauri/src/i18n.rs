@@ -9,10 +9,11 @@ use tauri::AppHandle;
 pub enum Lang {
     En,
     Ru,
+    Es,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -67,6 +68,21 @@ impl Lang {
                 },
                 signed_in: "Готово. Эту вкладку можно закрыть и вернуться в приложение.",
                 sign_in_failed: "Вход не выполнен. Вернись в приложение и попробуй ещё раз.",
+            },
+            Lang::Es => Texts {
+                code: "es",
+                hl: "es",
+                langid: 0x0a,
+                rtl: false,
+                tray: TrayText {
+                    open: "Abrir calendario",
+                    widget: "Widget de escritorio",
+                    on_top: "Widget siempre visible",
+                    autostart: "Iniciar con Windows",
+                    quit: "Salir",
+                },
+                signed_in: "Listo. Puedes cerrar esta pestaña y volver a la aplicación.",
+                sign_in_failed: "No se pudo iniciar sesión. Vuelve a la aplicación e inténtalo de nuevo.",
             },
         }
     }
