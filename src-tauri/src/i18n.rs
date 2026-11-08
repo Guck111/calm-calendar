@@ -14,10 +14,11 @@ pub enum Lang {
     Pt,
     De,
     Ja,
+    Zh,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -147,6 +148,21 @@ impl Lang {
                 },
                 signed_in: "完了しました。このタブを閉じてアプリに戻ってください。",
                 sign_in_failed: "ログインできませんでした。アプリに戻ってもう一度お試しください。",
+            },
+            Lang::Zh => Texts {
+                code: "zh",
+                hl: "zh-CN",
+                langid: 0x04,
+                rtl: false,
+                tray: TrayText {
+                    open: "打开日历",
+                    widget: "桌面小组件",
+                    on_top: "小组件始终置顶",
+                    autostart: "登录 Windows 时启动",
+                    quit: "退出",
+                },
+                signed_in: "完成。你可以关闭此标签页并返回应用。",
+                sign_in_failed: "登录失败。请返回应用后重试。",
             },
         }
     }

@@ -72,7 +72,7 @@ const kanjiNumber = (s: string): number => {
 // «星期一» и «一个人» не трогаем
 const KANJI_NUMBER = new RegExp(
   "([〇零一二两兩三四五六七八九]?十[一二三四五六七八九]?|[〇零一二两兩三四五六七八九]{1,2})" +
-    "(?=\\s*(?:点|點|時|时|分|月|日|号|號|天|周|週|年|半|个?小时|個?小時|个半|個半|星期|礼拜|禮拜))",
+    "(?=\\s*(?:点|點|時|时|分|月|日|号|號|天|周|週|年|半|个?小时|個?小時|个?钟头|個?鐘頭|个半|個半|个?星期|個?星期|个?礼拜|個?禮拜))",
   "gu",
 );
 
@@ -167,9 +167,10 @@ export const makeCjkParser = (v: CjkVocab) => {
   };
 
   const parseDuration = (cut: Cut): number | null => {
-    if (cut.take(rx(v.halfHour))) return 30;
+    // «1个半小时» раньше «半小时», иначе от него останется «1个»
     const hh = cut.take(rx(v.hourAndHalf));
     if (hh) return Number(hh[1]) * 60 + 30;
+    if (cut.take(rx(v.halfHour))) return 30;
     const d = cut.take(rx(`(\\d+(?:[.,]\\d+)?)\\s*(?:(${v.durMinute})|(${v.durHour}))`));
     if (!d) return null;
     const n = Number(d[1].replace(",", "."));
