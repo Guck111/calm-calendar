@@ -59,4 +59,4 @@ If this policy changes, the new version will be published at this address with a
 
 ## Contact
 
-Questions about this policy or your data: [support email].
+Questions about this policy or your data: [support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk).

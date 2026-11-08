@@ -36,4 +36,4 @@ Calm Calendar — программа для работы с вашим Google К
 
 ## Контакты
 
-Вопросы об условиях: [почта поддержки].
+Вопросы об условиях: [support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk).

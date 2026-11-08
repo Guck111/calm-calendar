@@ -27,7 +27,7 @@ Screenshots are taken at 2× from the real interface with English sample data (n
 | `terms-of-use.md` | `terms.html` — optional "Terms of service link" in Google Branding |
 | `privacy-policy.ru.md`, `terms-of-use.ru.md` | Russian versions, if the site gets a Russian page |
 
-Before publishing, replace `[support email]` with the real address.
+Before publishing, replace `[support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk)` with the real address.
 
 ## Requirements the site must meet
 

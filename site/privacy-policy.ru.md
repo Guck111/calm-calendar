@@ -59,4 +59,4 @@ Calm Calendar не предназначен для детей младше 13 л
 
 ## Контакты
 
-Вопросы о политике и ваших данных: [почта поддержки].
+Вопросы о политике и ваших данных: [support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk).

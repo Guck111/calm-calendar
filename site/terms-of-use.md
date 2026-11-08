@@ -36,4 +36,4 @@ We may update these terms. The new version will be published at this address wit
 
 ## Contact
 
-Questions about these terms: [support email].
+Questions about these terms: [support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk).
