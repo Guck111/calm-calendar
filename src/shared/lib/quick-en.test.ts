@@ -57,6 +57,8 @@ describe("quick add in English", () => {
 
   it("leaves numbers inside the title alone", () => {
     expect(en("buy 2 tickets")).toMatchObject({ title: "buy 2 tickets", allDay: true });
+    // word boundaries hold for every alternative, not only the outer ones
+    expect(en("tomorrows plan")).toMatchObject({ title: "tomorrows plan", start: at(4, 0) });
     expect(en("tomorrow 2h cleaning")).toMatchObject({ title: "cleaning", allDay: true });
   });
 });

@@ -20,7 +20,8 @@ export type TimeRange = { h: number; m: number; endH?: number; endM?: number };
 // \p{M} — огласовки хинди и бенгали: они часть слова, а не граница.
 export const L = "(?<![\\p{L}\\p{M}\\d])";
 export const R = "(?![\\p{L}\\p{M}\\d])";
-export const re = (body: string) => new RegExp(`${L}${body}${R}`, "iu");
+// группа нужна, чтобы границы относились ко всем вариантам «завтра|tmrw», а не только к крайним
+export const re = (body: string) => new RegExp(`${L}(?:${body})${R}`, "iu");
 
 /** Нули цифр, которые набирают вместо 0–9: арабские, персидские, деванагари, бенгальские, полноширинные */
 const DIGIT_ZEROS = [0x660, 0x6f0, 0x966, 0x9e6, 0xff10];
