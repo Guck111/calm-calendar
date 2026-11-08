@@ -248,7 +248,9 @@ impl Auth {
             .append_pair("code_challenge_method", "S256")
             .append_pair("state", &state)
             .append_pair("access_type", "offline")
-            .append_pair("prompt", "consent");
+            .append_pair("prompt", "consent")
+            // экран согласия Google на языке интерфейса, а не браузера
+            .append_pair("hl", i18n::current(app).code());
 
         app.opener()
             .open_url(auth_url.as_str(), None::<&str>)
