@@ -38,6 +38,9 @@
 :root:lang(zh) {
   font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", system-ui, sans-serif;
 }
+:root:lang(hi) {
+  font-family: "Segoe UI Variable Text", "Nirmala UI", system-ui, sans-serif;
+}
 
 /* тема: data-theme="light" | "dark" на <html>, без атрибута — как в системе */
 @media (prefers-color-scheme: dark) {

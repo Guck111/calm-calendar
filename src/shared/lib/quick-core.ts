@@ -37,29 +37,47 @@ const PUNCTUATION: Record<string, string> = {
   "　": " ",
 };
 
-/** Цифры любого письма — в 0–9, полноширинные знаки — в обычные: дальше разбор видит одно и то же */
+/** Цифры любого письма — в 0–9, полноширинные знаки — в обычные: дальше разбор видит одно и то же.
+ *  NFC: «য়» и «ड़» набираются и одним знаком, и двумя — шаблоны видят одну форму */
 export const normalizeInput = (input: string): string =>
-  input.replace(/[\p{Nd}：－～〜،٫＃＠　]/gu, (ch) => {
+  input.normalize("NFC").replace(/[\p{Nd}：－～〜،٫＃＠　]/gu, (ch) => {
     if (PUNCTUATION[ch]) return PUNCTUATION[ch];
     const code = ch.charCodeAt(0);
     const zero = DIGIT_ZEROS.find((z) => code >= z && code <= z + 9);
     return zero === undefined ? ch : String(code - zero);
   });
 
-export type Cut = { text: string; take: (r: RegExp) => RegExpMatchArray | null };
+export type Cut = {
+  text: string;
+  take: (r: RegExp) => RegExpMatchArray | null;
+  /** первое совпадение, которое подошло по accept: «2 से 3 लोग» без «बजे» — не время */
+  takeWhere: (r: RegExp, accept: (m: RegExpMatchArray) => boolean) => RegExpMatchArray | null;
+};
 
 export const cutter = (input: string): Cut => {
   const state = { text: ` ${input} ` };
+  const remove = (m: RegExpMatchArray) => {
+    const at = m.index ?? 0;
+    state.text = `${state.text.slice(0, at)} ${state.text.slice(at + m[0].length)}`;
+  };
   return {
     get text() {
       return state.text;
     },
     take(r: RegExp) {
       const m = state.text.match(r);
-      if (m && m.index !== undefined) {
-        state.text = `${state.text.slice(0, m.index)} ${state.text.slice(m.index + m[0].length)}`;
-      }
+      if (m && m.index !== undefined) remove(m);
       return m;
+    },
+    takeWhere(r: RegExp, accept: (m: RegExpMatchArray) => boolean) {
+      const global = new RegExp(r.source, r.flags.includes("g") ? r.flags : `${r.flags}g`);
+      for (const m of state.text.matchAll(global)) {
+        if (accept(m)) {
+          remove(m);
+          return m;
+        }
+      }
+      return null;
     },
   };
 };

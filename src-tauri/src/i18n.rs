@@ -15,10 +15,11 @@ pub enum Lang {
     De,
     Ja,
     Zh,
+    Hi,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -163,6 +164,21 @@ impl Lang {
                 },
                 signed_in: "完成。你可以关闭此标签页并返回应用。",
                 sign_in_failed: "登录失败。请返回应用后重试。",
+            },
+            Lang::Hi => Texts {
+                code: "hi",
+                hl: "hi",
+                langid: 0x39,
+                rtl: false,
+                tray: TrayText {
+                    open: "कैलेंडर खोलें",
+                    widget: "डेस्कटॉप विजेट",
+                    on_top: "विजेट हमेशा ऊपर",
+                    autostart: "Windows में साइन इन होने पर शुरू करें",
+                    quit: "बंद करें",
+                },
+                signed_in: "हो गया। यह टैब बंद करके ऐप पर लौटें।",
+                sign_in_failed: "साइन इन नहीं हो सका। ऐप पर लौटकर फिर से कोशिश करें।",
             },
         }
     }
