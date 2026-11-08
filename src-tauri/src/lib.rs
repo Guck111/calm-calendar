@@ -1,3 +1,4 @@
+mod autostart;
 mod config;
 mod desktop;
 mod error;

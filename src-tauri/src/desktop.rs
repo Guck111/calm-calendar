@@ -1,13 +1,13 @@
 //! Окна, значок в трее и автозапуск.
 //! Главное окно при закрытии прячется, приложение продолжает жить в трее и в виджете.
 
+use crate::autostart;
 use crate::config::{self, WidgetSettings};
 use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::window::{Color, Effect, EffectsBuilder};
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
-use tauri_plugin_autostart::ManagerExt;
 
 pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
@@ -155,7 +155,7 @@ fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
 fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
 
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
-    let hidden = std::env::args().any(|a| a == HIDDEN_ARG);
+    let hidden = std::env::args().any(|a| a == HIDDEN_ARG) || autostart::launched_at_startup();
     if !hidden {
         show_main(app, None);
     }
@@ -166,13 +166,13 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
 }
 
 fn build_tray(app: &AppHandle, widget: WidgetSettings) -> tauri::Result<()> {
-    let autostart = app.autolaunch().is_enabled().unwrap_or(false);
+    let launch_on_start = autostart::is_enabled(app);
 
     let open = MenuItem::with_id(app, "open", "Открыть календарь", true, None::<&str>)?;
     let show_widget =
         CheckMenuItem::with_id(app, "widget", "Виджет на рабочем столе", true, widget.visible, None::<&str>)?;
     let on_top = CheckMenuItem::with_id(app, "on_top", "Виджет поверх окон", true, widget.on_top, None::<&str>)?;
-    let launch = CheckMenuItem::with_id(app, "autostart", "Запускать при входе в Windows", true, autostart, None::<&str>)?;
+    let launch = CheckMenuItem::with_id(app, "autostart", "Запускать при входе в Windows", true, launch_on_start, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Выход", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let separator2 = PredefinedMenuItem::separator(app)?;
@@ -198,12 +198,11 @@ fn build_tray(app: &AppHandle, widget: WidgetSettings) -> tauri::Result<()> {
                 apply_widget(app, settings);
             }
             "autostart" => {
-                let manager = app.autolaunch();
                 let want = launch_c.is_checked().unwrap_or(false);
-                let result = if want { manager.enable() } else { manager.disable() };
-                if result.is_err() {
-                    // не получилось — возвращаем галочку к реальному состоянию
-                    let _ = launch_c.set_checked(manager.is_enabled().unwrap_or(false));
+                // не получилось (например, автозапуск запрещён в диспетчере задач) — галочка по факту
+                let actual = autostart::set_enabled(app, want);
+                if actual != want {
+                    let _ = launch_c.set_checked(actual);
                 }
             }
             "quit" => app.exit(0),

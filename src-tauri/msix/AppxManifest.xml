@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Шаблон манифеста MSIX. Значения в {{...}} подставляет scripts/build-msix.ps1.
+  Для Store: Name, Publisher и PublisherDisplayName берутся из Partner Center
+  (Product identity), иначе пакет не примут.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop rescap">
+
+  <Identity
+    Name="{{IDENTITY_NAME}}"
+    Publisher="{{PUBLISHER}}"
+    Version="{{VERSION}}"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Calm Calendar</DisplayName>
+    <PublisherDisplayName>{{PUBLISHER_DISPLAY_NAME}}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <!-- 1809: первая версия, где у MSIX есть всё нужное для настольных приложений -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <!-- Id совпадает с identifier из tauri.conf.json: под ним плагин уведомлений
+         отправляет их (PackageFamilyName!identifier), иначе Windows не свяжет уведомление с приложением -->
+    <Application Id="com.arseni.calmcalendar" Executable="calm-calendar.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Calm Calendar"
+        Description="Ad-free calendar for Windows with Google Calendar"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <!-- автозапуск для упакованного приложения: раздел Run в реестре внутри MSIX не работает -->
+        <desktop:Extension Category="windows.startupTask" Executable="calm-calendar.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="CalmCalendarStartup" Enabled="false" DisplayName="Calm Calendar" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>
