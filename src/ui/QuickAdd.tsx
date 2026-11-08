@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState, type KeyboardEvent } from "react";
+import { t } from "../shared/i18n";
 import type { EventDraft } from "../shared/api/types";
 import { parseQuick, quickToDraft, quickWhen, type QuickCalendar } from "../shared/lib/quick";
 import { cx } from "./Button";
@@ -15,7 +16,6 @@ type Props = {
 
 export type QuickAddHandle = { focus: () => void };
 
-const PLACEHOLDER = "завтра 19:00 английский 50 мин";
 
 export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate, onExpand, variant = "main" }, ref) => {
   const [text, setText] = useState("");
@@ -38,11 +38,11 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
       return;
     }
     if (!result.title) {
-      setError("Добавь название");
+      setError(t.errors.titleRequired);
       return;
     }
     if (!fallback) {
-      setError("Нет календаря, куда можно записать событие");
+      setError(t.errors.noWritableCalendar);
       return;
     }
     setBusy(true);
@@ -51,7 +51,7 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
       await onCreate(draft);
       setText("");
     } catch (e) {
-      setError(e && typeof e === "object" && "message" in e ? String(e.message) : "Не удалось создать событие");
+      setError(e && typeof e === "object" && "message" in e ? String(e.message) : t.errors.createFailed);
     } finally {
       setBusy(false);
     }
@@ -80,10 +80,10 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
           setError(null);
         }}
         onKeyDown={onKeyDown}
-        placeholder={variant === "widget" ? "+ Новое событие" : `Например: ${PLACEHOLDER}`}
+        placeholder={variant === "widget" ? t.quick.widgetPlaceholder : t.quick.placeholder(t.quick.example)}
         disabled={busy}
         spellCheck={false}
-        aria-label="Быстрое создание события"
+        aria-label={t.quick.label}
       />
       {result && (
         <div className={s.preview} aria-live="polite">
@@ -91,11 +91,11 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
             <span className={s.error}>{error}</span>
           ) : (
             <>
-              <span className={s.title}>{result.title || "без названия"}</span>
+              <span className={s.title}>{result.title || t.common.untitledShort}</span>
               <span>{quickWhen(result)}</span>
               {calendarName && <span>{calendarName}</span>}
               {result.location && <span>{result.location}</span>}
-              <span className={s.keys}>Enter — создать · Ctrl+Enter — подробнее</span>
+              <span className={s.keys}>{t.quick.keys}</span>
             </>
           )}
         </div>

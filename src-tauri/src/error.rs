@@ -2,19 +2,20 @@ use serde::{Serialize, Serializer, ser::SerializeStruct};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("Не настроен клиент Google OAuth")]
+    #[error("Google OAuth client is not configured")]
     NotConfigured,
-    #[error("Нужно войти в Google")]
+    #[error("Not signed in to Google")]
     NotSignedIn,
-    #[error("Вход отменён: {0}")]
+    #[error("Sign-in denied: {0}")]
     Denied(String),
-    #[error("Время ожидания входа истекло")]
+    #[error("Sign-in timed out")]
     Timeout,
-    #[error("Не выданы права на календарь. Войди заново и отметь все галочки")]
+    #[error("Calendar scopes were not granted")]
     MissingScope,
-    #[error("Google API {status}: {message}")]
+    // интерфейс разбирает «403: текст» и пишет своё сообщение с кодом
+    #[error("{status}: {message}")]
     Google { status: u16, message: String },
-    #[error("Сеть: {0}")]
+    #[error("Network: {0}")]
     Network(String),
     #[error("{0}")]
     Other(String),
@@ -59,7 +60,7 @@ impl From<std::io::Error> for Error {
 
 impl From<keyring::Error> for Error {
     fn from(e: keyring::Error) -> Self {
-        Error::Other(format!("Хранилище паролей: {e}"))
+        Error::Other(format!("Credential store: {e}"))
     }
 }
 

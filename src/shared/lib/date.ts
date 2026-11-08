@@ -1,10 +1,11 @@
-// Работа с датами на нативном Date и Intl, без библиотек. Неделя начинается с понедельника.
+// Работа с датами на нативном Date и Intl, без библиотек.
+// Язык и регион (первый день недели, 12 или 24 часа) берутся из i18n.
+import { locale, uses12h, weekStart } from "../i18n";
 
 export type ViewMode = "month" | "week" | "day";
 
 export type DateRange = { start: Date; end: Date };
 
-export const LOCALE = "ru-RU";
 export const MINUTES_IN_DAY = 24 * 60;
 
 export const startOfDay = (d: Date): Date =>
@@ -31,7 +32,8 @@ export const addMonths = (d: Date, n: number): Date => {
   return new Date(target.getFullYear(), target.getMonth(), Math.min(d.getDate(), lastDay));
 };
 
-export const weekdayIndex = (d: Date): number => (d.getDay() + 6) % 7;
+/** номер дня в неделе с учётом первого дня недели региона: 0 — первый столбец */
+export const weekdayIndex = (d: Date): number => (d.getDay() - weekStart() + 7) % 7;
 
 export const startOfWeek = (d: Date): Date => addDays(startOfDay(d), -weekdayIndex(d));
 
@@ -108,33 +110,60 @@ export const shiftCursor = (view: ViewMode, cursor: Date, step: 1 | -1): Date =>
 };
 
 const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+/** «ноябрь 2026 г.» → «ноябрь 2026» */
+const dropYearSuffix = (s: string): string => s.replace(/\s*г\.$/, "");
 
-const fmt = (options: Intl.DateTimeFormatOptions) => {
-  const f = new Intl.DateTimeFormat(LOCALE, options);
-  return (d: Date) => f.format(d);
+// форматтеры создаём лениво и запоминаем для текущего языка
+const cache = new Map<string, Intl.DateTimeFormat>();
+const formatter = (options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat => {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let f = cache.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, options);
+    cache.set(key, f);
+  }
+  return f;
 };
+const fmt = (options: Intl.DateTimeFormatOptions) => (d: Date) => formatter(options).format(d);
 
 export const formatMonthYear = (d: Date): string =>
-  capitalize(fmt({ month: "long", year: "numeric" })(d).replace(/\s*г\.$/, ""));
+  capitalize(dropYearSuffix(fmt({ month: "long", year: "numeric" })(d)));
 export const formatMonthShort = fmt({ month: "short" });
 export const formatWeekdayShort = fmt({ weekday: "short" });
 export const formatWeekdayLong = (d: Date): string => capitalize(fmt({ weekday: "long" })(d));
 export const formatDayMonth = fmt({ day: "numeric", month: "long" });
 export const formatFullDate = (d: Date): string =>
-  capitalize(fmt({ weekday: "long", day: "numeric", month: "long", year: "numeric" })(d).replace(/\s*г\.$/, ""));
-export const formatTime = fmt({ hour: "2-digit", minute: "2-digit" });
+  capitalize(dropYearSuffix(fmt({ weekday: "long", day: "numeric", month: "long", year: "numeric" })(d)));
+/** «09:30» или «9:30 AM» по региону */
+export const formatTime = (d: Date): string =>
+  fmt({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" })(d);
+/** подпись часа в сетке: «09:00» или «9 AM» */
+export const formatHour = (h: number): string =>
+  uses12h() ? fmt({ hour: "numeric" })(new Date(2000, 0, 1, h)) : `${pad(h)}:00`;
+/** «Чт, 5 нояб.» для дат этого года и «5 нояб. 2027 г.» для других */
+export const formatShortDate = (d: Date, now = new Date()): string =>
+  dropYearSuffix(
+    d.getFullYear() === now.getFullYear()
+      ? fmt({ weekday: "short", day: "numeric", month: "short" })(d)
+      : fmt({ day: "numeric", month: "short", year: "numeric" })(d),
+  );
+/** «Чт, 5 ноября» */
+export const formatWeekdayDayMonth = (d: Date): string =>
+  capitalize(fmt({ weekday: "short", day: "numeric", month: "long" })(d));
+
+/** Подписи дней недели с первого дня недели региона: «Пн», «Вт»… или «S», «M»… в мини-месяце */
+export const weekdayLabels = (style: "short" | "narrow" = "short"): string[] => {
+  const ref = startOfWeek(new Date(2026, 0, 7));
+  const format = fmt({ weekday: locale.startsWith("ru") ? "short" : style });
+  return Array.from({ length: 7 }, (_, i) => capitalize(format(addDays(ref, i))));
+};
 
 export const viewTitle = (view: ViewMode, cursor: Date): string => {
   if (view === "month") return formatMonthYear(cursor);
   if (view === "day") return formatFullDate(cursor);
   const days = weekDays(cursor);
-  const first = days[0];
-  const last = days[6];
-  if (isSameMonth(first, last)) {
-    return `${first.getDate()}–${last.getDate()} ${formatDayMonth(last).split(" ")[1]} ${last.getFullYear()}`;
-  }
-  const sameYear = first.getFullYear() === last.getFullYear();
-  return `${formatDayMonth(first)}${sameYear ? "" : ` ${first.getFullYear()}`} – ${formatDayMonth(last)} ${last.getFullYear()}`;
+  // «2–8 ноября 2026», «November 2 – 8, 2026»: диапазон по правилам языка
+  return dropYearSuffix(formatter({ day: "numeric", month: "long", year: "numeric" }).formatRange(days[0], days[6]));
 };
 
 export const localTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;

@@ -3,6 +3,8 @@
 
 use crate::autostart;
 use crate::config::{self, WidgetSettings};
+use crate::i18n;
+use std::sync::Mutex;
 use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -11,6 +13,7 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 
 pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
+const TRAY: &str = "main";
 /// с этим флагом приложение запускается при входе в Windows: без главного окна
 pub const HIDDEN_ARG: &str = "--hidden";
 
@@ -162,52 +165,78 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let widget = config::load_widget(app);
     apply_widget(app, widget);
     apply_glass(app, config::load_settings(app).glass);
-    build_tray(app, widget)
+    build_tray(app)
 }
 
-fn build_tray(app: &AppHandle, widget: WidgetSettings) -> tauri::Result<()> {
-    let launch_on_start = autostart::is_enabled(app);
+/// Пункты меню трея с галочками. Обработчик читает их отсюда, потому что при смене языка
+/// меню пересоздаётся целиком.
+#[derive(Default)]
+pub struct TrayItems(Mutex<Option<CheckItems>>);
 
-    let open = MenuItem::with_id(app, "open", "Открыть календарь", true, None::<&str>)?;
-    let show_widget =
-        CheckMenuItem::with_id(app, "widget", "Виджет на рабочем столе", true, widget.visible, None::<&str>)?;
-    let on_top = CheckMenuItem::with_id(app, "on_top", "Виджет поверх окон", true, widget.on_top, None::<&str>)?;
-    let launch = CheckMenuItem::with_id(app, "autostart", "Запускать при входе в Windows", true, launch_on_start, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Выход", true, None::<&str>)?;
+#[derive(Clone)]
+struct CheckItems {
+    widget: CheckMenuItem<Wry>,
+    on_top: CheckMenuItem<Wry>,
+    launch: CheckMenuItem<Wry>,
+}
+
+fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
+    let text = i18n::tray(i18n::current(app));
+    let widget = config::load_widget(app);
+    let open = MenuItem::with_id(app, "open", text.open, true, None::<&str>)?;
+    let show_widget = CheckMenuItem::with_id(app, "widget", text.widget, true, widget.visible, None::<&str>)?;
+    let on_top = CheckMenuItem::with_id(app, "on_top", text.on_top, true, widget.on_top, None::<&str>)?;
+    let launch =
+        CheckMenuItem::with_id(app, "autostart", text.autostart, true, autostart::is_enabled(app), None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", text.quit, true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let separator2 = PredefinedMenuItem::separator(app)?;
-    let menu: Menu<Wry> = Menu::with_items(
-        app,
-        &[&open, &separator, &show_widget, &on_top, &launch, &separator2, &quit],
-    )?;
+    let menu = Menu::with_items(app, &[&open, &separator, &show_widget, &on_top, &launch, &separator2, &quit])?;
+    if let Ok(mut items) = app.state::<TrayItems>().0.lock() {
+        *items = Some(CheckItems { widget: show_widget, on_top, launch });
+    }
+    Ok(menu)
+}
 
-    let (show_widget_c, on_top_c, launch_c) = (show_widget.clone(), on_top.clone(), launch.clone());
+/// Меню трея заново: после смены языка
+pub fn rebuild_tray_menu(app: &AppHandle) {
+    if let (Some(tray), Ok(menu)) = (app.tray_by_id(TRAY), build_menu(app)) {
+        let _ = tray.set_menu(Some(menu));
+    }
+}
 
-    let mut tray = TrayIconBuilder::with_id("main")
+fn on_menu(app: &AppHandle, id: &str) {
+    let items = app.state::<TrayItems>().0.lock().ok().and_then(|i| i.clone());
+    match (id, items) {
+        ("open", _) => show_main(app, None),
+        ("quit", _) => app.exit(0),
+        ("widget" | "on_top", Some(items)) => {
+            let settings = WidgetSettings {
+                visible: items.widget.is_checked().unwrap_or(true),
+                on_top: items.on_top.is_checked().unwrap_or(false),
+            };
+            config::save_widget(app, settings);
+            apply_widget(app, settings);
+        }
+        ("autostart", Some(items)) => {
+            let want = items.launch.is_checked().unwrap_or(false);
+            // не получилось (например, автозапуск запрещён в диспетчере задач) — галочка по факту
+            let actual = autostart::set_enabled(app, want);
+            if actual != want {
+                let _ = items.launch.set_checked(actual);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn build_tray(app: &AppHandle) -> tauri::Result<()> {
+    let menu = build_menu(app)?;
+    let mut tray = TrayIconBuilder::with_id(TRAY)
         .tooltip("Calm Calendar")
         .menu(&menu)
         .show_menu_on_left_click(false)
-        .on_menu_event(move |app, event| match event.id().as_ref() {
-            "open" => show_main(app, None),
-            "widget" | "on_top" => {
-                let settings = WidgetSettings {
-                    visible: show_widget_c.is_checked().unwrap_or(true),
-                    on_top: on_top_c.is_checked().unwrap_or(false),
-                };
-                config::save_widget(app, settings);
-                apply_widget(app, settings);
-            }
-            "autostart" => {
-                let want = launch_c.is_checked().unwrap_or(false);
-                // не получилось (например, автозапуск запрещён в диспетчере задач) — галочка по факту
-                let actual = autostart::set_enabled(app, want);
-                if actual != want {
-                    let _ = launch_c.set_checked(actual);
-                }
-            }
-            "quit" => app.exit(0),
-            _ => {}
-        })
+        .on_menu_event(|app, event| on_menu(app, event.id().as_ref()))
         .on_tray_icon_event(|tray, event| {
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,

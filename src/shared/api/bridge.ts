@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { t } from "../i18n";
 import type { AppError, AuthStatus } from "./types";
 import { inTauri } from "./bus";
 
@@ -7,6 +8,21 @@ export const isAppError = (e: unknown): e is AppError =>
 
 export const toAppError = (e: unknown): AppError =>
   isAppError(e) ? e : { kind: "other", message: e instanceof Error ? e.message : String(e) };
+
+/** Текст ошибки на языке интерфейса. Rust присылает вид ошибки и технические подробности по-английски */
+const localize = (e: AppError): AppError => {
+  const text: Partial<Record<AppError["kind"], string>> = {
+    not_configured: t.errors.notConfigured,
+    not_signed_in: t.errors.notSignedIn,
+    denied: t.errors.denied,
+    timeout: t.errors.timeout,
+    missing_scope: t.errors.missingScope,
+    network: t.errors.network,
+  };
+  // ошибка Google приходит как «403: Rate limit exceeded»
+  const google = e.kind === "google" ? /^(\d{3}): (.*)$/s.exec(e.message) : null;
+  return { ...e, message: text[e.kind] ?? (google ? `${t.errors.google(Number(google[1]))}. ${google[2]}` : e.message) };
+};
 
 
 // в браузере без Tauri (npm run dev) работаем на подставных данных
@@ -21,7 +37,7 @@ const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
   try {
     return await run<T>(cmd, args);
   } catch (e) {
-    throw toAppError(e);
+    throw localize(toAppError(e));
   }
 };
 

@@ -1,5 +1,6 @@
 // Google Calendar API v3: календари и события
 import { googleRequest } from "./bridge";
+import { locale, t } from "../i18n";
 import type { AccessRole, Calendar, CalendarEvent, EventDraft } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
 
@@ -72,7 +73,7 @@ export const listCalendars = async (): Promise<Calendar[]> => {
   return raw
     .filter((c) => !c.hidden)
     .map(toCalendar)
-    .sort((a, b) => roleOrder(a) - roleOrder(b) || a.name.localeCompare(b.name, "ru"));
+    .sort((a, b) => roleOrder(a) - roleOrder(b) || a.name.localeCompare(b.name, locale));
 };
 
 const parseTime = (t: RawTime | undefined): { date: Date; allDay: boolean } | null => {
@@ -91,7 +92,7 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEven
     key: `${calendarId}\u0000${raw.id}`,
     id: raw.id,
     calendarId,
-    title: raw.summary?.trim() || "(без названия)",
+    title: raw.summary?.trim() || t.common.untitled,
     start: start.date,
     end: end && end.date > start.date ? end.date : fallbackEnd,
     allDay: start.allDay,

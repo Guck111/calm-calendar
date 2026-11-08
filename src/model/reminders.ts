@@ -1,5 +1,6 @@
 // Расписание напоминаний: события на двое суток вперёд → моменты показа → Rust.
 import { invoke } from "@tauri-apps/api/core";
+import { t } from "../shared/i18n";
 import { createEffect, sample } from "effector";
 import { inTauri } from "../shared/api/bus";
 import { listEvents } from "../shared/api/calendar";
@@ -11,16 +12,12 @@ import { reloadRequested } from "./events";
 
 const WINDOW_MS = 48 * 60 * 60_000;
 
-export type Reminder = { key: string; title: string; body: string; privateBody: string; at: number };
+export type Reminder = { key: string; title: string; body: string; privateTitle: string; privateBody: string; at: number };
 
 const before = (minutes: number): string => {
-  if (minutes === 0) return "Начинается сейчас";
-  if (minutes < 60) return `Через ${minutes} мин`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h < 24) return m ? `Через ${h} ч ${m} мин` : `Через ${h} ч`;
-  const d = Math.round(minutes / 1440);
-  return `Через ${d} дн.`;
+  if (minutes === 0) return t.reminders.startsNow;
+  if (minutes < 24 * 60) return t.reminders.in(t.time.span(Math.floor(minutes / 60), minutes % 60));
+  return t.reminders.inDays(Math.round(minutes / 1440));
 };
 
 /** Чистая функция: из событий и настроек календарей — список напоминаний */
@@ -41,12 +38,13 @@ export const buildReminders = (
     return [...new Set(minutes)].flatMap((m) => {
       const at = e.start.getTime() - m * 60_000;
       if (at < now.getTime() - 60_000 || at > now.getTime() + WINDOW_MS) return [];
-      const when = e.allDay ? "Весь день" : `${formatTime(e.start)}–${formatTime(e.end)}`;
+      const when = e.allDay ? t.common.allDay : `${formatTime(e.start)}–${formatTime(e.end)}`;
       return [
         {
           key: `${e.key}\u0000${e.start.getTime()}\u0000${m}`,
           title: e.title,
           body: `${before(m)} · ${when}${e.location ? ` · ${e.location}` : ""}`,
+          privateTitle: t.reminders.privateTitle,
           privateBody: `${before(m)} · ${when}`,
           at,
         },
@@ -62,7 +60,7 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   const items = buildReminders(events, calendars, now);
   // в Rust поля называются по-другому (snake_case)
-  const payload = items.map(({ privateBody, ...r }) => ({ ...r, private_body: privateBody }));
+  const payload = items.map(({ privateTitle, privateBody, ...r }) => ({ ...r, private_title: privateTitle, private_body: privateBody }));
   if (inTauri) await invoke("schedule_reminders", { items: payload });
   return items.length;
 });

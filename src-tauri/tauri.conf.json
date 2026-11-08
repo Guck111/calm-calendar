@@ -25,7 +25,7 @@
       },
       {
         "label": "widget",
-        "title": "Calm Calendar — виджет",
+        "title": "Calm Calendar widget",
         "url": "index.html?window=widget",
         "width": 300,
         "height": 460,
@@ -52,8 +52,8 @@
       "msi"
     ],
     "publisher": "Arseni",
-    "shortDescription": "Календарь без рекламы",
-    "longDescription": "Календарь для Windows: Google Календарь, виды на месяц, неделю и день, создание и правка событий.",
+    "shortDescription": "Ad-free calendar for Windows",
+    "longDescription": "Ad-free calendar for Windows with Google Calendar: day, week and month views, a desktop widget, quick add and reminders.",
     "category": "Productivity",
     "icon": [
       "icons/32x32.png",

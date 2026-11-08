@@ -18,12 +18,12 @@ fn parse_method(method: &str) -> Result<Method> {
         "PATCH" => Ok(Method::PATCH),
         "PUT" => Ok(Method::PUT),
         "DELETE" => Ok(Method::DELETE),
-        other => Err(Error::Other(format!("Метод {other} не поддерживается"))),
+        other => Err(Error::Other(format!("Method {other} is not supported"))),
     }
 }
 
 fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
-    let rejected = || Error::Other("Недопустимый путь API".into());
+    let rejected = || Error::Other("API path is not allowed".into());
     // идентификаторы календарей и событий кодируются целиком, поэтому точек-сегментов,
     // обратных слешей, «?» и «#» в пути быть не может — ни открытых, ни закодированных
     let lower = path.to_ascii_lowercase();
@@ -59,7 +59,7 @@ async fn google_error(resp: reqwest::Response) -> Error {
     let message = body
         .pointer("/error/message")
         .and_then(Value::as_str)
-        .unwrap_or("неизвестная ошибка")
+        .unwrap_or("unknown error")
         .to_owned();
     Error::Google { status, message }
 }

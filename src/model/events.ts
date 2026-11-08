@@ -1,4 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
+import { t } from "../shared/i18n";
 import { listEvents } from "../shared/api/calendar";
 import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
@@ -46,7 +47,7 @@ export const $loading = combine(fetchEventsFx.pending, fetchCalendarsFx.pending,
 export const $loadError = createStore<string | null>(null)
   .on(fetchEventsFx.doneData, (state, r) => {
     if (r.id !== lastRequestId) return state;
-    return r.failed.length ? `Не загрузились календари: ${r.failed.join(", ")}` : null;
+    return r.failed.length ? t.errors.calendarsFailed(r.failed.join(", ")) : null;
   })
   .on(fetchEventsFx.failData, (_, e) => e.message)
   .on(fetchCalendarsFx.failData, (_, e) => e.message)

@@ -14,12 +14,6 @@ export const readTheme = (): Theme => {
 
 export const nextTheme = (t: Theme): Theme => (t === "system" ? "light" : t === "light" ? "dark" : "system");
 
-export const themeLabel: Record<Theme, string> = {
-  system: "как в системе",
-  light: "светлая",
-  dark: "тёмная",
-};
-
 /** атрибут на <html> для CSS и тема заголовка окна Windows */
 export const applyTheme = (t: Theme): void => {
   if (t === "system") delete document.documentElement.dataset.theme;

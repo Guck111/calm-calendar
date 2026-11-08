@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { reloadRequested } from "../model/events";
 import { inTauri } from "../shared/api/bus";
@@ -15,14 +16,12 @@ import { Button, cx } from "./Button";
 import { Close, Gear } from "./icons";
 import s from "./Settings.module.css";
 
-const THEMES: { id: Theme; label: string }[] = [
-  { id: "system", label: "Как в системе" },
-  { id: "light", label: "Светлая" },
-  { id: "dark", label: "Тёмная" },
-];
+const THEMES: Theme[] = ["system", "light", "dark"];
+const LANGS: LangSetting[] = ["system", "ru", "en"];
 
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
+  const [language] = useState(readLangSetting);
   const [glass, setGlassState] = useState(false);
   const [notify, setNotify] = useState(false);
   const [privateNotify, setPrivateNotify] = useState(false);
@@ -41,7 +40,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
     try {
       await setPrivateNotifications(enabled);
     } catch {
-      setError("Не удалось сохранить настройку");
+      setError(t.errors.settingFailed);
       setPrivateNotify(!enabled);
     }
   };
@@ -53,7 +52,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
       await setNotifications(enabled);
       if (enabled) reschedule();
     } catch {
-      setError("Не удалось переключить уведомления");
+      setError(t.errors.notificationsFailed);
       setNotify(!enabled);
     }
   };
@@ -77,33 +76,51 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
     try {
       await setGlass(enabled);
     } catch {
-      setError("Не удалось переключить эффект стекла");
+      setError(t.errors.glassFailed);
       setGlassState(!enabled);
     }
   };
 
   return (
     <div className={s.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={s.dialog} role="dialog" aria-modal="true" aria-label="Настройки">
+      <div className={s.dialog} role="dialog" aria-modal="true" aria-label={t.common.settings}>
         <div className={s.head}>
-          <h2>Настройки</h2>
-          <Button variant="ghost" icon onClick={onClose} aria-label="Закрыть">
+          <h2>{t.common.settings}</h2>
+          <Button variant="ghost" icon onClick={onClose} aria-label={t.common.close}>
             <Close />
           </Button>
         </div>
 
         <section className={s.section}>
-          <h3>Тема</h3>
-          <div className={s.segmented} role="radiogroup" aria-label="Тема">
-            {THEMES.map((t) => (
+          <h3>{t.settings.theme}</h3>
+          <div className={s.segmented} role="radiogroup" aria-label={t.settings.theme}>
+            {THEMES.map((id) => (
               <button
-                key={t.id}
+                key={id}
                 role="radio"
-                aria-checked={theme === t.id}
-                className={cx(s.segment, theme === t.id && s.active)}
-                onClick={() => pickTheme(t.id)}
+                aria-checked={theme === id}
+                className={cx(s.segment, theme === id && s.active)}
+                onClick={() => pickTheme(id)}
               >
-                {t.label}
+                {t.settings.themes[id]}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className={s.section}>
+          <h3>{t.settings.language}</h3>
+          <div className={s.segmented} role="radiogroup" aria-label={t.settings.language}>
+            {LANGS.map((id) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={language === id}
+                className={cx(s.segment, language === id && s.active)}
+                onClick={() => language !== id && saveLangSetting(id)}
+                lang={id === "system" ? undefined : id}
+              >
+                {t.settings.languages[id]}
               </button>
             ))}
           </div>
@@ -112,10 +129,9 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
         <section className={s.section}>
           <label className={s.toggle}>
             <span>
-              <b>Эффект стекла</b>
+              <b>{t.settings.glass}</b>
               <small>
-                Календарь и виджет становятся полупрозрачными, а то, что под ними, — размытым.
-                {glassSupported ? " Windows может отключить размытие в режиме экономии энергии." : " Работает только в Windows."}
+                {t.settings.glassText} {glassSupported ? t.settings.glassPower : t.settings.glassWindowsOnly}
               </small>
             </span>
             <input
@@ -131,10 +147,8 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
         <section className={s.section}>
           <label className={s.toggle}>
             <span>
-              <b>Уведомления о событиях</b>
-              <small>
-                По напоминаниям из Google Календаря: время задаётся в Google у события или у календаря по умолчанию.
-              </small>
+              <b>{t.settings.notifications}</b>
+              <small>{t.settings.notificationsText}</small>
             </span>
             <input
               type="checkbox"
@@ -146,11 +160,8 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
           </label>
           <label className={s.toggle}>
             <span>
-              <b>Скрывать названия в уведомлениях</b>
-              <small>
-                Вместо названия — «Событие» и время. Пригодится, если Windows показывает уведомления на экране
-                блокировки.
-              </small>
+              <b>{t.settings.privateNotifications}</b>
+              <small>{t.settings.privateText}</small>
             </span>
             <input
               type="checkbox"
@@ -163,7 +174,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
           {error && <p className={s.error}>{error}</p>}
         </section>
 
-        <p className={s.hint}>Виджет, «поверх окон» и автозапуск — в меню значка в трее.</p>
+        <p className={s.hint}>{t.settings.trayHint}</p>
       </div>
     </div>
   );
@@ -173,7 +184,7 @@ export const SettingsButton = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant="ghost" icon onClick={() => setOpen(true)} title="Настройки" aria-label="Настройки">
+      <Button variant="ghost" icon onClick={() => setOpen(true)} title={t.common.settings} aria-label={t.common.settings}>
         <Gear />
       </Button>
       {open && <SettingsDialog onClose={() => setOpen(false)} />}

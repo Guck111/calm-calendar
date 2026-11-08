@@ -1,6 +1,7 @@
 // Раскладка событий: какие события попадают в день и как разместить
 // пересекающиеся события в сетке времени без наложения.
 import type { CalendarEvent } from "../api/types";
+import { locale } from "../i18n";
 import { addDays, MINUTES_IN_DAY, startOfDay } from "./date";
 
 export const overlapsDay = (e: CalendarEvent, day: Date): boolean => {
@@ -17,7 +18,7 @@ export const byStart = (a: CalendarEvent, b: CalendarEvent): number =>
   Number(b.allDay) - Number(a.allDay) ||
   a.start.getTime() - b.start.getTime() ||
   b.end.getTime() - a.end.getTime() ||
-  a.title.localeCompare(b.title, "ru");
+  a.title.localeCompare(b.title, locale);
 
 export const eventsForDay = (events: CalendarEvent[], day: Date): CalendarEvent[] =>
   events.filter((e) => overlapsDay(e, day)).sort(byStart);

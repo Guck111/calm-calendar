@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type MouseEvent, type RefObject } from "react";
 import { openMain, subscribe, inTauri } from "../shared/api/bus";
 import type { CalendarEvent } from "../shared/api/types";
@@ -13,6 +14,7 @@ import {
   isSameMonth,
   monthGrid,
   toDateKey,
+  weekdayLabels,
 } from "../shared/lib/date";
 import { overlapsDay } from "../shared/lib/layout";
 import { cx } from "../ui/Button";
@@ -44,19 +46,16 @@ import {
 } from "./model";
 import s from "./Widget.module.css";
 
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const MAX_EVENTS = 5;
 const REFRESH_MS = 5 * 60_000;
 const WIDTH = 300;
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
 const whenLabel = (e: CalendarEvent, today: Date): string => {
   const day = e.start < today ? today : e.start;
   const dayLabel = isSameDay(day, today)
-    ? "Сегодня"
+    ? t.common.today
     : isSameDay(day, addDays(today, 1))
-      ? "Завтра"
+      ? t.common.tomorrow
       : `${formatWeekdayShort(day)}, ${day.getDate()}`;
   return e.allDay || e.start < today ? dayLabel : `${dayLabel} ${formatTime(e.start)}`;
 };
@@ -150,8 +149,8 @@ export const Widget = () => {
 
   return (
     <div className={s.card} ref={cardRef} onMouseDown={startDrag}>
-      <button className={s.clock} onClick={() => openMain()} title="Открыть календарь">
-        {pad(now.getHours())}:{pad(now.getMinutes())}
+      <button className={s.clock} onClick={() => openMain()} title={t.common.openCalendar}>
+        {formatTime(now)}
       </button>
       <div className={s.date}>
         {formatWeekdayLong(now)}, {formatDayMonth(now)}
@@ -166,21 +165,21 @@ export const Widget = () => {
         <button
           className={cx(s.month, !isCurrent && s.monthOther)}
           onClick={() => reset()}
-          title={isCurrent ? undefined : "Вернуться к текущему месяцу"}
+          title={isCurrent ? undefined : t.widget.backToCurrentMonth}
           disabled={isCurrent}
         >
           {formatMonthYear(month)}
         </button>
-        <button className={s.arrow} onClick={() => shift(-1)} aria-label="Предыдущий месяц">
+        <button className={s.arrow} onClick={() => shift(-1)} aria-label={t.common.prevMonth}>
           <ChevronLeft size={14} />
         </button>
-        <button className={s.arrow} onClick={() => shift(1)} aria-label="Следующий месяц">
+        <button className={s.arrow} onClick={() => shift(1)} aria-label={t.common.nextMonth}>
           <ChevronRight size={14} />
         </button>
       </div>
       <div className={s.grid}>
-        {WEEKDAYS.map((d) => (
-          <span key={d} className={s.weekday}>
+        {weekdayLabels("narrow").map((d, i) => (
+          <span key={i} className={s.weekday}>
             {d}
           </span>
         ))}
@@ -189,7 +188,7 @@ export const Widget = () => {
             key={d.getTime()}
             className={cx(s.day, !isSameMonth(d, month) && s.outside, isSameDay(d, today) && s.today)}
             onClick={() => openMain(toDateKey(d))}
-            title="Открыть день в календаре"
+            title={t.widget.openDay}
           >
             <span className={s.num}>{d.getDate()}</span>
             {eventDays.has(d.getTime()) && <i className={s.dot} />}
@@ -201,14 +200,14 @@ export const Widget = () => {
 
       {!status ? null : !signedIn ? (
         <button className={s.note} onClick={() => openMain()}>
-          Войди в Google в окне календаря
+          {t.widget.signInHint}
         </button>
       ) : error && !upcoming.length ? (
         <button className={s.note} onClick={() => refresh()}>
-          Не удалось загрузить события. Повторить
+          {t.widget.loadFailed}
         </button>
       ) : !upcoming.length ? (
-        <div className={s.note}>{loading ? "Загружаю…" : "Ближайших событий нет"}</div>
+        <div className={s.note}>{loading ? t.common.loading : t.widget.noUpcoming}</div>
       ) : (
         <ul className={s.events}>
           {upcoming.map((e) => (

@@ -15,7 +15,9 @@ pub struct Reminder {
     pub key: String,
     pub title: String,
     pub body: String,
-    /// текст без названия и места — для режима «скрывать названия»
+    /// заголовок и текст без названия и места — для режима «скрывать названия»
+    #[serde(default)]
+    pub private_title: Option<String>,
     #[serde(default)]
     pub private_body: Option<String>,
     /// момент показа, миллисекунды Unix
@@ -57,7 +59,7 @@ impl Reminders {
             shown.insert(r.key.clone());
             if now - r.at <= LATE_LIMIT_MS {
                 let (title, body) = if private {
-                    ("Событие", r.private_body.as_deref().unwrap_or("Скоро начнётся"))
+                    (r.private_title.as_deref().unwrap_or("Calm Calendar"), r.private_body.as_deref().unwrap_or(""))
                 } else {
                     (r.title.as_str(), r.body.as_str())
                 };
@@ -93,7 +95,7 @@ mod tests {
     use super::*;
 
     fn r(key: &str, at: i64) -> Reminder {
-        Reminder { key: key.into(), title: String::new(), body: String::new(), private_body: None, at }
+        Reminder { key: key.into(), title: String::new(), body: String::new(), private_title: None, private_body: None, at }
     }
 
     #[test]

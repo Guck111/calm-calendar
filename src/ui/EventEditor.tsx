@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { $calendarById, $writableCalendars } from "../model/calendars";
@@ -25,7 +26,7 @@ const formatWhen = (e: CalendarEvent): string => {
   if (e.allDay) {
     const last = addDays(e.end, -1);
     return isSameDay(e.start, last)
-      ? `${formatFullDate(e.start)}, весь день`
+      ? t.editor.allDayDate(formatFullDate(e.start))
       : `${formatFullDate(e.start)} — ${formatFullDate(last)}`;
   }
   return isSameDay(e.start, e.end)
@@ -51,15 +52,15 @@ const DeleteButton = ({ busy, onConfirm, resetKey }: { busy: boolean; onConfirm:
   useEffect(() => setConfirm(false), [resetKey]);
   return (
     <Button danger variant="ghost" disabled={busy} onClick={() => (confirm ? onConfirm() : setConfirm(true))}>
-      {confirm ? "Точно удалить?" : "Удалить"}
+      {confirm ? t.editor.confirmDelete : t.editor.delete}
     </Button>
   );
 };
 
 const GoogleLink = ({ href }: { href?: string }) =>
   href ? (
-    <Button variant="ghost" onClick={() => openUrl(href)} title="Открыть в Google Календаре">
-      <External /> В Google
+    <Button variant="ghost" onClick={() => openUrl(href)} title={t.editor.openInGoogle}>
+      <External /> {t.editor.inGoogle}
     </Button>
   ) : null;
 
@@ -78,32 +79,32 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
     <>
       <div className={s.head}>
         <h2 className={s.viewTitle}>{event.title}</h2>
-        <Button variant="ghost" icon onClick={() => close()} aria-label="Закрыть">
+        <Button variant="ghost" icon onClick={() => close()} aria-label={t.common.close}>
           <Close />
         </Button>
       </div>
       <p className={s.when}>{formatWhen(event)}</p>
       <dl className={s.details}>
-        <dt>Календарь</dt>
+        <dt>{t.common.calendar}</dt>
         <dd>
           <i className={s.swatch} />
           {calendar?.name ?? event.calendarId}
         </dd>
         {event.location && (
           <>
-            <dt>Место</dt>
+            <dt>{t.common.location}</dt>
             <dd>{event.location}</dd>
           </>
         )}
         {event.description && (
           <>
-            <dt>Описание</dt>
+            <dt>{t.common.description}</dt>
             <dd className={s.description}>{plainText(event.description)}</dd>
           </>
         )}
       </dl>
-      {event.recurring && <p className={s.note}>Повторяющееся событие.</p>}
-      {!editable && <p className={s.note}>Календарь только для чтения.</p>}
+      {event.recurring && <p className={s.note}>{t.editor.recurring}</p>}
+      {!editable && <p className={s.note}>{t.editor.readOnly}</p>}
       {error && <p className={s.error}>{error}</p>}
       <div className={s.actions}>
         <GoogleLink href={event.htmlLink} />
@@ -111,7 +112,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         {editable && <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} />}
         {editable && (
           <Button variant="primary" onClick={() => edit()} autoFocus>
-            Редактировать
+            {t.editor.edit}
           </Button>
         )}
       </div>
@@ -161,26 +162,26 @@ const EventForm = () => {
           className={s.title}
           value={draft.title}
           onChange={(e) => change({ title: e.target.value })}
-          placeholder="Название"
+          placeholder={t.editor.titlePlaceholder}
           autoFocus
         />
-        <Button variant="ghost" icon onClick={() => close()} aria-label="Закрыть">
+        <Button variant="ghost" icon onClick={() => close()} aria-label={t.common.close}>
           <Close />
         </Button>
       </div>
 
       <label className={s.check}>
         <input type="checkbox" checked={draft.allDay} onChange={(e) => change({ allDay: e.target.checked })} />
-        Весь день
+        {t.common.allDay}
       </label>
 
       <div className={cx(s.times, draft.allDay && s.datesOnly)}>
-        <span className={s.timeLabel}>Начало</span>
+        <span className={s.timeLabel}>{t.editor.start}</span>
         <input
           type="date"
           value={draft.startDate}
           onChange={(e) => e.target.value && change({ startDate: e.target.value })}
-          aria-label="Дата начала"
+          aria-label={t.editor.startDate}
         />
         {!draft.allDay && (
           <input
@@ -188,15 +189,15 @@ const EventForm = () => {
             value={draft.startTime}
             step={300}
             onChange={(e) => e.target.value && change({ startTime: e.target.value })}
-            aria-label="Время начала"
+            aria-label={t.editor.startTime}
           />
         )}
-        <span className={s.timeLabel}>Конец</span>
+        <span className={s.timeLabel}>{t.editor.end}</span>
         <input
           type="date"
           value={draft.endDate}
           onChange={(e) => e.target.value && change({ endDate: e.target.value })}
-          aria-label="Дата конца"
+          aria-label={t.editor.endDate}
         />
         {!draft.allDay && (
           <input
@@ -204,12 +205,12 @@ const EventForm = () => {
             value={draft.endTime}
             step={300}
             onChange={(e) => e.target.value && change({ endTime: e.target.value })}
-            aria-label="Время конца"
+            aria-label={t.editor.endTime}
           />
         )}
       </div>
 
-      <Field label="Календарь">
+      <Field label={t.common.calendar}>
         {calendarLocked ? (
           <div className={s.static}>
             <i className={s.swatch} />
@@ -226,15 +227,15 @@ const EventForm = () => {
         )}
       </Field>
 
-      <Field label="Место">
+      <Field label={t.common.location}>
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
       </Field>
 
-      <Field label="Описание">
+      <Field label={t.common.description}>
         <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />
       </Field>
 
-      {draft.recurring && <p className={s.note}>Изменения коснутся только этого повторения.</p>}
+      {draft.recurring && <p className={s.note}>{t.editor.recurringNote}</p>}
       {error && <p className={s.error}>{error}</p>}
 
       <div className={s.actions}>
@@ -242,11 +243,11 @@ const EventForm = () => {
         <div className={s.spacer} />
         {!isNew && (
           <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
-            Отмена
+            {t.common.cancel}
           </Button>
         )}
         <Button variant="primary" type="submit" disabled={busy}>
-          {busy ? "Сохраняю…" : "Сохранить"}
+          {busy ? t.common.saving : t.common.save}
         </Button>
       </div>
     </form>
@@ -287,7 +288,7 @@ export const EventEditor = () => {
         className={s.dialog}
         role="dialog"
         aria-modal="true"
-        aria-label={draft.id ? "Событие" : "Новое событие"}
+        aria-label={draft.id ? t.common.event : t.common.newEvent}
         style={{ "--c": calendar?.color ?? "var(--accent)" } as CSSProperties}
       >
         {mode === "view" && opened ? <EventDetails event={opened} editable={editable} /> : <EventForm />}

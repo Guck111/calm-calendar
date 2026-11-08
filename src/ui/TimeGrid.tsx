@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { $calendarById, $writableCalendars } from "../model/calendars";
 import type { CalendarEvent } from "../shared/api/types";
@@ -7,6 +8,7 @@ import { eventMoved, eventOpened, slotClicked } from "../model/editor";
 import { $events } from "../model/events";
 import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import {
+  formatHour,
   formatTime,
   formatWeekdayShort,
   isSameDay,
@@ -24,7 +26,6 @@ import s from "./TimeGrid.module.css";
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const SNAP_MINUTES = 30;
 
-const hourLabel = (h: number) => `${String(h).padStart(2, "0")}:00`;
 /** сдвиг мыши, после которого клик считается перетаскиванием */
 const DRAG_THRESHOLD = 4;
 
@@ -159,7 +160,7 @@ export const TimeGrid = () => {
 
       {hasAllDay && (
         <div className={s.allDay} style={columns}>
-          <div className={s.allDayLabel}>весь день</div>
+          <div className={s.allDayLabel}>{t.common.allDayLower}</div>
           {allDayRows.map((list, i) => (
             <div key={days[i].getTime()} className={s.allDayCell}>
               {list.map((e) => (
@@ -183,7 +184,7 @@ export const TimeGrid = () => {
           <div className={s.hours}>
             {HOURS.map((h) => (
               <span key={h} className={s.hour}>
-                {h > 0 && hourLabel(h)}
+                {h > 0 && formatHour(h)}
               </span>
             ))}
           </div>

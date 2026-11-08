@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import type { MouseEvent } from "react";
 import { $calendarById } from "../model/calendars";
 import { eventOpened, slotClicked } from "../model/editor";
@@ -12,13 +13,13 @@ import {
   isSameMonth,
   monthGrid,
   startOfDay,
+  weekdayLabels,
 } from "../shared/lib/date";
 import { eventsForDay, isAllDayLike } from "../shared/lib/layout";
 import { cx } from "./Button";
 import { eventStyle } from "./eventColor";
 import s from "./MonthView.module.css";
 
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const MAX_VISIBLE = 4;
 
 export const MonthView = () => {
@@ -54,8 +55,8 @@ export const MonthView = () => {
   return (
     <div className={s.month}>
       <div className={s.weekdays}>
-        {WEEKDAYS.map((d) => (
-          <span key={d}>{d}</span>
+        {weekdayLabels().map((d, i) => (
+          <span key={i}>{d}</span>
         ))}
       </div>
       <div className={s.grid}>
@@ -72,14 +73,14 @@ export const MonthView = () => {
               <button
                 className={cx(s.dayNumber, isSameDay(day, today) && s.today)}
                 onClick={() => openDay(day)}
-                title="Открыть день"
+                title={t.common.openDay}
               >
                 {day.getDate() === 1 ? `${day.getDate()} ${formatMonthShort(day)}` : day.getDate()}
               </button>
               {visible.map((e) => chip(e, day))}
               {hidden > 0 && (
                 <button className={s.more} onClick={() => openDay(day)}>
-                  ещё {hidden + 1}
+                  {t.month.more(hidden + 1)}
                 </button>
               )}
             </div>

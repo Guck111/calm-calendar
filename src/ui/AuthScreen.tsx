@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { useState, type FormEvent } from "react";
 import {
   $authError,
@@ -33,13 +34,10 @@ const ClientForm = () => {
 
   return (
     <form className={s.card} onSubmit={onSubmit}>
-      <h1 className={s.title}>Подключение к Google</h1>
-      <p className={s.text}>
-        Для личной сборки нужен свой клиент OAuth в Google Cloud. Как его создать, написано в README
-        проекта. Вставь ID и секрет клиента или содержимое скачанного JSON-файла целиком.
-      </p>
+      <h1 className={s.title}>{t.auth.clientTitle}</h1>
+      <p className={s.text}>{t.auth.clientText}</p>
       <label className={s.field}>
-        <span>ID клиента или JSON</span>
+        <span>{t.auth.clientIdLabel}</span>
         <textarea
           rows={isJson ? 6 : 2}
           value={clientId}
@@ -51,7 +49,7 @@ const ClientForm = () => {
       </label>
       {!isJson && (
         <label className={s.field}>
-          <span>Секрет клиента</span>
+          <span>{t.auth.clientSecretLabel}</span>
           <input
             type="password"
             value={clientSecret}
@@ -64,11 +62,11 @@ const ClientForm = () => {
       <div className={s.actions}>
         {status?.clientSource === "file" && (
           <Button variant="ghost" onClick={cancel}>
-            Отмена
+            {t.common.cancel}
           </Button>
         )}
         <Button variant="primary" type="submit" disabled={saving || !clientId.trim()}>
-          Сохранить
+          {t.common.save}
         </Button>
       </div>
     </form>
@@ -89,17 +87,17 @@ const SignIn = () => {
         <span>{new Date().getDate()}</span>
       </div>
       <h1 className={s.title}>Calm Calendar</h1>
-      <p className={s.text}>Календарь без рекламы. Войди в Google, чтобы увидеть свои события.</p>
+      <p className={s.text}>{t.auth.tagline}</p>
       {error && <p className={s.error}>{error}</p>}
       <Button variant="primary" className={s.wide} onClick={() => signIn()} disabled={signingIn}>
-        {signingIn ? "Заверши вход в браузере…" : "Войти через Google"}
+        {signingIn ? t.auth.finishInBrowser : t.auth.signIn}
       </Button>
       {signingIn && (
-        <p className={s.hint}>Если вкладка не открылась, проверь, не свёрнут ли браузер.</p>
+        <p className={s.hint}>{t.auth.tabHint}</p>
       )}
       {status?.clientSource === "file" && !signingIn && (
         <button type="button" className={s.link} onClick={() => editClient()}>
-          Изменить клиент OAuth
+          {t.auth.changeClient}
         </button>
       )}
     </div>

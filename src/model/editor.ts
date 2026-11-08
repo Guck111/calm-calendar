@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
+import { t } from "../shared/i18n";
 import { deleteEvent, saveEvent } from "../shared/api/calendar";
 import type { AppError, CalendarEvent, EventDraft } from "../shared/api/types";
 import {
@@ -41,7 +42,7 @@ const fromEvent = (e: CalendarEvent): EventDraft => ({
   id: e.id,
   originalCalendarId: e.calendarId,
   calendarId: e.calendarId,
-  title: e.title === "(без названия)" ? "" : e.title,
+  title: e.title === t.common.untitled ? "" : e.title,
   allDay: e.allDay,
   startDate: toDateKey(e.start),
   startTime: toTimeKey(e.start),
@@ -97,11 +98,11 @@ export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): Even
 };
 
 export const validate = (d: EventDraft): string | null => {
-  if (!d.calendarId) return "Нет календаря, в который можно записать событие";
+  if (!d.calendarId) return t.errors.noWritableCalendar;
   const start = d.allDay ? fromDateKey(d.startDate) : combineDateTime(d.startDate, d.startTime);
   const end = d.allDay ? fromDateKey(d.endDate) : combineDateTime(d.endDate, d.endTime);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "Проверь дату и время";
-  if (d.allDay ? end < start : end <= start) return "Конец события раньше начала";
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return t.errors.checkDateTime;
+  if (d.allDay ? end < start : end <= start) return t.errors.endBeforeStart;
   return null;
 };
 
@@ -190,7 +191,7 @@ sample({
 // при ошибке событие вернётся на место после перечитывания
 sample({
   clock: moveFx.failData,
-  fn: (e) => `Не удалось перенести событие: ${e.message}`,
+  fn: (e) => t.errors.moveFailed(e.message),
   target: actionFailed,
 });
 

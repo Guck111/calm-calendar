@@ -1,4 +1,5 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { useEffect, useRef, useState } from "react";
 import { $email, signOutClicked } from "../model/auth";
 import { $calendarsWithVisibility, $writableCalendars, calendarToggled } from "../model/calendars";
@@ -13,12 +14,12 @@ import {
   isSameMonth,
   monthGrid,
   startOfMonth,
+  weekdayLabels,
 } from "../shared/lib/date";
 import { Button, cx } from "./Button";
 import { ChevronLeft, ChevronRight, Plus } from "./icons";
 import s from "./Sidebar.module.css";
 
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 const MiniMonth = () => {
   const [cursor, today, range, view, select] = useUnit([$cursor, $today, $range, $view, dateSelected]);
@@ -31,17 +32,17 @@ const MiniMonth = () => {
       <div className={s.miniHead}>
         <span>{formatMonthYear(month)}</span>
         <div>
-          <Button variant="ghost" icon onClick={() => setMonth(addMonths(month, -1))} aria-label="Предыдущий месяц">
+          <Button variant="ghost" icon onClick={() => setMonth(addMonths(month, -1))} aria-label={t.common.prevMonth}>
             <ChevronLeft size={14} />
           </Button>
-          <Button variant="ghost" icon onClick={() => setMonth(addMonths(month, 1))} aria-label="Следующий месяц">
+          <Button variant="ghost" icon onClick={() => setMonth(addMonths(month, 1))} aria-label={t.common.nextMonth}>
             <ChevronRight size={14} />
           </Button>
         </div>
       </div>
       <div className={s.miniGrid}>
-        {WEEKDAYS.map((d) => (
-          <span key={d} className={s.miniWeekday}>
+        {weekdayLabels("narrow").map((d, i) => (
+          <span key={i} className={s.miniWeekday}>
             {d}
           </span>
         ))}
@@ -69,7 +70,7 @@ const CalendarList = () => {
   if (!calendars.length) return null;
   return (
     <section className={s.calendars}>
-      <h3 className={s.heading}>Календари</h3>
+      <h3 className={s.heading}>{t.sidebar.calendars}</h3>
       {calendars.map((c) => (
         <label key={c.id} className={s.calendar} title={c.name}>
           <input
@@ -106,8 +107,8 @@ export const Sidebar = () => {
   const [email, create, signOut] = useUnit([$email, createClicked, signOutClicked]);
   return (
     <aside className={s.sidebar}>
-      <Button variant="primary" className={s.create} onClick={() => create()} title="Новое событие">
-        <Plus /> Создать
+      <Button variant="primary" className={s.create} onClick={() => create()} title={t.common.newEvent}>
+        <Plus /> {t.sidebar.create}
       </Button>
       <SidebarQuickAdd />
       <MiniMonth />
@@ -115,7 +116,7 @@ export const Sidebar = () => {
       <div className={s.account}>
         {email && <span className={s.email}>{email}</span>}
         <button type="button" className={s.signOut} onClick={() => signOut()}>
-          Выйти
+          {t.sidebar.signOut}
         </button>
       </div>
     </aside>

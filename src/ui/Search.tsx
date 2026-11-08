@@ -1,20 +1,17 @@
 import { useUnit } from "effector-react";
+import { t } from "../shared/i18n";
 import { useEffect, useRef, type KeyboardEvent } from "react";
 import { $calendarById } from "../model/calendars";
 import { eventOpened } from "../model/editor";
 import { $query, $results, $searching, queryChanged, searchClosed, searchRequested } from "../model/search";
 import { dayOpened } from "../model/view";
 import type { CalendarEvent } from "../shared/api/types";
-import { formatTime } from "../shared/lib/date";
+import { formatShortDate, formatTime } from "../shared/lib/date";
 import { eventStyle } from "./eventColor";
 import s from "./Search.module.css";
 
 const DEBOUNCE_MS = 350;
 
-const sameYear = new Intl.DateTimeFormat("ru-RU", { weekday: "short", day: "numeric", month: "short" });
-const otherYear = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", year: "numeric" });
-const dateLabel = (d: Date) =>
-  (d.getFullYear() === new Date().getFullYear() ? sameYear : otherYear).format(d).replace(/\s*г\.$/, "");
 
 export const Search = () => {
   const [query, results, searching, byId] = useUnit([$query, $results, $searching, $calendarById]);
@@ -70,14 +67,14 @@ export const Search = () => {
         value={query}
         onChange={(e) => change(e.target.value)}
         onKeyDown={onKeyDown}
-        placeholder="Поиск (Ctrl+F)"
+        placeholder={t.search.placeholder}
         spellCheck={false}
-        aria-label="Поиск событий"
+        aria-label={t.search.label}
       />
       {results !== null && query.trim() && (
         <div className={s.results} role="listbox">
           {!results.length ? (
-            <div className={s.empty}>{searching ? "Ищу…" : "Ничего не найдено"}</div>
+            <div className={s.empty}>{searching ? t.search.searching : t.search.nothing}</div>
           ) : (
             results.map((e) => (
               <button
@@ -88,7 +85,7 @@ export const Search = () => {
                 role="option"
               >
                 <span className={s.when}>
-                  {dateLabel(e.start)}
+                  {formatShortDate(e.start)}
                   {!e.allDay && `, ${formatTime(e.start)}`}
                 </span>
                 <span className={s.title}>{e.title}</span>

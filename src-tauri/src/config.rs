@@ -97,7 +97,7 @@ pub fn client(app: &AppHandle) -> Result<ClientConfig> {
 pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Result<()> {
     let id = client_id.trim();
     let parsed = if id.starts_with('{') {
-        parse_client(id).ok_or_else(|| Error::Other("Не удалось прочитать JSON клиента".into()))?
+        parse_client(id).ok_or_else(|| Error::Other("Could not read the client JSON".into()))?
     } else {
         ClientConfig {
             client_id: id.to_owned(),
@@ -106,7 +106,7 @@ pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Res
     };
     if !parsed.client_id.ends_with(".apps.googleusercontent.com") {
         return Err(Error::Other(
-            "ID клиента должен заканчиваться на .apps.googleusercontent.com".into(),
+            "The client ID must end with .apps.googleusercontent.com".into(),
         ));
     }
     let path = config_dir(app)?.join(CLIENT_FILE);
@@ -164,18 +164,20 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
 }
 
 /// Общие настройки оформления
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     pub glass: bool,
     pub notifications: bool,
     /// не показывать название и место события в уведомлении (оно бывает видно на экране блокировки)
     pub private_notifications: bool,
+    /// язык интерфейса ("ru" или "en"); нет — язык Windows
+    pub language: Option<String>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { glass: true, notifications: true, private_notifications: false }
+        Self { glass: true, notifications: true, private_notifications: false, language: None }
     }
 }
 

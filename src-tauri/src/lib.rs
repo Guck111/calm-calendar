@@ -3,6 +3,7 @@ mod config;
 mod desktop;
 mod error;
 mod google;
+mod i18n;
 mod oauth;
 mod reminders;
 
@@ -92,6 +93,18 @@ async fn set_notifications(
     Ok(())
 }
 
+/// Язык интерфейса ("ru" или "en"): меню трея и страница входа в браузере
+#[tauri::command]
+fn set_language(app: AppHandle, language: String) -> Result<()> {
+    let Some(lang) = i18n::Lang::parse(&language) else {
+        return Ok(());
+    };
+    let settings = config::Settings { language: Some(lang.code().to_owned()), ..config::load_settings(&app) };
+    config::save_settings(&app, settings)?;
+    desktop::rebuild_tray_menu(&app);
+    Ok(())
+}
+
 #[tauri::command]
 fn set_private_notifications(app: AppHandle, enabled: bool) -> Result<()> {
     let settings = config::Settings { private_notifications: enabled, ..config::load_settings(&app) };
@@ -131,6 +144,7 @@ pub fn run() {
         ))
         .manage(Auth::new())
         .manage(reminders::Reminders::default())
+        .manage(desktop::TrayItems::default())
         .setup(|app| {
             desktop::setup(app.handle())?;
             reminders::start(app.handle().clone());
@@ -156,6 +170,7 @@ pub fn run() {
             set_glass,
             set_notifications,
             set_private_notifications,
+            set_language,
             schedule_reminders
         ])
         .run(tauri::generate_context!())
