@@ -39,8 +39,30 @@ Start-Process "shell:AppsFolder\CalmCalendar.Dev_nfw2ntm5m5jmm!com.arseni.calmca
 
 Verified in the package: the tray item turns the task on (`State = Enabled`), nothing is written to `Run`, a normal launch still opens the main window. If the user disabled the app in Task Manager → Startup apps, `RequestEnableAsync` returns `DisabledByUser` and the tray check mark goes back off.
 
+## Release build
+
+The `release` workflow builds the MSIX next to the `.exe` and `.msi` when the repository has these variables (Settings → Secrets and variables → Actions → Variables), all taken from Partner Center → Product identity:
+
+| Variable | Example |
+|---|---|
+| `MSIX_IDENTITY_NAME` | `12345Arseni.CalmCalendar` |
+| `MSIX_PUBLISHER` | `CN=ABCDEF12-3456-7890-ABCD-EF1234567890` |
+| `MSIX_PUBLISHER_DISPLAY_NAME` | `Arseni` |
+
+The OAuth client comes from the `CALM_GOOGLE_CLIENT_ID` and `CALM_GOOGLE_CLIENT_SECRET` secrets, as for the installers. Without them the Store build would ask users for their own client.
+
+## Certification check
+
+Partner Center runs the certification tests on every submission. To run them locally first, open an elevated PowerShell:
+
+```powershell
+$ack = "${env:ProgramFiles(x86)}\Windows Kits\App Certification Kitppcert.exe"
+& $ack reset
+& $ack test -appxpackagepath .\src-tauri	arget\msix\CalmCalendar_0.1.0.0_x64.msix -reportoutputpath $env:TEMP\wack.xml
+```
+
+The kit installs the package, so it has to be signed with a certificate the machine trusts; the unsigned local build is for `-Register` testing only.
+
 ## To do before submission
 
-- Identity values from Partner Center → Product identity.
-- CI job that builds the MSIX on a version tag.
-- Run Windows App Certification Kit on the package.
+- Identity values from Partner Center → Product identity, as repository variables.

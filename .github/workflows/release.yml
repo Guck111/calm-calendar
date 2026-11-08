@@ -41,12 +41,25 @@ jobs:
           CALM_GOOGLE_CLIENT_ID: ${{ secrets.CALM_GOOGLE_CLIENT_ID }}
           CALM_GOOGLE_CLIENT_SECRET: ${{ secrets.CALM_GOOGLE_CLIENT_SECRET }}
 
+      # пакет для Microsoft Store. Identity берётся из Partner Center → Product identity и
+      # задаётся переменными репозитория (Settings → Variables): MSIX_IDENTITY_NAME,
+      # MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME. Пока их нет, шаг пропускается.
+      - name: Build MSIX for Microsoft Store
+        if: vars.MSIX_IDENTITY_NAME != ''
+        shell: pwsh
+        run: >
+          ./scripts/build-msix.ps1
+          -IdentityName "${{ vars.MSIX_IDENTITY_NAME }}"
+          -Publisher "${{ vars.MSIX_PUBLISHER }}"
+          -PublisherDisplayName "${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}"
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: calm-calendar-windows
           path: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/msix/*.msix
 
       # для тега создаём релиз на GitHub с установщиками
       - if: startsWith(github.ref, 'refs/tags/v')
@@ -55,3 +68,4 @@ jobs:
           files: |
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/msix/*.msix
