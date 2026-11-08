@@ -17,10 +17,11 @@ pub enum Lang {
     Zh,
     Hi,
     Ar,
+    Bn,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar, Lang::Bn];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -195,6 +196,21 @@ impl Lang {
                 },
                 signed_in: "تم. يمكنك إغلاق علامة التبويب هذه والعودة إلى التطبيق.",
                 sign_in_failed: "تعذّر تسجيل الدخول. ارجع إلى التطبيق وحاول مرة أخرى.",
+            },
+            Lang::Bn => Texts {
+                code: "bn",
+                hl: "bn",
+                langid: 0x45,
+                rtl: false,
+                tray: TrayText {
+                    open: "ক্যালেন্ডার খুলুন",
+                    widget: "ডেস্কটপ উইজেট",
+                    on_top: "উইজেট সবসময় উপরে",
+                    autostart: "Windows-এ সাইন ইন করলে চালু করুন",
+                    quit: "বন্ধ করুন",
+                },
+                signed_in: "হয়ে গেছে। এই ট্যাবটি বন্ধ করে অ্যাপে ফিরে যান।",
+                sign_in_failed: "সাইন ইন হয়নি। অ্যাপে ফিরে আবার চেষ্টা করুন।",
             },
         }
     }

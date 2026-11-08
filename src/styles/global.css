@@ -43,7 +43,8 @@
 :root:lang(zh) {
   font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", system-ui, sans-serif;
 }
-:root:lang(hi) {
+:root:lang(hi),
+:root:lang(bn) {
   font-family: "Segoe UI Variable Text", "Nirmala UI", system-ui, sans-serif;
 }
 
