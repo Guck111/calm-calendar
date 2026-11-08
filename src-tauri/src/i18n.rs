@@ -13,10 +13,11 @@ pub enum Lang {
     Fr,
     Pt,
     De,
+    Ja,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -131,6 +132,21 @@ impl Lang {
                 },
                 signed_in: "Fertig. Du kannst diesen Tab schließen und zur App zurückkehren.",
                 sign_in_failed: "Anmeldung fehlgeschlagen. Kehre zur App zurück und versuche es erneut.",
+            },
+            Lang::Ja => Texts {
+                code: "ja",
+                hl: "ja",
+                langid: 0x11,
+                rtl: false,
+                tray: TrayText {
+                    open: "カレンダーを開く",
+                    widget: "デスクトップ ウィジェット",
+                    on_top: "ウィジェットを常に手前に表示",
+                    autostart: "Windows のサインイン時に起動",
+                    quit: "終了",
+                },
+                signed_in: "完了しました。このタブを閉じてアプリに戻ってください。",
+                sign_in_failed: "ログインできませんでした。アプリに戻ってもう一度お試しください。",
             },
         }
     }
