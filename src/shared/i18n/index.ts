@@ -6,6 +6,7 @@ import { broadcast, inTauri, subscribe } from "../api/bus";
 import { readJson, writeJson } from "../lib/storage";
 import { en } from "./en";
 import { ru, type Dict } from "./ru";
+import { de } from "./de";
 import { pt } from "./pt";
 import { fr } from "./fr";
 import { es } from "./es";
@@ -25,6 +26,7 @@ const LANGUAGES = {
   es: { name: "Español", dict: es, region: "es-ES" },
   fr: { name: "Français", dict: fr, region: "fr-FR" },
   pt: { name: "Português", dict: pt, region: "pt-BR" },
+  de: { name: "Deutsch", dict: de, region: "de-DE" },
 } satisfies Record<string, LangInfo>;
 
 export type Lang = keyof typeof LANGUAGES;

@@ -12,10 +12,11 @@ pub enum Lang {
     Es,
     Fr,
     Pt,
+    De,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -115,6 +116,21 @@ impl Lang {
                 },
                 signed_in: "Pronto. Você pode fechar esta aba e voltar ao aplicativo.",
                 sign_in_failed: "Não foi possível fazer login. Volte ao aplicativo e tente de novo.",
+            },
+            Lang::De => Texts {
+                code: "de",
+                hl: "de",
+                langid: 0x07,
+                rtl: false,
+                tray: TrayText {
+                    open: "Kalender öffnen",
+                    widget: "Desktop-Widget",
+                    on_top: "Widget immer im Vordergrund",
+                    autostart: "Beim Windows-Start öffnen",
+                    quit: "Beenden",
+                },
+                signed_in: "Fertig. Du kannst diesen Tab schließen und zur App zurückkehren.",
+                sign_in_failed: "Anmeldung fehlgeschlagen. Kehre zur App zurück und versuche es erneut.",
             },
         }
     }
