@@ -42,6 +42,7 @@ export const ru = {
     settingFailed: "Не удалось сохранить настройку",
     notificationsFailed: "Не удалось переключить уведомления",
     glassFailed: "Не удалось переключить эффект стекла",
+    offline: (when: string) => `Нет сети. Показаны данные от ${when}`,
   },
   auth: {
     clientTitle: "Подключение к Google",

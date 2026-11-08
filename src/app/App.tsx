@@ -8,6 +8,7 @@ import { quickFocusRequested } from "../model/quick";
 import "../model/reminders";
 import type { EventDraft } from "../shared/api/types";
 import { $loadError, refreshRequested, reloadRequested } from "../model/events";
+import { $offlineText } from "../model/connection";
 import {
   $view,
   dayOpened,
@@ -126,7 +127,7 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
 };
 
 export const App = () => {
-  const [status, signedIn, view, draft, loadError] = useUnit([$status, $signedIn, $view, $draft, $loadError]);
+  const [status, signedIn, view, draft, loadError, offline] = useUnit([$status, $signedIn, $view, $draft, $loadError, $offlineText]);
   useAppEffects(signedIn, Boolean(draft));
 
   if (!status) return <div className={s.splash} />;
@@ -137,7 +138,7 @@ export const App = () => {
       <Sidebar />
       <main className={s.main}>
         <Toolbar />
-        {loadError && <div className={s.banner}>{loadError}</div>}
+        {loadError ? <div className={s.banner}>{loadError}</div> : offline && <div className={s.banner}>{offline}</div>}
         <div className={s.view}>{view === "month" ? <MonthView /> : <TimeGrid />}</div>
       </main>
       <EventEditor />

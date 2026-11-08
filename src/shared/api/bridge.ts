@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { t } from "../i18n";
 import type { AppError, AuthStatus } from "./types";
 import { inTauri } from "./bus";
+import { clearCache } from "./cache";
 
 export const isAppError = (e: unknown): e is AppError =>
   typeof e === "object" && e !== null && "kind" in e && "message" in e;
@@ -51,9 +52,10 @@ export const getAuthStatus = async (): Promise<AuthStatus> => {
 export const saveClientConfig = (clientId: string, clientSecret: string): Promise<void> =>
   call("save_client_config", { clientId, clientSecret });
 
-export const signIn = (): Promise<string | null> => call("sign_in");
+// сохранённые ответы принадлежат аккаунту: при входе и выходе стираем
+export const signIn = (): Promise<string | null> => call<string | null>("sign_in").finally(clearCache);
 
-export const signOut = (): Promise<void> => call("sign_out");
+export const signOut = (): Promise<void> => call<void>("sign_out").finally(clearCache);
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 

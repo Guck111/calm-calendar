@@ -1,5 +1,6 @@
 // Google Calendar API v3: календари и события
-import { googleRequest } from "./bridge";
+import { googleRequest, isAppError } from "./bridge";
+import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
 import { locale, t } from "../i18n";
 import type { AccessRole, Calendar, CalendarEvent, EventDraft } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
@@ -42,11 +43,27 @@ type RawEvent = {
 
 const enc = encodeURIComponent;
 
+/** Чтение с запасом: ответ запоминаем, а без сети отдаём последний сохранённый */
+export const readWithCache = async <T>(path: string, query: Record<string, string>): Promise<T> => {
+  const key = cacheKey(path, query);
+  try {
+    const body = await googleRequest<T>("GET", path, query);
+    remember(key, body);
+    markOnline();
+    return body;
+  } catch (e) {
+    const saved = isAppError(e) && e.kind === "network" ? recall(key) : undefined;
+    if (!saved) throw e;
+    markOffline(saved.at);
+    return saved.body as T;
+  }
+};
+
 const fetchAllPages = async <T>(path: string, query: Record<string, string>): Promise<T[]> => {
   const items: T[] = [];
   let pageToken: string | undefined;
   do {
-    const page = await googleRequest<Page<T>>("GET", path, pageToken ? { ...query, pageToken } : query);
+    const page = await readWithCache<Page<T>>(path, pageToken ? { ...query, pageToken } : query);
     items.push(...(page.items ?? []));
     pageToken = page.nextPageToken;
   } while (pageToken);

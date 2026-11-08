@@ -24,6 +24,7 @@ import { QuickAdd } from "../ui/QuickAdd";
 import { broadcast } from "../shared/api/bus";
 import { saveEvent } from "../shared/api/calendar";
 import { countdown } from "./countdown";
+import { $offlineText } from "../model/connection";
 import {
   $calendars,
   $colors,
@@ -120,6 +121,7 @@ export const Widget = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   useWidgetEffects(cardRef);
   const [refresh, shift, reset] = useUnit([refreshRequested, monthShifted, monthReset]);
+  const offline = useUnit($offlineText);
   const [status, signedIn, now, today, month, isCurrent, monthEvents, allUpcoming, colors, error, loading, calendars] = useUnit([
     $status,
     $signedIn,
@@ -223,6 +225,8 @@ export const Widget = () => {
           ))}
         </ul>
       )}
+
+      {offline && <div className={s.offline}>{offline}</div>}
 
       {signedIn && (
         <div className={s.quick}>

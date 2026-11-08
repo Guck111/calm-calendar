@@ -45,6 +45,7 @@ export const en: Dict = {
     settingFailed: "Couldn't save the setting",
     notificationsFailed: "Couldn't change notifications",
     glassFailed: "Couldn't change the glass effect",
+    offline: (when: string) => `Offline. Showing data from ${when}`,
   },
   auth: {
     clientTitle: "Connect to Google",

@@ -54,6 +54,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* «Нет сети. Показаны данные от 16:40» */
+.offline {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 /* AM/PM рядом с крупными часами */
 .period {
   margin-left: 6px;
