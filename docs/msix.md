@@ -56,9 +56,9 @@ The OAuth client comes from the `CALM_GOOGLE_CLIENT_ID` and `CALM_GOOGLE_CLIENT_
 Partner Center runs the certification tests on every submission. To run them locally first, open an elevated PowerShell:
 
 ```powershell
-$ack = "${env:ProgramFiles(x86)}\Windows Kits\App Certification Kitppcert.exe"
+$ack = "${env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\appcert.exe"
 & $ack reset
-& $ack test -appxpackagepath .\src-tauri	arget\msix\CalmCalendar_0.1.0.0_x64.msix -reportoutputpath $env:TEMP\wack.xml
+& $ack test -appxpackagepath .\src-tauri\target\msix\CalmCalendar_0.1.0.0_x64.msix -reportoutputpath $env:TEMP\wack.xml
 ```
 
 The kit installs the package, so it has to be signed with a certificate the machine trusts; the unsigned local build is for `-Register` testing only.
