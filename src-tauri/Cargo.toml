@@ -1,6 +1,6 @@
 [package]
 name = "calm-calendar"
-version = "0.2.0"
+version = "0.3.0"
 description = "Calendar for Windows without ads"
 authors = ["Arseni"]
 edition = "2024"
