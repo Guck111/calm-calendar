@@ -1,5 +1,6 @@
 // Подмена Rust-команд для разработки интерфейса в обычном браузере (npm run dev без Tauri).
 // В сборку приложения не попадает: подключается динамически, только если нет Tauri.
+import { lang } from "../i18n";
 import { addDays, startOfDay, startOfWeek, toDateKey } from "../lib/date";
 
 type Json = Record<string, unknown>;
@@ -14,14 +15,15 @@ const at = (day: number, h: number, m = 0) => {
 let signedIn = true;
 let seq = 100;
 
-const calendars = [
+// русские данные — для разработки, английские — ещё и для скриншотов сайта и Store
+const ruCalendars = [
   { id: "me@example.com", summary: "Личное", backgroundColor: "#4f8ef7", accessRole: "owner", primary: true, selected: true, defaultReminders: [{ method: "popup", minutes: 10 }] },
   { id: "work", summary: "Работа", backgroundColor: "#e8a33d", accessRole: "owner", selected: true },
   { id: "sport", summary: "Спорт", backgroundColor: "#3fb27f", accessRole: "writer", selected: true },
   { id: "pl#holiday", summary: "Праздники в Польше", backgroundColor: "#b07be8", accessRole: "reader", selected: true },
 ];
 
-const events: Record<string, Json[]> = {
+const ruEvents = (): Record<string, Json[]> => ({
   "me@example.com": [
     { id: "e1", summary: "Урок английского", start: { dateTime: at(2, 19) }, end: { dateTime: at(2, 19, 50) } },
     { id: "e2", summary: "День рождения", start: { date: toDateKey(addDays(week, 5)) }, end: { date: toDateKey(addDays(week, 6)) } },
@@ -44,7 +46,63 @@ const events: Record<string, Json[]> = {
   "pl#holiday": [
     { id: "h1", summary: "Праздник", start: { date: toDateKey(addDays(startOfDay(new Date()), 9)) }, end: { date: toDateKey(addDays(startOfDay(new Date()), 10)) } },
   ],
-};
+});
+
+const enCalendars = [
+  { id: "me@example.com", summary: "Personal", backgroundColor: "#4f8ef7", accessRole: "owner", primary: true, selected: true, defaultReminders: [{ method: "popup", minutes: 10 }] },
+  { id: "work", summary: "Work", backgroundColor: "#e8a33d", accessRole: "owner", selected: true },
+  { id: "fitness", summary: "Fitness", backgroundColor: "#3fb27f", accessRole: "owner", selected: true },
+  { id: "family", summary: "Family", backgroundColor: "#b07be8", accessRole: "writer", selected: true },
+];
+
+type Plan = [day: number, title: string, from: [number, number], to: [number, number], extra?: Json];
+const timed = (prefix: string, plan: Plan[]): Json[] =>
+  plan.map(([day, summary, [h1, m1], [h2, m2], extra], i) => ({
+    id: `${prefix}${i}`,
+    summary,
+    start: { dateTime: at(day, h1, m1) },
+    end: { dateTime: at(day, h2, m2) },
+    ...extra,
+  }));
+
+// неделя считается от первого дня недели региона: для en-US 0 — воскресенье
+const enEvents = (): Record<string, Json[]> => ({
+  "me@example.com": timed("p", [
+    [0, "Brunch with Anna", [11, 0], [12, 30], { location: "Blue Door Cafe" }],
+    [2, "Dentist", [16, 0], [16, 45], { location: "Main St Clinic" }],
+    [3, "Spanish class", [19, 0], [19, 50]],
+    [6, "Farmers market", [10, 0], [11, 0]],
+  ]),
+  work: [
+    ...[1, 2, 3, 4, 5].map((d): Json => ({
+      id: `su${d}`,
+      summary: "Team standup",
+      recurringEventId: "su",
+      start: { dateTime: at(d, 9, 30) },
+      end: { dateTime: at(d, 9, 45) },
+    })),
+    ...timed("w", [
+      [1, "Product review", [14, 0], [15, 0]],
+      [2, "Design sync", [11, 0], [12, 0]],
+      [3, "Focus time", [13, 0], [16, 0]],
+      [4, "1:1 with Sam", [10, 0], [10, 30]],
+      [5, "Sprint demo", [15, 0], [16, 0]],
+    ]),
+  ],
+  fitness: timed("f", [
+    [1, "Yoga", [18, 30], [19, 30]],
+    [4, "Morning run", [7, 0], [8, 0]],
+    [6, "Hike", [13, 0], [17, 0], { location: "Cedar Ridge Trail" }],
+  ]),
+  family: [
+    ...timed("fa", [[4, "Dinner with parents", [19, 0], [21, 0]]]),
+    { id: "fb", summary: "Mom's birthday", start: { date: toDateKey(addDays(week, 4)) }, end: { date: toDateKey(addDays(week, 5)) } },
+  ],
+});
+
+const english = lang === "en";
+const calendars = english ? enCalendars : ruCalendars;
+const events: Record<string, Json[]> = english ? enEvents() : ruEvents();
 
 const google = (method: string, path: string, query: [string, string][] = [], body?: Json): unknown => {
   const q = Object.fromEntries(query);
