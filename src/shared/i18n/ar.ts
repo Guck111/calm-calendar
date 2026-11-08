@@ -83,6 +83,10 @@ export const ar: Dict = {
     endTime: "وقت النهاية",
     recurringNote: "تُطبَّق التغييرات على هذا التكرار فقط.",
   },
+  meeting: {
+    join: "انضمام",
+    joinTitle: (provider: string) => `الانضمام عبر ${provider}`,
+  },
   month: {
     more: (n: number) => `${n} أخرى`,
   },

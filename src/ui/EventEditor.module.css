@@ -182,8 +182,19 @@
 }
 
 .when {
-  margin: -6px 0 0 2px;
+  margin-block: -6px 0;
+  margin-inline: 2px 0;
   color: var(--text-2);
+}
+
+.join {
+  align-self: flex-start;
+  gap: 8px;
+}
+
+.provider {
+  font-weight: 400;
+  opacity: 0.8;
 }
 
 .details {

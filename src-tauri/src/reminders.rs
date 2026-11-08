@@ -22,6 +22,11 @@ pub struct Reminder {
     pub private_body: Option<String>,
     /// момент показа, миллисекунды Unix
     pub at: i64,
+    /// ссылка на видеовстречу и подпись кнопки «Подключиться» на языке интерфейса
+    #[serde(default)]
+    pub url: Option<String>,
+    #[serde(default)]
+    pub join_label: Option<String>,
 }
 
 #[derive(Default)]
@@ -63,7 +68,9 @@ impl Reminders {
                 } else {
                     (r.title.as_str(), r.body.as_str())
                 };
-                let _ = app.notification().builder().title(title).body(body).show();
+                if !show_with_link(app, r, title, body) {
+                    let _ = app.notification().builder().title(title).body(body).show();
+                }
             }
         }
         // чтобы множество не росло бесконечно, забываем ключи, которых нет в расписании
@@ -71,6 +78,19 @@ impl Reminders {
         shown.retain(|k| keys.contains(k));
         items.iter().filter(|r| r.at > now).map(|r| r.at).min()
     }
+}
+
+/// Уведомление с кнопкой «Подключиться», если у события есть видеовстреча. false — показать обычное
+#[cfg(windows)]
+fn show_with_link(app: &AppHandle, r: &Reminder, title: &str, body: &str) -> bool {
+    let (Some(url), Some(label)) = (&r.url, &r.join_label) else { return false };
+    let identifier = &app.config().identifier;
+    crate::toast::show_with_link(identifier, title, body, label, url).is_ok()
+}
+
+#[cfg(not(windows))]
+fn show_with_link(_: &AppHandle, _: &Reminder, _: &str, _: &str) -> bool {
+    false
 }
 
 pub fn start(app: AppHandle) {
@@ -95,7 +115,16 @@ mod tests {
     use super::*;
 
     fn r(key: &str, at: i64) -> Reminder {
-        Reminder { key: key.into(), title: String::new(), body: String::new(), private_title: None, private_body: None, at }
+        Reminder {
+            key: key.into(),
+            title: String::new(),
+            body: String::new(),
+            private_title: None,
+            private_body: None,
+            at,
+            url: None,
+            join_label: None,
+        }
     }
 
     #[test]
@@ -103,6 +132,12 @@ mod tests {
         let v: Vec<Reminder> =
             serde_json::from_str(r#"[{"key":"a","title":"t","body":"b","at":1700000000000}]"#).unwrap();
         assert_eq!(v[0].at, 1_700_000_000_000);
+        assert_eq!(v[0].url, None);
+        let with_link: Vec<Reminder> = serde_json::from_str(
+            r#"[{"key":"a","title":"t","body":"b","at":1,"url":"https://meet.google.com/abc-defg-hij","join_label":"Join"}]"#,
+        )
+        .unwrap();
+        assert_eq!(with_link[0].join_label.as_deref(), Some("Join"));
         let _ = r("x", 0);
     }
 }

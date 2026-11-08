@@ -1,6 +1,5 @@
 import { useUnit } from "effector-react";
 import { t } from "../shared/i18n";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { $calendarById, $writableCalendars } from "../model/calendars";
 import {
@@ -16,10 +15,11 @@ import {
   editorClosed,
   saveClicked,
 } from "../model/editor";
+import { openExternal } from "../shared/api/open";
 import type { CalendarEvent } from "../shared/api/types";
 import { addDays, formatFullDate, formatTime, isSameDay } from "../shared/lib/date";
 import { Button, cx } from "./Button";
-import { Close, External } from "./icons";
+import { Close, External, Video } from "./icons";
 import s from "./EventEditor.module.css";
 
 const formatWhen = (e: CalendarEvent): string => {
@@ -59,7 +59,7 @@ const DeleteButton = ({ busy, onConfirm, resetKey }: { busy: boolean; onConfirm:
 
 const GoogleLink = ({ href }: { href?: string }) =>
   href ? (
-    <Button variant="ghost" onClick={() => openUrl(href)} title={t.editor.openInGoogle}>
+    <Button variant="ghost" onClick={() => void openExternal(href)} title={t.editor.openInGoogle}>
       <External /> {t.editor.inGoogle}
     </Button>
   ) : null;
@@ -84,6 +84,18 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         </Button>
       </div>
       <p className={s.when}>{formatWhen(event)}</p>
+      {event.meeting && (
+        <Button
+          variant="primary"
+          className={s.join}
+          onClick={() => event.meeting && void openExternal(event.meeting.url)}
+          title={t.meeting.joinTitle(event.meeting.provider)}
+          autoFocus
+        >
+          <Video /> {t.meeting.join}
+          <span className={s.provider}>{event.meeting.provider}</span>
+        </Button>
+      )}
       <dl className={s.details}>
         <dt>{t.common.calendar}</dt>
         <dd>
@@ -111,7 +123,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <div className={s.spacer} />
         {editable && <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} />}
         {editable && (
-          <Button variant="primary" onClick={() => edit()} autoFocus>
+          <Button variant={event.meeting ? "default" : "primary"} onClick={() => edit()} autoFocus={!event.meeting}>
             {t.editor.edit}
           </Button>
         )}

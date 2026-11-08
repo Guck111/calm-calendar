@@ -75,6 +75,10 @@ export const zh: Dict = {
     endTime: "结束时间",
     recurringNote: "更改只对这一次生效。",
   },
+  meeting: {
+    join: "加入",
+    joinTitle: (provider: string) => `通过 ${provider} 加入`,
+  },
   month: {
     more: (n: number) => `还有 ${n} 项`,
   },

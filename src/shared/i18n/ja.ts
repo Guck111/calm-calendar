@@ -75,6 +75,10 @@ export const ja: Dict = {
     endTime: "終了時刻",
     recurringNote: "変更はこの回の予定にだけ反映されます。",
   },
+  meeting: {
+    join: "参加",
+    joinTitle: (provider: string) => `${provider} で参加`,
+  },
   month: {
     more: (n: number) => `他 ${n} 件`,
   },

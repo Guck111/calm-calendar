@@ -1,3 +1,4 @@
+import { findMeeting, type MeetingSource } from "../lib/meeting";
 // Google Calendar API v3: календари и события
 import { googleRequest, isAppError } from "./bridge";
 import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
@@ -35,6 +36,8 @@ type RawEvent = {
   location?: string;
   description?: string;
   htmlLink?: string;
+  hangoutLink?: string;
+  conferenceData?: MeetingSource["conferenceData"];
   start?: RawTime;
   end?: RawTime;
   recurringEventId?: string;
@@ -116,6 +119,7 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEven
     location: raw.location,
     description: raw.description,
     htmlLink: raw.htmlLink,
+    meeting: findMeeting(raw),
     recurring: Boolean(raw.recurringEventId),
     reminders: raw.reminders?.useDefault === false ? popupMinutes(raw.reminders.overrides) : "default",
   };

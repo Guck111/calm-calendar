@@ -12,7 +12,17 @@ import { reloadRequested } from "./events";
 
 const WINDOW_MS = 48 * 60 * 60_000;
 
-export type Reminder = { key: string; title: string; body: string; privateTitle: string; privateBody: string; at: number };
+export type Reminder = {
+  key: string;
+  title: string;
+  body: string;
+  privateTitle: string;
+  privateBody: string;
+  at: number;
+  /** ссылка на видеовстречу: в уведомлении появится кнопка «Подключиться» */
+  url?: string;
+  joinLabel?: string;
+};
 
 const before = (minutes: number): string => {
   if (minutes === 0) return t.reminders.startsNow;
@@ -47,6 +57,7 @@ export const buildReminders = (
           privateTitle: t.reminders.privateTitle,
           privateBody: `${before(m)} · ${when}`,
           at,
+          ...(e.meeting ? { url: e.meeting.url, joinLabel: t.meeting.join } : {}),
         },
       ];
     });
@@ -60,7 +71,12 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   const items = buildReminders(events, calendars, now);
   // в Rust поля называются по-другому (snake_case)
-  const payload = items.map(({ privateTitle, privateBody, ...r }) => ({ ...r, private_title: privateTitle, private_body: privateBody }));
+  const payload = items.map(({ privateTitle, privateBody, joinLabel, ...r }) => ({
+    ...r,
+    private_title: privateTitle,
+    private_body: privateBody,
+    join_label: joinLabel,
+  }));
   if (inTauri) await invoke("schedule_reminders", { items: payload });
   return items.length;
 });

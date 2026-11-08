@@ -82,8 +82,16 @@
 }
 
 .countdown {
-  margin: -10px 0 14px 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block: -10px 14px;
+  margin-inline: 2px 0;
   font-size: 13px;
+}
+
+.countdownLine {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -207,7 +215,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr) auto;
   gap: 2px 0;
 }
 
@@ -228,6 +236,44 @@
   text-align: start;
 }
 
+.withJoin {
+  grid-column: 1 / 3;
+}
+
+/* «Подключиться» в строке отсчёта: встреча скоро или идёт */
+.join {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px !important;
+  border-radius: 999px;
+  background: var(--accent) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* в списке — только значок камеры, чтобы не отнимать место у названия */
+.joinIcon {
+  grid-column: 3;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-inline-start: 4px;
+  border-radius: 50%;
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+.join:hover,
+.joinIcon:hover {
+  filter: brightness(1.08);
+}
+
 .event:hover {
   background: color-mix(in srgb, currentColor 8%, transparent) !important;
 }
@@ -239,6 +285,8 @@
 }
 
 .title {
+  /* у строк без кнопки название занимает и колонку кнопки */
+  grid-column: 2 / -1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

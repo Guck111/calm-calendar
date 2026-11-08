@@ -9,7 +9,7 @@ const ev = (title: string, start: Date, end: Date, allDay = false): CalendarEven
 
 describe("обратный отсчёт", () => {
   it("ближайшее событие: часы и минуты", () => {
-    expect(countdown([ev("Muay Thai", at(20), at(22))], at(18, 35))).toEqual({ title: "Muay Thai", text: "через 1 ч 25 мин" });
+    expect(countdown([ev("Muay Thai", at(20), at(22))], at(18, 35))).toMatchObject({ title: "Muay Thai", text: "через 1 ч 25 мин" });
   });
 
   it("идущее событие показывает, сколько осталось", () => {
@@ -18,7 +18,7 @@ describe("обратный отсчёт", () => {
 
   it("скорое следующее важнее текущего", () => {
     const list = [ev("Работа", at(12), at(18)), ev("Урок", at(18), at(19))];
-    expect(countdown(list, at(17, 45))).toEqual({ title: "Урок", text: "через 15 мин" });
+    expect(countdown(list, at(17, 45))).toMatchObject({ title: "Урок", text: "через 15 мин" });
   });
 
   it("события на весь день и слишком далёкие не показываем", () => {

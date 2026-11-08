@@ -11,7 +11,9 @@ const span = (ms: number): string => {
 };
 
 /** «Muay Thai через 25 мин» или «Сейчас: Работа · ещё 2 ч 10 мин»; события на весь день не считаем */
-export const countdown = (events: CalendarEvent[], now: Date): { title: string; text: string } | null => {
+export type Countdown = { title: string; text: string; event: CalendarEvent };
+
+export const countdown = (events: CalendarEvent[], now: Date): Countdown | null => {
   const timed = events
     .filter((e) => !e.allDay && e.end > now)
     .sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -19,11 +21,11 @@ export const countdown = (events: CalendarEvent[], now: Date): { title: string; 
   const next = timed.find((e) => e.start > now);
   // если следующее начинается скоро (до 30 минут), важнее оно, а не текущее
   if (next && next.start.getTime() - now.getTime() <= 30 * 60_000) {
-    return { title: next.title, text: t.time.in(span(next.start.getTime() - now.getTime())) };
+    return { title: next.title, text: t.time.in(span(next.start.getTime() - now.getTime())), event: next };
   }
-  if (current) return { title: current.title, text: t.time.ongoing(span(current.end.getTime() - now.getTime())) };
+  if (current) return { title: current.title, text: t.time.ongoing(span(current.end.getTime() - now.getTime())), event: current };
   if (next && next.start.getTime() - now.getTime() <= LOOK_AHEAD_MS) {
-    return { title: next.title, text: t.time.in(span(next.start.getTime() - now.getTime())) };
+    return { title: next.title, text: t.time.in(span(next.start.getTime() - now.getTime())), event: next };
   }
   return null;
 };

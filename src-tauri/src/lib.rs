@@ -6,6 +6,8 @@ mod google;
 mod i18n;
 mod oauth;
 mod reminders;
+#[cfg(windows)]
+mod toast;
 
 use config::ClientSource;
 use error::Result;

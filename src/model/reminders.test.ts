@@ -28,6 +28,13 @@ describe("напоминания", () => {
     expect(list[0].privateBody).not.toContain("Урок");
   });
 
+  it("у видеовстречи в напоминании есть ссылка и подпись кнопки", () => {
+    const meeting = { url: "https://meet.google.com/abc-defg-hij", provider: "Google Meet" };
+    const [r] = buildReminders([ev({ meeting, reminders: [5] })], calendars, now);
+    expect(r).toMatchObject({ url: meeting.url, joinLabel: "Подключиться" });
+    expect(buildReminders([ev({ reminders: [5] })], calendars, now)[0].url).toBeUndefined();
+  });
+
   it("свои напоминания события заменяют настройки календаря", () => {
     const list = buildReminders([ev({ reminders: [0] })], calendars, now);
     expect(list).toHaveLength(1);

@@ -77,6 +77,10 @@ export const en: Dict = {
     endTime: "End time",
     recurringNote: "Changes apply to this occurrence only.",
   },
+  meeting: {
+    join: "Join",
+    joinTitle: (provider: string) => `Join with ${provider}`,
+  },
   month: {
     more: (n: number) => `${n} more`,
   },

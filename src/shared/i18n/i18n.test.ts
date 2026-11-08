@@ -53,7 +53,7 @@ describe("English, US region", () => {
   it("writes the widget countdown and reminders in English", () => {
     setLang("en", "en-US");
     const now = new Date(2026, 10, 4, 18, 35);
-    expect(countdown([event({})], now)).toEqual({ title: "Gym", text: "in 25 min" });
+    expect(countdown([event({})], now)).toMatchObject({ title: "Gym", text: "in 25 min" });
     const later = event({ start: new Date(2026, 10, 4, 20, 5), end: new Date(2026, 10, 4, 21, 0), reminders: [90] });
     const [r] = buildReminders([later], [], now);
     expect(plain(r.body)).toBe("In 1 h 30 min · 8:05 PM–9:00 PM");

@@ -12,6 +12,10 @@ const at = (day: number, h: number, m = 0) => {
   return d.toISOString();
 };
 
+const soon = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
+const MEET = "https://meet.google.com/abc-defg-hij";
+const ZOOM = "https://us02web.zoom.us/j/81234567890?pwd=calm";
+
 let signedIn = true;
 let seq = 100;
 
@@ -35,7 +39,11 @@ const ruEvents = (): Record<string, Json[]> => ({
     recurringEventId: "w",
     start: { dateTime: at(d, 12) },
     end: { dateTime: at(d, 18) },
-  })).concat([{ id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) } }]),
+  })).concat([
+    { id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) }, hangoutLink: MEET },
+    // начинается через 10 минут: в виджете видна кнопка «Подключиться»
+    { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
+  ]),
   sport: [1, 3, 5].map((d) => ({
     id: `s${d}`,
     summary: "Муай-тай",
@@ -78,14 +86,26 @@ const enEvents = (): Record<string, Json[]> => ({
       id: `su${d}`,
       summary: "Team standup",
       recurringEventId: "su",
+      hangoutLink: MEET,
       start: { dateTime: at(d, 9, 30) },
       end: { dateTime: at(d, 9, 45) },
     })),
     ...timed("w", [
       [1, "Product review", [14, 0], [15, 0]],
-      [2, "Design sync", [11, 0], [12, 0]],
+      [2, "Design sync", [11, 0], [12, 0], { description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}` }],
       [3, "Focus time", [13, 0], [16, 0]],
-      [4, "1:1 with Sam", [10, 0], [10, 30]],
+      [
+        4,
+        "1:1 with Sam",
+        [10, 0],
+        [10, 30],
+        {
+          conferenceData: {
+            conferenceSolution: { name: "Microsoft Teams Meeting" },
+            entryPoints: [{ entryPointType: "video", uri: "https://teams.microsoft.com/l/meetup-join/19%3ameeting_calm/0" }],
+          },
+        },
+      ],
       [5, "Sprint demo", [15, 0], [16, 0]],
     ]),
   ],

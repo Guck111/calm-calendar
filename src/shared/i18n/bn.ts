@@ -75,6 +75,10 @@ export const bn: Dict = {
     endTime: "শেষের সময়",
     recurringNote: "পরিবর্তন শুধু এই বারের ইভেন্টে প্রযোজ্য হবে।",
   },
+  meeting: {
+    join: "যোগ দিন",
+    joinTitle: (provider: string) => `${provider}-এ যোগ দিন`,
+  },
   month: {
     more: (n: number) => `আরও ${n}টি`,
   },

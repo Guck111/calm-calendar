@@ -1,3 +1,5 @@
+import type { Meeting } from "../lib/meeting";
+
 export type AccessRole = "owner" | "writer" | "reader" | "freeBusyReader";
 
 export type Calendar = {
@@ -26,6 +28,8 @@ export type CalendarEvent = {
   location?: string;
   description?: string;
   htmlLink?: string;
+  /** видеовстреча: Meet, Zoom, Teams… */
+  meeting?: Meeting;
   recurring: boolean;
   /** минуты до начала; "default" — как задано у календаря */
   reminders?: number[] | "default";

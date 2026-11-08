@@ -45,6 +45,13 @@ export const Close = ({ size = 16 }: P) => (
   </svg>
 );
 
+export const Video = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <rect x="1.75" y="4.25" width="9" height="7.5" rx="1.75" />
+    <path d="m10.75 7 3.5-2.25v6.5L10.75 9" />
+  </svg>
+);
+
 export const External = ({ size = 14 }: P) => (
   <svg {...base(size)}>
     <path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5" />

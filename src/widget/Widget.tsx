@@ -20,7 +20,9 @@ import {
 } from "../shared/lib/date";
 import { overlapsDay } from "../shared/lib/layout";
 import { cx } from "../ui/Button";
-import { ChevronLeft, ChevronRight } from "../ui/icons";
+import { ChevronLeft, ChevronRight, Video } from "../ui/icons";
+import { openExternal } from "../shared/api/open";
+import { isJoinable } from "../shared/lib/meeting";
 import { QuickAdd } from "../ui/QuickAdd";
 import { broadcast } from "../shared/api/bus";
 import { saveEvent } from "../shared/api/calendar";
@@ -139,6 +141,7 @@ export const Widget = () => {
   ]);
   const writable = calendars.filter((c) => c.accessRole === "owner" || c.accessRole === "writer");
   const soon = countdown(allUpcoming, now);
+  const soonJoin = soon?.event.meeting && isJoinable(soon.event.start, soon.event.end, now) ? soon.event.meeting : undefined;
   const clock = formatClock(now);
 
   const days = monthGrid(month);
@@ -163,7 +166,14 @@ export const Widget = () => {
       </div>
       {soon && (
         <div className={s.countdown}>
-          <b>{soon.title}</b> <span className={s.countdownText}>{soon.text}</span>
+          <span className={s.countdownLine}>
+            <b>{soon.title}</b> <span className={s.countdownText}>{soon.text}</span>
+          </span>
+          {soonJoin && (
+            <button className={s.join} onClick={() => void openExternal(soonJoin.url)} title={t.meeting.joinTitle(soonJoin.provider)}>
+              <Video size={13} /> {t.meeting.join}
+            </button>
+          )}
         </div>
       )}
 
@@ -216,14 +226,32 @@ export const Widget = () => {
         <div className={s.note}>{loading ? t.common.loading : t.widget.noUpcoming}</div>
       ) : (
         <ul className={s.events}>
-          {upcoming.map((e) => (
-            <li key={e.key}>
-              <button className={s.event} style={color(e)} onClick={() => openMain(toDateKey(e.start < today ? today : e.start))}>
-                <span className={s.when}>{whenLabel(e, today)}</span>
-                <span className={s.title}>{e.title}</span>
-              </button>
-            </li>
-          ))}
+          {upcoming.map((e) => {
+            // за 15 минут до встречи и пока она идёт — кнопка «Подключиться» прямо в строке
+            const join = e.meeting && isJoinable(e.start, e.end, now) ? e.meeting : undefined;
+            return (
+              <li key={e.key}>
+                <button
+                  className={cx(s.event, join && s.withJoin)}
+                  style={color(e)}
+                  onClick={() => openMain(toDateKey(e.start < today ? today : e.start))}
+                >
+                  <span className={s.when}>{whenLabel(e, today)}</span>
+                  <span className={s.title}>{e.title}</span>
+                </button>
+                {join && (
+                  <button
+                    className={s.joinIcon}
+                    onClick={() => void openExternal(join.url)}
+                    title={t.meeting.joinTitle(join.provider)}
+                    aria-label={t.meeting.joinTitle(join.provider)}
+                  >
+                    <Video size={13} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 

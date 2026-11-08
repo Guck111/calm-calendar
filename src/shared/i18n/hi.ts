@@ -75,6 +75,10 @@ export const hi: Dict = {
     endTime: "अंत का समय",
     recurringNote: "बदलाव सिर्फ़ इसी बार के इवेंट पर लागू होंगे।",
   },
+  meeting: {
+    join: "जुड़ें",
+    joinTitle: (provider: string) => `${provider} से जुड़ें`,
+  },
   month: {
     more: (n: number) => `${n} और`,
   },

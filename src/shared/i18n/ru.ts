@@ -74,6 +74,11 @@ export const ru = {
     endTime: "Время конца",
     recurringNote: "Изменения коснутся только этого повторения.",
   },
+  meeting: {
+    /** кнопка видеовстречи: Meet, Zoom, Teams */
+    join: "Подключиться",
+    joinTitle: (provider: string) => `Подключиться к встрече (${provider})`,
+  },
   month: {
     more: (n: number) => `ещё ${n}`,
   },
