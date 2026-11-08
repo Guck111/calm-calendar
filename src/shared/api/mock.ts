@@ -100,7 +100,8 @@ const enEvents = (): Record<string, Json[]> => ({
   ],
 });
 
-const english = lang === "en";
+// подставные данные — русские или английские; для остальных языков английские
+const english = lang !== "ru";
 const calendars = english ? enCalendars : ruCalendars;
 const events: Record<string, Json[]> = english ? enEvents() : ruEvents();
 

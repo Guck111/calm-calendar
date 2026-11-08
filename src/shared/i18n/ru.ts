@@ -95,7 +95,7 @@ export const ru = {
     theme: "Тема",
     themes: { system: "Как в системе", light: "Светлая", dark: "Тёмная" },
     language: "Язык",
-    languages: { system: "Как в системе", ru: "Русский", en: "English" },
+    systemLanguage: "Как в системе",
     glass: "Эффект стекла",
     glassText: "Календарь и виджет становятся полупрозрачными, а то, что под ними, — размытым.",
     glassPower: "Windows может отключить размытие в режиме экономии энергии.",

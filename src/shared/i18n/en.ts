@@ -98,7 +98,7 @@ export const en: Dict = {
     theme: "Theme",
     themes: { system: "System", light: "Light", dark: "Dark" },
     language: "Language",
-    languages: { system: "System", ru: "Русский", en: "English" },
+    systemLanguage: "System",
     glass: "Glass effect",
     glassText: "The calendar and the widget become translucent and blur what is behind them.",
     glassPower: "Windows may turn the blur off in energy saver mode.",

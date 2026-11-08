@@ -4,8 +4,7 @@ import { countdown } from "../../widget/countdown";
 import type { CalendarEvent } from "../api/types";
 import { parseQuick } from "../lib/quick";
 import { formatHour, formatTime, startOfWeek, toDateKey, viewTitle, weekdayLabels } from "../lib/date";
-import { en } from "./en";
-import { setLang, t } from "./index";
+import { LANGS, dictOf, setLang, t } from "./index";
 import { ru } from "./ru";
 
 const event = (over: Partial<CalendarEvent>): CalendarEvent => ({
@@ -32,8 +31,8 @@ describe("dictionaries", () => {
       v && typeof v === "object" ? keys(v, `${prefix}${k}.`) : [`${prefix}${k}:${typeof v}`],
     );
 
-  it("have the same keys and value kinds", () => {
-    expect(keys(en).sort()).toEqual(keys(ru).sort());
+  it.each(LANGS)("%s has the same keys and value kinds as Russian", (l) => {
+    expect(keys(dictOf(l)).sort()).toEqual(keys(ru).sort());
   });
 });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
+import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { reloadRequested } from "../model/events";
 import { inTauri } from "../shared/api/bus";
@@ -17,7 +17,6 @@ import { Close, Gear } from "./icons";
 import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
-const LANGS: LangSetting[] = ["system", "ru", "en"];
 
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
@@ -110,20 +109,19 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
 
         <section className={s.section}>
           <h3>{t.settings.language}</h3>
-          <div className={s.segmented} role="radiogroup" aria-label={t.settings.language}>
+          <select
+            className={s.select}
+            aria-label={t.settings.language}
+            value={language}
+            onChange={(e) => saveLangSetting(e.target.value as LangSetting)}
+          >
+            <option value="system">{t.settings.systemLanguage}</option>
             {LANGS.map((id) => (
-              <button
-                key={id}
-                role="radio"
-                aria-checked={language === id}
-                className={cx(s.segment, language === id && s.active)}
-                onClick={() => language !== id && saveLangSetting(id)}
-                lang={id === "system" ? undefined : id}
-              >
-                {t.settings.languages[id]}
-              </button>
+              <option key={id} value={id} lang={id}>
+                {langName(id)}
+              </option>
             ))}
-          </div>
+          </select>
         </section>
 
         <section className={s.section}>

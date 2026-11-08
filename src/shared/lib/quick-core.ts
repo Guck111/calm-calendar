@@ -16,10 +16,35 @@ export type QuickResult = {
 
 export type TimeRange = { h: number; m: number; endH?: number; endM?: number };
 
-// \b в JS не понимает кириллицу, поэтому границы слова — через юникод-классы
-export const L = "(?<![\\p{L}\\d])";
-export const R = "(?![\\p{L}\\d])";
+// \b в JS не понимает кириллицу, поэтому границы слова — через юникод-классы.
+// \p{M} — огласовки хинди и бенгали: они часть слова, а не граница.
+export const L = "(?<![\\p{L}\\p{M}\\d])";
+export const R = "(?![\\p{L}\\p{M}\\d])";
 export const re = (body: string) => new RegExp(`${L}${body}${R}`, "iu");
+
+/** Нули цифр, которые набирают вместо 0–9: арабские, персидские, деванагари, бенгальские, полноширинные */
+const DIGIT_ZEROS = [0x660, 0x6f0, 0x966, 0x9e6, 0xff10];
+
+const PUNCTUATION: Record<string, string> = {
+  "：": ":", // полноширинное двоеточие (китайский, японский)
+  "－": "-",
+  "～": "-",
+  "〜": "-",
+  "،": ",", // арабская запятая
+  "٫": ",", // арабский десятичный разделитель
+  "＃": "#",
+  "＠": "@",
+  "　": " ",
+};
+
+/** Цифры любого письма — в 0–9, полноширинные знаки — в обычные: дальше разбор видит одно и то же */
+export const normalizeInput = (input: string): string =>
+  input.replace(/[\p{Nd}：－～〜،٫＃＠　]/gu, (ch) => {
+    if (PUNCTUATION[ch]) return PUNCTUATION[ch];
+    const code = ch.charCodeAt(0);
+    const zero = DIGIT_ZEROS.find((z) => code >= z && code <= z + 9);
+    return zero === undefined ? ch : String(code - zero);
+  });
 
 export type Cut = { text: string; take: (r: RegExp) => RegExpMatchArray | null };
 

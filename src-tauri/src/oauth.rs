@@ -92,10 +92,11 @@ fn email_from_id_token(id_token: &str) -> Option<String> {
 
 fn page(lang: Lang, ok: bool) -> String {
     format!(
-        "<!doctype html><html lang={}><meta charset=utf-8><title>Calm Calendar</title>\
+        "<!doctype html><html lang={} dir={}><meta charset=utf-8><title>Calm Calendar</title>\
 <body style=\"font:16px system-ui;display:grid;place-items:center;height:90vh;margin:0\">\
 <p>{}</p>",
         lang.code(),
+        lang.dir(),
         i18n::sign_in_page(lang, ok)
     )
 }
@@ -250,7 +251,7 @@ impl Auth {
             .append_pair("access_type", "offline")
             .append_pair("prompt", "consent")
             // экран согласия Google на языке интерфейса, а не браузера
-            .append_pair("hl", i18n::current(app).code());
+            .append_pair("hl", i18n::current(app).hl());
 
         app.opener()
             .open_url(auth_url.as_str(), None::<&str>)
