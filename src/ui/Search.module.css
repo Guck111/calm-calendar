@@ -26,7 +26,7 @@
 .results {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
+  inset-inline-end: 0;
   width: 360px;
   max-height: 420px;
   overflow-y: auto;
@@ -47,7 +47,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  text-align: left;
+  text-align: start;
   font-size: 13px;
 }
 
@@ -69,8 +69,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-left: 2px solid var(--c);
-  padding-left: 8px;
+  border-inline-start: 2px solid var(--c);
+  padding-inline-start: 8px;
 }
 
 .empty {

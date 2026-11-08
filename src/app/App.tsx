@@ -1,6 +1,7 @@
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
 import { subscribe } from "../shared/api/bus";
+import { isRtl } from "../shared/i18n";
 import { fromDateKey } from "../shared/lib/date";
 import { $signedIn, $status, appStarted } from "../model/auth";
 import { $draft, draftOpened } from "../model/editor";
@@ -103,8 +104,9 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   useEffect(() => {
     if (!signedIn || editorOpen) return;
     const actions: Record<string, () => void> = {
-      ArrowLeft: () => prev(),
-      ArrowRight: () => next(),
+      // справа налево стрелка влево ведёт вперёд, как и кнопки
+      ArrowLeft: () => (isRtl() ? next() : prev()),
+      ArrowRight: () => (isRtl() ? prev() : next()),
       t: () => today(),
       d: () => setView("day"),
       w: () => setView("week"),

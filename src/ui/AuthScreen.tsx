@@ -1,3 +1,4 @@
+import { formatDayNumber } from "../shared/lib/date";
 import { useUnit } from "effector-react";
 import { t } from "../shared/i18n";
 import { useState, type FormEvent } from "react";
@@ -84,7 +85,7 @@ const SignIn = () => {
   return (
     <div className={s.card}>
       <div className={s.logo} aria-hidden>
-        <span>{new Date().getDate()}</span>
+        <span>{formatDayNumber(new Date())}</span>
       </div>
       <h1 className={s.title}>Calm Calendar</h1>
       <p className={s.text}>{t.auth.tagline}</p>

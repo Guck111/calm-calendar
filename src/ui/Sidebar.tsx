@@ -8,6 +8,7 @@ import { quickCreateFx, quickFocusRequested } from "../model/quick";
 import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
 import {
+  formatDayNumber,
   addMonths,
   formatMonthYear,
   isSameDay,
@@ -57,7 +58,7 @@ const MiniMonth = () => {
             )}
             onClick={() => select(d)}
           >
-            {d.getDate()}
+            {formatDayNumber(d)}
           </button>
         ))}
       </div>

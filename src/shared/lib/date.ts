@@ -126,6 +126,13 @@ const formatter = (options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat => 
 };
 const fmt = (options: Intl.DateTimeFormatOptions) => (d: Date) => formatter(options).format(d);
 
+let numbers: { locale: string; f: Intl.NumberFormat } | null = null;
+/** Число дня цифрами языка: «٨» по-арабски, «৮» по-бенгальски, без «日» и «일», которые добавил бы формат даты */
+export const formatDayNumber = (d: Date): string => {
+  if (numbers?.locale !== locale) numbers = { locale, f: new Intl.NumberFormat(locale, { useGrouping: false }) };
+  return numbers.f.format(d.getDate());
+};
+
 export const formatMonthYear = (d: Date): string =>
   capitalize(dropYearSuffix(fmt({ month: "long", year: "numeric" })(d)));
 export const formatMonthShort = fmt({ month: "short" });

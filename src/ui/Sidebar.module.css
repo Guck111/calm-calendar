@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: 18px;
   padding: 14px 14px 12px;
-  border-right: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
   background: var(--chrome);
   transition: background 0.2s;
   overflow-y: auto;
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 4px;
+  padding-inline-start: 4px;
   font-weight: 600;
   font-size: 13px;
 }

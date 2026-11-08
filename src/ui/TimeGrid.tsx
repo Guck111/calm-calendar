@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { t } from "../shared/i18n";
+import { isRtl, t } from "../shared/i18n";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { $calendarById, $writableCalendars } from "../model/calendars";
 import type { CalendarEvent } from "../shared/api/types";
@@ -8,6 +8,7 @@ import { eventMoved, eventOpened, slotClicked } from "../model/editor";
 import { $events } from "../model/events";
 import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import {
+  formatDayNumber,
   formatHour,
   formatTime,
   formatWeekdayShort,
@@ -90,7 +91,8 @@ export const TimeGrid = () => {
       const moved = d.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
       const columnWidth = (rect.width - 56) / days.length;
       const minutes = snap((dy / rect.height) * MINUTES_IN_DAY);
-      const dayShift = d.mode === "move" ? Math.round(dx / columnWidth) : 0;
+      // справа налево дни идут в другую сторону
+      const dayShift = d.mode === "move" ? Math.round((isRtl() ? -dx : dx) / columnWidth) : 0;
       if (moved !== d.moved || minutes !== d.minutes || dayShift !== d.days) {
         setDrag({ ...d, moved, minutes, days: dayShift });
       }
@@ -153,7 +155,7 @@ export const TimeGrid = () => {
             disabled={view === "day"}
           >
             <span className={s.weekday}>{formatWeekdayShort(d)}</span>
-            <span className={s.date}>{d.getDate()}</span>
+            <span className={s.date}>{formatDayNumber(d)}</span>
           </button>
         ))}
       </div>
@@ -204,7 +206,7 @@ export const TimeGrid = () => {
                         ...eventStyle(calendars.get(event.calendarId)),
                         top: `${(startMin / MINUTES_IN_DAY) * 100}%`,
                         height: `${((endMin - startMin) / MINUTES_IN_DAY) * 100}%`,
-                        left: `calc(${(column / count) * 100}% + 1px)`,
+                        insetInlineStart: `calc(${(column / count) * 100}% + 1px)`,
                         width: `calc(${100 / count}% - 3px)`,
                       }}
                       onPointerDown={startDrag(event, "move")}

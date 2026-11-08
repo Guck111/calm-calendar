@@ -16,10 +16,11 @@ pub enum Lang {
     Ja,
     Zh,
     Hi,
+    Ar,
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -179,6 +180,21 @@ impl Lang {
                 },
                 signed_in: "हो गया। यह टैब बंद करके ऐप पर लौटें।",
                 sign_in_failed: "साइन इन नहीं हो सका। ऐप पर लौटकर फिर से कोशिश करें।",
+            },
+            Lang::Ar => Texts {
+                code: "ar",
+                hl: "ar",
+                langid: 0x01,
+                rtl: true,
+                tray: TrayText {
+                    open: "فتح التقويم",
+                    widget: "أداة سطح المكتب",
+                    on_top: "الأداة دائمًا في المقدمة",
+                    autostart: "التشغيل عند تسجيل الدخول إلى Windows",
+                    quit: "خروج",
+                },
+                signed_in: "تم. يمكنك إغلاق علامة التبويب هذه والعودة إلى التطبيق.",
+                sign_in_failed: "تعذّر تسجيل الدخول. ارجع إلى التطبيق وحاول مرة أخرى.",
             },
         }
     }

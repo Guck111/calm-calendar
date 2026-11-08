@@ -31,6 +31,11 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* справа налево стрелки «назад» и «вперёд» смотрят в другую сторону */
+:root[dir="rtl"] [data-rtl-flip] {
+  transform: scaleX(-1);
+}
+
 /* шрифты интерфейса Windows для письменностей, которых нет в Segoe UI */
 :root:lang(ja) {
   font-family: "Segoe UI Variable Text", "Yu Gothic UI", "Meiryo UI", system-ui, sans-serif;

@@ -7,6 +7,7 @@ import { $events } from "../model/events";
 import { $cursor, $today, dayOpened } from "../model/view";
 import type { CalendarEvent } from "../shared/api/types";
 import {
+  formatDayNumber,
   formatMonthShort,
   formatTime,
   isSameDay,
@@ -75,7 +76,7 @@ export const MonthView = () => {
                 onClick={() => openDay(day)}
                 title={t.common.openDay}
               >
-                {day.getDate() === 1 ? `${day.getDate()} ${formatMonthShort(day)}` : day.getDate()}
+                {day.getDate() === 1 ? `${formatDayNumber(day)} ${formatMonthShort(day)}` : formatDayNumber(day)}
               </button>
               {visible.map((e) => chip(e, day))}
               {hidden > 0 && (

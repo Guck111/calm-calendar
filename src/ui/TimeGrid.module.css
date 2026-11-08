@@ -10,7 +10,7 @@
   display: grid;
   border-bottom: 1px solid var(--border);
   /* ширина полосы прокрутки, чтобы колонки совпадали с телом */
-  padding-right: 10px;
+  padding-inline-end: 10px;
 }
 
 .dayHead {
@@ -63,12 +63,12 @@
 
 .single .dayHead {
   align-items: flex-start;
-  padding-left: 12px;
+  padding-inline-start: 12px;
 }
 
 .allDay {
   display: grid;
-  padding-right: 10px;
+  padding-inline-end: 10px;
   border-bottom: 1px solid var(--border);
   max-height: 120px;
   overflow-y: auto;
@@ -78,7 +78,7 @@
   padding: 6px 6px 0 0;
   font-size: 10.5px;
   color: var(--text-3);
-  text-align: right;
+  text-align: end;
 }
 
 .allDayCell {
@@ -86,7 +86,7 @@
   flex-direction: column;
   gap: 2px;
   padding: 3px 2px;
-  border-left: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
   min-width: 0;
 }
 
@@ -97,7 +97,7 @@
   border-radius: 4px;
   background: color-mix(in srgb, var(--c) 24%, var(--surface));
   font-size: 12px;
-  text-align: left;
+  text-align: start;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,16 +127,16 @@
 .hour {
   position: relative;
   top: -8px;
-  padding-right: 8px;
+  padding-inline-end: 8px;
   font-size: 11px;
   color: var(--text-3);
-  text-align: right;
+  text-align: end;
   font-variant-numeric: tabular-nums;
 }
 
 .column {
   position: relative;
-  border-left: 1px solid var(--border);
+  border-inline-start: 1px solid var(--border);
   background-image: repeating-linear-gradient(
     to bottom,
     var(--border) 0,
@@ -155,11 +155,11 @@
   gap: 1px;
   padding: 3px 6px;
   border: 0;
-  border-left: 3px solid var(--c);
+  border-inline-start: 3px solid var(--c);
   border-radius: 4px;
   background: color-mix(in srgb, var(--c) 22%, var(--surface));
   font-size: 12px;
-  text-align: left;
+  text-align: start;
   overflow: hidden;
   z-index: 1;
 }
@@ -213,8 +213,8 @@
 
 .now {
   position: absolute;
-  left: -1px;
-  right: 0;
+  inset-inline-start: -1px;
+  inset-inline-end: 0;
   height: 2px;
   background: var(--now);
   z-index: 3;
@@ -224,7 +224,7 @@
 .now::before {
   content: "";
   position: absolute;
-  left: -5px;
+  inset-inline-start: -5px;
   top: -4px;
   width: 10px;
   height: 10px;
@@ -251,8 +251,8 @@
 /* нижний край: растянуть событие */
 .resize {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   height: 7px;
   cursor: ns-resize;

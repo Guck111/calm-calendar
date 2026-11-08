@@ -63,7 +63,7 @@
 
 /* AM/PM рядом с крупными часами */
 .period {
-  margin-left: 6px;
+  margin-inline-start: 6px;
   font-size: 20px;
   font-weight: 400;
 }
@@ -103,7 +103,7 @@
 
 .month {
   flex: 1;
-  text-align: left;
+  text-align: start;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
@@ -183,10 +183,10 @@
 .dot {
   position: absolute;
   bottom: 2px;
-  left: 50%;
+  inset-inline-start: 50%;
   width: 4px;
   height: 4px;
-  margin-left: -2px;
+  margin-inline-start: -2px;
   border-radius: 50%;
   background: var(--accent);
 }
@@ -222,10 +222,10 @@
   align-items: baseline;
   column-gap: 8px;
   padding: 3px 6px !important;
-  margin-left: -6px;
+  margin-inline-start: -6px;
   border-radius: 6px;
   font-size: 13px !important;
-  text-align: left;
+  text-align: start;
 }
 
 .event:hover {
@@ -243,14 +243,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-left: 2px solid var(--c);
-  padding-left: 7px;
+  border-inline-start: 2px solid var(--c);
+  padding-inline-start: 7px;
 }
 
 .note {
   font-size: 13px !important;
   color: var(--muted) !important;
-  text-align: left;
+  text-align: start;
 }
 
 button.note:hover {

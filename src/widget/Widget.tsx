@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, type CSSProperties, type MouseEvent
 import { openMain, subscribe, inTauri } from "../shared/api/bus";
 import type { CalendarEvent } from "../shared/api/types";
 import {
+  formatDayNumber,
   addDays,
   formatClock,
   formatDayMonth,
@@ -58,7 +59,7 @@ const whenLabel = (e: CalendarEvent, today: Date): string => {
     ? t.common.today
     : isSameDay(day, addDays(today, 1))
       ? t.common.tomorrow
-      : `${formatWeekdayShort(day)}, ${day.getDate()}`;
+      : `${formatWeekdayShort(day)}, ${formatDayNumber(day)}`;
   return e.allDay || e.start < today ? dayLabel : `${dayLabel} ${formatTime(e.start)}`;
 };
 
@@ -195,7 +196,7 @@ export const Widget = () => {
             onClick={() => openMain(toDateKey(d))}
             title={t.widget.openDay}
           >
-            <span className={s.num}>{d.getDate()}</span>
+            <span className={s.num}>{formatDayNumber(d)}</span>
             {eventDays.has(d.getTime()) && <i className={s.dot} />}
           </button>
         ))}

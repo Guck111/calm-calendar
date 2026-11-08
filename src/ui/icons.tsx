@@ -13,14 +13,15 @@ const base = (size: number) => ({
   "aria-hidden": true,
 });
 
+// стрелки «назад/вперёд» справа налево зеркалятся (global.css, data-rtl-flip)
 export const ChevronLeft = ({ size = 16 }: P) => (
-  <svg {...base(size)}>
+  <svg {...base(size)} data-rtl-flip="">
     <path d="M10 3.5 5.5 8l4.5 4.5" />
   </svg>
 );
 
 export const ChevronRight = ({ size = 16 }: P) => (
-  <svg {...base(size)}>
+  <svg {...base(size)} data-rtl-flip="">
     <path d="M6 3.5 10.5 8 6 12.5" />
   </svg>
 );
