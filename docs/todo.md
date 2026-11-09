@@ -6,6 +6,10 @@
 - Structured data (`SoftwareApplication` JSON-LD) with `inLanguage`, `operatingSystem`, `offers` (free), link to the Store once it is published.
 - Later: landing pages in the biggest new languages (Spanish, Portuguese, German, Hindi) with `hreflang`.
 
+## Design
+
+- [ ] Rework the app's styles (asked for on 2026-11-09; scope to agree first: main window, event card, widget, settings, light and dark themes).
+
 ## Features (plan from the user-pain research, 2026-11-08)
 
 Stage 1 — never miss a meeting (no new Google scopes):
