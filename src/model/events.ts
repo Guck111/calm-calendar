@@ -4,8 +4,9 @@ import { listEvents } from "../shared/api/calendar";
 import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
 import type { DateRange } from "../shared/lib/date";
+import { findConflicts, type Conflicts } from "../shared/lib/conflicts";
 import { $signedIn, sessionLost, signOutFx } from "./auth";
-import { $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
+import { $failedAccounts, $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
 import { $range } from "./view";
 
 /** перечитать календари и события (кнопка «обновить», возврат в окно) */
@@ -14,7 +15,8 @@ export const refreshRequested = createEvent();
 export const reloadRequested = createEvent();
 
 type Request = { calendars: Calendar[]; range: DateRange; id: number };
-type Result = { events: CalendarEvent[]; failed: string[]; id: number };
+/** lost — в каком-то аккаунте вход истёк, остальные загрузились */
+type Result = { events: CalendarEvent[]; failed: string[]; lost: boolean; id: number };
 
 let lastRequestId = 0;
 
@@ -26,8 +28,9 @@ export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ ca
   if (calendars.length && failed.length === calendars.length && firstError?.status === "rejected") {
     throw toAppError(firstError.reason);
   }
+  const lost = results.some((r) => r.status === "rejected" && toAppError(r.reason).kind === "not_signed_in");
   const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  return { events, failed, id };
+  return { events, failed, lost, id };
 });
 
 /** действие с событием не удалось — показываем в полосе ошибок */
@@ -42,9 +45,12 @@ export const $events = createStore<CalendarEvent[]>([])
   .on(fetchEventsFx.doneData, (state, r) => (r.id === lastRequestId ? r.events : state))
   .reset(signOutFx.finally);
 
+/** пересечения событий разных аккаунтов: ключ события → с чем пересекается */
+export const $conflicts = $events.map((list): Conflicts => findConflicts(list));
+
 export const $loading = combine(fetchEventsFx.pending, fetchCalendarsFx.pending, (a, b) => a || b);
 
-export const $loadError = createStore<string | null>(null)
+const $eventsError = createStore<string | null>(null)
   .on(fetchEventsFx.doneData, (state, r) => {
     if (r.id !== lastRequestId) return state;
     return r.failed.length ? t.errors.calendarsFailed(r.failed.join(", ")) : null;
@@ -53,6 +59,11 @@ export const $loadError = createStore<string | null>(null)
   .on(fetchCalendarsFx.failData, (_, e) => e.message)
   .on(actionFailed, (_, m) => m)
   .reset(signOutFx.finally);
+
+/** ошибка загрузки; если её нет, но не ответил один из аккаунтов, — пишем какой */
+export const $loadError = combine($eventsError, $failedAccounts, (error, accounts) =>
+  error ?? (accounts.length ? t.errors.accountsFailed(accounts.join(", ")) : null),
+);
 
 sample({
   clock: [$range.updates, $visibleCalendars.updates, reloadRequested],
@@ -70,3 +81,5 @@ sample({
   filter: (e) => e.kind === "not_signed_in" || e.kind === "not_configured",
   target: sessionLost,
 });
+
+sample({ clock: fetchEventsFx.doneData, filter: (r) => r.lost, target: sessionLost });

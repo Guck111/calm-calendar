@@ -37,27 +37,38 @@ describe("saved responses", () => {
 describe("reading with a fallback", () => {
   it("remembers a live answer", async () => {
     googleRequest.mockResolvedValueOnce({ items: ["live"] });
-    expect(await readWithCache("/calendar/v3/p", { q: "1" })).toEqual({ items: ["live"] });
-    expect(recall(cacheKey("/calendar/v3/p", { q: "1" }))?.body).toEqual({ items: ["live"] });
+    expect(await readWithCache("me@example.com", "/calendar/v3/p", { q: "1" })).toEqual({ items: ["live"] });
+    expect(recall(`me@example.com|${cacheKey("/calendar/v3/p", { q: "1" })}`)?.body).toEqual({ items: ["live"] });
   });
 
   it("without network returns the saved answer and reports when it is from", async () => {
-    remember(cacheKey("/calendar/v3/p", { q: "1" }), { items: ["saved"] }, 5000);
+    remember(`me@example.com|${cacheKey("/calendar/v3/p", { q: "1" })}`, { items: ["saved"] }, 5000);
     const seen: (number | null)[] = [];
     const off = onConnectionChange((at) => seen.push(at));
     googleRequest.mockRejectedValueOnce(network);
-    expect(await readWithCache("/calendar/v3/p", { q: "1" })).toEqual({ items: ["saved"] });
+    expect(await readWithCache("me@example.com", "/calendar/v3/p", { q: "1" })).toEqual({ items: ["saved"] });
     googleRequest.mockResolvedValueOnce({ items: [] });
-    await readWithCache("/calendar/v3/p", { q: "1" });
+    await readWithCache("me@example.com", "/calendar/v3/p", { q: "1" });
     off();
     expect(seen).toEqual([5000, null]);
   });
 
   it("passes other errors and misses through", async () => {
-    remember(cacheKey("/calendar/v3/p", {}), { items: [] });
+    remember(`me@example.com|${cacheKey("/calendar/v3/p", {})}`, { items: [] });
     googleRequest.mockRejectedValueOnce({ kind: "not_signed_in", message: "" });
-    await expect(readWithCache("/calendar/v3/p", {})).rejects.toMatchObject({ kind: "not_signed_in" });
+    await expect(readWithCache("me@example.com", "/calendar/v3/p", {})).rejects.toMatchObject({ kind: "not_signed_in" });
     googleRequest.mockRejectedValueOnce(network);
-    await expect(readWithCache("/calendar/v3/other", {})).rejects.toMatchObject({ kind: "network" });
+    await expect(readWithCache("me@example.com", "/calendar/v3/other", {})).rejects.toMatchObject({ kind: "network" });
+  });
+
+  it("keeps answers of different accounts apart", async () => {
+    googleRequest.mockResolvedValueOnce({ items: ["mine"] });
+    await readWithCache("me@example.com", "/calendar/v3/users/me/calendarList", {});
+    googleRequest.mockRejectedValueOnce(network);
+    // у второго аккаунта тот же путь, но сохранённого ответа нет: чужие календари не показываем
+    await expect(readWithCache("work@example.com", "/calendar/v3/users/me/calendarList", {})).rejects.toMatchObject({
+      kind: "network",
+    });
+    expect(googleRequest).toHaveBeenLastCalledWith("work@example.com", "GET", "/calendar/v3/users/me/calendarList", {});
   });
 });

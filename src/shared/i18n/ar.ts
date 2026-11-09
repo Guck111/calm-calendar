@@ -63,6 +63,8 @@ export const ar: Dict = {
     notificationsFailed: "تعذّر تغيير الإشعارات",
     glassFailed: "تعذّر تغيير تأثير الزجاج",
     offline: (when: string) => `لا يوجد اتصال. تُعرض بيانات ${when}`,
+    otherAccount: "لا يمكن نقل حدث إلى تقويم في حساب Google آخر",
+    accountsFailed: (emails: string) => `تعذّر تحميل تقاويم الحساب: ${emails}`,
   },
   auth: {
     clientTitle: "الاتصال بـ Google",
@@ -129,6 +131,15 @@ export const ar: Dict = {
     this: "هذا الحدث فقط",
     following: "هذا الحدث والأحداث التالية",
     ruleChanged: "تغيّر التكرار، لذا سينطبق التعديل على هذا الحدث والأحداث التالية.",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "إضافة حساب",
+    signOutTitle: (email: string) => `تسجيل الخروج من ${email}`,
+    expired: "انتهت صلاحية تسجيل الدخول.",
+    signInAgain: "تسجيل الدخول مجددًا",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `يتعارض مع: ${list}`,
   },
   meeting: {
     join: "انضمام",

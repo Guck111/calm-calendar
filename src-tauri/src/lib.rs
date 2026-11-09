@@ -21,16 +21,14 @@ use tauri_plugin_window_state::StateFlags;
 #[derive(Serialize)]
 struct AuthStatus {
     client_source: ClientSource,
-    signed_in: bool,
-    email: Option<String>,
+    accounts: Vec<oauth::AccountStatus>,
 }
 
 #[tauri::command]
 fn auth_status(app: AppHandle, auth: State<'_, Auth>) -> AuthStatus {
     AuthStatus {
         client_source: config::client_source(&app),
-        signed_in: auth.is_signed_in(),
-        email: config::load_account(&app).email,
+        accounts: auth.accounts(&app),
     }
 }
 
@@ -40,13 +38,14 @@ fn save_client_config(app: AppHandle, client_id: String, client_secret: String) 
 }
 
 #[tauri::command]
-async fn sign_in(app: AppHandle, auth: State<'_, Auth>) -> Result<Option<String>> {
+async fn sign_in(app: AppHandle, auth: State<'_, Auth>) -> Result<String> {
     auth.sign_in(&app).await
 }
 
+/// account — из какого аккаунта выйти; без него — из всех
 #[tauri::command]
-async fn sign_out(app: AppHandle, auth: State<'_, Auth>) -> Result<()> {
-    auth.sign_out(&app).await;
+async fn sign_out(app: AppHandle, auth: State<'_, Auth>, account: Option<String>) -> Result<()> {
+    auth.sign_out(&app, account.as_deref()).await;
     Ok(())
 }
 
@@ -54,12 +53,13 @@ async fn sign_out(app: AppHandle, auth: State<'_, Auth>) -> Result<()> {
 async fn google_request(
     app: AppHandle,
     auth: State<'_, Auth>,
+    account: String,
     method: String,
     path: String,
     query: Option<Vec<(String, String)>>,
     body: Option<Value>,
 ) -> Result<Value> {
-    google::request(&app, &auth, &method, &path, query.unwrap_or_default(), body).await
+    google::request(&app, &auth, &account, &method, &path, query.unwrap_or_default(), body).await
 }
 
 /// Открыть главное окно из виджета или списка у трея, при необходимости сразу на нужном дне ("2026-11-04")
@@ -191,6 +191,8 @@ pub fn run() {
         .manage(desktop::TrayItems::default())
         .manage(desktop::AgendaHidden::default())
         .setup(|app| {
+            // вход старой версии (один аккаунт) переезжает в список аккаунтов
+            oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
             reminders::start(app.handle().clone());
             Ok(())

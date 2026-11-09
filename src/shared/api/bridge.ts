@@ -42,30 +42,40 @@ const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
   }
 };
 
-type RawAuthStatus = { client_source: AuthStatus["clientSource"]; signed_in: boolean; email: string | null };
+type RawAuthStatus = {
+  client_source: AuthStatus["clientSource"];
+  accounts: { email: string; signed_in: boolean }[];
+};
 
 export const getAuthStatus = async (): Promise<AuthStatus> => {
   const raw = await call<RawAuthStatus>("auth_status");
-  return { clientSource: raw.client_source, signedIn: raw.signed_in, email: raw.email };
+  return {
+    clientSource: raw.client_source,
+    accounts: raw.accounts.map((a) => ({ email: a.email, signedIn: a.signed_in })),
+  };
 };
 
 export const saveClientConfig = (clientId: string, clientSecret: string): Promise<void> =>
   call("save_client_config", { clientId, clientSecret });
 
-// сохранённые ответы принадлежат аккаунту: при входе и выходе стираем
-export const signIn = (): Promise<string | null> => call<string | null>("sign_in").finally(clearCache);
+/** Вход в ещё один аккаунт: Google даёт выбрать какой. Возвращает его email */
+export const signIn = (): Promise<string> => call<string>("sign_in");
 
-export const signOut = (): Promise<void> => call<void>("sign_out").finally(clearCache);
+/** Выход из одного аккаунта, без account — из всех. Сохранённые ответы при этом стираем */
+export const signOut = (account?: string): Promise<void> =>
+  call<void>("sign_out", account ? { account } : {}).finally(clearCache);
 
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export const googleRequest = <T>(
+  account: string,
   method: HttpMethod,
   path: string,
   query?: Record<string, string>,
   body?: unknown,
 ): Promise<T> =>
   call<T>("google_request", {
+    account,
     method,
     path,
     query: query ? Object.entries(query) : undefined,

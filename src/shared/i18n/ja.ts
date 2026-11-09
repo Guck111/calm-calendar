@@ -47,6 +47,8 @@ export const ja: Dict = {
     notificationsFailed: "通知を切り替えられませんでした",
     glassFailed: "ガラス効果を切り替えられませんでした",
     offline: (when: string) => `オフラインです。${when} 時点のデータを表示しています`,
+    otherAccount: "予定を別の Google アカウントのカレンダーに移動することはできません",
+    accountsFailed: (emails: string) => `次のアカウントのカレンダーを読み込めませんでした: ${emails}`,
   },
   auth: {
     clientTitle: "Google に接続",
@@ -108,6 +110,15 @@ export const ja: Dict = {
     this: "この予定のみ",
     following: "これ以降のすべての予定",
     ruleChanged: "繰り返しを変更したため、この予定とそれ以降の予定に反映されます。",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "アカウントを追加",
+    signOutTitle: (email: string) => `${email} からログアウト`,
+    expired: "ログインの有効期限が切れました。",
+    signInAgain: "再ログイン",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `重複: ${list}`,
   },
   meeting: {
     join: "参加",

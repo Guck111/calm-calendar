@@ -6,7 +6,7 @@ const now = new Date(2026, 10, 4, 12, 0);
 const ev = (title: string, start: Date, end: Date, allDay = false): CalendarEvent => ({
   key: title,
   id: title,
-  calendarId: "c",
+  calendarId: "c", account: "",
   title,
   start,
   end,

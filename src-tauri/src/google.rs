@@ -67,6 +67,7 @@ async fn google_error(resp: reqwest::Response) -> Error {
 pub async fn request(
     app: &AppHandle,
     auth: &Auth,
+    account: &str,
     method: &str,
     path: &str,
     query: Vec<(String, String)>,
@@ -77,7 +78,7 @@ pub async fn request(
 
     // одна повторная попытка, если токен внезапно стал недействителен
     for attempt in 0..2 {
-        let token = auth.access_token(app).await?;
+        let token = auth.access_token(app, account).await?;
         let mut req = auth
             .http()
             .request(method.clone(), url.clone())
@@ -88,7 +89,7 @@ pub async fn request(
         let resp = req.send().await?;
         let status = resp.status();
         if status == reqwest::StatusCode::UNAUTHORIZED && attempt == 0 {
-            auth.forget_access_token().await;
+            auth.forget_access_token(account).await;
             continue;
         }
         if !status.is_success() {

@@ -5,7 +5,7 @@ import { eventsForDay, layoutDay } from "./layout";
 const ev = (id: string, start: Date, end: Date, allDay = false): CalendarEvent => ({
   key: id,
   id,
-  calendarId: "c",
+  calendarId: "c", account: "",
   title: id,
   start,
   end,

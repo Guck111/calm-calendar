@@ -2,7 +2,7 @@
 // поэтому здесь своя лёгкая модель поверх тех же запросов к Google.
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { getAuthStatus } from "../shared/api/bridge";
-import { listCalendars, listEvents } from "../shared/api/calendar";
+import { calendarVisible, listAllCalendars, listEvents } from "../shared/api/calendar";
 import type { AppError, AuthStatus, Calendar, CalendarEvent } from "../shared/api/types";
 import { addDays, addMonths, isSameMonth, monthGrid, startOfDay, startOfMonth, type DateRange } from "../shared/lib/date";
 import { readJson } from "../shared/lib/storage";
@@ -19,11 +19,11 @@ export const monthReset = createEvent();
 
 export const fetchStatusFx = createEffect<void, AuthStatus, AppError>(getAuthStatus);
 
-/** только календари, включённые в главном окне */
-export const fetchCalendarsFx = createEffect<void, Calendar[], AppError>(async () => {
-  const calendars = await listCalendars();
+/** календари всех аккаунтов, но только включённые в главном окне */
+export const fetchCalendarsFx = createEffect<string[], Calendar[], AppError>(async (accounts) => {
+  const { calendars } = await listAllCalendars(accounts);
   const visibility = readJson<Record<string, boolean>>(VISIBILITY_KEY, {});
-  return calendars.filter((c) => visibility[c.id] ?? c.selected);
+  return calendars.filter((c) => calendarVisible(c, visibility));
 });
 
 const loadRange = async (calendars: Calendar[], range: DateRange): Promise<CalendarEvent[]> => {
@@ -60,9 +60,14 @@ export const $month = createStore(startOfMonth(new Date()))
 export const $isCurrentMonth = combine($month, $today, isSameMonth);
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
-export const $signedIn = $status.map((s) => Boolean(s?.signedIn) && s?.clientSource !== "none");
+/** аккаунты с действующим входом */
+const activeAccounts = (s: AuthStatus | null): string[] =>
+  s && s.clientSource !== "none" ? s.accounts.filter((a) => a.signedIn).map((a) => a.email) : [];
 
-const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => !s.signedIn });
+export const $accounts = $status.map(activeAccounts);
+export const $signedIn = $accounts.map((list) => list.length > 0);
+
+const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => activeAccounts(s).length === 0 });
 
 export const $calendars = createStore<Calendar[]>([]).on(fetchCalendarsFx.doneData, (_, c) => c).reset(signedOut);
 
@@ -87,8 +92,8 @@ sample({ clock: [widgetStarted, authChanged], target: fetchStatusFx });
 
 sample({
   clock: [fetchStatusFx.doneData, refreshRequested],
-  source: $signedIn,
-  filter: Boolean,
+  source: $accounts,
+  filter: (accounts) => accounts.length > 0,
   target: fetchCalendarsFx,
 });
 

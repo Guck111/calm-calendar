@@ -5,7 +5,7 @@ import { $calendarById, $writableCalendars } from "../model/calendars";
 import type { CalendarEvent } from "../shared/api/types";
 import { shiftEvent, snap, type DragMode } from "../shared/lib/drag";
 import { eventMoved, eventOpened, slotClicked } from "../model/editor";
-import { $events } from "../model/events";
+import { $conflicts, $events } from "../model/events";
 import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import {
   formatDayNumber,
@@ -21,7 +21,7 @@ import {
 import { eventsForDay, isAllDayLike, layoutDay } from "../shared/lib/layout";
 import { cx } from "./Button";
 import { eventStyle } from "./eventColor";
-import { Repeat } from "./icons";
+import { Repeat, Warning } from "./icons";
 import s from "./TimeGrid.module.css";
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
@@ -41,13 +41,14 @@ type Drag = {
 };
 
 export const TimeGrid = () => {
-  const [view, cursor, today, now, events, calendars] = useUnit([
+  const [view, cursor, today, now, events, calendars, conflicts] = useUnit([
     $view,
     $cursor,
     $today,
     $now,
     $events,
     $calendarById,
+    $conflicts,
   ]);
   const [openEvent, createAt, openDay, move, writable] = useUnit([
     eventOpened,
@@ -198,10 +199,18 @@ export const TimeGrid = () => {
                   const short = endMin - startMin < 45;
                   const canDrag = editable.has(event.calendarId);
                   const isDragged = drag?.moved && drag.event.key === event.key;
+                  const clash = conflicts.get(event.key);
+                  const clashText = clash ? t.accounts.conflict(clash.map((c) => c.title).join(", ")) : "";
                   return (
                     <button
                       key={event.key}
-                      className={cx(s.event, short && s.short, canDrag && s.draggable, isDragged && s.dragged)}
+                      className={cx(
+                        s.event,
+                        short && s.short,
+                        canDrag && s.draggable,
+                        isDragged && s.dragged,
+                        clash && s.conflict,
+                      )}
                       style={{
                         ...eventStyle(calendars.get(event.calendarId)),
                         top: `${(startMin / MINUTES_IN_DAY) * 100}%`,
@@ -212,9 +221,14 @@ export const TimeGrid = () => {
                       onPointerDown={startDrag(event, "move")}
                       // клик мышью по своему событию обрабатывает перетаскивание; здесь — клавиатура и чужие календари
                       onClick={(e) => (e.detail === 0 || !canDrag) && openEvent(event)}
-                      title={`${formatTime(event.start)}–${formatTime(event.end)} ${event.title}`}
+                      title={`${formatTime(event.start)}–${formatTime(event.end)} ${event.title}${clash ? `\n${clashText}` : ""}`}
                     >
                       <span className={s.eventTitle}>
+                        {clash && (
+                          <span className={s.clash} role="img" aria-label={clashText}>
+                            <Warning size={11} />
+                          </span>
+                        )}
                         {event.recurring && <Repeat />}
                         {event.title}
                       </span>

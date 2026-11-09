@@ -49,6 +49,8 @@ export const en: Dict = {
     notificationsFailed: "Couldn't change notifications",
     glassFailed: "Couldn't change the glass effect",
     offline: (when: string) => `Offline. Showing data from ${when}`,
+    otherAccount: "An event can't be moved to a calendar of another Google account",
+    accountsFailed: (emails: string) => `Couldn't load the calendars of: ${emails}`,
   },
   auth: {
     clientTitle: "Connect to Google",
@@ -113,6 +115,15 @@ export const en: Dict = {
     this: "This event",
     following: "This and following events",
     ruleChanged: "The repeat has changed, so the edit applies to this and following events.",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "Add account",
+    signOutTitle: (email: string) => `Sign out of ${email}`,
+    expired: "Signed out.",
+    signInAgain: "Sign in again",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `Overlaps with: ${list}`,
   },
   meeting: {
     join: "Join",

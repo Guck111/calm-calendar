@@ -1,7 +1,8 @@
 import { useUnit } from "effector-react";
 import { t } from "../shared/i18n";
 import { useEffect, useRef, useState } from "react";
-import { $email, signOutClicked } from "../model/auth";
+import { $accounts, $authError, $signingIn, signInClicked, signOutClicked } from "../model/auth";
+import type { Calendar } from "../shared/api/types";
 import { $calendarsWithVisibility, $writableCalendars, calendarToggled } from "../model/calendars";
 import { createClicked, draftOpened } from "../model/editor";
 import { quickCreateFx, quickFocusRequested } from "../model/quick";
@@ -66,25 +67,69 @@ const MiniMonth = () => {
   );
 };
 
+const CalendarRow = ({ c, toggle }: { c: Calendar & { visible: boolean }; toggle: (id: string) => void }) => (
+  <label className={s.calendar} title={c.name}>
+    <input type="checkbox" checked={c.visible} onChange={() => toggle(c.id)} style={{ accentColor: c.color }} />
+    <span className={s.swatch} style={{ background: c.visible ? c.color : "transparent", borderColor: c.color }} />
+    <span className={s.name}>{c.name}</span>
+  </label>
+);
+
+/** Календари по аккаунтам: у каждого аккаунта свой заголовок с email и «Выйти» */
 const CalendarList = () => {
-  const [calendars, toggle] = useUnit([$calendarsWithVisibility, calendarToggled]);
-  if (!calendars.length) return null;
+  const [calendars, accounts, toggle, signOut, signIn, signingIn] = useUnit([
+    $calendarsWithVisibility,
+    $accounts,
+    calendarToggled,
+    signOutClicked,
+    signInClicked,
+    $signingIn,
+  ]);
   return (
     <section className={s.calendars}>
       <h3 className={s.heading}>{t.sidebar.calendars}</h3>
-      {calendars.map((c) => (
-        <label key={c.id} className={s.calendar} title={c.name}>
-          <input
-            type="checkbox"
-            checked={c.visible}
-            onChange={() => toggle(c.id)}
-            style={{ accentColor: c.color }}
-          />
-          <span className={s.swatch} style={{ background: c.visible ? c.color : "transparent", borderColor: c.color }} />
-          <span className={s.name}>{c.name}</span>
-        </label>
+      {accounts.map((a) => (
+        <div key={a.email} className={s.group} role="group" aria-label={a.email}>
+          <div className={s.groupHead}>
+            <span className={s.email} title={a.email}>
+              {a.email}
+            </span>
+            <button
+              type="button"
+              className={s.signOut}
+              onClick={() => signOut(a.email)}
+              title={t.accounts.signOutTitle(a.email)}
+            >
+              {t.sidebar.signOut}
+            </button>
+          </div>
+          {a.signedIn ? (
+            calendars
+              .filter((c) => c.account === a.email)
+              .map((c) => <CalendarRow key={c.id} c={c} toggle={toggle} />)
+          ) : (
+            <p className={s.expired}>
+              {t.accounts.expired}{" "}
+              <button type="button" className={s.link} onClick={() => signIn()} disabled={signingIn}>
+                {t.accounts.signInAgain}
+              </button>
+            </p>
+          )}
+        </div>
       ))}
     </section>
+  );
+};
+
+const AddAccount = () => {
+  const [signIn, signingIn, error] = useUnit([signInClicked, $signingIn, $authError]);
+  return (
+    <div className={s.account}>
+      {error && <p className={s.error}>{error}</p>}
+      <button type="button" className={s.add} onClick={() => signIn()} disabled={signingIn}>
+        <Plus size={12} /> {signingIn ? t.auth.finishInBrowser : t.accounts.add}
+      </button>
+    </div>
   );
 };
 
@@ -105,7 +150,7 @@ const SidebarQuickAdd = () => {
 };
 
 export const Sidebar = () => {
-  const [email, create, signOut] = useUnit([$email, createClicked, signOutClicked]);
+  const create = useUnit(createClicked);
   return (
     <aside className={s.sidebar}>
       <Button variant="primary" className={s.create} onClick={() => create()} title={t.common.newEvent}>
@@ -114,12 +159,7 @@ export const Sidebar = () => {
       <SidebarQuickAdd />
       <MiniMonth />
       <CalendarList />
-      <div className={s.account}>
-        {email && <span className={s.email}>{email}</span>}
-        <button type="button" className={s.signOut} onClick={() => signOut()}>
-          {t.sidebar.signOut}
-        </button>
-      </div>
+      <AddAccount />
     </aside>
   );
 };

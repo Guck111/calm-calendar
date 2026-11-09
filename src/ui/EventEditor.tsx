@@ -1,7 +1,9 @@
 import { useUnit } from "effector-react";
 import { t } from "../shared/i18n";
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import { $accounts } from "../model/auth";
 import { $calendarById, $writableCalendars } from "../model/calendars";
+import { $conflicts } from "../model/events";
 import {
   $askScope,
   $busy,
@@ -21,12 +23,12 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
-import type { CalendarEvent } from "../shared/api/types";
+import type { Calendar, CalendarEvent } from "../shared/api/types";
 import { addDays, formatFullDate, formatTime, isSameDay } from "../shared/lib/date";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
-import { Close, External, Video } from "./icons";
+import { Close, External, Video, Warning } from "./icons";
 import s from "./EventEditor.module.css";
 
 const formatWhen = (e: CalendarEvent): string => {
@@ -133,10 +135,25 @@ const SeriesNote = ({ event }: { event: CalendarEvent }) => {
   return <p className={s.note}>{text}</p>;
 };
 
+/** «Пересекается с: Созвон 14:00–15:00 (work@company.com)» — событие из другого аккаунта в то же время */
+const ConflictNote = ({ event }: { event: CalendarEvent }) => {
+  const conflicts = useUnit($conflicts).get(event.key);
+  if (!conflicts?.length) return null;
+  const list = conflicts
+    .map((c) => `${c.title} ${formatTime(c.start)}–${formatTime(c.end)} (${c.account})`)
+    .join(", ");
+  return (
+    <p className={s.conflict}>
+      <Warning /> {t.accounts.conflict(list)}
+    </p>
+  );
+};
+
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
-  const [byId, busy, error, ask, close, edit, remove] = useUnit([
+  const [byId, accounts, busy, error, ask, close, edit, remove] = useUnit([
     $calendarById,
+    $accounts,
     $busy,
     $editorError,
     $askScope,
@@ -171,6 +188,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <dd>
           <i className={s.swatch} />
           {calendar?.name ?? event.calendarId}
+          {accounts.length > 1 && <span className={s.accountName}>{event.account}</span>}
         </dd>
         {event.location && (
           <>
@@ -185,6 +203,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           </>
         )}
       </dl>
+      <ConflictNote event={event} />
       {event.recurring && <SeriesNote event={event} />}
       {!editable && <p className={s.note}>{t.editor.readOnly}</p>}
       {error && <p className={s.error}>{error}</p>}
@@ -214,6 +233,36 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
     {children}
   </label>
 );
+
+/** Календари для записи. Аккаунтов несколько — календари сгруппированы по ним.
+ *  У существующего события в списке только календари его аккаунта: Google не переносит события между аккаунтами */
+const CalendarSelect = ({
+  value,
+  calendars,
+  onChange,
+}: {
+  value: string;
+  calendars: Calendar[];
+  onChange: (id: string) => void;
+}) => {
+  const accounts = [...new Set(calendars.map((c) => c.account))];
+  const option = (c: Calendar) => (
+    <option key={c.id} value={c.id}>
+      {c.name}
+    </option>
+  );
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)}>
+      {accounts.length > 1
+        ? accounts.map((a) => (
+            <optgroup key={a} label={a}>
+              {calendars.filter((c) => c.account === a).map(option)}
+            </optgroup>
+          ))
+        : calendars.map(option)}
+    </select>
+  );
+};
 
 /** Форма создания и правки */
 const EventForm = () => {
@@ -314,13 +363,11 @@ const EventForm = () => {
             {calendar?.name ?? draft.calendarId}
           </div>
         ) : (
-          <select value={draft.calendarId} onChange={(e) => change({ calendarId: e.target.value })}>
-            {writable.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <CalendarSelect
+            value={draft.calendarId}
+            calendars={isNew ? writable : writable.filter((c) => c.account === calendar?.account)}
+            onChange={(calendarId) => change({ calendarId })}
+          />
         )}
       </Field>
 

@@ -1,4 +1,4 @@
-//! Настройки клиента Google OAuth и сохранённый аккаунт.
+//! Настройки клиента Google OAuth и список аккаунтов Google.
 //!
 //! Клиент берётся в таком порядке:
 //! 1. переменные окружения при сборке CALM_GOOGLE_CLIENT_ID / CALM_GOOGLE_CLIENT_SECRET
@@ -14,7 +14,8 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
 const CLIENT_FILE: &str = "google-client.json";
-const ACCOUNT_FILE: &str = "account.json";
+const LEGACY_ACCOUNT_FILE: &str = "account.json";
+const ACCOUNTS_FILE: &str = "accounts.json";
 const WIDGET_FILE: &str = "widget.json";
 const SETTINGS_FILE: &str = "settings.json";
 
@@ -32,9 +33,28 @@ pub enum ClientSource {
     None,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+/// Вход до версии с несколькими аккаунтами: один email в account.json
+#[derive(Default, Deserialize)]
+struct LegacyAccount {
+    email: Option<String>,
+}
+
+/// Аккаунт Google; email служит и ключом токена в хранилище паролей
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Account {
-    pub email: Option<String>,
+    pub email: String,
+}
+
+/// Добавить аккаунт или оставить на месте, если такой уже есть (email без учёта регистра)
+pub fn with_account(mut list: Vec<Account>, email: &str) -> Vec<Account> {
+    if !list.iter().any(|a| a.email.eq_ignore_ascii_case(email)) {
+        list.push(Account { email: email.to_owned() });
+    }
+    list
+}
+
+pub fn without_account(list: Vec<Account>, email: &str) -> Vec<Account> {
+    list.into_iter().filter(|a| !a.email.eq_ignore_ascii_case(email)).collect()
 }
 
 fn config_dir(app: &AppHandle) -> Result<PathBuf> {
@@ -114,24 +134,22 @@ pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Res
     Ok(())
 }
 
-pub fn load_account(app: &AppHandle) -> Account {
-    config_dir(app)
-        .ok()
-        .and_then(|d| std::fs::read_to_string(d.join(ACCOUNT_FILE)).ok())
-        .and_then(|t| serde_json::from_str(&t).ok())
-        .unwrap_or_default()
+/// Аккаунты в порядке входа; None — файла ещё нет (первый запуск или старая версия)
+pub fn load_accounts(app: &AppHandle) -> Option<Vec<Account>> {
+    let text = std::fs::read_to_string(config_dir(app).ok()?.join(ACCOUNTS_FILE)).ok()?;
+    serde_json::from_str(&text).ok()
 }
 
-pub fn save_account(app: &AppHandle, account: &Account) -> Result<()> {
-    let path = config_dir(app)?.join(ACCOUNT_FILE);
-    std::fs::write(path, serde_json::to_string_pretty(account)?)?;
+pub fn save_accounts(app: &AppHandle, accounts: &[Account]) -> Result<()> {
+    let path = config_dir(app)?.join(ACCOUNTS_FILE);
+    std::fs::write(path, serde_json::to_string_pretty(accounts)?)?;
     Ok(())
 }
 
-pub fn clear_account(app: &AppHandle) {
-    if let Ok(dir) = config_dir(app) {
-        let _ = std::fs::remove_file(dir.join(ACCOUNT_FILE));
-    }
+/// email из account.json старой версии. Файл не удаляем: он нужен версии 0.4, если её запустят снова
+pub fn legacy_email(app: &AppHandle) -> Option<String> {
+    let text = std::fs::read_to_string(config_dir(app).ok()?.join(LEGACY_ACCOUNT_FILE)).ok()?;
+    serde_json::from_str::<LegacyAccount>(&text).ok()?.email
 }
 
 /// Настройки окна-виджета: показан ли он и держится ли поверх окон
@@ -227,5 +245,23 @@ mod tests {
         assert_eq!(s.alerts, AlertMode::Off);
         let s: Settings = serde_json::from_str(r#"{"alerts":"calls"}"#).unwrap();
         assert_eq!(s.alerts, AlertMode::Calls);
+    }
+
+    #[test]
+    fn accounts_are_unique_by_email() {
+        let list = with_account(vec![], "me@gmail.com");
+        let list = with_account(list, "Work@Company.com");
+        let list = with_account(list, "ME@gmail.com");
+        assert_eq!(
+            list.iter().map(|a| a.email.as_str()).collect::<Vec<_>>(),
+            ["me@gmail.com", "Work@Company.com"]
+        );
+        assert_eq!(without_account(list, "work@company.com").len(), 1);
+    }
+
+    #[test]
+    fn reads_legacy_account_file() {
+        let a: LegacyAccount = serde_json::from_str(r#"{"email":"me@gmail.com"}"#).unwrap();
+        assert_eq!(a.email.as_deref(), Some("me@gmail.com"));
     }
 }

@@ -48,6 +48,8 @@ export const bn: Dict = {
     notificationsFailed: "বিজ্ঞপ্তি পরিবর্তন করা যায়নি",
     glassFailed: "গ্লাস ইফেক্ট পরিবর্তন করা যায়নি",
     offline: (when: string) => `অফলাইন। ${when}-এর ডেটা দেখানো হচ্ছে`,
+    otherAccount: "ইভেন্ট অন্য Google অ্যাকাউন্টের ক্যালেন্ডারে সরানো যায় না",
+    accountsFailed: (emails: string) => `এই অ্যাকাউন্টের ক্যালেন্ডার লোড হয়নি: ${emails}`,
   },
   auth: {
     clientTitle: "Google-এর সাথে সংযোগ",
@@ -112,6 +114,15 @@ export const bn: Dict = {
     this: "শুধু এই ইভেন্ট",
     following: "এটি এবং পরবর্তী ইভেন্ট",
     ruleChanged: "পুনরাবৃত্তি বদলেছে, তাই পরিবর্তনটি এই এবং পরবর্তী ইভেন্টে প্রযোজ্য হবে।",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "অ্যাকাউন্ট যোগ করুন",
+    signOutTitle: (email: string) => `${email} থেকে সাইন আউট করুন`,
+    expired: "সাইন-ইনের মেয়াদ শেষ।",
+    signInAgain: "আবার সাইন ইন করুন",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `এর সাথে মেলে: ${list}`,
   },
   meeting: {
     join: "যোগ দিন",

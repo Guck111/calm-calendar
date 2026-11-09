@@ -4,7 +4,7 @@ import { countdown } from "./countdown";
 
 const at = (h: number, m = 0, d = 4) => new Date(2026, 10, d, h, m);
 const ev = (title: string, start: Date, end: Date, allDay = false): CalendarEvent => ({
-  key: title, id: title, calendarId: "c", title, start, end, allDay, recurring: false,
+  key: title, id: title, calendarId: "c", account: "", title, start, end, allDay, recurring: false,
 });
 
 describe("обратный отсчёт", () => {

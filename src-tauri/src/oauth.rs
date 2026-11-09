@@ -1,15 +1,16 @@
 //! Вход через Google для настольного приложения:
 //! системный браузер + приём кода на 127.0.0.1 + PKCE (RFC 7636).
-//! Токен обновления хранится в системном хранилище паролей
-//! (на Windows это диспетчер учётных данных), а не в файле.
+//! Аккаунтов может быть несколько. Токен обновления каждого хранится в системном
+//! хранилище паролей (на Windows это диспетчер учётных данных), а не в файле.
 
 use crate::config::{self, Account, ClientConfig};
 use crate::error::{Error, Result};
 use crate::i18n::{self, Lang};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use rand::{Rng, distributions::Alphanumeric};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
@@ -29,7 +30,8 @@ const CALENDAR_SCOPES: [&str; 2] = [
 const ID_SCOPES: [&str; 2] = ["openid", "email"];
 
 const KEYRING_SERVICE: &str = "com.arseni.calmcalendar";
-const KEYRING_USER: &str = "google-refresh-token";
+/// единственный токен версий до 0.5; переносится под ключ с email
+const LEGACY_KEYRING_USER: &str = "google-refresh-token";
 const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
 /// браузер присылает запрос сразу; соединение, которое молчит дольше, — не браузер
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
@@ -41,7 +43,15 @@ struct AccessToken {
 
 pub struct Auth {
     http: reqwest::Client,
-    token: Mutex<Option<AccessToken>>,
+    /// токены доступа по email аккаунта
+    tokens: Mutex<HashMap<String, AccessToken>>,
+}
+
+/// Аккаунт для интерфейса: signed_in false — Google отозвал доступ, нужно войти снова
+#[derive(Serialize)]
+pub struct AccountStatus {
+    pub email: String,
+    pub signed_in: bool,
 }
 
 #[derive(Deserialize)]
@@ -67,18 +77,45 @@ fn random_string(len: usize) -> String {
         .collect()
 }
 
-fn keyring_entry() -> Result<keyring::Entry> {
-    Ok(keyring::Entry::new(KEYRING_SERVICE, KEYRING_USER)?)
+/// ключ записи в хранилище паролей: email в нижнем регистре
+fn keyring_user(email: &str) -> String {
+    format!("{LEGACY_KEYRING_USER}:{}", email.to_ascii_lowercase())
 }
 
-fn stored_refresh_token() -> Option<String> {
-    keyring_entry().ok()?.get_password().ok()
+fn keyring_entry(user: &str) -> Result<keyring::Entry> {
+    Ok(keyring::Entry::new(KEYRING_SERVICE, user)?)
 }
 
-fn delete_refresh_token() {
-    if let Ok(entry) = keyring_entry() {
-        let _ = entry.delete_credential();
+fn stored_refresh_token(email: &str) -> Option<String> {
+    keyring_entry(&keyring_user(email)).ok()?.get_password().ok()
+}
+
+fn delete_refresh_token(email: &str) {
+    let Ok(entry) = keyring_entry(&keyring_user(email)) else { return };
+    // запись старой версии с тем же токеном тоже убираем: иначе выход был бы неполным
+    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(LEGACY_KEYRING_USER)) {
+        if legacy.get_password().is_ok_and(|old| old == token) {
+            let _ = legacy.delete_credential();
+        }
     }
+    let _ = entry.delete_credential();
+}
+
+/// Перенос входа старой версии: один токен без email в ключе и email в account.json.
+/// Токен копируется, а не переносится: старая запись нужна версии 0.4, если она ещё установлена
+/// (хранилище паролей у них общее). Если email неизвестен, токен не к чему привязать — тогда войти заново.
+pub fn migrate_legacy(app: &AppHandle) {
+    if config::load_accounts(app).is_some() {
+        return;
+    }
+    let token = keyring_entry(LEGACY_KEYRING_USER).ok().and_then(|e| e.get_password().ok());
+    let mut accounts = Vec::new();
+    if let (Some(email), Some(token)) = (config::legacy_email(app), token) {
+        if keyring_entry(&keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok() {
+            accounts.push(Account { email });
+        }
+    }
+    let _ = config::save_accounts(app, &accounts);
 }
 
 /// Достаёт email из id_token. Подпись не проверяем: токен получен
@@ -190,7 +227,7 @@ impl Auth {
                 .timeout(Duration::from_secs(30))
                 .build()
                 .expect("HTTP client"),
-            token: Mutex::new(None),
+            tokens: Mutex::new(HashMap::new()),
         }
     }
 
@@ -198,11 +235,20 @@ impl Auth {
         &self.http
     }
 
-    pub fn is_signed_in(&self) -> bool {
-        stored_refresh_token().is_some()
+    /// Аккаунты в порядке входа и есть ли у каждого действующий вход
+    pub fn accounts(&self, app: &AppHandle) -> Vec<AccountStatus> {
+        config::load_accounts(app)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|a| AccountStatus {
+                signed_in: stored_refresh_token(&a.email).is_some(),
+                email: a.email,
+            })
+            .collect()
     }
 
-    async fn post_token(&self, form: &[(&str, &str)]) -> Result<TokenResponse> {
+    /// account — чей токен обновления удалить, если Google его больше не принимает
+    async fn post_token(&self, form: &[(&str, &str)], account: Option<&str>) -> Result<TokenResponse> {
         let resp = self.http.post(TOKEN_URL).form(form).send().await?;
         if resp.status().is_success() {
             return Ok(resp.json().await?);
@@ -213,8 +259,10 @@ impl Auth {
             error_description: None,
         });
         if err.error == "invalid_grant" {
-            // токен отозван или истёк — нужен новый вход
-            delete_refresh_token();
+            // токен отозван или истёк — нужен новый вход в этот аккаунт; аккаунт остаётся в списке
+            if let Some(email) = account {
+                delete_refresh_token(email);
+            }
             return Err(Error::NotSignedIn);
         }
         Err(Error::Google {
@@ -223,7 +271,8 @@ impl Auth {
         })
     }
 
-    pub async fn sign_in(&self, app: &AppHandle) -> Result<Option<String>> {
+    /// Вход в ещё один аккаунт (или повторный вход в уже добавленный). Возвращает email
+    pub async fn sign_in(&self, app: &AppHandle) -> Result<String> {
         let client = config::client(app)?;
         let listener = TcpListener::bind("127.0.0.1:0").await?;
         let redirect_uri = format!("http://127.0.0.1:{}", listener.local_addr()?.port());
@@ -249,7 +298,8 @@ impl Auth {
             .append_pair("code_challenge_method", "S256")
             .append_pair("state", &state)
             .append_pair("access_type", "offline")
-            .append_pair("prompt", "consent")
+            // select_account: Google даёт выбрать аккаунт, а не входит молча в тот, что открыт в браузере
+            .append_pair("prompt", "select_account consent")
             // экран согласия Google на языке интерфейса, а не браузера
             .append_pair("hl", i18n::current(app).hl());
 
@@ -273,15 +323,24 @@ impl Auth {
             .refresh_token
             .clone()
             .ok_or_else(|| Error::Other("Google did not return a refresh token".into()))?;
-        keyring_entry()?.set_password(&refresh)?;
+        // email — ключ аккаунта: без него токен не к чему привязать
+        let email = tokens
+            .id_token
+            .as_deref()
+            .and_then(email_from_id_token)
+            .ok_or_else(|| Error::Other("Google did not return the account email".into()))?;
+        keyring_entry(&keyring_user(&email))?.set_password(&refresh)?;
 
-        let email = tokens.id_token.as_deref().and_then(email_from_id_token);
-        config::save_account(app, &Account { email: email.clone() })?;
+        let accounts = config::with_account(config::load_accounts(app).unwrap_or_default(), &email);
+        config::save_accounts(app, &accounts)?;
 
-        *self.token.lock().await = Some(AccessToken {
-            value: tokens.access_token,
-            expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
-        });
+        self.tokens.lock().await.insert(
+            email.to_ascii_lowercase(),
+            AccessToken {
+                value: tokens.access_token,
+                expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
+            },
+        );
         Ok(email)
     }
 
@@ -299,54 +358,71 @@ impl Auth {
             ("code_verifier", verifier),
             ("redirect_uri", redirect_uri),
             ("grant_type", "authorization_code"),
-        ])
+        ], None)
         .await
     }
 
-    /// Действующий токен доступа; при необходимости обновляет его.
-    pub async fn access_token(&self, app: &AppHandle) -> Result<String> {
-        let mut guard = self.token.lock().await;
-        if let Some(t) = guard.as_ref() {
+    /// Действующий токен доступа аккаунта; при необходимости обновляет его.
+    /// Запросы разных аккаунтов ждут друг друга только на время обновления токена.
+    pub async fn access_token(&self, app: &AppHandle, account: &str) -> Result<String> {
+        let key = account.to_ascii_lowercase();
+        let mut guard = self.tokens.lock().await;
+        if let Some(t) = guard.get(&key) {
             // запас в минуту, чтобы токен не истёк посреди запроса
             if t.expires_at > Instant::now() + Duration::from_secs(60) {
                 return Ok(t.value.clone());
             }
         }
-        let refresh = stored_refresh_token().ok_or(Error::NotSignedIn)?;
+        let refresh = stored_refresh_token(account).ok_or(Error::NotSignedIn)?;
         let client = config::client(app)?;
         let tokens = self
-            .post_token(&[
-                ("client_id", client.client_id.as_str()),
-                ("client_secret", client.client_secret.as_str()),
-                ("refresh_token", refresh.as_str()),
-                ("grant_type", "refresh_token"),
-            ])
+            .post_token(
+                &[
+                    ("client_id", client.client_id.as_str()),
+                    ("client_secret", client.client_secret.as_str()),
+                    ("refresh_token", refresh.as_str()),
+                    ("grant_type", "refresh_token"),
+                ],
+                Some(account),
+            )
             .await?;
         let value = tokens.access_token.clone();
-        *guard = Some(AccessToken {
-            value: tokens.access_token,
-            expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
-        });
+        guard.insert(
+            key,
+            AccessToken {
+                value: tokens.access_token,
+                expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
+            },
+        );
         Ok(value)
     }
 
-    pub async fn forget_access_token(&self) {
-        *self.token.lock().await = None;
+    pub async fn forget_access_token(&self, account: &str) {
+        self.tokens.lock().await.remove(&account.to_ascii_lowercase());
     }
 
-    pub async fn sign_out(&self, app: &AppHandle) {
-        if let Some(refresh) = stored_refresh_token() {
-            // отзываем доступ у Google; ошибку сети не считаем фатальной
-            let _ = self
-                .http
-                .post(REVOKE_URL)
-                .form(&[("token", refresh.as_str())])
-                .send()
-                .await;
+    /// Выход из одного аккаунта; None — из всех
+    pub async fn sign_out(&self, app: &AppHandle, account: Option<&str>) {
+        let all = config::load_accounts(app).unwrap_or_default();
+        let leaving: Vec<Account> = match account {
+            Some(email) => all.iter().filter(|a| a.email.eq_ignore_ascii_case(email)).cloned().collect(),
+            None => all.clone(),
+        };
+        for a in &leaving {
+            if let Some(refresh) = stored_refresh_token(&a.email) {
+                // отзываем доступ у Google; ошибку сети не считаем фатальной
+                let _ = self
+                    .http
+                    .post(REVOKE_URL)
+                    .form(&[("token", refresh.as_str())])
+                    .send()
+                    .await;
+            }
+            delete_refresh_token(&a.email);
+            self.forget_access_token(&a.email).await;
         }
-        delete_refresh_token();
-        self.forget_access_token().await;
-        config::clear_account(app);
+        let rest = leaving.iter().fold(all, |list, a| config::without_account(list, &a.email));
+        let _ = config::save_accounts(app, &rest);
     }
 }
 
@@ -362,6 +438,12 @@ mod tests {
             Some("a@b.com")
         );
         assert_eq!(email_from_id_token("broken"), None);
+    }
+
+    #[test]
+    fn keyring_key_per_account_ignores_case() {
+        assert_eq!(keyring_user("Me@Gmail.com"), "google-refresh-token:me@gmail.com");
+        assert_ne!(keyring_user("a@b.com"), LEGACY_KEYRING_USER);
     }
 
     #[tokio::test]

@@ -32,7 +32,11 @@ const soon = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOS
 const MEET = "https://meet.google.com/abc-defg-hij";
 const ZOOM = "https://us02web.zoom.us/j/81234567890?pwd=calm";
 
-let signedIn = true;
+// два аккаунта: личный и рабочий; календарь «work» живёт в рабочем, остальные — в личном
+const ME = "me@example.com";
+const WORK = "work@example.com";
+let accounts = [ME, WORK];
+const ownerOf = (calendarId: string) => (calendarId === "work" ? WORK : ME);
 let seq = 100;
 
 // русские данные — для разработки, английские — ещё и для скриншотов сайта и Store
@@ -48,6 +52,8 @@ const ruEvents = (): Record<string, Json[]> => ({
     { id: "e1", summary: "Урок английского", start: { dateTime: at(2, 19) }, end: { dateTime: at(2, 19, 50) } },
     { id: "e2", summary: "День рождения", start: { date: toDateKey(addDays(week, 5)) }, end: { date: toDateKey(addDays(week, 6)) } },
     { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня" },
+    // в рабочее время из рабочего аккаунта: пересечение
+    { id: "e4", summary: "Стоматолог", start: { dateTime: at(3, 16) }, end: { dateTime: at(3, 17) } },
   ],
   work: ([
     {
@@ -121,6 +127,8 @@ const enEvents = (): Record<string, Json[]> => ({
     ...timed("w", [
       [1, "Product review", [14, 0], [15, 0]],
       [2, "Design sync", [11, 0], [12, 0], { description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}` }],
+      // в то же время, что и Dentist в личном аккаунте: пересечение
+      [2, "Hiring panel", [15, 30], [16, 30]],
       [3, "Focus time", [13, 0], [16, 0]],
       [
         4,
@@ -194,12 +202,22 @@ const flatten = (list: Json[], before: Date): Json[] => {
 
 const FAR = new Date(2100, 0, 1);
 
-const google = (method: string, path: string, query: [string, string][] = [], body?: Json): unknown => {
+const google = (
+  account: string,
+  method: string,
+  path: string,
+  query: [string, string][] = [],
+  body?: Json,
+): unknown => {
   const q = Object.fromEntries(query);
-  if (path === "/calendar/v3/users/me/calendarList") return { items: calendars };
+  if (!accounts.includes(account)) throw { kind: "not_signed_in", message: "mock" };
+  if (path === "/calendar/v3/users/me/calendarList") {
+    return { items: calendars.filter((c) => ownerOf(c.id) === account) };
+  }
   const m = path.match(/^\/calendar\/v3\/calendars\/([^/]+)\/events(?:\/([^/]+))?(\/move|\/instances)?$/);
   if (!m) throw { kind: "google", message: `mock: нет обработчика ${path}` };
   const calId = decodeURIComponent(m[1]);
+  if (ownerOf(calId) !== account) throw { kind: "google", message: "404: Not Found" };
   const list = (events[calId] ??= []);
   const id = m[2] && decodeURIComponent(m[2]);
   const byStart = (a: Json, b: Json) => startOf(a).getTime() - startOf(b).getTime();
@@ -256,18 +274,22 @@ const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => 
 export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown> => {
   switch (cmd) {
     case "auth_status":
-      return { client_source: "file", signed_in: signedIn, email: signedIn ? "me@example.com" : null };
-    case "sign_in":
-      signedIn = true;
-      return delay("me@example.com", 800);
+      return { client_source: "file", accounts: accounts.map((email) => ({ email, signed_in: true })) };
+    case "sign_in": {
+      // входим в первый из двух аккаунтов, которого ещё нет
+      const next = [ME, WORK].find((a) => !accounts.includes(a)) ?? ME;
+      accounts = [...new Set([...accounts, next])];
+      return delay(next, 800);
+    }
     case "sign_out":
-      signedIn = false;
+      accounts = args.account ? accounts.filter((a) => a !== args.account) : [];
       return null;
     case "save_client_config":
       return null;
     case "google_request":
       return delay(
         google(
+          String(args.account),
           String(args.method),
           String(args.path),
           args.query as [string, string][] | undefined,

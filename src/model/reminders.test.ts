@@ -6,7 +6,7 @@ const now = new Date(2026, 10, 4, 18, 0);
 const ev = (over: Partial<CalendarEvent>): CalendarEvent => ({
   key: "c\u0000e",
   id: "e",
-  calendarId: "c",
+  calendarId: "c", account: "",
   title: "Урок",
   start: new Date(2026, 10, 4, 19, 0),
   end: new Date(2026, 10, 4, 19, 50),

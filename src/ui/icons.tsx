@@ -64,6 +64,13 @@ export const Repeat = ({ size = 12 }: P) => (
   </svg>
 );
 
+/** треугольник с восклицательным знаком: пересечение событий */
+export const Warning = ({ size = 12 }: P) => (
+  <svg {...base(size)}>
+    <path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11.3v.2" />
+  </svg>
+);
+
 export const Sun = ({ size = 16 }: P) => (
   <svg {...base(size)}>
     <circle cx="8" cy="8" r="3" />

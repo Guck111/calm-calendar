@@ -47,6 +47,8 @@ export const zh: Dict = {
     notificationsFailed: "无法更改通知设置",
     glassFailed: "无法更改玻璃效果",
     offline: (when: string) => `离线中，显示的是 ${when} 的数据`,
+    otherAccount: "无法将日程移到另一个 Google 账号的日历中",
+    accountsFailed: (emails: string) => `以下账号的日历未能加载：${emails}`,
   },
   auth: {
     clientTitle: "连接 Google",
@@ -108,6 +110,15 @@ export const zh: Dict = {
     this: "仅此日程",
     following: "此日程及后续日程",
     ruleChanged: "重复规则已更改，修改将应用于此日程及后续日程。",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "添加账号",
+    signOutTitle: (email: string) => `退出 ${email}`,
+    expired: "登录已过期。",
+    signInAgain: "重新登录",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `时间冲突：${list}`,
   },
   meeting: {
     join: "加入",

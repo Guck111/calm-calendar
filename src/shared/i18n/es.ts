@@ -52,6 +52,8 @@ export const es: Dict = {
     notificationsFailed: "No se pudieron cambiar las notificaciones",
     glassFailed: "No se pudo cambiar el efecto cristal",
     offline: (when: string) => `Sin conexión. Datos del ${when}`,
+    otherAccount: "No se puede mover un evento a un calendario de otra cuenta de Google",
+    accountsFailed: (emails: string) => `No se cargaron los calendarios de: ${emails}`,
   },
   auth: {
     clientTitle: "Conectar con Google",
@@ -116,6 +118,15 @@ export const es: Dict = {
     this: "Solo este evento",
     following: "Este y los siguientes",
     ruleChanged: "La repetición ha cambiado, así que el cambio afectará a este evento y a los siguientes.",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "Añadir cuenta",
+    signOutTitle: (email: string) => `Cerrar sesión de ${email}`,
+    expired: "La sesión ha caducado.",
+    signInAgain: "Volver a iniciar sesión",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `Coincide con: ${list}`,
   },
   meeting: {
     join: "Unirse",

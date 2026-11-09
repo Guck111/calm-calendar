@@ -10,7 +10,7 @@ import { ru } from "./ru";
 const event = (over: Partial<CalendarEvent>): CalendarEvent => ({
   key: "c\u0000e",
   id: "e",
-  calendarId: "c",
+  calendarId: "c", account: "",
   title: "Gym",
   start: new Date(2026, 10, 4, 19, 0),
   end: new Date(2026, 10, 4, 20, 0),

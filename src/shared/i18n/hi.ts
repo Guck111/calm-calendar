@@ -47,6 +47,8 @@ export const hi: Dict = {
     notificationsFailed: "सूचनाएं बदली नहीं जा सकीं",
     glassFailed: "ग्लास इफ़ेक्ट बदला नहीं जा सका",
     offline: (when: string) => `ऑफ़लाइन। ${when} का डेटा दिख रहा है`,
+    otherAccount: "इवेंट को दूसरे Google खाते के कैलेंडर में नहीं ले जाया जा सकता",
+    accountsFailed: (emails: string) => `इस खाते के कैलेंडर लोड नहीं हुए: ${emails}`,
   },
   auth: {
     clientTitle: "Google से कनेक्ट करें",
@@ -108,6 +110,15 @@ export const hi: Dict = {
     this: "सिर्फ़ यह इवेंट",
     following: "यह और आगे के इवेंट",
     ruleChanged: "दोहराव बदला है, इसलिए बदलाव इस और आगे के इवेंट पर लागू होगा।",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "खाता जोड़ें",
+    signOutTitle: (email: string) => `${email} से साइन आउट करें`,
+    expired: "साइन-इन की अवधि खत्म हो गई।",
+    signInAgain: "फिर से साइन इन करें",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `इससे टकराता है: ${list}`,
   },
   meeting: {
     join: "जुड़ें",

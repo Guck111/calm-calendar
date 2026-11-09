@@ -1,18 +1,24 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
-import { listCalendars } from "../shared/api/calendar";
+import { calendarVisible, listAllCalendars, type AllCalendars } from "../shared/api/calendar";
 import type { AppError, Calendar } from "../shared/api/types";
 import { readJson, writeJson } from "../shared/lib/storage";
-import { $signedIn, signOutFx } from "./auth";
+import { $activeAccounts, sessionLost, signOutFx } from "./auth";
 
 const VISIBILITY_KEY = "calm.calendarVisibility";
 
 export const calendarToggled = createEvent<string>();
 export const calendarsRequested = createEvent();
 
-export const fetchCalendarsFx = createEffect<void, Calendar[], AppError>(listCalendars);
+/** календари всех аккаунтов с действующим входом */
+export const fetchCalendarsFx = createEffect<string[], AllCalendars, AppError>(listAllCalendars);
 
 export const $calendars = createStore<Calendar[]>([])
-  .on(fetchCalendarsFx.doneData, (_, list) => list)
+  .on(fetchCalendarsFx.doneData, (_, r) => r.calendars)
+  .reset(signOutFx.finally);
+
+/** аккаунты, чьи календари сейчас не загрузились */
+export const $failedAccounts = createStore<string[]>([])
+  .on(fetchCalendarsFx.doneData, (_, r) => r.failed)
   .reset(signOutFx.finally);
 
 /** ручные включения и выключения поверх настроек Google */
@@ -22,7 +28,8 @@ sample({
   clock: calendarToggled,
   source: { visibility: $visibility, calendars: $calendars },
   fn: ({ visibility, calendars }, id) => {
-    const current = visibility[id] ?? calendars.find((c) => c.id === id)?.selected ?? true;
+    const calendar = calendars.find((c) => c.id === id);
+    const current = calendar ? calendarVisible(calendar, visibility) : true;
     return { ...visibility, [id]: !current };
   },
   target: $visibility,
@@ -31,7 +38,7 @@ sample({
 $visibility.updates.watch((v) => writeJson(VISIBILITY_KEY, v));
 
 export const $calendarsWithVisibility = combine($calendars, $visibility, (calendars, visibility) =>
-  calendars.map((c) => ({ ...c, visible: visibility[c.id] ?? c.selected })),
+  calendars.map((c) => ({ ...c, visible: calendarVisible(c, visibility) })),
 );
 
 export const $visibleCalendars = $calendarsWithVisibility.map((list) => list.filter((c) => c.visible));
@@ -45,9 +52,17 @@ export const $calendarById = $calendars.map(
   (list) => new Map(list.map((c) => [c.id, c] as const)),
 );
 
+// новый аккаунт, выход из аккаунта или истёкший вход меняют список аккаунтов — перечитываем календари
 sample({
-  clock: [$signedIn.updates, calendarsRequested],
-  source: $signedIn,
-  filter: Boolean,
+  clock: [$activeAccounts.updates, calendarsRequested],
+  source: $activeAccounts,
+  filter: (accounts) => accounts.length > 0,
   target: fetchCalendarsFx,
+});
+
+// Google перестал принимать вход в один из аккаунтов: узнаём у Rust, какой это, и показываем
+sample({
+  clock: fetchCalendarsFx.doneData,
+  filter: (r) => r.lost.length > 0,
+  target: sessionLost,
 });

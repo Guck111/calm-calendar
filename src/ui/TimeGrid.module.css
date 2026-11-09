@@ -257,3 +257,19 @@
   height: 7px;
   cursor: ns-resize;
 }
+
+/* пересечение с событием другого аккаунта: красная полоса по краю и значок */
+.conflict::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 3px;
+  background: var(--danger);
+}
+
+.clash {
+  display: inline-flex;
+  flex: none;
+  color: var(--danger);
+}

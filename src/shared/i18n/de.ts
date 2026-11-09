@@ -52,6 +52,8 @@ export const de: Dict = {
     notificationsFailed: "Benachrichtigungen konnten nicht geändert werden",
     glassFailed: "Glaseffekt konnte nicht geändert werden",
     offline: (when: string) => `Offline. Daten vom ${when}`,
+    otherAccount: "Ein Termin kann nicht in einen Kalender eines anderen Google-Kontos verschoben werden",
+    accountsFailed: (emails: string) => `Kalender dieses Kontos wurden nicht geladen: ${emails}`,
   },
   auth: {
     clientTitle: "Mit Google verbinden",
@@ -116,6 +118,15 @@ export const de: Dict = {
     this: "Nur dieser Termin",
     following: "Dieser und alle folgenden",
     ruleChanged: "Die Wiederholung wurde geändert, daher gilt die Änderung für diesen und alle folgenden Termine.",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "Konto hinzufügen",
+    signOutTitle: (email: string) => `Von ${email} abmelden`,
+    expired: "Anmeldung abgelaufen.",
+    signInAgain: "Erneut anmelden",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `Überschneidet sich mit: ${list}`,
   },
   meeting: {
     join: "Beitreten",

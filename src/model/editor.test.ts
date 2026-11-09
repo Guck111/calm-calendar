@@ -59,7 +59,7 @@ describe("форма события", () => {
 const event: CalendarEvent = {
   key: "c\u0000e1",
   id: "e1",
-  calendarId: "c",
+  calendarId: "c", account: "",
   title: "Польский",
   start: new Date(2026, 10, 7, 14, 30),
   end: new Date(2026, 10, 7, 16, 30),

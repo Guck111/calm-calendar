@@ -75,6 +75,8 @@ export const ru = {
     notificationsFailed: "Не удалось переключить уведомления",
     glassFailed: "Не удалось переключить эффект стекла",
     offline: (when: string) => `Нет сети. Показаны данные от ${when}`,
+    otherAccount: "Событие нельзя перенести в календарь другого аккаунта Google",
+    accountsFailed: (emails: string) => `Не загрузились календари аккаунта: ${emails}`,
   },
   auth: {
     clientTitle: "Подключение к Google",
@@ -139,6 +141,15 @@ export const ru = {
     this: "Только это событие",
     following: "Это и следующие",
     ruleChanged: "Повтор изменён, поэтому правка коснётся этого и следующих событий.",
+  },
+  accounts: {
+    /** несколько аккаунтов Google в одном окне */
+    add: "Добавить аккаунт",
+    signOutTitle: (email: string) => `Выйти из ${email}`,
+    expired: "Вход истёк.",
+    signInAgain: "Войти снова",
+    /** событие другого аккаунта в то же время */
+    conflict: (list: string) => `Пересекается с: ${list}`,
   },
   meeting: {
     /** кнопка видеовстречи: Meet, Zoom, Teams */

@@ -3,7 +3,12 @@ import type { Meeting } from "../lib/meeting";
 export type AccessRole = "owner" | "writer" | "reader" | "freeBusyReader";
 
 export type Calendar = {
+  /** id внутри приложения: аккаунт и id календаря в Google вместе, см. calendarRef */
   id: string;
+  /** id календаря в Google; у разных аккаунтов может совпадать (общие календари, праздники) */
+  googleId: string;
+  /** email аккаунта Google, через который календарь виден */
+  account: string;
   name: string;
   color: string;
   textColor: string;
@@ -22,7 +27,14 @@ export type CalendarEvent = {
   /** уникален среди всех календарей */
   key: string;
   id: string;
+  /** календарь внутри приложения (Calendar.id) */
   calendarId: string;
+  /** email аккаунта Google */
+  account: string;
+  /** общий id встречи во всех календарях: одна встреча в двух аккаунтах — не пересечение */
+  iCalUID?: string;
+  /** в Google отмечено «свободен»: такое событие ни с чем не пересекается */
+  free?: boolean;
   title: string;
   start: Date;
   /** не включительно: для события на весь день это полночь следующего дня */
@@ -69,10 +81,13 @@ export type EventDraft = {
 /** какие повторения серии затронуть */
 export type Scope = "this" | "following";
 
+/** аккаунт Google; signedIn false — Google отозвал доступ, нужно войти снова */
+export type Account = { email: string; signedIn: boolean };
+
 export type AuthStatus = {
   clientSource: "build" | "file" | "none";
-  signedIn: boolean;
-  email: string | null;
+  /** в порядке входа */
+  accounts: Account[];
 };
 
 export type AppErrorKind =
