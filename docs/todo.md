@@ -20,7 +20,7 @@ Stage 1 — never miss a meeting (no new Google scopes):
 
 Stage 2 — replace the web version (no new Google scopes):
 
-- [x] Create and edit recurring events ("this event" / "this and following"): a Repeat field with presets and a custom rule (interval, weekdays, "2nd Tuesday", end by date or count); saving or deleting an occurrence asks "this event" or "this and following"; "this and following" from the first occurrence changes the whole series, from the middle it splits the series (the new one keeps guests, Meet link and reminders). Still to do: check against a real Google account in the app.
+- [x] Create and edit recurring events ("this event" / "this and following"): a Repeat field with presets and a custom rule (interval, weekdays, "2nd Tuesday", end by date or count); saving or deleting an occurrence asks "this event" or "this and following"; "this and following" from the first occurrence changes the whole series, from the middle it splits the series (the new one keeps guests, Meet link and reminders). Checked in the app against a real Google account on 2026-11-09: create with a count, split from the middle, "this event" edit and delete, delete a whole series.
 - [ ] Several Google accounts in one window, overlaps highlighted.
 - [ ] Second time zone in the week view, time zone in the event form.
 - [ ] Agenda view, week numbers, holidays (check whether public holiday calendars work with the current scopes).

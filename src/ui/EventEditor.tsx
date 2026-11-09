@@ -100,7 +100,14 @@ const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
           {t.common.cancel}
         </Button>
         {!onlyFollowing && (
-          <Button variant="primary" danger={kind === "delete"} onClick={() => choose("this")} disabled={busy} autoFocus>
+          // у удаления обе кнопки красные, без заливки: синий фон с красным текстом не читается
+          <Button
+            variant={kind === "delete" ? "default" : "primary"}
+            danger={kind === "delete"}
+            onClick={() => choose("this")}
+            disabled={busy}
+            autoFocus
+          >
             {t.scope.this}
           </Button>
         )}
