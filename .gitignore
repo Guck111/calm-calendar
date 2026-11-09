@@ -26,5 +26,6 @@ dist-ssr
 # файл клиента OAuth, скачанный из Google Cloud
 client_secret*.json
 
-# отчёты аудита: только для себя
+# отчёты аудита и исследования: только для себя
 docs/audit-*.md
+docs/research-*.md
