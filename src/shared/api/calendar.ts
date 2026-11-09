@@ -3,7 +3,16 @@ import { findMeeting, type MeetingSource } from "../lib/meeting";
 import { googleRequest, isAppError, type HttpMethod } from "./bridge";
 import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
 import { locale, t } from "../i18n";
-import type { AccessRole, AppError, Calendar, CalendarEvent, EventDraft, EventTime, Scope } from "./types";
+import type {
+  AccessRole,
+  AppError,
+  Attendee,
+  Calendar,
+  CalendarEvent,
+  EventDraft,
+  EventTime,
+  Scope,
+} from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
 import { fromZoned, wallClock } from "../lib/tz";
 
@@ -53,7 +62,29 @@ export type RawEvent = {
   reminders?: { useDefault?: boolean; overrides?: RawReminder[] };
   iCalUID?: string;
   transparency?: string;
+  attendees?: Attendee[];
+  organizer?: { email?: string; self?: boolean };
+  extendedProperties?: { private?: Record<string, string>; shared?: Record<string, string> };
 };
+
+/** ключ времени в пути в скрытых полях события: их видит только наше приложение */
+export const TRAVEL_KEY = "calmTravelMinutes";
+
+const parseTravel = (raw: RawEvent): number | undefined => {
+  const n = Number(raw.extendedProperties?.private?.[TRAVEL_KEY]);
+  return Number.isFinite(n) && n > 0 && n <= 24 * 60 ? Math.round(n) : undefined;
+};
+
+/** гости встречи без лишних полей: так их и отправляем обратно в Google */
+const cleanAttendee = (a: Attendee): Attendee => ({
+  email: a.email,
+  ...(a.displayName ? { displayName: a.displayName } : {}),
+  ...(a.responseStatus ? { responseStatus: a.responseStatus } : {}),
+  ...(a.optional ? { optional: true } : {}),
+});
+
+/** есть ли кому слать приглашения: кто-то, кроме самого аккаунта */
+export const hasGuests = (list: Attendee[] | undefined): boolean => Boolean(list?.some((a) => !a.self));
 
 const enc = encodeURIComponent;
 
@@ -192,6 +223,10 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?
     recurringEventId: raw.recurringEventId,
     originalStart: raw.originalStartTime,
     reminders: raw.reminders?.useDefault === false ? popupMinutes(raw.reminders.overrides) : "default",
+    ...(parseTravel(raw) ? { travelMinutes: parseTravel(raw) } : {}),
+    ...(raw.attendees?.length ? { attendees: raw.attendees } : {}),
+    // self: false Google не присылает; без организатора событие своё
+    organizerSelf: raw.organizer ? raw.organizer.self === true : true,
   };
 };
 
@@ -266,8 +301,17 @@ export const draftToBody = (draft: EventDraft) => {
     description: draft.description.trim(),
     start: time(draft.startDate, draft.startTime),
     end: time(endDate, draft.endTime, draft.endTimeZone ?? zone),
+    // patch сливает объекты: другие скрытые поля события остаются
+    ...(draft.travelMinutes !== undefined
+      ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
+      : {}),
+    ...(draft.guests !== undefined ? { attendees: draft.guests.map(cleanAttendee) } : {}),
   };
 };
+
+/** Гостям — письмо о новой встрече, переносе или отмене, как в Google Календаре */
+const notify = (draft: EventDraft): Record<string, string> | undefined =>
+  hasGuests(draft.guests) ? { sendUpdates: "all" } : undefined;
 
 /** Событие целиком, как его отдаёт Google: при разбиении серии копируем и поля, которых нет в форме */
 type FullEvent = RawEvent & Record<string, unknown>;
@@ -344,9 +388,18 @@ export const planFollowing = (draft: EventDraft, master: FullEvent, countBefore:
   const first = instant(master.start);
   if (!split || !first || split <= first) return { kind: "series", patch: body };
   const copied = Object.fromEntries(COPIED.filter((k) => k in master).map((k) => [k, master[k]]));
+  // в новой серии сохраняем и чужие скрытые поля главного события, а не только время в пути
+  const props = body.extendedProperties
+    ? {
+        extendedProperties: {
+          ...master.extendedProperties,
+          private: { ...master.extendedProperties?.private, ...body.extendedProperties.private },
+        },
+      }
+    : {};
   return {
     kind: "split",
-    create: { ...copied, ...body },
+    create: { ...copied, ...body, ...props },
     truncate: { recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)) },
   };
 };
@@ -378,10 +431,11 @@ const saveFollowing = async (draft: EventDraft): Promise<void> => {
   const needCount = split && !recurrenceEdited(draft) && hasCount(master.recurrence ?? []);
   const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split) : 0);
   if (plan.kind === "series") {
-    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1" }, plan.patch);
+    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", ...notify(draft) }, plan.patch);
     return;
   }
-  const created = await api<RawEvent>(calendarId, "POST", "", { conferenceDataVersion: "1" }, plan.create);
+  const query = { conferenceDataVersion: "1", ...notify(draft) };
+  const created = await api<RawEvent>(calendarId, "POST", "", query, plan.create);
   try {
     await api(calendarId, "PATCH", one(master.id), undefined, plan.truncate);
   } catch (e) {
@@ -399,7 +453,7 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
   };
   if (!draft.id) {
-    await api(draft.calendarId, "POST", "", undefined, body);
+    await api(draft.calendarId, "POST", "", notify(draft), body);
     return;
   }
   let calendarId = draft.originalCalendarId ?? draft.calendarId;
@@ -411,20 +465,21 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     await api(calendarId, "POST", `${one(draft.id)}/move`, { destination: to.googleId });
     calendarId = draft.calendarId;
   }
-  await api(calendarId, "PATCH", one(draft.id), undefined, body);
+  await api(calendarId, "PATCH", one(draft.id), notify(draft), body);
 };
 
-export const deleteEvent = (calendarId: string, eventId: string): Promise<void> =>
-  api(calendarId, "DELETE", one(eventId));
+export const deleteEvent = (calendarId: string, eventId: string, query?: Record<string, string>): Promise<void> =>
+  api(calendarId, "DELETE", one(eventId), query);
 
 /** Удалить повторение: только его или его и все следующие (с первого — всю серию) */
 export const deleteOccurrence = async (draft: EventDraft, scope: Scope): Promise<void> => {
   const calendarId = draft.originalCalendarId ?? draft.calendarId;
-  if (!draft.recurringEventId || scope === "this") return deleteEvent(calendarId, draft.id ?? "");
+  // гостям — письмо об отмене
+  if (!draft.recurringEventId || scope === "this") return deleteEvent(calendarId, draft.id ?? "", notify(draft));
   const master = await getEvent(calendarId, draft.recurringEventId);
   const split = instant(draft.originalStart);
   const first = instant(master.start);
-  if (!split || !first || split <= first) return deleteEvent(calendarId, master.id);
+  if (!split || !first || split <= first) return deleteEvent(calendarId, master.id, notify(draft));
   await api(calendarId, "PATCH", one(master.id), undefined, {
     recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)),
   });

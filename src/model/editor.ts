@@ -84,6 +84,10 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     recurringEventId: e.recurringEventId,
     originalStart: e.originalStart,
     htmlLink: e.htmlLink,
+    // поле в Google пишем, только если время в пути есть или его меняли
+    ...(e.travelMinutes ? { travelMinutes: e.travelMinutes } : {}),
+    // список гостей меняет только организатор; у чужой встречи его не трогаем
+    ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
   };
 };
 
@@ -101,6 +105,7 @@ const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft 
     location: "",
     description: "",
     recurrence: [],
+    guests: [],
   };
 };
 

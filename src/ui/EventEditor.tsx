@@ -23,9 +23,9 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
-import { draftZone } from "../shared/api/calendar";
-import type { Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
-import { addDays, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
+import { draftZone, hasGuests } from "../shared/api/calendar";
+import type { Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
+import { addDays, formatSpan as travelSpan, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
 import { fromZoned, wallClock, zoneLabel } from "../shared/lib/tz";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
@@ -228,12 +228,26 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             {t.accounts.alsoIn(event.alsoIn.map((id) => byId.get(id)?.account ?? id).join(", "))}
           </dd>
         ) : null}
+        {event.travelMinutes && !event.allDay ? (
+          <>
+            <dt>{t.editor.travel}</dt>
+            <dd>{travelSpan(event.travelMinutes)}</dd>
+          </>
+        ) : null}
         {event.location && (
           <>
             <dt>{t.common.location}</dt>
             <dd>{event.location}</dd>
           </>
         )}
+        {event.attendees?.length ? (
+          <>
+            <dt>{t.editor.guests}</dt>
+            <dd>
+              <GuestList guests={event.attendees} />
+            </dd>
+          </>
+        ) : null}
         {event.description && (
           <>
             <dt>{t.common.description}</dt>
@@ -301,6 +315,113 @@ const CalendarSelect = ({
     </select>
   );
 };
+
+const TRAVEL_OPTIONS = [0, 5, 10, 15, 30, 45, 60, 90, 120];
+
+/** Время в пути: Google Календарь такого поля не знает, храним его в скрытых полях события */
+const TravelField = ({ value, onChange }: { value: number; onChange: (minutes: number) => void }) => {
+  const options = TRAVEL_OPTIONS.includes(value) ? TRAVEL_OPTIONS : [...TRAVEL_OPTIONS, value].sort((a, b) => a - b);
+  return (
+    <Field label={t.editor.travel}>
+      <select value={value} onChange={(e) => onChange(Number(e.target.value))}>
+        {options.map((m) => (
+          <option key={m} value={m}>
+            {m ? travelSpan(m) : t.editor.travelNone}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+};
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Гости: email через Enter, запятую или пробел; у каждого — ответ на приглашение */
+const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (guests: Attendee[]) => void }) => {
+  const [text, setText] = useState("");
+  const [bad, setBad] = useState(false);
+  const add = () => {
+    const emails = text.split(/[\s,;]+/).filter(Boolean);
+    if (!emails.length) return true;
+    if (!emails.every((e) => EMAIL.test(e))) {
+      setBad(true);
+      return false;
+    }
+    const known = new Set(guests.map((g) => g.email.toLowerCase()));
+    const fresh = emails.filter((e) => !known.has(e.toLowerCase())).map((email) => ({ email }));
+    onChange([...guests, ...fresh]);
+    setText("");
+    return true;
+  };
+  return (
+    <div className={s.field}>
+      <span>{t.editor.guests}</span>
+      {guests.length > 0 && (
+        <ul className={s.guests}>
+          {guests.map((g) => (
+            <li key={g.email} className={s.guest}>
+              <span className={s.guestName} title={g.email}>
+                {g.displayName || g.email}
+              </span>
+              {g.organizer ? (
+                <small>{t.editor.organizer}</small>
+              ) : (
+                g.responseStatus && <small>{t.editor.guestStatus[g.responseStatus]}</small>
+              )}
+              {!g.organizer && !g.self && (
+                <button
+                  type="button"
+                  className={s.removeGuest}
+                  onClick={() => onChange(guests.filter((x) => x !== g))}
+                  aria-label={t.editor.removeGuest(g.email)}
+                  title={t.editor.removeGuest(g.email)}
+                >
+                  <Close size={12} />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <input
+        type="email"
+        multiple
+        value={text}
+        placeholder={t.editor.addGuest}
+        aria-label={t.editor.addGuest}
+        aria-invalid={bad}
+        onChange={(e) => {
+          setText(e.target.value);
+          setBad(false);
+        }}
+        onKeyDown={(e) => {
+          // Enter с текстом в поле добавляет гостя, а не сохраняет форму
+          if ((e.key === "Enter" || e.key === ",") && text.trim()) {
+            e.preventDefault();
+            add();
+          }
+        }}
+        onBlur={() => add()}
+      />
+      {bad && <small className={s.error}>{t.editor.badEmail}</small>}
+      {hasGuests(guests) && <small className={s.hintText}>{t.editor.invitesNote}</small>}
+    </div>
+  );
+};
+
+/** Гости в карточке: «Анна — придёт», организатор отмечен */
+const GuestList = ({ guests }: { guests: Attendee[] }) => (
+  <ul className={s.guests}>
+    {guests.map((g) => (
+      <li key={g.email} className={cx(s.guest, g.responseStatus === "declined" && s.declined)}>
+        <span className={s.guestName} title={g.email}>
+          {g.displayName || g.email}
+        </span>
+        <small>{g.organizer ? t.editor.organizer : g.responseStatus && t.editor.guestStatus[g.responseStatus]}</small>
+      </li>
+    ))}
+  </ul>
+);
 
 /** Форма создания и правки */
 const EventForm = () => {
@@ -396,6 +517,7 @@ const EventForm = () => {
             <TimeZoneSelect value={draftZone(draft)} onChange={(timeZone) => change({ timeZone })} />
           </Field>
           <LocalTimeNote draft={draft} />
+          <TravelField value={draft.travelMinutes ?? 0} onChange={(travelMinutes) => change({ travelMinutes })} />
         </>
       )}
 
@@ -421,6 +543,8 @@ const EventForm = () => {
       <Field label={t.common.location}>
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
       </Field>
+
+      {draft.guests && <GuestsField guests={draft.guests} onChange={(guests) => change({ guests })} />}
 
       <Field label={t.common.description}>
         <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />

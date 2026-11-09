@@ -10,6 +10,7 @@ import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import {
   formatDayNumber,
   formatHour,
+  formatSpan as travelSpan,
   formatTime,
   formatWeekdayShort,
   isSameDay,
@@ -236,7 +237,28 @@ export const TimeGrid = () => {
                   const isDragged = drag?.moved && drag.event.key === event.key;
                   const clash = conflicts.get(event.key);
                   const clashText = clash ? t.accounts.conflict(clash.map((c) => c.title).join(", ")) : "";
-                  return (
+                  const left = `calc(${(column / count) * 100}% + 1px)`;
+                  const width = `calc(${100 / count}% - 3px)`;
+                  // дорога до события: заштрихованная полоса над ним, в пределах этого дня
+                  const travelStart = event.travelMinutes && !isAllDayLike(event) ? Math.max(0, startMin - event.travelMinutes) : startMin;
+                  const travelText = event.travelMinutes ? t.editor.travelLine(travelSpan(event.travelMinutes)) : "";
+                  return [
+                    travelStart < startMin && (
+                      <div
+                        key={`${event.key}-travel`}
+                        className={s.travel}
+                        style={{
+                          ...eventStyle(calendars.get(event.calendarId)),
+                          top: `${(travelStart / MINUTES_IN_DAY) * 100}%`,
+                          height: `${((startMin - travelStart) / MINUTES_IN_DAY) * 100}%`,
+                          insetInlineStart: left,
+                          width,
+                        }}
+                        title={travelText}
+                      >
+                        {startMin - travelStart >= 20 && <span>{t.editor.onTheWay}</span>}
+                      </div>
+                    ),
                     <button
                       key={event.key}
                       className={cx(
@@ -250,8 +272,8 @@ export const TimeGrid = () => {
                         ...eventStyle(calendars.get(event.calendarId)),
                         top: `${(startMin / MINUTES_IN_DAY) * 100}%`,
                         height: `${((endMin - startMin) / MINUTES_IN_DAY) * 100}%`,
-                        insetInlineStart: `calc(${(column / count) * 100}% + 1px)`,
-                        width: `calc(${100 / count}% - 3px)`,
+                        insetInlineStart: left,
+                        width,
                       }}
                       onPointerDown={startDrag(event, "move")}
                       // клик мышью по своему событию обрабатывает перетаскивание; здесь — клавиатура и чужие календари
@@ -277,8 +299,8 @@ export const TimeGrid = () => {
                           aria-hidden
                         />
                       )}
-                    </button>
-                  );
+                    </button>,
+                  ];
                 })}
                 {isToday && (
                   <div className={s.now} style={{ top: `${(minutesOfDay(now) / MINUTES_IN_DAY) * 100}%` }} />

@@ -2,6 +2,7 @@
 import type { CalendarEvent } from "../api/types";
 import { locale, t } from "../i18n";
 import { addMinutes, formatTime, formatWeekdayDayMonth, localTimeZone, startOfDay } from "./date";
+import { busyStart } from "./conflicts";
 import { isAllDayLike } from "./layout";
 import { zoneCity, zoneShort } from "./tz";
 
@@ -37,13 +38,13 @@ export const isWeekend = (d: Date): boolean => {
   return d.getDay() === 0 || d.getDay() === 6;
 };
 
-/** Занятым считаем всё, кроме событий на весь день и отмеченных «свободен» */
+/** Занятым считаем всё, кроме событий на весь день и отмеченных «свободен»; дорога до события тоже занята */
 const busy = (e: CalendarEvent) => !isAllDayLike(e) && !e.free;
 
 export const freeSlots = (events: CalendarEvent[], days: Date[], o: FreeOptions, now = new Date()): FreeDay[] => {
   const blocks = events
     .filter(busy)
-    .map((e) => ({ start: e.start.getTime(), end: e.end.getTime() }))
+    .map((e) => ({ start: busyStart(e).getTime(), end: e.end.getTime() }))
     .sort((a, b) => a.start - b.start);
   return days
     .filter((day) => startOfDay(day) >= startOfDay(now) && (o.weekends || !isWeekend(day)))

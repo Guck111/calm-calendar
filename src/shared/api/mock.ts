@@ -51,7 +51,7 @@ const ruEvents = (): Record<string, Json[]> => ({
   "me@example.com": [
     { id: "e1", summary: "Урок английского", start: { dateTime: at(2, 19) }, end: { dateTime: at(2, 19, 50) } },
     { id: "e2", summary: "День рождения", start: { date: toDateKey(addDays(week, 5)) }, end: { date: toDateKey(addDays(week, 6)) } },
-    { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня" },
+    { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня", extendedProperties: { private: { calmTravelMinutes: "45" } } },
     // в рабочее время из рабочего аккаунта: пересечение
     { id: "e4", summary: "Стоматолог", start: { dateTime: at(3, 16) }, end: { dateTime: at(3, 17) } },
     // позвали оба аккаунта: на экране одна встреча
@@ -67,7 +67,20 @@ const ruEvents = (): Record<string, Json[]> => ({
     },
   ] as Json[]).concat([
     { id: "w12", iCalUID: "demo-both@example.com", summary: "Встреча выпускников", start: { dateTime: at(4, 18) }, end: { dateTime: at(4, 19) } },
-    { id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) }, hangoutLink: MEET },
+    {
+      id: "w9",
+      summary: "Созвон с командой",
+      start: { dateTime: at(1, 14) },
+      end: { dateTime: at(1, 15) },
+      hangoutLink: MEET,
+      organizer: { email: WORK, self: true },
+      attendees: [
+        { email: WORK, self: true, organizer: true, responseStatus: "accepted" },
+        { email: "anna@example.com", displayName: "Анна", responseStatus: "accepted" },
+        { email: "oleg@example.com", responseStatus: "declined" },
+        { email: "ivan@example.com", responseStatus: "needsAction" },
+      ],
+    },
     // начинается через 10 минут: в виджете видна кнопка «Подключиться»
     { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
     // создано в поясе Нью-Йорка: форма показывает время там и «по вашему времени»

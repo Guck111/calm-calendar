@@ -1,6 +1,6 @@
 // Работа с датами на нативном Date и Intl, без библиотек.
 // Язык и регион (первый день недели, 12 или 24 часа) берутся из i18n.
-import { locale, uses12h, weekStart } from "../i18n";
+import { locale, t, uses12h, weekStart } from "../i18n";
 
 export type ViewMode = "month" | "week" | "day" | "agenda";
 
@@ -211,5 +211,8 @@ export const viewTitle = (view: ViewMode, cursor: Date): string => {
     formatter({ day: "numeric", month: "long", year: "numeric" }).formatRange(days[0], days[days.length - 1]),
   );
 };
+
+/** «30 мин», «1 ч 30 мин» */
+export const formatSpan = (minutes: number): string => t.time.span(Math.floor(minutes / 60), minutes % 60);
 
 export const localTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;

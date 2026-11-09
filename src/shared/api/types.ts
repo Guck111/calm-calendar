@@ -61,6 +61,23 @@ export type CalendarEvent = {
   originalStart?: EventTime;
   /** минуты до начала; "default" — как задано у календаря */
   reminders?: number[] | "default";
+  /** время в пути до события, минуты; хранится в скрытых полях события в Google */
+  travelMinutes?: number;
+  /** участники встречи; нет — встреча без гостей */
+  attendees?: Attendee[];
+  /** организатор — этот аккаунт: только он может менять список гостей */
+  organizerSelf?: boolean;
+};
+
+/** участник встречи, как его отдаёт Google */
+export type Attendee = {
+  email: string;
+  displayName?: string;
+  responseStatus?: "needsAction" | "declined" | "tentative" | "accepted";
+  /** это сам аккаунт */
+  self?: boolean;
+  organizer?: boolean;
+  optional?: boolean;
 };
 
 /** Черновик для формы создания и правки события */
@@ -90,6 +107,10 @@ export type EventDraft = {
   recurringEventId?: string;
   originalStart?: EventTime;
   htmlLink?: string;
+  /** время в пути, минуты; 0 — нет; undefined — поле не трогаем */
+  travelMinutes?: number;
+  /** гости; undefined — список не трогаем (событие чужое, менять его может только организатор) */
+  guests?: Attendee[];
 };
 
 /** какие повторения серии затронуть */

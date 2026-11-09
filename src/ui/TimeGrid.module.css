@@ -292,3 +292,23 @@
   flex: none;
   color: var(--danger);
 }
+
+/* время в пути: заштрихованная полоса цвета календаря над событием */
+.travel {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  padding: 2px 6px;
+  border-inline-start: 3px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius: 4px 4px 0 0;
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--c) 18%, transparent) 0 4px,
+    transparent 4px 8px
+  );
+  font-size: 10.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
