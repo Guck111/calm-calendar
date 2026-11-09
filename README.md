@@ -8,88 +8,24 @@ Stack: Tauri 2 (Rust), React 19, TypeScript, Effector, CSS Modules. Dates use pl
 
 ## Features
 
-### Calendar
+The full list, by area, is in [docs/features.md](docs/features.md). In short:
 
-- Day, week and month views, a mini month in the sidebar, a line for the current time.
-- Create, edit and delete events. Clicking an event opens its details; editing starts from the Edit button.
-- Move an event between calendars. For a recurring event, changes apply to that occurrence only.
-- Show or hide individual calendars. Colors come from Google.
-- Week and day views: drag an event to change its time or day, drag the bottom edge to resize. 15-minute step, `Esc` cancels, the change is saved right away.
-- Search across visible calendars (title, description, location) through the Google API, two years back and forward.
-- Theme: system, light or dark. The widget follows the calendar.
+- Day, week, month and schedule views; several Google accounts in one window with overlaps between them highlighted.
+- Create, edit, drag and resize events; recurring events with "this event" / "this and following"; time zones, guests, travel time.
+- Quick add from one line in 11 languages, search, free time as text for a messenger, holidays of 76 countries, week numbers.
+- "Join" for video calls, Windows notifications, an optional hard-to-miss alert, a desktop widget and a tray agenda.
+- Light and dark themes, a glass effect, right-to-left Arabic, offline reading of the last loaded weeks.
 
-### Widget and tray
-
-- A desktop widget with a clock, a countdown to the next or current event ("Muay Thai через 25 мин"), a month with dots on days that have events, the next five events and a quick add field.
-- Arrows next to the month name switch months; clicking the name goes back to the current month.
-- Clicking a day or an event opens the calendar on that day; clicking the clock just opens the calendar.
-- Drag the widget by any spot, its position is remembered.
-- Closing the main window hides it to the tray. Tray menu: open calendar, show or hide the widget, keep the widget on top, launch at Windows sign-in, quit.
-- When started with Windows, only the widget appears.
-
-### Glass effect
-
-Settings (gear icon in the toolbar) → "Эффект стекла", on by default.
-
-- Main window: the system Acrylic backdrop. Windows turns it off when the window loses focus, so the interface switches to an opaque background at that moment.
-- Widget: Acrylic through the window accent policy, because the widget is almost never focused. The system Acrylic backdrop goes dark for unfocused windows, and the Blur effect renders black on recent Windows 11 builds.
-- Corners of the widget window are rounded by Windows 11 (DWM).
-
-### Quick add
-
-A field under the "Create" button and in the widget; `N` focuses it. Type the event on one line and a preview shows how it was understood. The field understands the interface language.
-
-English:
-
-- Date: `today`, `tonight`, `tomorrow`, `the day after tomorrow`, `fri`, `on Friday`, `next wed` (skips today), `Nov 5`, `5th of November`, `in 3 days`, `in 2 weeks`. No date means today, or tomorrow if the time has already passed.
-- Time: `7pm`, `7:30 am`, `19:00`, `at 7`, `noon`, `7-9pm`, `from 2 to 3:30pm`, `11am-1pm`, and `fri 18` (a number right after a day is an hour). `tonight at 8` means 20:00.
-- Duration: `50 min`, `2h`, `1.5 hours`, `half an hour`.
-
-Russian:
-
-- Date: `сегодня`, `завтра`, `послезавтра`, `пт`, `в пятницу`, `5 ноября`, `05.11`, `через 3 дня`. No date means today, or tomorrow if the time has already passed.
-- Time: `19:00`, `в 19`, `в 7 вечера`, `с 19 до 21`, `19-21`, and `пт 18` (a number right after a day is an hour).
-- Duration: `50 мин`, `2 ч`, `1,5 часа`, `полчаса`. One hour by default. No time means an all-day event.
-- `#работа` picks a calendar by the start of its name, `@Гдыня` sets the location (`@Офис_Гдыня` for a name with a space).
-- `Enter` creates the event, `Ctrl+Enter` opens the full form with the fields filled in.
-
-Other languages follow the same idea, with their own words for dates, times and durations (each has tests in `src/shared/lib/quick-xx.test.ts`):
-
-| Language | Example |
-|---|---|
-| Spanish | `mañana a las 19:00 clase de inglés 50 min` |
-| French | `demain 19h cours d'anglais 50 min` |
-| Portuguese | `amanhã 19h aula de inglês 50 min` |
-| German | `morgen 19 Uhr Englischkurs 50 min` |
-| Japanese | `明日19時 英会話 50分` |
-| Chinese | `明天晚上7点 英语课 50分钟` |
-| Hindi | `कल शाम 7 बजे इंग्लिश क्लास 50 मिनट` |
-| Arabic | `غدًا الساعة 7 مساءً درس إنجليزي 50 دقيقة` |
-| Bengali | `কাল সন্ধ্যা 7টায় ইংরেজি ক্লাস 50 মিনিট` |
-
-Digits of any script (Arabic-Indic, Devanagari, Bengali, full-width) are understood. Shared engines: `quick-eu.ts` (Spanish, French, Portuguese, German, Arabic), `quick-cjk.ts` (Japanese, Chinese), `quick-indic.ts` (Hindi, Bengali).
-
-Examples: `tomorrow 7pm English class 50 min #personal`, `завтра 19:00 английский 50 мин #личное`.
-
-### Video calls
-
-Events with a call get a "Join" button: in the event card, in the widget from 15 minutes before the start until the end, and in the reminder notification. The link comes from the event's conference (Google Meet or a Zoom or Teams add-on) or from a Meet, Zoom, Teams, Webex, Telemost, Jitsi, Whereby, GoTo, Chime or Skype link in the location or description (`src/shared/lib/meeting.ts`). The notification button opens the link through Windows itself (`src-tauri/src/toast.rs`), so it works from the notification center too.
-
-### Tray agenda
-
-A left click on the tray icon opens today's and tomorrow's events in the bottom-right corner above the taskbar, with Join for calls that are about to start; it hides when it loses focus or on Esc. "Open calendar" at the bottom opens the main window; the right click still opens the menu. To see it without the tray, run `CALM_DEMO_AGENDA=1 npx tauri dev`.
-
-### Hard-to-miss alert
-
-Off by default; Settings → "Hard-to-miss alert" turns it on for video calls only or for every timed event. A minute before the start a small window opens in the middle of the screen over all other windows, with Join (for calls), Snooze 5 min and Dismiss; Enter joins, Esc dismisses. The schedule lives in the Rust side together with notifications (`src-tauri/src/reminders.rs`), a snoozed alert comes back even after the schedule is refreshed. To see the window without a Google event, run a debug build with `CALM_DEMO_ALERT=1 npx tauri dev`.
-
-### Reminders
-
-Popup reminders from Google Calendar: set on the event itself or as the calendar default. Every 5 minutes the calendar builds a schedule for the next 48 hours and passes it to the Rust side, which shows Windows notifications. This avoids relying on timers in a hidden window, which Windows may throttle. All-day events only get reminders that are set explicitly: the API does not return the default all-day settings. Can be turned off in Settings.
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ### Keyboard shortcuts
 
-`←` `→` previous and next, `T` today, `D` `W` `M` day, week and month, `N` quick add, `Ctrl+F` or `/` search, `Esc` close a form. They work with the Russian keyboard layout too.
+`←` `→` previous and next, `T` today, `D` `W` `M` `A` day, week, month and schedule, `N` quick add, `Ctrl+F` or `/` search, `Esc` close a form. They work with the Russian keyboard layout too.
+
+### Debug hooks
+
+- `CALM_DEMO_AGENDA=1 npx tauri dev` opens the tray agenda without the tray.
+- `CALM_DEMO_ALERT=1 npx tauri dev` shows the hard-to-miss alert without a Google event.
 
 ## How sign-in works
 
@@ -139,7 +75,7 @@ npm run tauri build    # installers in src-tauri\target\release\bundle\
 
 Every push to `main` runs tests only (the `ci` workflow). Installers come from the `release` workflow:
 
-1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`.
+1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
 2. Commit and tag: `git tag v0.5.0` and `git push origin main v0.5.0`.
 3. In 10–15 minutes a release with `.exe` and `.msi` appears under Releases.
 

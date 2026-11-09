@@ -35,6 +35,10 @@ Stage 3 — needs new Google scopes, so a new verification; do them together:
 - [ ] Google Tasks in the sidebar, drag a task into the calendar.
 - [ ] Outlook calendars; read-only `.ics` subscriptions need no Google scope and can come earlier.
 
+## Research
+
+- [ ] Study the competitors again (asked for on 2026-11-10): their features, weak spots and what users complain about, now that stages 1 and 2 are done. Desktop calendars for Windows and Google Calendar clients (Google Calendar web, Outlook, Notion Calendar, Morgen, Fantastical if it reaches Windows, Amie, Vimcal, OneCalendar, the Windows Calendar replacement), from store reviews, Reddit and forums. Compare with docs/features.md and turn the gaps into the next stages here.
+
 ## Ideas for later
 
 - Location with Google Maps (asked for on 2026-11-09, moved out of stage 2 on 2026-11-10; the feature still needs thinking through): suggestions from Google Maps while typing in the "Location" field, a small map of the place in the event card, a click on the map opens the place in Google Maps. To decide: Places API needs an API key with billing (not an OAuth scope, so no new Google verification) and a way to keep the key out of the app or behind a proxy, or a free alternative (OpenStreetMap Nominatim, a static map image); what is shown offline; the privacy policy has to mention the maps service. Prices on 2026-11-09: Places autocomplete sessions are free when they end in a Place Details call; 10,000 free requests a month per Essentials SKU, then about $2.83 per 1,000 autocomplete requests. A free first step: open the location in Google Maps on a click (no key).
