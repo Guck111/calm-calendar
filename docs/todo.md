@@ -21,9 +21,10 @@ Stage 1 — never miss a meeting (no new Google scopes):
 Stage 2 — replace the web version (no new Google scopes):
 
 - [x] Create and edit recurring events ("this event" / "this and following"): a Repeat field with presets and a custom rule (interval, weekdays, "2nd Tuesday", end by date or count); saving or deleting an occurrence asks "this event" or "this and following"; "this and following" from the first occurrence changes the whole series, from the middle it splits the series (the new one keeps guests, Meet link and reminders). Checked in the app against a real Google account on 2026-11-09: create with a count, split from the middle, "this event" edit and delete, delete a whole series.
-- [ ] Several Google accounts in one window, overlaps highlighted.
+- [x] Several Google accounts in one window, overlaps highlighted: one refresh token per account, calendars grouped by account in the sidebar with "Sign out" and "Add account", timed events overlapping an event of another account get a red edge and a note in the card (the same meeting in both accounts and "free" events don't count). The 0.4 sign-in is copied over on first start. Checked in the app on 2026-11-09 with two real accounts: migration, second sign-in, an event in the second account, overlap marks. Signing out of one account was checked with mock data only (it revokes the token).
+- [ ] Later: show one meeting that both accounts are invited to once instead of twice (same iCalUID).
 - [ ] Second time zone in the week view, time zone in the event form.
-- [ ] Agenda view, week numbers, holidays (check whether public holiday calendars work with the current scopes).
+- [ ] Agenda view, week numbers, holidays (check whether public holiday calendars work with the current scopes). Seen on 2026-11-09: a holiday calendar the user already added in Google ("Holidays in Poland") loads and shows; adding a new one from the app is still to check.
 - [ ] "Copy free slots" as text for a messenger.
 
 Stage 3 — needs new Google scopes, so a new verification; do them together:
