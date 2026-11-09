@@ -1,6 +1,6 @@
 # Calm Calendar Privacy Policy
 
-Effective date: November 8, 2026
+Effective date: November 10, 2026
 
 Calm Calendar is a desktop calendar app for Windows that works with your Google Calendar. It is developed by Arseni ("we", "us"). This policy explains what data the app accesses, how it is used and stored, and how you can delete it.
 
@@ -13,7 +13,7 @@ When you sign in with Google, you are asked to grant Calm Calendar the following
 | Google permission | What the app does with it |
 |---|---|
 | `calendar.calendarlist.readonly` — see the list of your calendars | Shows your calendars in the sidebar with their names and colors, lets you show or hide each one, and reads each calendar's default reminder times for notifications. |
-| `calendar.events` — view and edit events on your calendars | Shows your events in the day, week and month views and in the desktop widget; creates, edits, moves and deletes events when you do so in the app; searches your events when you use search; reads event reminders to show Windows notifications. |
+| `calendar.events` — view and edit events on your calendars | Shows your events in the calendar views and in the desktop widget; creates, edits, moves and deletes events when you do so in the app, including the guests you invite (Google then emails them the invitation) and the travel time you set, which is saved in the event's private fields; searches your events when you use search; reads event reminders to show Windows notifications; reads Google's public holiday calendar of the country you choose in Settings. |
 | `openid`, `email` — your Google account email address | Shows which account you are signed in with. |
 
 The app does not access your Gmail, contacts, Google Drive or any other Google data, and it does not change your calendars unless you create, edit, move or delete an event yourself.
@@ -29,15 +29,16 @@ All processing happens on your computer. Calm Calendar talks directly to Google'
 The app keeps the following on your computer:
 
 - **Sign-in token.** The Google refresh token is stored in Windows Credential Manager, protected by your Windows account. The short-lived access token is kept only in memory while the app runs.
-- **Account email**, to show which account is signed in.
+- **Account emails**, to show which accounts are signed in.
 - **Recently loaded calendar data.** The latest calendar lists and events received from Google are saved in the app's local storage so that your calendar and the widget still show your schedule when you are offline. At most the 80 most recent responses are kept; older ones are removed automatically.
 - **Settings**, such as theme, language, the widget position and which calendars are shown.
+- **Log file.** A technical log in `%LOCALAPPDATA%\com.arseni.calmcalendar\logs` records app starts, sign-ins and sign-outs, and errors, so that problems can be investigated. It contains no event titles or descriptions and no tokens; email addresses are shortened to the first letter and the domain (`a***@gmail.com`). Up to five files of 1 MB are kept, older ones are deleted automatically. The log never leaves your computer by itself: we see it only if you attach it to an email to support (Settings → "Open log folder").
 
 ## Deleting your data
 
-- **Sign out** in the app (the button at the bottom of the sidebar). This revokes the app's access at Google, deletes the sign-in token from Windows Credential Manager, and deletes the saved email and the saved calendar data from your computer. Your calendars themselves stay in your Google account.
+- **Sign out** in the app (the button next to the account in the sidebar). This revokes the app's access at Google, deletes the sign-in token from Windows Credential Manager, and deletes the saved email and the saved calendar data from your computer. Your calendars themselves stay in your Google account.
 - **Remove access** at any time from your Google Account: [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
-- **Uninstall** the app to remove its settings. If you installed it from the Microsoft Store, Windows removes the app's local data with it. For other installations you can also delete the folder `%APPDATA%\com.arseni.calmcalendar`.
+- **Uninstall** the app to remove its settings. If you installed it from the Microsoft Store, Windows removes the app's local data with it. For other installations you can also delete the folders `%APPDATA%\com.arseni.calmcalendar` and `%LOCALAPPDATA%\com.arseni.calmcalendar` (the latter holds the log).
 
 ## Sharing and disclosure
 
