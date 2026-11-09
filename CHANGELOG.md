@@ -13,7 +13,6 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Guests**: invite people by email from the event form, see who is going; Google emails them the invitation, changes and cancellation.
 - **Travel time** before an event: a field in the form, a hatched strip in the calendar, counted as busy.
 - A meeting that two of your accounts are invited to is shown once, and its card says where else it is.
-
 - **Log** for support: Settings → "Open log folder". It has no event titles, passwords or full email addresses.
 
 ### Changed

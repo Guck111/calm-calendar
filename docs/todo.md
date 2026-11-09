@@ -4,6 +4,7 @@
 
 - Say on calmcalendar.co.uk that the app speaks 11 languages where people look: today it is one sentence in the "Quick add" card. Ideas: a line or card with the language names written in each language, the languages in `<meta name="description">` and the page title.
 - Structured data (`SoftwareApplication` JSON-LD) with `inLanguage`, `operatingSystem`, `offers` (free), link to the Store once it is published.
+- Privacy policy (site/privacy-policy*.md and privacy.html): mention the local log file added on 2026-11-10: it stays on the computer, has no event titles or tokens, and reaches us only if the user attaches it to an email.
 - Later: landing pages in the biggest new languages (Spanish, Portuguese, German, Hindi) with `hreflang`.
 
 ## Design
