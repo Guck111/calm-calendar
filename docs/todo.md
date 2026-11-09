@@ -15,7 +15,7 @@
 Stage 1 — never miss a meeting (no new Google scopes):
 
 - [x] "Join" button for Meet, Zoom and Teams links: event card, widget, Windows notification.
-- [ ] Hard-to-miss reminder (opt-in): a calm window over everything at the start of a meeting with Join, Snooze 5 min and Dismiss.
+- [x] Hard-to-miss reminder (opt-in): a calm window over everything at the start of a meeting with Join, Snooze 5 min and Dismiss.
 - [ ] Agenda for today and tomorrow on a left click of the tray icon (Windows 11 removed it from the clock).
 
 Stage 2 — replace the web version (no new Google scopes):

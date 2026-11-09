@@ -79,6 +79,13 @@ export const ja: Dict = {
     join: "参加",
     joinTitle: (provider: string) => `${provider} で参加`,
   },
+  alert: {
+    label: "見逃さない通知",
+    text: "開始 1 分前に、「参加」「後で通知」「閉じる」のボタンがある画面がすべてのウィンドウの手前に表示されます。",
+    modes: { off: "オフ", calls: "ビデオ会議のみ", all: "時刻のあるすべての予定" },
+    snooze: "5 分後に再通知",
+    dismiss: "閉じる",
+  },
   month: {
     more: (n: number) => `他 ${n} 件`,
   },

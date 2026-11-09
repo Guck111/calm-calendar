@@ -163,6 +163,18 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
+/// Заметное напоминание: окно поверх всех окон за минуту до начала события
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AlertMode {
+    #[default]
+    Off,
+    /// только события с видеовстречей
+    Calls,
+    /// все события со временем
+    All,
+}
+
 /// Общие настройки оформления
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -171,13 +183,14 @@ pub struct Settings {
     pub notifications: bool,
     /// не показывать название и место события в уведомлении (оно бывает видно на экране блокировки)
     pub private_notifications: bool,
-    /// язык интерфейса ("ru" или "en"); нет — язык Windows
+    /// язык интерфейса ("ru", "en", "es"…); нет — язык Windows
     pub language: Option<String>,
+    pub alerts: AlertMode,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { glass: true, notifications: true, private_notifications: false, language: None }
+        Self { glass: true, notifications: true, private_notifications: false, language: None, alerts: AlertMode::Off }
     }
 }
 
@@ -206,5 +219,13 @@ mod tests {
         assert_eq!(parse_client(flat).unwrap().client_secret, "s");
         assert_eq!(parse_client(downloaded).unwrap().client_id, "x.apps.googleusercontent.com");
         assert!(parse_client(r#"{"client_id":" ","client_secret":""}"#).is_none());
+    }
+
+    #[test]
+    fn old_settings_files_get_alerts_off() {
+        let s: Settings = serde_json::from_str(r#"{"glass":false,"notifications":true}"#).unwrap();
+        assert_eq!(s.alerts, AlertMode::Off);
+        let s: Settings = serde_json::from_str(r#"{"alerts":"calls"}"#).unwrap();
+        assert_eq!(s.alerts, AlertMode::Calls);
     }
 }

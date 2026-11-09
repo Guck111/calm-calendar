@@ -10,15 +10,24 @@ const setAttr = (enabled: boolean) => {
   else delete root.dataset.glass;
 };
 
-export type AppSettings = { glass: boolean; notifications: boolean; private_notifications: boolean };
+/** Заметное напоминание: выключено, только видеовстречи, все события со временем */
+export type AlertMode = "off" | "calls" | "all";
+
+export type AppSettings = { glass: boolean; notifications: boolean; private_notifications: boolean; alerts: AlertMode };
+
+const OFFLINE_SETTINGS: AppSettings = { glass: false, notifications: false, private_notifications: false, alerts: "off" };
 
 export const readSettings = async (): Promise<AppSettings> => {
-  if (!inTauri) return { glass: false, notifications: false, private_notifications: false };
+  if (!inTauri) return OFFLINE_SETTINGS;
   try {
-    return await invoke<AppSettings>("get_settings");
+    return { ...OFFLINE_SETTINGS, ...(await invoke<Partial<AppSettings>>("get_settings")) };
   } catch {
-    return { glass: false, notifications: false, private_notifications: false };
+    return OFFLINE_SETTINGS;
   }
+};
+
+export const setAlerts = async (mode: AlertMode): Promise<void> => {
+  if (inTauri) await invoke("set_alerts", { mode });
 };
 
 export const setPrivateNotifications = async (enabled: boolean): Promise<void> => {

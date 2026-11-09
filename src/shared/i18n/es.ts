@@ -79,6 +79,13 @@ export const es: Dict = {
     join: "Unirse",
     joinTitle: (provider: string) => `Unirse con ${provider}`,
   },
+  alert: {
+    label: "Aviso destacado",
+    text: "Un minuto antes del inicio aparece, encima de todas las ventanas, un aviso con los botones Unirse, Posponer y Cerrar.",
+    modes: { off: "Desactivado", calls: "Solo videollamadas", all: "Todos los eventos con hora" },
+    snooze: "Posponer 5 min",
+    dismiss: "Cerrar",
+  },
   month: {
     more: (n: number) => `${n} más`,
   },

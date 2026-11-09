@@ -81,6 +81,13 @@ export const en: Dict = {
     join: "Join",
     joinTitle: (provider: string) => `Join with ${provider}`,
   },
+  alert: {
+    label: "Hard-to-miss alert",
+    text: "A minute before the start, a window with Join, Snooze and Dismiss appears over all other windows.",
+    modes: { off: "Off", calls: "Video calls only", all: "All timed events" },
+    snooze: "Snooze 5 min",
+    dismiss: "Dismiss",
+  },
   month: {
     more: (n: number) => `${n} more`,
   },

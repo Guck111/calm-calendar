@@ -14,7 +14,7 @@ use error::Result;
 use oauth::Auth;
 use serde::Serialize;
 use serde_json::Value;
-use tauri::{AppHandle, State, WindowEvent};
+use tauri::{AppHandle, Manager, State, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::StateFlags;
 
@@ -90,8 +90,41 @@ async fn set_notifications(
     let settings = config::Settings { notifications: enabled, ..config::load_settings(&app) };
     config::save_settings(&app, settings)?;
     if !enabled {
-        reminders.replace(Vec::new()).await;
+        reminders.keep_alerts_only().await;
     }
+    Ok(())
+}
+
+/// Заметное напоминание: выключено, только видеовстречи или все события со временем
+#[tauri::command]
+fn set_alerts(app: AppHandle, mode: config::AlertMode) -> Result<()> {
+    let settings = config::Settings { alerts: mode, ..config::load_settings(&app) };
+    config::save_settings(&app, settings)
+}
+
+/// Напоминания, которые сейчас в окне поверх всех окон
+#[tauri::command]
+async fn get_alerts(reminders: State<'_, reminders::Reminders>) -> Result<Vec<reminders::Reminder>> {
+    Ok(reminders.open_alerts().await)
+}
+
+#[tauri::command]
+async fn dismiss_alert(app: AppHandle, reminders: State<'_, reminders::Reminders>, key: String) -> Result<()> {
+    let empty = reminders.dismiss(&key).await;
+    desktop::alerts_changed(&app, empty);
+    Ok(())
+}
+
+/// Отложить напоминание; окно покажется снова через minutes минут (от 1 до 60)
+#[tauri::command]
+async fn snooze_alert(
+    app: AppHandle,
+    reminders: State<'_, reminders::Reminders>,
+    key: String,
+    minutes: i64,
+) -> Result<()> {
+    let empty = reminders.snooze(&key, minutes.clamp(1, 60)).await;
+    desktop::alerts_changed(&app, empty);
     Ok(())
 }
 
@@ -113,7 +146,8 @@ fn set_private_notifications(app: AppHandle, enabled: bool) -> Result<()> {
     config::save_settings(&app, settings)
 }
 
-/// Новое расписание напоминаний целиком; при выключенных уведомлениях игнорируется
+/// Новое расписание напоминаний целиком. При выключенных уведомлениях остаются только
+/// заметные напоминания: у них своя настройка, её проверяют в момент показа
 #[tauri::command]
 async fn schedule_reminders(
     app: AppHandle,
@@ -121,7 +155,7 @@ async fn schedule_reminders(
     items: Vec<reminders::Reminder>,
 ) -> Result<()> {
     let enabled = config::load_settings(&app).notifications;
-    reminders.replace(if enabled { items } else { Vec::new() }).await;
+    reminders.replace(items.into_iter().filter(|r| enabled || r.alert).collect()).await;
     Ok(())
 }
 
@@ -138,6 +172,8 @@ pub fn run() {
             tauri_plugin_window_state::Builder::default()
                 // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
                 .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
+                // окно напоминания всегда открывается по центру экрана
+                .with_denylist(&[desktop::ALERT])
                 .build(),
         )
         .plugin(tauri_plugin_autostart::init(
@@ -160,6 +196,15 @@ pub fn run() {
                     let _ = window.hide();
                 }
             }
+            // окно напоминания закрыли не кнопкой, а Alt+F4: забываем все открытые напоминания
+            if let WindowEvent::Destroyed = event {
+                if window.label() == desktop::ALERT {
+                    let app = window.app_handle().clone();
+                    tauri::async_runtime::spawn(async move {
+                        app.state::<reminders::Reminders>().dismiss_all().await;
+                    });
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             auth_status,
@@ -173,7 +218,11 @@ pub fn run() {
             set_notifications,
             set_private_notifications,
             set_language,
-            schedule_reminders
+            schedule_reminders,
+            set_alerts,
+            get_alerts,
+            dismiss_alert,
+            snooze_alert
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

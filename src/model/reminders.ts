@@ -64,6 +64,28 @@ export const buildReminders = (
   });
 };
 
+/** Заметные напоминания: окно поверх всех окон за минуту до начала. Показывать ли — решает
+ *  Rust по настройке (выключено, только видеовстречи, все события), поэтому строим для всех */
+export const ALERT_BEFORE_MS = 60_000;
+
+export type Alert = Pick<Reminder, "key" | "title" | "at" | "url"> & { start: number; end: number; provider?: string };
+
+export const buildAlerts = (events: CalendarEvent[], now: Date): Alert[] =>
+  events.flatMap((e) => {
+    const at = e.start.getTime() - ALERT_BEFORE_MS;
+    if (e.allDay || at < now.getTime() - 60_000 || at > now.getTime() + WINDOW_MS) return [];
+    return [
+      {
+        key: `${e.key}\u0000${e.start.getTime()}\u0000alert`,
+        title: e.title,
+        at,
+        start: e.start.getTime(),
+        end: e.end.getTime(),
+        ...(e.meeting ? { url: e.meeting.url, provider: e.meeting.provider } : {}),
+      },
+    ];
+  });
+
 export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) => {
   const now = new Date();
   const range = { start: new Date(now.getTime() - 60_000), end: new Date(now.getTime() + WINDOW_MS) };
@@ -77,7 +99,8 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
     private_body: privateBody,
     join_label: joinLabel,
   }));
-  if (inTauri) await invoke("schedule_reminders", { items: payload });
+  const alerts = buildAlerts(events, now).map((a) => ({ ...a, body: "", alert: true, join_label: t.meeting.join }));
+  if (inTauri) await invoke("schedule_reminders", { items: [...payload, ...alerts] });
   return items.length;
 });
 

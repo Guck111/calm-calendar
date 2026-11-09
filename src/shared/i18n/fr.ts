@@ -79,6 +79,13 @@ export const fr: Dict = {
     join: "Rejoindre",
     joinTitle: (provider: string) => `Rejoindre avec ${provider}`,
   },
+  alert: {
+    label: "Alerte bien visible",
+    text: "Une minute avant le début, une fenêtre avec Rejoindre, Reporter et Fermer s’affiche au-dessus de toutes les autres.",
+    modes: { off: "Désactivée", calls: "Visioconférences uniquement", all: "Tous les événements avec horaire" },
+    snooze: "Reporter de 5 min",
+    dismiss: "Fermer",
+  },
   month: {
     more: (n: number) => `${n} de plus`,
   },

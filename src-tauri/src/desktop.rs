@@ -13,6 +13,8 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 
 pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
+/// заметное напоминание о начале события
+pub const ALERT: &str = "alert";
 const TRAY: &str = "main";
 /// с этим флагом приложение запускается при входе в Windows: без главного окна
 pub const HIDDEN_ARG: &str = "--hidden";
@@ -156,6 +158,48 @@ fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
 
 #[cfg(not(windows))]
 fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
+
+/// Показывает окно заметного напоминания поверх всех окон или обновляет уже открытое
+pub fn show_alert(app: &AppHandle) {
+    if let Some(w) = window(app, ALERT) {
+        let _ = app.emit_to(ALERT, "alerts-changed", ());
+        let _ = w.show();
+        let _ = w.set_focus();
+        return;
+    }
+    let built = tauri::WebviewWindowBuilder::new(app, ALERT, tauri::WebviewUrl::App("index.html?window=alert".into()))
+        .title("Calm Calendar")
+        // высоту окно подгоняет под содержимое само, как виджет
+        .inner_size(460.0, 180.0)
+        .resizable(false)
+        .decorations(false)
+        .always_on_top(true)
+        .center()
+        .focused(true)
+        .build();
+    match built {
+        Ok(w) => {
+            round_corners(&w);
+            let _ = w.set_focus();
+        }
+        Err(e) => eprintln!("alert window: {e}"),
+    }
+}
+
+pub fn close_alert(app: &AppHandle) {
+    if let Some(w) = window(app, ALERT) {
+        let _ = w.close();
+    }
+}
+
+/// Список открытых напоминаний изменился: окно перерисовывается или закрывается, если пусто
+pub fn alerts_changed(app: &AppHandle, empty: bool) {
+    if empty {
+        close_alert(app);
+    } else {
+        let _ = app.emit_to(ALERT, "alerts-changed", ());
+    }
+}
 
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let hidden = std::env::args().any(|a| a == HIDDEN_ARG) || autostart::launched_at_startup();

@@ -79,6 +79,13 @@ export const zh: Dict = {
     join: "加入",
     joinTitle: (provider: string) => `通过 ${provider} 加入`,
   },
+  alert: {
+    label: "醒目提醒",
+    text: "开始前 1 分钟，所有窗口之上会弹出一个带有“加入”“稍后提醒”和“关闭”按钮的窗口。",
+    modes: { off: "已关闭", calls: "仅视频会议", all: "所有有时间的日程" },
+    snooze: "5 分钟后提醒",
+    dismiss: "关闭",
+  },
   month: {
     more: (n: number) => `还有 ${n} 项`,
   },

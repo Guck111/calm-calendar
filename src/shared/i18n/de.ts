@@ -79,6 +79,13 @@ export const de: Dict = {
     join: "Beitreten",
     joinTitle: (provider: string) => `Über ${provider} beitreten`,
   },
+  alert: {
+    label: "Unübersehbare Erinnerung",
+    text: "Eine Minute vor Beginn erscheint über allen Fenstern ein Fenster mit Beitreten, Später erinnern und Schließen.",
+    modes: { off: "Aus", calls: "Nur Videoanrufe", all: "Alle Termine mit Uhrzeit" },
+    snooze: "In 5 Min. erinnern",
+    dismiss: "Schließen",
+  },
   month: {
     more: (n: number) => `${n} weitere`,
   },

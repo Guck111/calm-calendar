@@ -9,7 +9,9 @@ import {
   readSettings,
   setGlass,
   setNotifications,
+  setAlerts,
   setPrivateNotifications,
+  type AlertMode,
 } from "../shared/lib/glass";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Button, cx } from "./Button";
@@ -17,6 +19,7 @@ import { Close, Gear } from "./icons";
 import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
+const ALERT_MODES: AlertMode[] = ["off", "calls", "all"];
 
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
@@ -24,6 +27,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [glass, setGlassState] = useState(false);
   const [notify, setNotify] = useState(false);
   const [privateNotify, setPrivateNotify] = useState(false);
+  const [alerts, setAlertsState] = useState<AlertMode>("off");
   const [error, setError] = useState<string | null>(null);
   const reschedule = useUnit(reloadRequested);
 
@@ -31,8 +35,22 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
     void readSettings().then((st) => {
       setNotify(st.notifications);
       setPrivateNotify(st.private_notifications);
+      setAlertsState(st.alerts);
     });
   }, []);
+
+  const pickAlerts = async (mode: AlertMode) => {
+    const previous = alerts;
+    setAlertsState(mode);
+    setError(null);
+    try {
+      await setAlerts(mode);
+      if (mode !== "off") reschedule();
+    } catch {
+      setError(t.errors.settingFailed);
+      setAlertsState(previous);
+    }
+  };
 
   const togglePrivate = async (enabled: boolean) => {
     setPrivateNotify(enabled);
@@ -170,6 +188,24 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
             />
           </label>
           {error && <p className={s.error}>{error}</p>}
+        </section>
+
+        <section className={s.section}>
+          <h3>{t.alert.label}</h3>
+          <select
+            className={s.select}
+            aria-label={t.alert.label}
+            value={alerts}
+            disabled={!inTauri}
+            onChange={(e) => void pickAlerts(e.target.value as AlertMode)}
+          >
+            {ALERT_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {t.alert.modes[mode]}
+              </option>
+            ))}
+          </select>
+          <small className={s.sectionText}>{t.alert.text}</small>
         </section>
 
         <p className={s.hint}>{t.settings.trayHint}</p>

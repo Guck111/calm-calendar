@@ -79,6 +79,13 @@ export const pt: Dict = {
     join: "Participar",
     joinTitle: (provider: string) => `Participar pelo ${provider}`,
   },
+  alert: {
+    label: "Alerta em destaque",
+    text: "Um minuto antes do início, uma janela com Participar, Adiar e Fechar aparece sobre todas as outras.",
+    modes: { off: "Desativado", calls: "Só videochamadas", all: "Todos os eventos com horário" },
+    snooze: "Adiar 5 min",
+    dismiss: "Fechar",
+  },
   month: {
     more: (n: number) => `mais ${n}`,
   },

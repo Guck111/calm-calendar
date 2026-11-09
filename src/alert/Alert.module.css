@@ -1,0 +1,96 @@
+/* Окно заметного напоминания: спокойное, но крупное — его должно быть видно краем глаза */
+:global(html[data-window="alert"]),
+:global(html[data-window="alert"] body) {
+  margin: 0;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  border-top: 4px solid var(--accent);
+  user-select: none;
+  cursor: default;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px 16px;
+}
+
+.item + .item {
+  border-top: 1px solid var(--border);
+}
+
+.status {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.when {
+  color: var(--text-2);
+}
+
+.provider {
+  color: var(--text-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: var(--surface-2);
+}
+
+.actions .primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* «Закрыть» — тише остальных и прижата к краю */
+.actions .quiet {
+  margin-inline-start: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-2);
+}
+
+.actions .primary:hover {
+  background: var(--accent);
+  filter: brightness(1.08);
+}

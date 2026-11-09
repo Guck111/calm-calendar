@@ -87,6 +87,13 @@ export const ar: Dict = {
     join: "انضمام",
     joinTitle: (provider: string) => `الانضمام عبر ${provider}`,
   },
+  alert: {
+    label: "تنبيه لا يفوتك",
+    text: "قبل البداية بدقيقة تظهر فوق كل النوافذ نافذة بأزرار «انضمام» و«تأجيل» و«إغلاق».",
+    modes: { off: "متوقف", calls: "مكالمات الفيديو فقط", all: "كل الأحداث المحددة بوقت" },
+    snooze: "تأجيل 5 دقائق",
+    dismiss: "إغلاق",
+  },
   month: {
     more: (n: number) => `${n} أخرى`,
   },
