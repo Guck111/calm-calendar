@@ -106,6 +106,8 @@ export const ru = {
     startTime: "Время начала",
     endDate: "Дата конца",
     endTime: "Время конца",
+    timeZone: "Часовой пояс",
+    yourTime: (time: string) => `По вашему времени: ${time}`,
   },
   repeat: {
     label: "Повтор",
@@ -200,6 +202,8 @@ export const ru = {
     privateNotifications: "Скрывать названия в уведомлениях",
     privateText:
       "Вместо названия — «Событие» и время. Пригодится, если Windows показывает уведомления на экране блокировки.",
+    secondZone: "Второй часовой пояс",
+    secondZoneText: "Ещё одна колонка часов в видах «Неделя» и «День».",
     trayHint: "Виджет, «поверх окон» и автозапуск — в меню значка в трее.",
   },
   sidebar: {

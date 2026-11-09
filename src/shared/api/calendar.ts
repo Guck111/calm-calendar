@@ -5,9 +5,14 @@ import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
 import { locale, t } from "../i18n";
 import type { AccessRole, AppError, Calendar, CalendarEvent, EventDraft, EventTime, Scope } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
+import { fromZoned, wallClock } from "../lib/tz";
+
+/** пояс, по часам которого заданы дата и время в черновике */
+export const draftZone = (d: EventDraft): string => d.timeZone ?? localTimeZone();
 import { buildRecurrence, followStart, parseRecurrence, truncateBefore } from "../lib/rrule";
 
-type Page<T> = { items?: T[]; nextPageToken?: string };
+/** у списка событий Google указывает и пояс календаря */
+type Page<T> = { items?: T[]; nextPageToken?: string; timeZone?: string };
 
 type RawCalendar = {
   id: string;
@@ -20,6 +25,7 @@ type RawCalendar = {
   selected?: boolean;
   hidden?: boolean;
   defaultReminders?: RawReminder[];
+  timeZone?: string;
 };
 
 type RawReminder = { method?: string; minutes?: number };
@@ -77,16 +83,25 @@ export const readWithCache = async <T>(account: string, path: string, query: Rec
   }
 };
 
-const fetchAllPages = async <T>(account: string, path: string, query: Record<string, string>): Promise<T[]> => {
+const fetchPages = async <T>(
+  account: string,
+  path: string,
+  query: Record<string, string>,
+): Promise<{ items: T[]; timeZone?: string }> => {
   const items: T[] = [];
+  let timeZone: string | undefined;
   let pageToken: string | undefined;
   do {
     const page = await readWithCache<Page<T>>(account, path, pageToken ? { ...query, pageToken } : query);
     items.push(...(page.items ?? []));
+    timeZone ??= page.timeZone;
     pageToken = page.nextPageToken;
   } while (pageToken);
-  return items;
+  return { items, timeZone };
 };
+
+const fetchAllPages = async <T>(account: string, path: string, query: Record<string, string>): Promise<T[]> =>
+  (await fetchPages<T>(account, path, query)).items;
 
 const toCalendar = (account: string, raw: RawCalendar): Calendar => ({
   id: calendarRef(account, raw.id),
@@ -99,6 +114,7 @@ const toCalendar = (account: string, raw: RawCalendar): Calendar => ({
   primary: Boolean(raw.primary),
   selected: Boolean(raw.selected),
   defaultReminders: popupMinutes(raw.defaultReminders),
+  timeZone: raw.timeZone,
 });
 
 const roleOrder = (c: Calendar): number => (c.primary ? 0 : c.accessRole === "owner" ? 1 : 2);
@@ -146,12 +162,15 @@ const parseTime = (t: RawTime | undefined): { date: Date; allDay: boolean } | nu
   return null;
 };
 
-export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEvent | null => {
+/** calendarZone — пояс календаря: в нём событие, у которого свой пояс не указан */
+export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?: string): CalendarEvent | null => {
   if (raw.status === "cancelled") return null;
   const start = parseTime(raw.start);
   const end = parseTime(raw.end);
   if (!start) return null;
   const fallbackEnd = start.allDay ? addDays(start.date, 1) : start.date;
+  const timeZone = start.allDay ? undefined : (raw.start?.timeZone ?? calendarZone);
+  const endTimeZone = raw.end?.timeZone && raw.end.timeZone !== timeZone ? raw.end.timeZone : undefined;
   return {
     key: `${calendarId}\u0000${raw.id}`,
     id: raw.id,
@@ -163,6 +182,8 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEven
     start: start.date,
     end: end && end.date > start.date ? end.date : fallbackEnd,
     allDay: start.allDay,
+    ...(timeZone ? { timeZone } : {}),
+    ...(endTimeZone && !start.allDay ? { endTimeZone } : {}),
     location: raw.location,
     description: raw.description,
     htmlLink: raw.htmlLink,
@@ -193,14 +214,14 @@ const one = (eventId: string) => `/${enc(eventId)}`;
 
 export const listEvents = async (calendarId: string, range: DateRange): Promise<CalendarEvent[]> => {
   const { account, googleId } = splitRef(calendarId);
-  const raw = await fetchAllPages<RawEvent>(account, eventsPath(googleId), {
+  const { items, timeZone } = await fetchPages<RawEvent>(account, eventsPath(googleId), {
     singleEvents: "true",
     orderBy: "startTime",
     timeMin: range.start.toISOString(),
     timeMax: range.end.toISOString(),
     maxResults: "2500",
   });
-  return raw.flatMap((e) => toCalendarEvent(calendarId, e) ?? []);
+  return items.flatMap((e) => toCalendarEvent(calendarId, e, timeZone) ?? []);
 };
 
 const SEARCH_SPAN_DAYS = 730;
@@ -216,7 +237,7 @@ export const searchEvents = async (calendarId: string, query: string, now: Date)
     timeMax: addDays(now, SEARCH_SPAN_DAYS).toISOString(),
     maxResults: String(SEARCH_LIMIT),
   });
-  return (page.items ?? []).flatMap((e) => toCalendarEvent(calendarId, e) ?? []);
+  return (page.items ?? []).flatMap((e) => toCalendarEvent(calendarId, e, page.timeZone) ?? []);
 };
 
 /** Ближайшие будущие сначала, потом прошедшие от новых к старым */
@@ -229,10 +250,12 @@ export const sortByRelevance = (events: CalendarEvent[], now: Date): CalendarEve
 /** Тело запроса для events.insert / events.patch. Лишнее поле обнуляем явно,
  *  чтобы событие корректно переключалось между «весь день» и временем. */
 export const draftToBody = (draft: EventDraft) => {
-  const time = (date: string, timeKey: string): RawTime | Record<string, string | null> =>
+  // дата и время в форме — по часам пояса события; у существующего события это его пояс из Google
+  const zone = draftZone(draft);
+  const time = (date: string, timeKey: string, label = zone): RawTime | Record<string, string | null> =>
     draft.allDay
       ? { date, dateTime: null, timeZone: null }
-      : { dateTime: combineDateTime(date, timeKey).toISOString(), timeZone: localTimeZone(), date: null };
+      : { dateTime: fromZoned(date, timeKey, zone).toISOString(), timeZone: label, date: null };
 
   // в Google конец события на весь день не включительно
   const endDate = draft.allDay ? toDateKey(addDays(fromDateKey(draft.endDate), 1)) : draft.endDate;
@@ -242,7 +265,7 @@ export const draftToBody = (draft: EventDraft) => {
     location: draft.location.trim(),
     description: draft.description.trim(),
     start: time(draft.startDate, draft.startTime),
-    end: time(endDate, draft.endTime),
+    end: time(endDate, draft.endTime, draft.endTimeZone ?? zone),
   };
 };
 
@@ -259,6 +282,11 @@ export const loadRecurrence = async (calendarId: string, recurringEventId: strin
 const instant = (time: EventTime | undefined): Date | null =>
   time?.dateTime ? new Date(time.dateTime) : time?.date ? fromDateKey(time.date) : null;
 
+/** то же время по часам пояса события: правило повтора считает дни недели и числа по ним */
+const wallInstant = (time: EventTime | undefined, zone: string): Date | null =>
+  time?.dateTime ? wallClock(new Date(time.dateTime), zone) : instant(time);
+
+/** начало события по часам его пояса (не момент времени) */
 const draftStart = (d: EventDraft): Date =>
   d.allDay ? fromDateKey(d.startDate) : combineDateTime(d.startDate, d.startTime);
 
@@ -275,13 +303,14 @@ const hasCount = (lines: string[]) => lines.some((l) => /^RRULE:(?:.*;)?COUNT=/i
 export const followingRecurrence = (draft: EventDraft, master: RawEvent, countBefore: number): string[] => {
   const original = master.recurrence ?? [];
   if (recurrenceEdited(draft)) return draft.recurrence;
-  const from = instant(draft.originalStart) ?? draftStart(draft);
+  const zone = draftZone(draft);
+  const from = wallInstant(draft.originalStart, zone) ?? draftStart(draft);
   const to = draftStart(draft);
-  const { rule, extra } = parseRecurrence(original, from);
+  const { rule, extra } = parseRecurrence(original, from, zone);
   if (!rule) return original;
   let next = followStart(rule, from, to);
   if (next.end.kind === "count") next = { ...next, end: { kind: "count", count: Math.max(1, next.end.count - countBefore) } };
-  return buildRecurrence(next, extra, to, draft.allDay);
+  return buildRecurrence(next, extra, to, draft.allDay, zone);
 };
 
 /** поля главного события, которые переходят в новую серию: участники, видеовстреча, напоминания… */

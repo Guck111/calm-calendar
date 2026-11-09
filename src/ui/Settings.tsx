@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { reloadRequested } from "../model/events";
+import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
+import { TimeZoneSelect } from "./TimeZoneSelect";
 import { inTauri } from "../shared/api/bus";
 import {
   glassSupported,
@@ -30,6 +32,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [alerts, setAlertsState] = useState<AlertMode>("off");
   const [error, setError] = useState<string | null>(null);
   const reschedule = useUnit(reloadRequested);
+  const [secondZone, changeSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
 
   useEffect(() => {
     void readSettings().then((st) => {
@@ -140,6 +143,28 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
               </option>
             ))}
           </select>
+        </section>
+
+        <section className={s.section}>
+          <label className={s.toggle}>
+            <span>
+              <b>{t.settings.secondZone}</b>
+              <small>{t.settings.secondZoneText}</small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={secondZone.enabled}
+              onChange={(e) => changeSecondZone({ enabled: e.target.checked })}
+            />
+          </label>
+          <TimeZoneSelect
+            className={s.select}
+            aria-label={t.settings.secondZone}
+            value={secondZone.zone}
+            disabled={!secondZone.enabled}
+            onChange={(zone) => changeSecondZone({ zone })}
+          />
         </section>
 
         <section className={s.section}>

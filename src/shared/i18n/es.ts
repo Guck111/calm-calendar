@@ -83,6 +83,8 @@ export const es: Dict = {
     startTime: "Hora de inicio",
     endDate: "Fecha de fin",
     endTime: "Hora de fin",
+    timeZone: "Zona horaria",
+    yourTime: (time: string) => `Tu hora: ${time}`,
   },
   repeat: {
     label: "Repetir",
@@ -174,6 +176,8 @@ export const es: Dict = {
     privateNotifications: "Ocultar títulos en las notificaciones",
     privateText:
       "Muestra «Evento» y la hora en lugar del título. Útil si Windows muestra notificaciones en la pantalla de bloqueo.",
+    secondZone: "Segunda zona horaria",
+    secondZoneText: "Una columna de horas más en las vistas «Semana» y «Día».",
     trayHint: "El widget, «siempre visible» y el inicio con Windows están en el menú del icono de la bandeja.",
   },
   sidebar: {

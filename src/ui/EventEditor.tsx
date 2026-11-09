@@ -23,8 +23,11 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
-import type { Calendar, CalendarEvent } from "../shared/api/types";
-import { addDays, formatFullDate, formatTime, isSameDay } from "../shared/lib/date";
+import { draftZone } from "../shared/api/calendar";
+import type { Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
+import { addDays, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
+import { fromZoned, wallClock, zoneLabel } from "../shared/lib/tz";
+import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
@@ -131,7 +134,10 @@ const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
 const SeriesNote = ({ event }: { event: CalendarEvent }) => {
   const series = useUnit($series);
   const lines = series?.id === event.recurringEventId ? series?.lines : null;
-  const text = lines?.length ? describeRule(parseRecurrence(lines, event.start).rule, event.start) : t.editor.recurring;
+  // дни недели в правиле — по часам пояса события
+  const zone = event.allDay ? undefined : event.timeZone;
+  const start = zone ? wallClock(event.start, zone) : event.start;
+  const text = lines?.length ? describeRule(parseRecurrence(lines, start, zone).rule, start) : t.editor.recurring;
   return <p className={s.note}>{text}</p>;
 };
 
@@ -147,6 +153,32 @@ const ConflictNote = ({ event }: { event: CalendarEvent }) => {
       <Warning /> {t.accounts.conflict(list)}
     </p>
   );
+};
+
+/** «9:00–10:00 (GMT−05:00) Северная Америка, восточное время — New York» у события в чужом поясе */
+const ZoneNote = ({ event }: { event: CalendarEvent }) => {
+  const zone = event.timeZone;
+  if (event.allDay || !zone || zone === localTimeZone()) return null;
+  const range = `${formatTime(wallClock(event.start, zone))}–${formatTime(wallClock(event.end, event.endTimeZone ?? zone))}`;
+  return (
+    <p className={s.note}>
+      {range} {zoneLabel(zone, event.start)}
+      {event.endTimeZone && ` → ${zoneLabel(event.endTimeZone, event.end)}`}
+    </p>
+  );
+};
+
+/** «По вашему времени: Чт, 5 нояб., 0:30–1:30» в форме, если пояс события не системный */
+const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
+  const zone = draftZone(draft);
+  if (zone === localTimeZone()) return null;
+  const start = fromZoned(draft.startDate, draft.startTime, zone);
+  const end = fromZoned(draft.endDate, draft.endTime, draft.endTimeZone ?? zone);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+  const text = isSameDay(start, end)
+    ? `${formatShortDate(start)}, ${formatTime(start)}–${formatTime(end)}`
+    : `${formatShortDate(start)}, ${formatTime(start)} — ${formatShortDate(end)}, ${formatTime(end)}`;
+  return <p className={s.note}>{t.editor.yourTime(text)}</p>;
 };
 
 /** Карточка события: только просмотр, правка по кнопке */
@@ -171,6 +203,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         </Button>
       </div>
       <p className={s.when}>{formatWhen(event)}</p>
+      <ZoneNote event={event} />
       {event.meeting && (
         <Button
           variant="primary"
@@ -351,6 +384,15 @@ const EventForm = () => {
           />
         )}
       </div>
+
+      {!draft.allDay && (
+        <>
+          <Field label={t.editor.timeZone}>
+            <TimeZoneSelect value={draftZone(draft)} onChange={(timeZone) => change({ timeZone })} />
+          </Field>
+          <LocalTimeNote draft={draft} />
+        </>
+      )}
 
       {!seriesFailed && (
         <RepeatField draft={draft} loading={seriesLoading} onChange={(recurrence) => change({ recurrence })} />

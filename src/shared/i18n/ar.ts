@@ -94,6 +94,8 @@ export const ar: Dict = {
     startTime: "وقت البداية",
     endDate: "تاريخ النهاية",
     endTime: "وقت النهاية",
+    timeZone: "المنطقة الزمنية",
+    yourTime: (time: string) => `بتوقيتك: ${time}`,
   },
   repeat: {
     label: "التكرار",
@@ -185,6 +187,8 @@ export const ar: Dict = {
     notificationsText: "حسب تذكيرات تقويم Google: اضبط الوقت في Google على الحدث أو كإعداد افتراضي للتقويم.",
     privateNotifications: "إخفاء العناوين في الإشعارات",
     privateText: "يعرض «حدث» والوقت بدل العنوان. مفيد إذا كان Windows يعرض الإشعارات على شاشة القفل.",
+    secondZone: "منطقة زمنية ثانية",
+    secondZoneText: "عمود ساعات إضافي في عرضَي «أسبوع» و«يوم».",
     trayHint: "الأداة و«دائمًا في المقدمة» والتشغيل مع Windows موجودة في قائمة أيقونة شريط المهام.",
   },
   sidebar: {

@@ -18,6 +18,8 @@ export type Calendar = {
   selected: boolean;
   /** напоминания по умолчанию, минуты до начала */
   defaultReminders: number[];
+  /** пояс календаря в Google: в нём живут события, у которых свой пояс не указан */
+  timeZone?: string;
 };
 
 /** время события в Google: date для событий на весь день, dateTime для остальных */
@@ -40,6 +42,10 @@ export type CalendarEvent = {
   /** не включительно: для события на весь день это полночь следующего дня */
   end: Date;
   allDay: boolean;
+  /** пояс события в Google (start.timeZone), без него — пояс календаря; у событий на весь день нет */
+  timeZone?: string;
+  /** пояс конца, только если в Google он другой, чем у начала */
+  endTimeZone?: string;
   location?: string;
   description?: string;
   htmlLink?: string;
@@ -66,6 +72,10 @@ export type EventDraft = {
   startTime: string;
   endDate: string;
   endTime: string;
+  /** пояс, по часам которого заданы дата и время в форме; нет — пояс системы */
+  timeZone?: string;
+  /** у конца в Google свой пояс: сохраняем его, пока пояс в форме не меняли */
+  endTimeZone?: string;
   location: string;
   description: string;
   /** правило повтора (строки RRULE, EXDATE…); пусто — не повторяется */

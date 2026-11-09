@@ -1,12 +1,14 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
-import { deleteOccurrence, loadRecurrence, recurrenceEdited, saveEvent } from "../shared/api/calendar";
+import { deleteOccurrence, draftZone, loadRecurrence, recurrenceEdited, saveEvent } from "../shared/api/calendar";
+import { wallClock } from "../shared/lib/tz";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import {
   addDays,
   addMinutes,
   combineDateTime,
   fromDateKey,
+  localTimeZone,
   toDateKey,
   toTimeKey,
 } from "../shared/lib/date";
@@ -55,25 +57,35 @@ export const $series = createStore<{ id: string; lines: string[] | null; failed:
   )
   .on(loadSeriesFx.fail, (state, { params }) => (state?.id === params.id ? { ...state, failed: true } : state));
 
-const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraft => ({
-  id: e.id,
-  originalCalendarId: e.calendarId,
-  calendarId: e.calendarId,
-  title: e.title === t.common.untitled ? "" : e.title,
-  allDay: e.allDay,
-  startDate: toDateKey(e.start),
-  startTime: toTimeKey(e.start),
-  // в форме последний день события на весь день показываем включительно
-  endDate: toDateKey(e.allDay ? addDays(e.end, -1) : e.end),
-  endTime: toTimeKey(e.end),
-  location: e.location ?? "",
-  description: e.description ?? "",
-  recurrence: e.recurringEventId ? (series ?? []) : [],
-  originalRecurrence: e.recurringEventId ? (series ?? undefined) : [],
-  recurringEventId: e.recurringEventId,
-  originalStart: e.originalStart,
-  htmlLink: e.htmlLink,
-});
+/** Черновик из события. Время в форме — по часам пояса события, чтобы при сохранении
+ *  и перетаскивании пояс из Google не менялся на системный */
+export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraft => {
+  const zone = e.timeZone ?? localTimeZone();
+  // событие на весь день — просто даты, пояс им не нужен
+  const start = e.allDay ? e.start : wallClock(e.start, zone);
+  const end = e.allDay ? addDays(e.end, -1) : wallClock(e.end, zone);
+  return {
+    id: e.id,
+    originalCalendarId: e.calendarId,
+    calendarId: e.calendarId,
+    title: e.title === t.common.untitled ? "" : e.title,
+    allDay: e.allDay,
+    startDate: toDateKey(start),
+    startTime: toTimeKey(start),
+    // в форме последний день события на весь день показываем включительно
+    endDate: toDateKey(end),
+    endTime: toTimeKey(end),
+    timeZone: zone,
+    ...(e.endTimeZone ? { endTimeZone: e.endTimeZone } : {}),
+    location: e.location ?? "",
+    description: e.description ?? "",
+    recurrence: e.recurringEventId ? (series ?? []) : [],
+    originalRecurrence: e.recurringEventId ? (series ?? undefined) : [],
+    recurringEventId: e.recurringEventId,
+    originalStart: e.originalStart,
+    htmlLink: e.htmlLink,
+  };
+};
 
 const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft => {
   const end = addMinutes(start, 60);
@@ -85,6 +97,7 @@ const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft 
     startTime: toTimeKey(start),
     endDate: toDateKey(allDay ? start : end),
     endTime: toTimeKey(end),
+    timeZone: localTimeZone(),
     location: "",
     description: "",
     recurrence: [],
@@ -106,15 +119,23 @@ export const draftStart = (d: EventDraft): Date =>
  *  У повторения серии правило не трогаем: перенос одного повторения его не меняет */
 const followRule = (prev: EventDraft, next: EventDraft): EventDraft => {
   if (next.recurringEventId || !next.recurrence.length) return next;
-  const { rule, extra } = parseRecurrence(next.recurrence, draftStart(prev));
+  const { rule, extra } = parseRecurrence(next.recurrence, draftStart(prev), draftZone(prev));
   if (!rule) return next;
   const start = draftStart(next);
-  return { ...next, recurrence: buildRecurrence(followStart(rule, draftStart(prev), start), extra, start, next.allDay) };
+  return {
+    ...next,
+    recurrence: buildRecurrence(followStart(rule, draftStart(prev), start), extra, start, next.allDay, draftZone(next)),
+  };
 };
 
-/** Если начало сдвинули позже конца, конец сдвигается следом с той же длительностью */
+/** Если начало сдвинули позже конца, конец сдвигается следом с той же длительностью.
+ *  Смена пояса оставляет часы в форме как есть (как в Google), а свой пояс конца забывается */
 export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): EventDraft => {
   const next = { ...draft, ...patch };
+  if ("timeZone" in patch && patch.timeZone !== draft.timeZone) {
+    delete next.endTimeZone;
+    return followRule(draft, next);
+  }
   const startChanged = "startDate" in patch || "startTime" in patch;
   if (!startChanged) return "allDay" in patch ? followRule(draft, next) : next;
 

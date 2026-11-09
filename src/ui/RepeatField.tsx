@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { t } from "../shared/i18n";
+import { draftZone } from "../shared/api/calendar";
 import type { EventDraft } from "../shared/api/types";
 import { addMonths, toDateKey } from "../shared/lib/date";
 import {
@@ -147,11 +148,12 @@ export const RepeatField = ({ draft, loading, onChange }: Props) => {
   const start = draftStart(draft);
   if (Number.isNaN(start.getTime())) return null;
 
-  const { rule, extra } = parseRecurrence(draft.recurrence, start);
+  const zone = draftZone(draft);
+  const { rule, extra } = parseRecurrence(draft.recurrence, start, zone);
   const repeating = draft.recurrence.length > 0;
   const preset = rule ? presetOf(rule, start) : null;
   const value = loading ? "loading" : !repeating ? "none" : !rule ? "special" : customOpen || !preset ? "custom" : preset;
-  const set = (next: Rule | null) => onChange(buildRecurrence(next, extra, start, draft.allDay));
+  const set = (next: Rule | null) => onChange(buildRecurrence(next, extra, start, draft.allDay, zone));
 
   const onSelect = (v: string) => {
     if (v === "none") {

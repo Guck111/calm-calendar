@@ -83,6 +83,8 @@ export const fr: Dict = {
     startTime: "Heure de début",
     endDate: "Date de fin",
     endTime: "Heure de fin",
+    timeZone: "Fuseau horaire",
+    yourTime: (time: string) => `Votre heure : ${time}`,
   },
   repeat: {
     label: "Répétition",
@@ -174,6 +176,8 @@ export const fr: Dict = {
     privateNotifications: "Masquer les titres dans les notifications",
     privateText:
       "Affiche « Événement » et l’heure au lieu du titre. Pratique si Windows affiche les notifications sur l’écran de verrouillage.",
+    secondZone: "Deuxième fuseau horaire",
+    secondZoneText: "Une colonne d’heures en plus dans les vues « Semaine » et « Jour ».",
     trayHint: "Le widget, « toujours au premier plan » et le lancement au démarrage sont dans le menu de l’icône de la barre des tâches.",
   },
   sidebar: {

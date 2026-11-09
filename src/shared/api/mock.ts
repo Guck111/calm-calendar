@@ -1,7 +1,7 @@
 // Подмена Rust-команд для разработки интерфейса в обычном браузере (npm run dev без Tauri).
 // В сборку приложения не попадает: подключается динамически, только если нет Tauri.
 import { lang } from "../i18n";
-import { addDays, startOfDay, startOfWeek, toDateKey } from "../lib/date";
+import { addDays, localTimeZone, startOfDay, startOfWeek, toDateKey } from "../lib/date";
 import { occurrences, parseRecurrence, utcStamp } from "../lib/rrule";
 
 type Json = Record<string, unknown>;
@@ -67,6 +67,14 @@ const ruEvents = (): Record<string, Json[]> => ({
     { id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) }, hangoutLink: MEET },
     // начинается через 10 минут: в виджете видна кнопка «Подключиться»
     { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
+    // создано в поясе Нью-Йорка: форма показывает время там и «по вашему времени»
+    {
+      id: "w11",
+      summary: "Созвон с Нью-Йорком",
+      start: { dateTime: at(4, 17), timeZone: "America/New_York" },
+      end: { dateTime: at(4, 18), timeZone: "America/New_York" },
+      hangoutLink: MEET,
+    },
   ]),
   sport: [
     {
@@ -227,7 +235,8 @@ const google = (
       const text = q.q ? String(e.summary ?? "").toLowerCase().includes(q.q.toLowerCase()) : true;
       return text && e.status !== "cancelled" && startOf(e) < new Date(q.timeMax) && endOf(e) > new Date(q.timeMin);
     });
-    return { items: items.sort(byStart) };
+    // как Google: у списка событий указан пояс календаря
+    return { items: items.sort(byStart), timeZone: localTimeZone() };
   }
   if (method === "POST" && !id) {
     const created = { ...body, id: `n${seq++}` };

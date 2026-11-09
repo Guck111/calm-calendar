@@ -83,6 +83,8 @@ export const de: Dict = {
     startTime: "Startzeit",
     endDate: "Enddatum",
     endTime: "Endzeit",
+    timeZone: "Zeitzone",
+    yourTime: (time: string) => `Deine Zeit: ${time}`,
   },
   repeat: {
     label: "Wiederholen",
@@ -174,6 +176,8 @@ export const de: Dict = {
     privateNotifications: "Titel in Benachrichtigungen ausblenden",
     privateText:
       "Zeigt „Termin“ und die Uhrzeit statt des Titels. Praktisch, wenn Windows Benachrichtigungen auf dem Sperrbildschirm zeigt.",
+    secondZone: "Zweite Zeitzone",
+    secondZoneText: "Eine zusätzliche Stundenspalte in den Ansichten „Woche“ und „Tag“.",
     trayHint: "Widget, „immer im Vordergrund“ und Autostart findest du im Menü des Infobereich-Symbols.",
   },
   sidebar: {

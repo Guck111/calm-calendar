@@ -78,6 +78,8 @@ export const ja: Dict = {
     startTime: "開始時刻",
     endDate: "終了日",
     endTime: "終了時刻",
+    timeZone: "タイムゾーン",
+    yourTime: (time: string) => `お使いの時刻: ${time}`,
   },
   repeat: {
     label: "繰り返し",
@@ -166,6 +168,8 @@ export const ja: Dict = {
     privateNotifications: "通知でタイトルを隠す",
     privateText:
       "タイトルの代わりに「予定」と時刻を表示します。ロック画面に通知が出る場合に便利です。",
+    secondZone: "2 つ目のタイムゾーン",
+    secondZoneText: "「週」と「日」の表示に時刻の列をもう 1 つ追加します。",
     trayHint: "ウィジェット、「常に手前に表示」、自動起動はタスクトレイのアイコンのメニューにあります。",
   },
   sidebar: {

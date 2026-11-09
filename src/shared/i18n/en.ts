@@ -80,6 +80,8 @@ export const en: Dict = {
     startTime: "Start time",
     endDate: "End date",
     endTime: "End time",
+    timeZone: "Time zone",
+    yourTime: (time: string) => `Your time: ${time}`,
   },
   repeat: {
     label: "Repeat",
@@ -171,6 +173,8 @@ export const en: Dict = {
     privateNotifications: "Hide titles in notifications",
     privateText:
       "Shows \"Event\" and the time instead of the title. Useful when Windows shows notifications on the lock screen.",
+    secondZone: "Second time zone",
+    secondZoneText: "An extra column of hours in the Week and Day views.",
     trayHint: "The widget, \"always on top\" and launch at sign-in are in the tray icon menu.",
   },
   sidebar: {

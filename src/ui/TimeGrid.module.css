@@ -134,6 +134,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* название пояса над колонкой его часов */
+.zoneHead {
+  align-self: end;
+  padding-block-end: 6px;
+  padding-inline-end: 8px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  text-align: end;
+  line-height: 1.2;
+  /* «غرينتش+٥:٣٠» и подобные не влезают в одну строку: переносим, а не обрезаем */
+  overflow-wrap: anywhere;
+}
+
+/* часы второго пояса — бледнее основных */
+.secondHours .hour {
+  color: var(--text-3);
+  opacity: 0.75;
+}
+
 .column {
   position: relative;
   border-inline-start: 1px solid var(--border);

@@ -78,6 +78,8 @@ export const hi: Dict = {
     startTime: "शुरू का समय",
     endDate: "अंत की तारीख",
     endTime: "अंत का समय",
+    timeZone: "समय क्षेत्र",
+    yourTime: (time: string) => `आपका समय: ${time}`,
   },
   repeat: {
     label: "दोहराएँ",
@@ -166,6 +168,8 @@ export const hi: Dict = {
     privateNotifications: "सूचनाओं में शीर्षक छिपाएं",
     privateText:
       "शीर्षक की जगह “इवेंट” और समय दिखाता है। तब काम का है जब Windows लॉक स्क्रीन पर सूचनाएं दिखाता है।",
+    secondZone: "दूसरा समय क्षेत्र",
+    secondZoneText: "“हफ़्ता” और “दिन” व्यू में घंटों का एक और कॉलम।",
     trayHint: "विजेट, “हमेशा ऊपर” और Windows के साथ शुरू होना ट्रे आइकन के मेन्यू में हैं।",
   },
   sidebar: {

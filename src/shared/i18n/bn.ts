@@ -79,6 +79,8 @@ export const bn: Dict = {
     startTime: "শুরুর সময়",
     endDate: "শেষের তারিখ",
     endTime: "শেষের সময়",
+    timeZone: "সময় অঞ্চল",
+    yourTime: (time: string) => `আপনার সময়: ${time}`,
   },
   repeat: {
     label: "পুনরাবৃত্তি",
@@ -170,6 +172,8 @@ export const bn: Dict = {
     privateNotifications: "বিজ্ঞপ্তিতে শিরোনাম লুকান",
     privateText:
       "শিরোনামের বদলে “ইভেন্ট” আর সময় দেখায়। Windows লক স্ক্রিনে বিজ্ঞপ্তি দেখালে কাজে আসে।",
+    secondZone: "দ্বিতীয় সময় অঞ্চল",
+    secondZoneText: "“সপ্তাহ” ও “দিন” ভিউতে ঘণ্টার আরও একটি কলাম।",
     trayHint: "উইজেট, “সবসময় উপরে” আর Windows-এর সাথে চালু হওয়া ট্রে আইকনের মেনুতে আছে।",
   },
   sidebar: {

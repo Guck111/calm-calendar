@@ -3,6 +3,7 @@
 // конец по дате или по числу повторов. Правило сложнее остаётся как есть и не правится.
 import { locale, t, weekStart } from "../i18n";
 import { addDays, daysBetween, fromDateKey, startOfDay, startOfWeek, toDateKey } from "./date";
+import { fromZonedParts, wallClock } from "./tz";
 
 export type Freq = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 export const FREQS: Freq[] = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
@@ -41,16 +42,16 @@ export const monthlyNth = (d: Date): number => (nthOf(d) > 4 ? -1 : nthOf(d));
 
 const pad = (n: number, w = 2) => String(n).padStart(w, "0");
 
-/** UNTIL из правила → последний день повторений по местному времени, включительно.
- *  Для событий со временем UNTIL точный: 8:59:59 при начале в 9:00 значит «до вчера» */
-export const parseUntil = (value: string, start: Date): string | null => {
+/** UNTIL из правила → последний день повторений по часам события, включительно.
+ *  Для событий со временем UNTIL точный: 8:59:59 при начале в 9:00 значит «до вчера».
+ *  start — часы события (см. wallClock), zone — пояс события; без него — пояс системы */
+export const parseUntil = (value: string, start: Date, zone?: string): string | null => {
   const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/.exec(value);
   if (!m) return null;
   const [, y, mo, d, h, mi, s, z] = m;
   if (h === undefined) return `${y}-${mo}-${d}`;
-  const until = z
-    ? new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s))
-    : new Date(+y, +mo - 1, +d, +h, +mi, +s);
+  const utc = new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s));
+  const until = z ? (zone ? wallClock(utc, zone) : utc) : new Date(+y, +mo - 1, +d, +h, +mi, +s);
   const sameDay = new Date(until.getFullYear(), until.getMonth(), until.getDate(), start.getHours(), start.getMinutes());
   return toDateKey(sameDay > until ? addDays(sameDay, -1) : sameDay);
 };
@@ -61,16 +62,18 @@ export const utcStamp = (d: Date): string =>
 
 const dateStamp = (key: string): string => key.replaceAll("-", "");
 
-/** UNTIL для правила: для событий на весь день — дата, для событий со временем — конец дня в UTC */
-export const formatUntil = (dateKey: string, allDay: boolean): string => {
+/** UNTIL для правила: для событий на весь день — дата, для событий со временем — конец дня
+ *  по часам пояса события (без пояса — системного) в UTC */
+export const formatUntil = (dateKey: string, allDay: boolean, zone?: string): string => {
   if (allDay) return dateStamp(dateKey);
   const day = fromDateKey(dateKey);
+  if (zone) return utcStamp(fromZonedParts(day.getFullYear(), day.getMonth() + 1, day.getDate(), 23, 59, 59, zone));
   return utcStamp(new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59));
 };
 
 const isRRule = (line: string) => /^RRULE:/i.test(line);
 
-const parseRule = (line: string, start: Date): Rule | null => {
+const parseRule = (line: string, start: Date, zone?: string): Rule | null => {
   const parts = new Map<string, string>();
   for (const part of line.slice(6).split(";")) {
     const [k, v] = part.split("=");
@@ -95,7 +98,7 @@ const parseRule = (line: string, start: Date): Rule | null => {
     end = { kind: "count", count: n };
   }
   if (until) {
-    const date = parseUntil(until, start);
+    const date = parseUntil(until, start, zone);
     if (!date) return null;
     end = { kind: "until", date };
   }
@@ -128,17 +131,18 @@ const parseRule = (line: string, start: Date): Rule | null => {
   return byDay.length ? null : rule;
 };
 
-export const parseRecurrence = (lines: string[], start: Date): Recurrence => {
+/** start — начало события по его часам (см. wallClock), zone — пояс события */
+export const parseRecurrence = (lines: string[], start: Date, zone?: string): Recurrence => {
   const rules = lines.filter(isRRule);
   const extra = lines.filter((l) => !isRRule(l));
   // EXRULE устарел, но если встретился — правило не наше
   if (rules.length !== 1 || extra.some((l) => /^EXRULE:/i.test(l))) return { rule: null, extra };
-  return { rule: parseRule(rules[0], start), extra };
+  return { rule: parseRule(rules[0], start, zone), extra };
 };
 
 const dayOrder = (d: Weekday) => (WEEKDAYS.indexOf(d) + 6) % 7;
 
-export const formatRule = (rule: Rule, start: Date, allDay: boolean): string => {
+export const formatRule = (rule: Rule, start: Date, allDay: boolean, zone?: string): string => {
   const parts = [`FREQ=${rule.freq}`];
   if (rule.interval > 1) parts.push(`INTERVAL=${rule.interval}`);
   if (rule.freq === "WEEKLY") {
@@ -147,12 +151,12 @@ export const formatRule = (rule: Rule, start: Date, allDay: boolean): string => 
   }
   if (rule.freq === "MONTHLY" && rule.nth) parts.push(`BYDAY=${rule.nth}${weekdayOf(start)}`);
   if (rule.end.kind === "count") parts.push(`COUNT=${rule.end.count}`);
-  if (rule.end.kind === "until") parts.push(`UNTIL=${formatUntil(rule.end.date, allDay)}`);
+  if (rule.end.kind === "until") parts.push(`UNTIL=${formatUntil(rule.end.date, allDay, zone)}`);
   return `RRULE:${parts.join(";")}`;
 };
 
-export const buildRecurrence = (rule: Rule | null, extra: string[], start: Date, allDay: boolean): string[] =>
-  rule ? [formatRule(rule, start, allDay), ...extra] : [];
+export const buildRecurrence = (rule: Rule | null, extra: string[], start: Date, allDay: boolean, zone?: string): string[] =>
+  rule ? [formatRule(rule, start, allDay, zone), ...extra] : [];
 
 /** Готовые варианты повтора для начала события */
 export type PresetId = "daily" | "weekdays" | "weekly" | "monthly" | "monthlyNth" | "yearly";

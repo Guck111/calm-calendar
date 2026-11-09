@@ -78,6 +78,8 @@ export const zh: Dict = {
     startTime: "开始时间",
     endDate: "结束日期",
     endTime: "结束时间",
+    timeZone: "时区",
+    yourTime: (time: string) => `您的时间：${time}`,
   },
   repeat: {
     label: "重复",
@@ -164,6 +166,8 @@ export const zh: Dict = {
     notificationsText: "依据 Google 日历中的提醒：提醒时间在 Google 中按日程或作为日历默认值设置。",
     privateNotifications: "在通知中隐藏标题",
     privateText: "以“日程”和时间代替标题显示。如果 Windows 在锁屏界面显示通知，这会很有用。",
+    secondZone: "第二时区",
+    secondZoneText: "在“周”和“日”视图中再显示一列时间。",
     trayHint: "小组件、“始终置顶”和开机启动位于托盘图标的菜单中。",
   },
   sidebar: {

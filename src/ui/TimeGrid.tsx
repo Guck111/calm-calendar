@@ -13,12 +13,15 @@ import {
   formatTime,
   formatWeekdayShort,
   isSameDay,
+  localTimeZone,
   MINUTES_IN_DAY,
   minutesOfDay,
   startOfDay,
   viewDays,
 } from "../shared/lib/date";
 import { eventsForDay, isAllDayLike, layoutDay } from "../shared/lib/layout";
+import { zoneHours, zoneLabel, zoneShort } from "../shared/lib/tz";
+import { $secondZone } from "../model/zones";
 import { cx } from "./Button";
 import { eventStyle } from "./eventColor";
 import { Repeat, Warning } from "./icons";
@@ -26,6 +29,15 @@ import s from "./TimeGrid.module.css";
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const SNAP_MINUTES = 30;
+/** ширина колонки с часами */
+const GUTTER = 56;
+
+/** короткое название пояса над колонкой его часов, полное — в подсказке */
+const ZoneHead = ({ zone, at }: { zone: string; at: Date }) => (
+  <div className={s.zoneHead} title={zoneLabel(zone, at)}>
+    {zoneShort(zone, at)}
+  </div>
+);
 
 /** сдвиг мыши, после которого клик считается перетаскиванием */
 const DRAG_THRESHOLD = 4;
@@ -62,6 +74,8 @@ export const TimeGrid = () => {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const editable = new Set(writable.map((c) => c.id));
+  const secondZone = useUnit($secondZone);
+  const gutters = secondZone ? 2 : 1;
 
   // пока тянем, показываем событие на новом месте
   const shown = drag?.moved
@@ -90,7 +104,7 @@ export const TimeGrid = () => {
       const dx = e.clientX - d.x0;
       const dy = e.clientY - d.y0;
       const moved = d.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
-      const columnWidth = (rect.width - 56) / days.length;
+      const columnWidth = (rect.width - GUTTER * gutters) / days.length;
       const minutes = snap((dy / rect.height) * MINUTES_IN_DAY);
       // справа налево дни идут в другую сторону
       const dayShift = d.mode === "move" ? Math.round((isRtl() ? -dx : dx) / columnWidth) : 0;
@@ -118,7 +132,7 @@ export const TimeGrid = () => {
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("keydown", onKey);
     };
-  }, [dragging, days.length, move, openEvent]);
+  }, [dragging, days.length, gutters, move, openEvent]);
 
   // при открытии прокручиваем к 7 утра, а если на экране сегодня и уже вечер — ближе к текущему часу
   const showsToday = days.some((d) => isSameDay(d, today));
@@ -142,12 +156,22 @@ export const TimeGrid = () => {
 
   const allDayRows = days.map((d) => eventsForDay(shown, d).filter(isAllDayLike));
   const hasAllDay = allDayRows.some((r) => r.length);
-  const columns = { gridTemplateColumns: `56px repeat(${days.length}, minmax(0, 1fr))` };
+  const columns = { gridTemplateColumns: `repeat(${gutters}, ${GUTTER}px) repeat(${days.length}, minmax(0, 1fr))` };
+  // смещение второго пояса берём на сегодня, если он на экране, иначе на первый день
+  const refDay = days.find((d) => isSameDay(d, today)) ?? days[0];
+  const systemZone = localTimeZone();
 
   return (
     <div className={cx(s.wrap, view === "day" && s.single)}>
       <div className={s.head} style={columns}>
-        <div />
+        {secondZone ? (
+          <>
+            <ZoneHead zone={secondZone} at={refDay} />
+            <ZoneHead zone={systemZone} at={refDay} />
+          </>
+        ) : (
+          <div />
+        )}
         {days.map((d) => (
           <button
             key={d.getTime()}
@@ -163,7 +187,9 @@ export const TimeGrid = () => {
 
       {hasAllDay && (
         <div className={s.allDay} style={columns}>
-          <div className={s.allDayLabel}>{t.common.allDayLower}</div>
+          <div className={s.allDayLabel} style={{ gridColumn: `span ${gutters}` }}>
+            {t.common.allDayLower}
+          </div>
           {allDayRows.map((list, i) => (
             <div key={days[i].getTime()} className={s.allDayCell}>
               {list.map((e) => (
@@ -184,6 +210,15 @@ export const TimeGrid = () => {
 
       <div className={s.scroll} ref={scrollRef}>
         <div className={cx(s.body, drag?.moved && s.dragging)} style={columns} ref={bodyRef}>
+          {secondZone && (
+            <div className={cx(s.hours, s.secondHours)} aria-label={zoneLabel(secondZone, refDay)}>
+              {zoneHours(refDay, secondZone).map(({ hour, minute }, h) => (
+                <span key={h} className={s.hour}>
+                  {h > 0 && (minute === 0 ? formatHour(hour) : formatTime(new Date(2000, 0, 1, hour, minute)))}
+                </span>
+              ))}
+            </div>
+          )}
           <div className={s.hours}>
             {HOURS.map((h) => (
               <span key={h} className={s.hour}>
