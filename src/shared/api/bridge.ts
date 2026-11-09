@@ -3,6 +3,7 @@ import { t } from "../i18n";
 import type { AppError, AuthStatus } from "./types";
 import { inTauri } from "./bus";
 import { clearCache } from "./cache";
+import { logWarn } from "../lib/log";
 
 export const isAppError = (e: unknown): e is AppError =>
   typeof e === "object" && e !== null && "kind" in e && "message" in e;
@@ -34,11 +35,17 @@ const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> =
 };
 
 // invoke отклоняется объектом { kind, message } из Rust; приводим всё к AppError
+/** запросы к Google и вход Rust записывает в журнал сам */
+const LOGGED_IN_RUST = new Set(["google_request", "sign_in"]);
+
 const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
   try {
     return await run<T>(cmd, args);
   } catch (e) {
-    throw localize(toAppError(e));
+    const error = toAppError(e);
+    // истёкший вход — не сбой: интерфейс сам предложит войти снова
+    if (!LOGGED_IN_RUST.has(cmd) && error.kind !== "not_signed_in") logWarn(`command ${cmd} failed`, error);
+    throw localize(error);
   }
 };
 

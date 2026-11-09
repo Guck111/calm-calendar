@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
+import { logError } from "../shared/lib/log";
 import { t } from "../shared/i18n";
 import { deleteOccurrence, draftZone, loadRecurrence, recurrenceEdited, saveEvent } from "../shared/api/calendar";
 import { wallClock } from "../shared/lib/tz";
@@ -318,6 +319,10 @@ sample({
 
 sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally], target: reloadRequested });
 moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
+// ошибки самого интерфейса при сохранении (ответы Google пишет Rust) — в журнал
+for (const [name, fx] of [["save", saveFx], ["delete", deleteFx], ["move", moveFx]] as const) {
+  fx.failData.watch((e) => e.kind === "other" && logError(`${name} event failed`, e));
+}
 
 // виджет перечитает события
 saveFx.done.watch(() => broadcast("events-changed", { from: "main" }));

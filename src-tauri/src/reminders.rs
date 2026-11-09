@@ -209,7 +209,7 @@ async fn demo_alert(app: &AppHandle) {
     };
     app.state::<Reminders>().open.lock().await.push(demo);
     crate::desktop::show_alert(app);
-    eprintln!("demo alert shown");
+    log::info!("demo alert shown");
 }
 
 pub fn start(app: AppHandle) {

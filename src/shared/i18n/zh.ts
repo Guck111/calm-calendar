@@ -29,6 +29,9 @@ export const zh: Dict = {
     settings: "设置",
   },
   errors: {
+    crashTitle: "出了点问题",
+    crashText: "无法显示此窗口。您保存的内容已在 Google 中。请重新启动窗口；如果再次出现，请联系支持并附上日志文件。",
+    reload: "重新启动窗口",
     notConfigured: "尚未设置 Google OAuth 客户端",
     notSignedIn: "请登录 Google",
     denied: "已取消登录",
@@ -186,6 +189,9 @@ export const zh: Dict = {
     holidays: "节假日",
     holidaysText: "以单独的日历显示某个国家的法定节假日，仅在本应用中可见。",
     holidaysNone: "不显示",
+    logs: "日志",
+    logsText: "如果某些功能无法使用，请将此文件夹中的文件附在发给支持的邮件中。日志中不包含活动标题、密码或完整的电子邮件地址。",
+    openLogs: "打开日志文件夹",
     trayHint: "小组件、“始终置顶”和开机启动位于托盘图标的菜单中。",
   },
   sidebar: {

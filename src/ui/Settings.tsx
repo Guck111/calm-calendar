@@ -19,6 +19,7 @@ import {
 } from "../shared/lib/glass";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Button, cx } from "./Button";
+import { openLogsFolder } from "../shared/lib/log";
 import { Close, Gear } from "./icons";
 import s from "./Settings.module.css";
 
@@ -279,6 +280,18 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
           </select>
           <small className={s.sectionText}>{t.alert.text}</small>
         </section>
+
+        {inTauri && (
+          <section className={s.section}>
+            <h3>{t.settings.logs}</h3>
+            <small className={s.sectionText}>{t.settings.logsText}</small>
+            <div>
+              <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
+                {t.settings.openLogs}
+              </Button>
+            </div>
+          </section>
+        )}
 
         <p className={s.hint}>{t.settings.trayHint}</p>
       </div>

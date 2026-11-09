@@ -14,10 +14,17 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Travel time** before an event: a field in the form, a hatched strip in the calendar, counted as busy.
 - A meeting that two of your accounts are invited to is shown once, and its card says where else it is.
 
+- **Log** for support: Settings → "Open log folder". It has no event titles, passwords or full email addresses.
+
 ### Changed
 
 - "Sign out" next to an account asks a second time.
 - The toolbar fits the smallest window size.
+- If a window fails to draw, it offers to restart instead of showing a blank page.
+
+### Fixed
+
+- Settings could not be scrolled in a low window, so the last options were out of reach.
 
 ## 0.5.0 — 2026-11-09
 

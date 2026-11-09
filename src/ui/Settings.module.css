@@ -10,6 +10,9 @@
 
 .dialog {
   width: min(440px, 100%);
+  /* в невысоком окне настройки прокручиваются, а не уходят за край */
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 18px;

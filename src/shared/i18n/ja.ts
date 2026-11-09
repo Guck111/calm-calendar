@@ -29,6 +29,9 @@ export const ja: Dict = {
     settings: "設定",
   },
   errors: {
+    crashTitle: "問題が発生しました",
+    crashText: "このウィンドウを表示できませんでした。保存した内容はすでに Google にあります。ウィンドウを再起動してください。再び起きる場合は、ログファイルを添付してサポートにご連絡ください。",
+    reload: "ウィンドウを再起動",
     notConfigured: "Google OAuth クライアントが設定されていません",
     notSignedIn: "Google にログインしてください",
     denied: "ログインがキャンセルされました",
@@ -188,6 +191,9 @@ export const ja: Dict = {
     holidays: "祝日",
     holidaysText: "国の祝日を別のカレンダーとして表示します。このアプリでのみ表示されます。",
     holidaysNone: "表示しない",
+    logs: "ログ",
+    logsText: "うまく動かないときは、このフォルダーのファイルをサポートへのメールに添付してください。ログには予定のタイトル、パスワード、完全なメールアドレスは含まれません。",
+    openLogs: "ログフォルダーを開く",
     trayHint: "ウィジェット、「常に手前に表示」、自動起動はタスクトレイのアイコンのメニューにあります。",
   },
   sidebar: {

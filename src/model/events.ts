@@ -6,6 +6,7 @@ import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
 import type { DateRange } from "../shared/lib/date";
 import { findConflicts, type Conflicts } from "../shared/lib/conflicts";
 import { mergeSharedMeetings } from "../shared/lib/shared-meetings";
+import { logError } from "../shared/lib/log";
 import { $signedIn, sessionLost, signOutFx } from "./auth";
 import { $failedAccounts, $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
 import { $range } from "./view";
@@ -86,3 +87,7 @@ sample({
 });
 
 sample({ clock: fetchEventsFx.doneData, filter: (r) => r.lost, target: sessionLost });
+
+// сбои самого интерфейса (не ответы Google — их пишет Rust) — в журнал
+fetchEventsFx.failData.watch((e) => e.kind === "other" && logError("loading events failed", e));
+fetchCalendarsFx.failData.watch((e) => e.kind === "other" && logError("loading calendars failed", e));

@@ -34,6 +34,9 @@ export const fr: Dict = {
     settings: "Paramètres",
   },
   errors: {
+    crashTitle: "Un problème est survenu",
+    crashText: "Cette fenêtre n’a pas pu s’afficher. Tout ce que vous avez enregistré est déjà dans Google. Redémarrez la fenêtre ; si cela se reproduit, écrivez au support en joignant les fichiers du journal.",
+    reload: "Redémarrer la fenêtre",
     notConfigured: "Le client OAuth Google n’est pas configuré",
     notSignedIn: "Connectez-vous à Google",
     denied: "Connexion annulée",
@@ -196,6 +199,9 @@ export const fr: Dict = {
     holidays: "Jours fériés",
     holidaysText: "Les jours fériés d’un pays dans un calendrier à part. Visibles seulement dans cette app.",
     holidaysNone: "Ne pas afficher",
+    logs: "Journal",
+    logsText: "Si quelque chose ne fonctionne pas, joignez les fichiers de ce dossier à un e-mail au support. Le journal ne contient ni titres d’événements, ni mots de passe, ni adresses complètes.",
+    openLogs: "Ouvrir le dossier du journal",
     trayHint: "Le widget, « toujours au premier plan » et le lancement au démarrage sont dans le menu de l’icône de la barre des tâches.",
   },
   sidebar: {

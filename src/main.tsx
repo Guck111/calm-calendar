@@ -8,6 +8,8 @@ import "./styles/global.css";
 import { initGlass } from "./shared/lib/glass";
 import { applyTheme, followTheme, readTheme } from "./shared/lib/theme";
 import { followLang, syncLangToRust } from "./shared/i18n";
+import { catchUnhandled } from "./shared/lib/log";
+import { ErrorBoundary } from "./ui/ErrorBoundary";
 
 // одна страница на четыре окна: главное, виджет (?window=widget), заметное напоминание
 // (?window=alert) и список дел у значка в трее (?window=agenda)
@@ -16,6 +18,9 @@ const isWidget = kind === "widget";
 const isAlert = kind === "alert";
 const isAgenda = kind === "agenda";
 document.documentElement.dataset.window = isWidget ? "widget" : isAlert ? "alert" : isAgenda ? "agenda" : "main";
+
+// необработанные ошибки любого окна — в журнал
+catchUnhandled();
 
 // тему применяем до первой отрисовки, чтобы не мигало
 applyTheme(readTheme());
@@ -29,6 +34,8 @@ const Root = isWidget ? Widget : isAlert ? AlertWindow : isAgenda ? AgendaWindow
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
-    <Root />
+    <ErrorBoundary compact={isWidget || isAlert || isAgenda}>
+      <Root />
+    </ErrorBoundary>
   </StrictMode>,
 );

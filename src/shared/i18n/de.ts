@@ -34,6 +34,9 @@ export const de: Dict = {
     settings: "Einstellungen",
   },
   errors: {
+    crashTitle: "Etwas ist schiefgelaufen",
+    crashText: "Dieses Fenster konnte nicht angezeigt werden. Alles Gespeicherte ist bereits bei Google. Starte das Fenster neu; passiert es wieder, schreib dem Support und häng die Protokolldateien an.",
+    reload: "Fenster neu starten",
     notConfigured: "Der Google-OAuth-Client ist nicht eingerichtet",
     notSignedIn: "Bei Google anmelden",
     denied: "Die Anmeldung wurde abgebrochen",
@@ -196,6 +199,9 @@ export const de: Dict = {
     holidays: "Feiertage",
     holidaysText: "Gesetzliche Feiertage eines Landes als eigener Kalender. Nur in dieser App sichtbar.",
     holidaysNone: "Nicht anzeigen",
+    logs: "Protokoll",
+    logsText: "Wenn etwas nicht funktioniert, häng die Dateien aus diesem Ordner an eine E-Mail an den Support. Das Protokoll enthält keine Termintitel, Passwörter oder vollständigen E-Mail-Adressen.",
+    openLogs: "Protokollordner öffnen",
     trayHint: "Widget, „immer im Vordergrund“ und Autostart findest du im Menü des Infobereich-Symbols.",
   },
   sidebar: {

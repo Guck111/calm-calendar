@@ -187,7 +187,7 @@ pub fn show_alert(app: &AppHandle) {
             round_corners(&w);
             let _ = w.set_focus();
         }
-        Err(e) => eprintln!("alert window: {e}"),
+        Err(e) => log::error!("alert window: {e}"),
     }
 }
 
@@ -279,7 +279,7 @@ fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
                     w
                 }
                 Err(e) => {
-                    eprintln!("agenda window: {e}");
+                    log::error!("agenda window: {e}");
                     return;
                 }
             }

@@ -4,6 +4,7 @@ mod desktop;
 mod error;
 mod google;
 mod i18n;
+mod logging;
 mod oauth;
 mod reminders;
 #[cfg(windows)]
@@ -39,13 +40,19 @@ fn save_client_config(app: AppHandle, client_id: String, client_secret: String) 
 
 #[tauri::command]
 async fn sign_in(app: AppHandle, auth: State<'_, Auth>) -> Result<String> {
-    auth.sign_in(&app).await
+    let result = auth.sign_in(&app).await;
+    match &result {
+        Ok(email) => log::info!("signed in: {}", logging::mask(email)),
+        Err(e) => logging::command_failed("sign-in", e),
+    }
+    result
 }
 
 /// account — из какого аккаунта выйти; без него — из всех
 #[tauri::command]
 async fn sign_out(app: AppHandle, auth: State<'_, Auth>, account: Option<String>) -> Result<()> {
     auth.sign_out(&app, account.as_deref()).await;
+    log::info!("signed out: {}", account.as_deref().map(logging::mask).unwrap_or_else(|| "all accounts".into()));
     Ok(())
 }
 
@@ -59,7 +66,24 @@ async fn google_request(
     query: Option<Vec<(String, String)>>,
     body: Option<Value>,
 ) -> Result<Value> {
-    google::request(&app, &auth, &account, &method, &path, query.unwrap_or_default(), body).await
+    let result = google::request(&app, &auth, &account, &method, &path, query.unwrap_or_default(), body).await;
+    if let Err(e) = &result {
+        let what = format!("Google {method} {} ({})", logging::path_shape(&path), logging::mask(&account));
+        logging::command_failed(&what, e);
+    }
+    result
+}
+
+/// Ошибки и важные события окон пишутся в общий журнал
+#[tauri::command]
+fn log_message(window: tauri::Window, level: String, message: String) {
+    logging::from_ui(&level, window.label(), &message);
+}
+
+/// Папка с журналом — для письма в поддержку
+#[tauri::command]
+fn open_logs(app: AppHandle) -> Result<()> {
+    logging::open_folder(&app)
 }
 
 /// Открыть главное окно из виджета или списка у трея, при необходимости сразу на нужном дне ("2026-11-04")
@@ -167,7 +191,10 @@ async fn schedule_reminders(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    logging::install_panic_hook();
     tauri::Builder::default()
+        // журнал подключаем первым, чтобы в него попали и ошибки других плагинов
+        .plugin(logging::plugin())
         // повторный запуск (например, ярлыком) не создаёт вторую копию, а показывает окно
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             desktop::show_main(app, None);
@@ -191,6 +218,12 @@ pub fn run() {
         .manage(desktop::TrayItems::default())
         .manage(desktop::AgendaHidden::default())
         .setup(|app| {
+            log::info!(
+                "Calm Calendar {} started on {} {}",
+                app.package_info().version,
+                std::env::consts::OS,
+                std::env::consts::ARCH
+            );
             // вход старой версии (один аккаунт) переезжает в список аккаунтов
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
@@ -238,7 +271,9 @@ pub fn run() {
             get_alerts,
             dismiss_alert,
             snooze_alert,
-            hide_agenda
+            hide_agenda,
+            log_message,
+            open_logs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

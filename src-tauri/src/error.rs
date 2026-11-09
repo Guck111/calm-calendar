@@ -22,7 +22,7 @@ pub enum Error {
 }
 
 impl Error {
-    fn kind(&self) -> &'static str {
+    pub fn kind(&self) -> &'static str {
         match self {
             Error::NotConfigured => "not_configured",
             Error::NotSignedIn => "not_signed_in",

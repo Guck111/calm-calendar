@@ -26,6 +26,7 @@ Last updated: 2026-11-10 (after version 0.5.0, stage 2 complete).
 - [Offline](#offline)
 - [Settings](#settings)
 - [Keyboard shortcuts](#keyboard-shortcuts)
+- [Errors and the log](#errors-and-the-log)
 - [Privacy and permissions](#privacy-and-permissions)
 - [Installation and updates](#installation-and-updates)
 - [Not there yet](#not-there-yet)
@@ -181,11 +182,19 @@ Gear button in the toolbar:
 - Glass effect.
 - Event notifications, hide titles in notifications.
 - Hard-to-miss alert: off, calls only, all events.
+- Log: "Open log folder".
+- The dialog scrolls when the window is low.
 - The widget, keeping it on top and starting with Windows live in the tray menu.
 
 ## Keyboard shortcuts
 
 `←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+
+## Errors and the log
+
+- Errors are shown where they happen, in the interface language: a banner over the calendar for loading problems (with the calendars or accounts that failed), a line in the form for saving problems, a note in the sidebar for an account whose sign-in expired.
+- If a window fails to draw, it shows "Something went wrong" with "Restart window" (and "Open log folder" in the main window) instead of a blank page; what was saved is already in Google.
+- A log file in `%LOCALAPPDATA%\com.arseni.calmcalendar\logs\calm-calendar.log` (1 MB per file, the last 5 kept): app start with the version, sign-in and sign-out, failed Google requests (method, the request path without ids, the error), failed commands, window errors with their stack, crashes. No event titles or descriptions, no tokens; accounts appear as `a***@gmail.com`. Libraries only log warnings and errors. Settings → "Open log folder" opens it for a support email (`src-tauri/src/logging.rs`, `src/shared/lib/log.ts`).
 
 ## Privacy and permissions
 

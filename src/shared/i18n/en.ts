@@ -31,6 +31,9 @@ export const en: Dict = {
     settings: "Settings",
   },
   errors: {
+    crashTitle: "Something went wrong",
+    crashText: "This window could not be drawn. Everything you saved is already in Google. Restart the window; if it happens again, write to support and attach the log files.",
+    reload: "Restart window",
     notConfigured: "Google OAuth client is not set up",
     notSignedIn: "Sign in to Google",
     denied: "Sign-in was cancelled",
@@ -193,6 +196,9 @@ export const en: Dict = {
     holidays: "Holidays",
     holidaysText: "A country's public holidays as a separate calendar. Shown only in this app.",
     holidaysNone: "Don't show",
+    logs: "Log",
+    logsText: "If something doesn't work, attach the files from this folder to an email to support. The log has no event titles, passwords or full email addresses.",
+    openLogs: "Open log folder",
     trayHint: "The widget, \"always on top\" and launch at sign-in are in the tray icon menu.",
   },
   sidebar: {

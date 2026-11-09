@@ -34,6 +34,9 @@ export const pt: Dict = {
     settings: "Configurações",
   },
   errors: {
+    crashTitle: "Algo deu errado",
+    crashText: "Não foi possível exibir esta janela. Tudo o que você salvou já está no Google. Reinicie a janela; se acontecer de novo, escreva ao suporte e anexe os arquivos de log.",
+    reload: "Reiniciar janela",
     notConfigured: "O cliente OAuth do Google não está configurado",
     notSignedIn: "Faça login no Google",
     denied: "O login foi cancelado",
@@ -202,6 +205,9 @@ export const pt: Dict = {
     holidays: "Feriados",
     holidaysText: "Os feriados de um país como um calendário à parte. Aparecem só neste app.",
     holidaysNone: "Não mostrar",
+    logs: "Log",
+    logsText: "Se algo não funcionar, anexe os arquivos desta pasta a um e-mail para o suporte. O log não contém títulos de eventos, senhas nem endereços completos.",
+    openLogs: "Abrir pasta de log",
     trayHint: "O widget, “sempre visível” e a inicialização com o Windows ficam no menu do ícone da bandeja.",
   },
   sidebar: {
