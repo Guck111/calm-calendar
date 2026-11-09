@@ -62,10 +62,16 @@ async fn google_request(
     google::request(&app, &auth, &method, &path, query.unwrap_or_default(), body).await
 }
 
-/// Открыть главное окно из виджета, при необходимости сразу на нужном дне ("2026-11-04")
+/// Открыть главное окно из виджета или списка у трея, при необходимости сразу на нужном дне ("2026-11-04")
 #[tauri::command]
 fn open_main(app: AppHandle, date: Option<String>) {
     desktop::show_main(&app, date);
+}
+
+/// Спрятать список дел у значка в трее (кнопка в нём или Esc)
+#[tauri::command]
+fn hide_agenda(app: AppHandle) {
+    desktop::hide_agenda(&app);
 }
 
 #[tauri::command]
@@ -173,7 +179,7 @@ pub fn run() {
                 // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
                 .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
                 // окно напоминания всегда открывается по центру экрана
-                .with_denylist(&[desktop::ALERT])
+                .with_denylist(&[desktop::ALERT, desktop::AGENDA])
                 .build(),
         )
         .plugin(tauri_plugin_autostart::init(
@@ -183,6 +189,7 @@ pub fn run() {
         .manage(Auth::new())
         .manage(reminders::Reminders::default())
         .manage(desktop::TrayItems::default())
+        .manage(desktop::AgendaHidden::default())
         .setup(|app| {
             desktop::setup(app.handle())?;
             reminders::start(app.handle().clone());
@@ -194,6 +201,12 @@ pub fn run() {
                 if window.label() == desktop::MAIN {
                     api.prevent_close();
                     let _ = window.hide();
+                }
+            }
+            // список дел у значка в трее прячется, как только уходит фокус
+            if let WindowEvent::Focused(false) = event {
+                if window.label() == desktop::AGENDA {
+                    desktop::agenda_lost_focus(window.app_handle());
                 }
             }
             // окно напоминания закрыли не кнопкой, а Alt+F4: забываем все открытые напоминания
@@ -222,7 +235,8 @@ pub fn run() {
             set_alerts,
             get_alerts,
             dismiss_alert,
-            snooze_alert
+            snooze_alert,
+            hide_agenda
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -88,6 +88,9 @@ export const en: Dict = {
     snooze: "Snooze 5 min",
     dismiss: "Dismiss",
   },
+  agenda: {
+    empty: "Nothing planned",
+  },
   month: {
     more: (n: number) => `${n} more`,
   },

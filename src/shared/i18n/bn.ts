@@ -86,6 +86,9 @@ export const bn: Dict = {
     snooze: "5 মিনিট পরে মনে করান",
     dismiss: "বন্ধ করুন",
   },
+  agenda: {
+    empty: "কিছু পরিকল্পনা নেই",
+  },
   month: {
     more: (n: number) => `আরও ${n}টি`,
   },

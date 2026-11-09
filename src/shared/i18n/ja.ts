@@ -86,6 +86,9 @@ export const ja: Dict = {
     snooze: "5 分後に再通知",
     dismiss: "閉じる",
   },
+  agenda: {
+    empty: "予定はありません",
+  },
   month: {
     more: (n: number) => `他 ${n} 件`,
   },

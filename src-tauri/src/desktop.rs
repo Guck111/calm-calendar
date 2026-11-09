@@ -15,6 +15,11 @@ pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
 /// заметное напоминание о начале события
 pub const ALERT: &str = "alert";
+/// список дел на сегодня и завтра по клику на значок в трее
+pub const AGENDA: &str = "agenda";
+/// размер списка в логических пикселях и отступ от угла рабочей области
+const AGENDA_SIZE: (f64, f64) = (340.0, 440.0);
+const AGENDA_MARGIN: f64 = 12.0;
 const TRAY: &str = "main";
 /// с этим флагом приложение запускается при входе в Windows: без главного окна
 pub const HIDDEN_ARG: &str = "--hidden";
@@ -201,6 +206,97 @@ pub fn alerts_changed(app: &AppHandle, empty: bool) {
     }
 }
 
+/// Когда список спрятался из-за потери фокуса. Клик по значку сначала забирает фокус у списка,
+/// и без этой отметки тот же клик сразу открыл бы его снова
+#[derive(Default)]
+pub struct AgendaHidden(Mutex<Option<std::time::Instant>>);
+
+pub fn hide_agenda(app: &AppHandle) {
+    if let Some(w) = window(app, AGENDA) {
+        if w.is_visible().unwrap_or(false) {
+            let _ = w.hide();
+            if let Ok(mut at) = app.state::<AgendaHidden>().0.lock() {
+                *at = Some(std::time::Instant::now());
+            }
+        }
+    }
+}
+
+/// Фокус ушёл. Сразу после показа окно на миг отдаёт фокус своей же веб-странице,
+/// поэтому прячем список, только если через 200 мс окно всё ещё не активно
+pub fn agenda_lost_focus(app: &AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        let focused = window(&app, AGENDA).and_then(|w| w.is_focused().ok()).unwrap_or(false);
+        if !focused {
+            hide_agenda(&app);
+        }
+    });
+}
+
+/// Правый нижний угол рабочей области того монитора, где значок: как у системных всплывающих окон
+fn agenda_position(app: &AppHandle, x: f64, y: f64) -> Option<tauri::PhysicalPosition<i32>> {
+    let monitor = app.monitor_from_point(x, y).ok().flatten().or_else(|| app.primary_monitor().ok().flatten())?;
+    let scale = monitor.scale_factor();
+    let area = monitor.work_area();
+    let (w, h) = AGENDA_SIZE;
+    let right = area.position.x + area.size.width as i32;
+    let bottom = area.position.y + area.size.height as i32;
+    Some(tauri::PhysicalPosition::new(
+        right - ((w + AGENDA_MARGIN) * scale) as i32,
+        bottom - ((h + AGENDA_MARGIN) * scale) as i32,
+    ))
+}
+
+/// Левый клик по значку: показать список дел или спрятать, если он открыт
+fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
+    let just_hidden = app
+        .state::<AgendaHidden>()
+        .0
+        .lock()
+        .ok()
+        .and_then(|at| *at)
+        .is_some_and(|at| at.elapsed() < std::time::Duration::from_millis(400));
+    if just_hidden {
+        return;
+    }
+    let w = match window(app, AGENDA) {
+        Some(w) => w,
+        None => {
+            let built = tauri::WebviewWindowBuilder::new(app, AGENDA, tauri::WebviewUrl::App("index.html?window=agenda".into()))
+                .title("Calm Calendar")
+                .inner_size(AGENDA_SIZE.0, AGENDA_SIZE.1)
+                .resizable(false)
+                .decorations(false)
+                .skip_taskbar(true)
+                .always_on_top(true)
+                .visible(false)
+                .build();
+            match built {
+                Ok(w) => {
+                    round_corners(&w);
+                    w
+                }
+                Err(e) => {
+                    eprintln!("agenda window: {e}");
+                    return;
+                }
+            }
+        }
+    };
+    if w.is_visible().unwrap_or(false) {
+        let _ = w.hide();
+        return;
+    }
+    if let Some(pos) = agenda_position(app, x, y) {
+        let _ = w.set_position(pos);
+    }
+    let _ = app.emit_to(AGENDA, "agenda-shown", ());
+    let _ = w.show();
+    let _ = w.set_focus();
+}
+
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     let hidden = std::env::args().any(|a| a == HIDDEN_ARG) || autostart::launched_at_startup();
     if !hidden {
@@ -208,6 +304,17 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     }
     let widget = config::load_widget(app);
     apply_widget(app, widget);
+    // только в сборке для разработки: `CALM_DEMO_AGENDA=1 npx tauri dev` сразу открывает список дел,
+    // тем же кодом, что и клик по значку в трее
+    #[cfg(debug_assertions)]
+    if std::env::var_os("CALM_DEMO_AGENDA").is_some() {
+        // после главного окна, иначе оно заберёт фокус и список сразу спрячется
+        let app = app.clone();
+        tauri::async_runtime::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+            toggle_agenda(&app, 0.0, 0.0);
+        });
+    }
     apply_glass(app, config::load_settings(app).glass);
     build_tray(app)
 }
@@ -282,13 +389,15 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| on_menu(app, event.id().as_ref()))
         .on_tray_icon_event(|tray, event| {
+            // левый клик — список дел на сегодня и завтра, правый — меню
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,
+                position,
                 ..
             } = event
             {
-                show_main(tray.app_handle(), None);
+                toggle_agenda(tray.app_handle(), position.x, position.y);
             }
         });
     if let Some(icon) = app.default_window_icon() {

@@ -86,6 +86,9 @@ export const hi: Dict = {
     snooze: "5 मिनट बाद याद दिलाएं",
     dismiss: "बंद करें",
   },
+  agenda: {
+    empty: "कुछ तय नहीं है",
+  },
   month: {
     more: (n: number) => `${n} और`,
   },

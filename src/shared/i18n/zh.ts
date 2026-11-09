@@ -86,6 +86,9 @@ export const zh: Dict = {
     snooze: "5 分钟后提醒",
     dismiss: "关闭",
   },
+  agenda: {
+    empty: "没有安排",
+  },
   month: {
     more: (n: number) => `还有 ${n} 项`,
   },

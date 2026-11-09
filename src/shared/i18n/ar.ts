@@ -94,6 +94,9 @@ export const ar: Dict = {
     snooze: "تأجيل 5 دقائق",
     dismiss: "إغلاق",
   },
+  agenda: {
+    empty: "لا شيء مخطط له",
+  },
   month: {
     more: (n: number) => `${n} أخرى`,
   },

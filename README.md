@@ -75,6 +75,10 @@ Examples: `tomorrow 7pm English class 50 min #personal`, `завтра 19:00 а�
 
 Events with a call get a "Join" button: in the event card, in the widget from 15 minutes before the start until the end, and in the reminder notification. The link comes from the event's conference (Google Meet or a Zoom or Teams add-on) or from a Meet, Zoom, Teams, Webex, Telemost, Jitsi, Whereby, GoTo, Chime or Skype link in the location or description (`src/shared/lib/meeting.ts`). The notification button opens the link through Windows itself (`src-tauri/src/toast.rs`), so it works from the notification center too.
 
+### Tray agenda
+
+A left click on the tray icon opens today's and tomorrow's events in the bottom-right corner above the taskbar, with Join for calls that are about to start; it hides when it loses focus or on Esc. "Open calendar" at the bottom opens the main window; the right click still opens the menu. To see it without the tray, run `CALM_DEMO_AGENDA=1 npx tauri dev`.
+
 ### Hard-to-miss alert
 
 Off by default; Settings → "Hard-to-miss alert" turns it on for video calls only or for every timed event. A minute before the start a small window opens in the middle of the screen over all other windows, with Join (for calls), Snooze 5 min and Dismiss; Enter joins, Esc dismisses. The schedule lives in the Rust side together with notifications (`src-tauri/src/reminders.rs`), a snoozed alert comes back even after the schedule is refreshed. To see the window without a Google event, run a debug build with `CALM_DEMO_ALERT=1 npx tauri dev`.
