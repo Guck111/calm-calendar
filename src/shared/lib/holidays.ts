@@ -1,7 +1,15 @@
 // Государственные праздники: публичные календари Google вида «ru.russian#holiday@group.v.calendar.google.com».
 // Их можно читать с правом calendar.events, а добавить в список календарей Google нельзя без нового права,
 // поэтому выбранная страна хранится только в приложении. Первая часть id — язык названий праздников.
+import { calendarRef } from "../api/calendar";
+import type { Calendar } from "../api/types";
 import { lang, locale } from "../i18n";
+
+/** выбранная страна в localStorage: её читают и главное окно, и виджет */
+export const HOLIDAYS_KEY = "calm.holidays";
+
+/** цвет праздников, как у календарей праздников в Google */
+const HOLIDAY_COLOR = "#16a765";
 
 /** страна (ISO 3166) → имя календаря у Google; проверено, что каждый календарь существует */
 export const HOLIDAY_REGIONS: Record<string, string> = {
@@ -46,4 +54,26 @@ export const systemRegion = (): string | null => {
   } catch {
     return null;
   }
+};
+
+/** Календарь праздников страны из настроек. Читаем через первый аккаунт; если такой календарь
+ *  уже есть в списке Google, второй раз не добавляем */
+export const holidayCalendar = (region: string | null, accounts: string[], google: Calendar[]): Calendar | null => {
+  if (!region || !isHolidayRegion(region) || !accounts.length) return null;
+  const slug = `.${HOLIDAY_REGIONS[region]}#holiday@`;
+  if (google.some((c) => c.googleId.includes(slug))) return null;
+  const googleId = holidayCalendarId(region);
+  return {
+    id: calendarRef(accounts[0], googleId),
+    googleId,
+    account: accounts[0],
+    name: regionName(region),
+    color: HOLIDAY_COLOR,
+    textColor: "#000000",
+    accessRole: "reader",
+    primary: false,
+    selected: true,
+    defaultReminders: [],
+    holiday: true,
+  };
 };

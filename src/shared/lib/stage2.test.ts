@@ -3,7 +3,14 @@ import type { CalendarEvent } from "../api/types";
 import { setLang } from "../i18n";
 import { AGENDA_DAYS, isoWeek, shiftCursor, viewDays, viewRange, weekNumberOf } from "./date";
 import { formatFreeSlots, freeSlots, type FreeOptions } from "./free";
-import { HOLIDAY_REGIONS, holidayCalendarId, isHolidayRegion, regionName, sortedRegions } from "./holidays";
+import {
+  HOLIDAY_REGIONS,
+  holidayCalendar,
+  holidayCalendarId,
+  isHolidayRegion,
+  regionName,
+  sortedRegions,
+} from "./holidays";
 import { mergeSharedMeetings } from "./shared-meetings";
 
 const ev = (key: string, account: string, from: number, to: number, over: Partial<CalendarEvent> = {}): CalendarEvent => ({
@@ -122,5 +129,23 @@ describe("праздники", () => {
     const names = sortedRegions().map((r) => r.name);
     expect(names).toHaveLength(Object.keys(HOLIDAY_REGIONS).length);
     expect([...names].sort((a, b) => a.localeCompare(b, "ru"))).toEqual(names);
+  });
+
+  it("календарь праздников для главного окна и виджета: через первый аккаунт, без повтора", () => {
+    setLang("ru", "ru-RU");
+    const cal = holidayCalendar("PL", ["me@example.com", "work@example.com"], []);
+    expect(cal).toMatchObject({
+      googleId: "ru.polish#holiday@group.v.calendar.google.com",
+      account: "me@example.com",
+      name: "Польша",
+      accessRole: "reader",
+      holiday: true,
+    });
+    // такой календарь уже есть в Google, на любом языке названий
+    const google = [{ ...cal!, googleId: "en.polish#holiday@group.v.calendar.google.com", holiday: undefined }];
+    expect(holidayCalendar("PL", ["me@example.com"], google)).toBeNull();
+    expect(holidayCalendar(null, ["me@example.com"], [])).toBeNull();
+    expect(holidayCalendar("PL", [], [])).toBeNull();
+    expect(holidayCalendar("XX", ["me@example.com"], [])).toBeNull();
   });
 });

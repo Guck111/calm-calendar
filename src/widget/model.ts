@@ -5,6 +5,7 @@ import { getAuthStatus } from "../shared/api/bridge";
 import { calendarVisible, listAllCalendars, listEvents } from "../shared/api/calendar";
 import type { AppError, AuthStatus, Calendar, CalendarEvent } from "../shared/api/types";
 import { addDays, addMonths, isSameMonth, monthGrid, startOfDay, startOfMonth, type DateRange } from "../shared/lib/date";
+import { HOLIDAYS_KEY, holidayCalendar } from "../shared/lib/holidays";
 import { readJson } from "../shared/lib/storage";
 
 export const VISIBILITY_KEY = "calm.calendarVisibility";
@@ -19,11 +20,12 @@ export const monthReset = createEvent();
 
 export const fetchStatusFx = createEffect<void, AuthStatus, AppError>(getAuthStatus);
 
-/** календари всех аккаунтов, но только включённые в главном окне */
+/** календари всех аккаунтов и праздники из настроек, но только включённые в главном окне */
 export const fetchCalendarsFx = createEffect<string[], Calendar[], AppError>(async (accounts) => {
   const { calendars } = await listAllCalendars(accounts);
+  const holidays = holidayCalendar(readJson<string | null>(HOLIDAYS_KEY, null), accounts, calendars);
   const visibility = readJson<Record<string, boolean>>(VISIBILITY_KEY, {});
-  return calendars.filter((c) => calendarVisible(c, visibility));
+  return [...calendars, ...(holidays ? [holidays] : [])].filter((c) => calendarVisible(c, visibility));
 });
 
 const loadRange = async (calendars: Calendar[], range: DateRange): Promise<CalendarEvent[]> => {

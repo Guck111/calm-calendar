@@ -1,13 +1,11 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
-import { calendarRef, calendarVisible, listAllCalendars, type AllCalendars } from "../shared/api/calendar";
+import { calendarVisible, listAllCalendars, type AllCalendars } from "../shared/api/calendar";
 import type { AppError, Calendar } from "../shared/api/types";
-import { HOLIDAY_REGIONS, holidayCalendarId, regionName } from "../shared/lib/holidays";
+import { holidayCalendar } from "../shared/lib/holidays";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { $activeAccounts, sessionLost, signOutFx } from "./auth";
 import { $holidayRegion } from "./display";
 
-/** цвет праздников, как у календарей праздников в Google */
-const HOLIDAY_COLOR = "#16a765";
 
 const VISIBILITY_KEY = "calm.calendarVisibility";
 
@@ -21,32 +19,7 @@ const $googleCalendars = createStore<Calendar[]>([])
   .on(fetchCalendarsFx.doneData, (_, r) => r.calendars)
   .reset(signOutFx.finally);
 
-/** Праздники страны из настроек. Читаем через первый аккаунт; если такой календарь уже есть в Google,
- *  второй раз не добавляем */
-const $holidayCalendar = combine(
-  $holidayRegion,
-  $activeAccounts,
-  $googleCalendars,
-  (region, accounts, list): Calendar | null => {
-    if (!region || !accounts.length) return null;
-    const slug = `.${HOLIDAY_REGIONS[region]}#holiday@`;
-    if (list.some((c) => c.googleId.includes(slug))) return null;
-    const googleId = holidayCalendarId(region);
-    return {
-      id: calendarRef(accounts[0], googleId),
-      googleId,
-      account: accounts[0],
-      name: regionName(region),
-      color: HOLIDAY_COLOR,
-      textColor: "#000000",
-      accessRole: "reader",
-      primary: false,
-      selected: true,
-      defaultReminders: [],
-      holiday: true,
-    };
-  },
-);
+const $holidayCalendar = combine($holidayRegion, $activeAccounts, $googleCalendars, holidayCalendar);
 
 export const $calendars = combine($googleCalendars, $holidayCalendar, (list, holiday) =>
   holiday ? [...list, holiday] : list,

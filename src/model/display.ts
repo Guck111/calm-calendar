@@ -1,10 +1,10 @@
 // Настройки показа: номера недель и календарь праздников. Хранятся только в этом приложении.
 import { createEvent, createStore } from "effector";
-import { isHolidayRegion } from "../shared/lib/holidays";
+import { broadcast } from "../shared/api/bus";
+import { HOLIDAYS_KEY, isHolidayRegion } from "../shared/lib/holidays";
 import { readJson, writeJson } from "../shared/lib/storage";
 
 const WEEK_NUMBERS_KEY = "calm.weekNumbers";
-const HOLIDAYS_KEY = "calm.holidays";
 
 export const weekNumbersToggled = createEvent<boolean>();
 export const $weekNumbers = createStore(readJson<unknown>(WEEK_NUMBERS_KEY, false) === true).on(
@@ -20,4 +20,8 @@ export const $holidayRegion = createStore<string | null>(isHolidayRegion(stored)
   holidayRegionChanged,
   (_, v) => (isHolidayRegion(v) ? v : null),
 );
-$holidayRegion.updates.watch((v) => writeJson(HOLIDAYS_KEY, v));
+$holidayRegion.updates.watch((v) => {
+  writeJson(HOLIDAYS_KEY, v);
+  // виджет и повестка в трее перечитают календари
+  broadcast("events-changed", { from: "main" });
+});
