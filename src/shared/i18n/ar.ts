@@ -1,5 +1,6 @@
 // Arabic UI strings (Modern Standard Arabic). Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
 
 /** «بعد يومين», «بعد 3 أيام», «بعد 11 يومًا» — числительные в арабском требуют разных форм */
 const days = (d: number): string => {
@@ -8,6 +9,16 @@ const days = (d: number): string => {
   if (d <= 10) return `${d} أيام`;
   return `${d} يومًا`;
 };
+
+/** صيغ العدد: واحد، اثنان، من 3 إلى 10، 11 فأكثر */
+const arUnits: Record<Freq, [string, string, string, string]> = {
+  DAILY: ["يوم", "يومين", "أيام", "يومًا"],
+  WEEKLY: ["أسبوع", "أسبوعين", "أسابيع", "أسبوعًا"],
+  MONTHLY: ["شهر", "شهرين", "أشهر", "شهرًا"],
+  YEARLY: ["سنة", "سنتين", "سنوات", "سنة"],
+};
+const arForm = (n: number): number => (n === 1 ? 0 : n === 2 ? 1 : n % 100 >= 3 && n % 100 <= 10 ? 2 : 3);
+const arTimes = ["مرة", "مرتين", "مرات", "مرة"];
 
 export const ar: Dict = {
   common: {
@@ -81,7 +92,43 @@ export const ar: Dict = {
     startTime: "وقت البداية",
     endDate: "تاريخ النهاية",
     endTime: "وقت النهاية",
-    recurringNote: "تُطبَّق التغييرات على هذا التكرار فقط.",
+  },
+  repeat: {
+    label: "التكرار",
+    none: "لا يتكرر",
+    custom: "تخصيص…",
+    special: "تكرار مخصّص في Google",
+    loading: "جارٍ تحميل التكرار…",
+    interval: "كل",
+    unit: (freq: Freq, n: number) => arUnits[freq][arForm(n)],
+    days: "أيام الأسبوع",
+    ends: "ينتهي",
+    never: "أبدًا",
+    until: "في تاريخ",
+    count: "بعد",
+    countUnit: (n: number) => arTimes[arForm(n)],
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "يوميًا", WEEKLY: "أسبوعيًا", MONTHLY: "شهريًا", YEARLY: "سنويًا" }[freq]
+        : n === 2
+          ? `كل ${arUnits[freq][1]}`
+          : `كل ${n} ${arUnits[freq][arForm(n)]}`,
+    weekdays: "من الاثنين إلى الجمعة",
+    onDays: (days: string) => `أيام ${days}`,
+    onMonthDay: (n: number) => `في اليوم ${n}`,
+    onNth: (n: number, _day: number, name: string) =>
+      `في ${name} ${n === -1 ? "الأخير" : ["الأول", "الثاني", "الثالث", "الرابع"][n - 1]}`,
+    onDate: (date: string) => `في ${date}`,
+    untilDate: (date: string) => `حتى ${date}`,
+    times: (n: number) => (n === 1 ? "مرة واحدة" : n === 2 ? "مرتين" : `${n} ${arTimes[arForm(n)]}`),
+    sep: "، ",
+  },
+  scope: {
+    saveTitle: "حفظ حدث متكرر",
+    deleteTitle: "حذف حدث متكرر",
+    this: "هذا الحدث فقط",
+    following: "هذا الحدث والأحداث التالية",
+    ruleChanged: "تغيّر التكرار، لذا سينطبق التعديل على هذا الحدث والأحداث التالية.",
   },
   meeting: {
     join: "انضمام",

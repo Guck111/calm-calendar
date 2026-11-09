@@ -1,5 +1,9 @@
 // Bengali UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const bnUnits: Record<Freq, string> = { DAILY: "দিন", WEEKLY: "সপ্তাহ", MONTHLY: "মাস", YEARLY: "বছর" };
+const bnEvery: Record<Freq, string> = { DAILY: "দিনে", WEEKLY: "সপ্তাহে", MONTHLY: "মাসে", YEARLY: "বছরে" };
 
 export const bn: Dict = {
   common: {
@@ -73,7 +77,41 @@ export const bn: Dict = {
     startTime: "শুরুর সময়",
     endDate: "শেষের তারিখ",
     endTime: "শেষের সময়",
-    recurringNote: "পরিবর্তন শুধু এই বারের ইভেন্টে প্রযোজ্য হবে।",
+  },
+  repeat: {
+    label: "পুনরাবৃত্তি",
+    none: "পুনরাবৃত্তি হয় না",
+    custom: "নিজের মতো…",
+    special: "Google-এ সেট করা বিশেষ পুনরাবৃত্তি",
+    loading: "পুনরাবৃত্তি লোড হচ্ছে…",
+    interval: "প্রতি",
+    unit: (freq: Freq, _n: number) => bnUnits[freq],
+    days: "সপ্তাহের দিন",
+    ends: "শেষ",
+    never: "কখনও না",
+    until: "এই তারিখে",
+    count: "এতবার পরে",
+    countUnit: (_n: number) => "বার",
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "প্রতিদিন", WEEKLY: "প্রতি সপ্তাহে", MONTHLY: "প্রতি মাসে", YEARLY: "প্রতি বছর" }[freq]
+        : `প্রতি ${n} ${bnEvery[freq]}`,
+    weekdays: "প্রতি কর্মদিবসে",
+    onDays: (days: string) => `${days}বার`,
+    onMonthDay: (n: number) => `${n} তারিখে`,
+    onNth: (n: number, _day: number, name: string) =>
+      `${n === -1 ? "শেষ" : ["প্রথম", "দ্বিতীয়", "তৃতীয়", "চতুর্থ"][n - 1]} ${name}`,
+    onDate: (date: string) => date,
+    untilDate: (date: string) => `${date} পর্যন্ত`,
+    times: (n: number) => `${n} বার`,
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "পুনরাবৃত্ত ইভেন্ট সংরক্ষণ",
+    deleteTitle: "পুনরাবৃত্ত ইভেন্ট মুছুন",
+    this: "শুধু এই ইভেন্ট",
+    following: "এটি এবং পরবর্তী ইভেন্ট",
+    ruleChanged: "পুনরাবৃত্তি বদলেছে, তাই পরিবর্তনটি এই এবং পরবর্তী ইভেন্টে প্রযোজ্য হবে।",
   },
   meeting: {
     join: "যোগ দিন",

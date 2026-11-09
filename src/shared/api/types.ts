@@ -15,6 +15,9 @@ export type Calendar = {
   defaultReminders: number[];
 };
 
+/** время события в Google: date для событий на весь день, dateTime для остальных */
+export type EventTime = { date?: string; dateTime?: string; timeZone?: string };
+
 export type CalendarEvent = {
   /** уникален среди всех календарей */
   key: string;
@@ -31,6 +34,9 @@ export type CalendarEvent = {
   /** видеовстреча: Meet, Zoom, Teams… */
   meeting?: Meeting;
   recurring: boolean;
+  /** у повторения серии: id главного события и исходное время этого повторения */
+  recurringEventId?: string;
+  originalStart?: EventTime;
   /** минуты до начала; "default" — как задано у календаря */
   reminders?: number[] | "default";
 };
@@ -50,9 +56,18 @@ export type EventDraft = {
   endTime: string;
   location: string;
   description: string;
-  recurring: boolean;
+  /** правило повтора (строки RRULE, EXDATE…); пусто — не повторяется */
+  recurrence: string[];
+  /** правило до правки; undefined — правило серии ещё не загружено */
+  originalRecurrence?: string[];
+  /** повторение серии: id главного события и исходное время повторения */
+  recurringEventId?: string;
+  originalStart?: EventTime;
   htmlLink?: string;
 };
+
+/** какие повторения серии затронуть */
+export type Scope = "this" | "following";
 
 export type AuthStatus = {
   clientSource: "build" | "file" | "none";

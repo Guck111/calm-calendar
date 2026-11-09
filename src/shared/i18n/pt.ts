@@ -1,5 +1,13 @@
 // Portuguese UI strings (Brazilian wording, understood in Portugal). Same keys as ru.ts.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const ptUnits: Record<Freq, [string, string]> = {
+  DAILY: ["dia", "dias"],
+  WEEKLY: ["semana", "semanas"],
+  MONTHLY: ["mês", "meses"],
+  YEARLY: ["ano", "anos"],
+};
 
 export const pt: Dict = {
   common: {
@@ -73,7 +81,47 @@ export const pt: Dict = {
     startTime: "Hora de início",
     endDate: "Data de término",
     endTime: "Hora de término",
-    recurringNote: "As alterações valem só para esta ocorrência.",
+  },
+  repeat: {
+    label: "Repetir",
+    none: "Não se repete",
+    custom: "Personalizar…",
+    special: "Repetição personalizada no Google",
+    loading: "Carregando a repetição…",
+    interval: "Repetir a cada",
+    unit: (freq: Freq, n: number) => ptUnits[freq][n === 1 ? 0 : 1],
+    days: "Dias da semana",
+    ends: "Termina",
+    never: "Nunca",
+    until: "Em",
+    count: "Após",
+    countUnit: (n: number) => (n === 1 ? "ocorrência" : "ocorrências"),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Todos os dias", WEEKLY: "Semanalmente", MONTHLY: "Mensalmente", YEARLY: "Anualmente" }[freq]
+        : `A cada ${n} ${ptUnits[freq][1]}`,
+    weekdays: "Todos os dias úteis",
+    onDays: (days: string) => `às ${days}`,
+    onMonthDay: (n: number) => `no dia ${n}`,
+    onNth: (n: number, day: number, name: string) => {
+      // sábado e domingo são masculinos, os outros dias (segunda-feira…) femininos
+      const masc = day === 0 || day === 6;
+      const words = masc
+        ? ["primeiro", "segundo", "terceiro", "quarto", "último"]
+        : ["primeira", "segunda", "terceira", "quarta", "última"];
+      return `${masc ? "no" : "na"} ${words[n === -1 ? 4 : n - 1]} ${name}`;
+    },
+    onDate: (date: string) => `em ${date}`,
+    untilDate: (date: string) => `até ${date}`,
+    times: (n: number) => (n === 1 ? "1 vez" : `${n} vezes`),
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Salvar evento recorrente",
+    deleteTitle: "Excluir evento recorrente",
+    this: "Somente este evento",
+    following: "Este e os seguintes",
+    ruleChanged: "A repetição mudou, então a alteração vale para este evento e os seguintes.",
   },
   meeting: {
     join: "Participar",

@@ -1,5 +1,13 @@
 // German UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const deUnits: Record<Freq, [string, string]> = {
+  DAILY: ["Tag", "Tage"],
+  WEEKLY: ["Woche", "Wochen"],
+  MONTHLY: ["Monat", "Monate"],
+  YEARLY: ["Jahr", "Jahre"],
+};
 
 export const de: Dict = {
   common: {
@@ -73,7 +81,41 @@ export const de: Dict = {
     startTime: "Startzeit",
     endDate: "Enddatum",
     endTime: "Endzeit",
-    recurringNote: "Änderungen gelten nur für diesen Termin der Serie.",
+  },
+  repeat: {
+    label: "Wiederholen",
+    none: "Keine Wiederholung",
+    custom: "Benutzerdefiniert…",
+    special: "Eigene Wiederholung aus Google",
+    loading: "Wiederholung wird geladen…",
+    interval: "Wiederholen alle",
+    unit: (freq: Freq, n: number) => deUnits[freq][n === 1 ? 0 : 1],
+    days: "Wochentage",
+    ends: "Endet",
+    never: "Nie",
+    until: "Am",
+    count: "Nach",
+    countUnit: (n: number) => (n === 1 ? "Termin" : "Terminen"),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Täglich", WEEKLY: "Wöchentlich", MONTHLY: "Monatlich", YEARLY: "Jährlich" }[freq]
+        : `Alle ${n} ${deUnits[freq][1]}`,
+    weekdays: "Jeden Werktag",
+    onDays: (days: string) => `am ${days}`,
+    onMonthDay: (n: number) => `am ${n}.`,
+    onNth: (n: number, _day: number, name: string) =>
+      `am ${n === -1 ? "letzten" : ["ersten", "zweiten", "dritten", "vierten"][n - 1]} ${name}`,
+    onDate: (date: string) => `am ${date}`,
+    untilDate: (date: string) => `bis ${date}`,
+    times: (n: number) => `${n}-mal`,
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Serientermin speichern",
+    deleteTitle: "Serientermin löschen",
+    this: "Nur dieser Termin",
+    following: "Dieser und alle folgenden",
+    ruleChanged: "Die Wiederholung wurde geändert, daher gilt die Änderung für diesen und alle folgenden Termine.",
   },
   meeting: {
     join: "Beitreten",

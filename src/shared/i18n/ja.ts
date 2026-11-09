@@ -1,5 +1,8 @@
 // Japanese UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const jaUnits: Record<Freq, string> = { DAILY: "日", WEEKLY: "週間", MONTHLY: "か月", YEARLY: "年" };
 
 export const ja: Dict = {
   common: {
@@ -73,7 +76,38 @@ export const ja: Dict = {
     startTime: "開始時刻",
     endDate: "終了日",
     endTime: "終了時刻",
-    recurringNote: "変更はこの回の予定にだけ反映されます。",
+  },
+  repeat: {
+    label: "繰り返し",
+    none: "繰り返さない",
+    custom: "カスタム…",
+    special: "Google で設定された独自の繰り返し",
+    loading: "繰り返しを読み込み中…",
+    interval: "間隔",
+    unit: (freq: Freq, _n: number) => `${jaUnits[freq]}ごと`,
+    days: "曜日",
+    ends: "終了",
+    never: "なし",
+    until: "終了日",
+    count: "回数",
+    countUnit: (_n: number) => "回",
+    every: (freq: Freq, n: number) =>
+      n === 1 ? { DAILY: "毎日", WEEKLY: "毎週", MONTHLY: "毎月", YEARLY: "毎年" }[freq] : `${n}${jaUnits[freq]}ごと`,
+    weekdays: "平日（月〜金）",
+    onDays: (days: string) => `${days}曜日`,
+    onMonthDay: (n: number) => `${n}日`,
+    onNth: (n: number, _day: number, name: string) => (n === -1 ? `最終${name}` : `第${n}${name}`),
+    onDate: (date: string) => date,
+    untilDate: (date: string) => `${date}まで`,
+    times: (n: number) => `${n}回`,
+    sep: "、",
+  },
+  scope: {
+    saveTitle: "繰り返しの予定を保存",
+    deleteTitle: "繰り返しの予定を削除",
+    this: "この予定のみ",
+    following: "これ以降のすべての予定",
+    ruleChanged: "繰り返しを変更したため、この予定とそれ以降の予定に反映されます。",
   },
   meeting: {
     join: "参加",

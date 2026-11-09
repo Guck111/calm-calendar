@@ -1,5 +1,8 @@
 // Hindi UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const hiUnits: Record<Freq, string> = { DAILY: "दिन", WEEKLY: "हफ़्ते", MONTHLY: "महीने", YEARLY: "साल" };
 
 export const hi: Dict = {
   common: {
@@ -73,7 +76,38 @@ export const hi: Dict = {
     startTime: "शुरू का समय",
     endDate: "अंत की तारीख",
     endTime: "अंत का समय",
-    recurringNote: "बदलाव सिर्फ़ इसी बार के इवेंट पर लागू होंगे।",
+  },
+  repeat: {
+    label: "दोहराएँ",
+    none: "दोहराया नहीं जाता",
+    custom: "अपने हिसाब से…",
+    special: "Google में सेट किया गया खास दोहराव",
+    loading: "दोहराव लोड हो रहा है…",
+    interval: "हर",
+    unit: (freq: Freq, _n: number) => hiUnits[freq],
+    days: "हफ़्ते के दिन",
+    ends: "खत्म",
+    never: "कभी नहीं",
+    until: "इस तारीख को",
+    count: "इतनी बार के बाद",
+    countUnit: (_n: number) => "बार",
+    every: (freq: Freq, n: number) => (n === 1 ? `हर ${hiUnits[freq]}` : `हर ${n} ${hiUnits[freq]}`),
+    weekdays: "हर कामकाजी दिन",
+    onDays: (days: string) => `${days} को`,
+    onMonthDay: (n: number) => `${n} तारीख को`,
+    onNth: (n: number, _day: number, name: string) =>
+      `${n === -1 ? "आखिरी" : ["पहले", "दूसरे", "तीसरे", "चौथे"][n - 1]} ${name} को`,
+    onDate: (date: string) => `${date} को`,
+    untilDate: (date: string) => `${date} तक`,
+    times: (n: number) => `${n} बार`,
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "दोहराया जाने वाला इवेंट सेव करें",
+    deleteTitle: "दोहराया जाने वाला इवेंट मिटाएँ",
+    this: "सिर्फ़ यह इवेंट",
+    following: "यह और आगे के इवेंट",
+    ruleChanged: "दोहराव बदला है, इसलिए बदलाव इस और आगे के इवेंट पर लागू होगा।",
   },
   meeting: {
     join: "जुड़ें",

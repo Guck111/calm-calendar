@@ -1,5 +1,13 @@
 // French UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const frUnits: Record<Freq, [string, string]> = {
+  DAILY: ["jour", "jours"],
+  WEEKLY: ["semaine", "semaines"],
+  MONTHLY: ["mois", "mois"],
+  YEARLY: ["an", "ans"],
+};
 
 export const fr: Dict = {
   common: {
@@ -73,7 +81,41 @@ export const fr: Dict = {
     startTime: "Heure de début",
     endDate: "Date de fin",
     endTime: "Heure de fin",
-    recurringNote: "Les modifications ne concernent que cette occurrence.",
+  },
+  repeat: {
+    label: "Répétition",
+    none: "Ne se répète pas",
+    custom: "Personnaliser…",
+    special: "Répétition personnalisée dans Google",
+    loading: "Chargement de la répétition…",
+    interval: "Intervalle",
+    unit: (freq: Freq, n: number) => frUnits[freq][n === 1 ? 0 : 1],
+    days: "Jours de la semaine",
+    ends: "Fin",
+    never: "Jamais",
+    until: "Le",
+    count: "Après",
+    countUnit: (n: number) => (n === 1 ? "occurrence" : "occurrences"),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Tous les jours", WEEKLY: "Toutes les semaines", MONTHLY: "Tous les mois", YEARLY: "Tous les ans" }[freq]
+        : `${freq === "WEEKLY" ? "Toutes les" : "Tous les"} ${n} ${frUnits[freq][1]}`,
+    weekdays: "Tous les jours ouvrés",
+    onDays: (days: string) => `le ${days}`,
+    onMonthDay: (n: number) => `le ${n}`,
+    onNth: (n: number, _day: number, name: string) =>
+      `le ${n === -1 ? "dernier" : ["premier", "deuxième", "troisième", "quatrième"][n - 1]} ${name}`,
+    onDate: (date: string) => `le ${date}`,
+    untilDate: (date: string) => `jusqu’au ${date}`,
+    times: (n: number) => `${n} fois`,
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Enregistrer l’événement périodique",
+    deleteTitle: "Supprimer l’événement périodique",
+    this: "Cet événement uniquement",
+    following: "Cet événement et les suivants",
+    ruleChanged: "La répétition a changé : la modification s’appliquera à cet événement et aux suivants.",
   },
   meeting: {
     join: "Rejoindre",

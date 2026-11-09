@@ -2,6 +2,7 @@
 // В сборку приложения не попадает: подключается динамически, только если нет Tauri.
 import { lang } from "../i18n";
 import { addDays, startOfDay, startOfWeek, toDateKey } from "../lib/date";
+import { occurrences, parseRecurrence, utcStamp } from "../lib/rrule";
 
 type Json = Record<string, unknown>;
 
@@ -10,6 +11,21 @@ const at = (day: number, h: number, m = 0) => {
   const d = addDays(week, day);
   d.setHours(h, m);
   return d.toISOString();
+};
+
+// серии начинаются с понедельника две недели назад: есть и прошлые повторения, и первое для «всей серии»
+const monday = addDays(startOfDay(new Date()), -((new Date().getDay() + 6) % 7) - 14);
+const series = (day: number, h: number, m = 0) => {
+  const d = addDays(monday, day);
+  d.setHours(h, m);
+  return d.toISOString();
+};
+const WEEKDAYS_RULE = "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
+/** второй вторник позапрошлого месяца */
+const secondTuesday = (h: number) => {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  return new Date(first.getFullYear(), first.getMonth(), 8 + ((2 - first.getDay() + 7) % 7), h).toISOString();
 };
 
 const soon = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
@@ -33,24 +49,36 @@ const ruEvents = (): Record<string, Json[]> => ({
     { id: "e2", summary: "День рождения", start: { date: toDateKey(addDays(week, 5)) }, end: { date: toDateKey(addDays(week, 6)) } },
     { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня" },
   ],
-  work: [0, 1, 2, 3, 4].map((d): Json => ({
-    id: `w${d}`,
-    summary: "Работа",
-    recurringEventId: "w",
-    start: { dateTime: at(d, 12) },
-    end: { dateTime: at(d, 18) },
-  })).concat([
+  work: ([
+    {
+      id: "w",
+      summary: "Работа",
+      recurrence: [WEEKDAYS_RULE],
+      start: { dateTime: series(0, 12) },
+      end: { dateTime: series(0, 18) },
+    },
+  ] as Json[]).concat([
     { id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) }, hangoutLink: MEET },
     // начинается через 10 минут: в виджете видна кнопка «Подключиться»
     { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
   ]),
-  sport: [1, 3, 5].map((d) => ({
-    id: `s${d}`,
-    summary: "Муай-тай",
-    recurringEventId: "s",
-    start: { dateTime: at(d, 8) },
-    end: { dateTime: at(d, 10) },
-  })),
+  sport: [
+    {
+      id: "s",
+      summary: "Муай-тай",
+      recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=TU,TH,SA"],
+      start: { dateTime: series(1, 8) },
+      end: { dateTime: series(1, 10) },
+    },
+    // каждый месяц во второй вторник, 10 раз
+    {
+      id: "m",
+      summary: "Уборка",
+      recurrence: [`RRULE:FREQ=MONTHLY;BYDAY=2TU;COUNT=10`],
+      start: { dateTime: secondTuesday(19) },
+      end: { dateTime: secondTuesday(20) },
+    },
+  ],
   "pl#holiday": [
     { id: "h1", summary: "Праздник", start: { date: toDateKey(addDays(startOfDay(new Date()), 9)) }, end: { date: toDateKey(addDays(startOfDay(new Date()), 10)) } },
   ],
@@ -82,14 +110,14 @@ const enEvents = (): Record<string, Json[]> => ({
     [6, "Farmers market", [10, 0], [11, 0]],
   ]),
   work: [
-    ...[1, 2, 3, 4, 5].map((d): Json => ({
-      id: `su${d}`,
+    {
+      id: "su",
       summary: "Team standup",
-      recurringEventId: "su",
+      recurrence: [WEEKDAYS_RULE],
       hangoutLink: MEET,
-      start: { dateTime: at(d, 9, 30) },
-      end: { dateTime: at(d, 9, 45) },
-    })),
+      start: { dateTime: series(0, 9, 30) },
+      end: { dateTime: series(0, 9, 45) },
+    },
     ...timed("w", [
       [1, "Product review", [14, 0], [15, 0]],
       [2, "Design sync", [11, 0], [12, 0], { description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}` }],
@@ -125,24 +153,63 @@ const english = lang !== "ru";
 const calendars = english ? enCalendars : ruCalendars;
 const events: Record<string, Json[]> = english ? enEvents() : ruEvents();
 
+type Time = { dateTime?: string | null; date?: string | null };
+const time = (t: unknown) => String((t as Time).dateTime ?? (t as Time).date);
+const startOf = (e: Json) => new Date(time(e.start));
+const endOf = (e: Json) => new Date(time(e.end));
+const isSeries = (e: Json) => Array.isArray(e.recurrence) && e.recurrence.length > 0;
+
+// Серии хранятся, как в Google: главное событие с правилом, а изменённые и удалённые повторения —
+// отдельными записями с recurringEventId. Повторения разворачиваются при чтении.
+const expand = (master: Json, before: Date): Json[] => {
+  const start = startOf(master);
+  const allDay = Boolean((master.start as Time).date);
+  const { rule } = parseRecurrence(master.recurrence as string[], start);
+  const dates = rule ? occurrences(rule, start, before) : [start];
+  const days = Math.round((endOf(master).getTime() - start.getTime()) / 86_400_000);
+  const duration = endOf(master).getTime() - start.getTime();
+  const { recurrence: _, ...rest } = master;
+  return dates.map((at) => {
+    const t = (d: Date) => (allDay ? { date: toDateKey(d) } : { dateTime: d.toISOString() });
+    return {
+      ...rest,
+      id: `${master.id}_${allDay ? toDateKey(at).replaceAll("-", "") : utcStamp(at)}`,
+      recurringEventId: master.id,
+      originalStartTime: t(at),
+      start: t(at),
+      end: t(allDay ? addDays(at, days) : new Date(at.getTime() + duration)),
+    };
+  });
+};
+
+/** события календаря с развёрнутыми сериями, включая удалённые повторения */
+const flatten = (list: Json[], before: Date): Json[] => {
+  const changed = new Map(list.filter((e) => e.recurringEventId).map((e) => [e.id, e]));
+  return list.flatMap((e) => {
+    if (e.recurringEventId) return [];
+    if (!isSeries(e)) return [e];
+    return expand(e, before).map((i) => changed.get(i.id) ?? i);
+  });
+};
+
+const FAR = new Date(2100, 0, 1);
+
 const google = (method: string, path: string, query: [string, string][] = [], body?: Json): unknown => {
   const q = Object.fromEntries(query);
   if (path === "/calendar/v3/users/me/calendarList") return { items: calendars };
-  const m = path.match(/^\/calendar\/v3\/calendars\/([^/]+)\/events(?:\/([^/]+))?(\/move)?$/);
+  const m = path.match(/^\/calendar\/v3\/calendars\/([^/]+)\/events(?:\/([^/]+))?(\/move|\/instances)?$/);
   if (!m) throw { kind: "google", message: `mock: нет обработчика ${path}` };
   const calId = decodeURIComponent(m[1]);
   const list = (events[calId] ??= []);
   const id = m[2] && decodeURIComponent(m[2]);
-  const time = (t: Json) => String((t as { dateTime?: string; date?: string }).dateTime ?? (t as { date?: string }).date);
+  const byStart = (a: Json, b: Json) => startOf(a).getTime() - startOf(b).getTime();
 
-  if (method === "GET") {
-    const items = list.filter((e) => {
-      const start = new Date(time(e.start as Json));
-      const end = new Date(time(e.end as Json));
+  if (method === "GET" && !id) {
+    const items = flatten(list, new Date(q.timeMax)).filter((e) => {
       const text = q.q ? String(e.summary ?? "").toLowerCase().includes(q.q.toLowerCase()) : true;
-      return text && start < new Date(q.timeMax) && end > new Date(q.timeMin);
+      return text && e.status !== "cancelled" && startOf(e) < new Date(q.timeMax) && endOf(e) > new Date(q.timeMin);
     });
-    return { items };
+    return { items: items.sort(byStart) };
   }
   if (method === "POST" && !id) {
     const created = { ...body, id: `n${seq++}` };
@@ -150,18 +217,35 @@ const google = (method: string, path: string, query: [string, string][] = [], bo
     return created;
   }
   const index = list.findIndex((e) => e.id === id);
-  if (index === -1) throw { kind: "google", message: "mock: событие не найдено" };
-  if (m[3]) {
+  if (m[3] === "/instances") {
+    if (index === -1) throw { kind: "google", message: "mock: серия не найдена" };
+    const items = flatten([list[index], ...list.filter((e) => e.recurringEventId === id)], new Date(q.timeMax ?? FAR));
+    return { items: q.showDeleted === "true" ? items : items.filter((e) => e.status !== "cancelled") };
+  }
+  // повторение, которое ещё не меняли, существует только в развёрнутом виде
+  const instance = index === -1 ? flatten(list, FAR).find((e) => e.id === id) : undefined;
+  if (index === -1 && !instance) throw { kind: "google", message: "mock: событие не найдено" };
+  if (method === "GET") return list[index] ?? instance;
+  if (m[3] === "/move") {
     const [moved] = list.splice(index, 1);
     (events[q.destination] ??= []).push(moved);
     return moved;
   }
   if (method === "PATCH") {
+    if (instance) {
+      list.push({ ...instance, ...body });
+      return list[list.length - 1];
+    }
     list[index] = { ...list[index], ...body };
     return list[index];
   }
   if (method === "DELETE") {
-    list.splice(index, 1);
+    if (instance) list.push({ ...instance, status: "cancelled" });
+    else {
+      list.splice(index, 1);
+      // вместе с серией уходят и её изменённые повторения
+      events[calId] = list.filter((e) => e.recurringEventId !== id);
+    }
     return null;
   }
   throw { kind: "other", message: `mock: ${method}` };

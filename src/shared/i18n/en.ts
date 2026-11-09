@@ -1,7 +1,10 @@
 // English UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+const enUnits: Record<Freq, string> = { DAILY: "day", WEEKLY: "week", MONTHLY: "month", YEARLY: "year" };
 
 export const en: Dict = {
   common: {
@@ -75,7 +78,41 @@ export const en: Dict = {
     startTime: "Start time",
     endDate: "End date",
     endTime: "End time",
-    recurringNote: "Changes apply to this occurrence only.",
+  },
+  repeat: {
+    label: "Repeat",
+    none: "Does not repeat",
+    custom: "Custom…",
+    special: "Custom repeat set in Google",
+    loading: "Loading the repeat rule…",
+    interval: "Repeat every",
+    unit: (freq: Freq, n: number) => enUnits[freq] + (n === 1 ? "" : "s"),
+    days: "Days of the week",
+    ends: "Ends",
+    never: "Never",
+    until: "On",
+    count: "After",
+    countUnit: (n: number) => (n === 1 ? "occurrence" : "occurrences"),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly", YEARLY: "Annually" }[freq]
+        : `Every ${n} ${enUnits[freq]}s`,
+    weekdays: "Every weekday",
+    onDays: (days: string) => `on ${days}`,
+    onMonthDay: (n: number) => `on day ${n}`,
+    onNth: (n: number, _day: number, name: string) =>
+      `on the ${n === -1 ? "last" : ["first", "second", "third", "fourth"][n - 1]} ${name}`,
+    onDate: (date: string) => `on ${date}`,
+    untilDate: (date: string) => `until ${date}`,
+    times: (n: number) => (n === 1 ? "once" : `${n} times`),
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Save recurring event",
+    deleteTitle: "Delete recurring event",
+    this: "This event",
+    following: "This and following events",
+    ruleChanged: "The repeat has changed, so the edit applies to this and following events.",
   },
   meeting: {
     join: "Join",

@@ -3,8 +3,9 @@ import { findMeeting, type MeetingSource } from "../lib/meeting";
 import { googleRequest, isAppError } from "./bridge";
 import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
 import { locale, t } from "../i18n";
-import type { AccessRole, Calendar, CalendarEvent, EventDraft } from "./types";
+import type { AccessRole, Calendar, CalendarEvent, EventDraft, EventTime, Scope } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
+import { buildRecurrence, followStart, parseRecurrence, truncateBefore } from "../lib/rrule";
 
 type Page<T> = { items?: T[]; nextPageToken?: string };
 
@@ -27,9 +28,9 @@ type RawReminder = { method?: string; minutes?: number };
 const popupMinutes = (list: RawReminder[] | undefined): number[] =>
   (list ?? []).filter((r) => r.method === "popup" && typeof r.minutes === "number").map((r) => r.minutes as number);
 
-type RawTime = { date?: string; dateTime?: string; timeZone?: string };
+type RawTime = EventTime;
 
-type RawEvent = {
+export type RawEvent = {
   id: string;
   status?: string;
   summary?: string;
@@ -41,6 +42,8 @@ type RawEvent = {
   start?: RawTime;
   end?: RawTime;
   recurringEventId?: string;
+  originalStartTime?: RawTime;
+  recurrence?: string[];
   reminders?: { useDefault?: boolean; overrides?: RawReminder[] };
 };
 
@@ -121,6 +124,8 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent): CalendarEven
     htmlLink: raw.htmlLink,
     meeting: findMeeting(raw),
     recurring: Boolean(raw.recurringEventId),
+    recurringEventId: raw.recurringEventId,
+    originalStart: raw.originalStartTime,
     reminders: raw.reminders?.useDefault === false ? popupMinutes(raw.reminders.overrides) : "default",
   };
 };
@@ -181,21 +186,157 @@ export const draftToBody = (draft: EventDraft) => {
   };
 };
 
-export const saveEvent = async (draft: EventDraft): Promise<void> => {
-  const body = draftToBody(draft);
+const eventPath = (calendarId: string, eventId: string) => `${eventsPath(calendarId)}/${enc(eventId)}`;
+
+/** Событие целиком, как его отдаёт Google: при разбиении серии копируем и поля, которых нет в форме */
+type FullEvent = RawEvent & Record<string, unknown>;
+
+export const getEvent = (calendarId: string, eventId: string): Promise<FullEvent> =>
+  googleRequest<FullEvent>("GET", eventPath(calendarId, eventId));
+
+/** Правило повтора серии: оно хранится у главного события, у повторений его нет */
+export const loadRecurrence = async (calendarId: string, recurringEventId: string): Promise<string[]> =>
+  (await getEvent(calendarId, recurringEventId)).recurrence ?? [];
+
+const instant = (time: EventTime | undefined): Date | null =>
+  time?.dateTime ? new Date(time.dateTime) : time?.date ? fromDateKey(time.date) : null;
+
+const draftStart = (d: EventDraft): Date =>
+  d.allDay ? fromDateKey(d.startDate) : combineDateTime(d.startDate, d.startTime);
+
+const sameLines = (a: string[], b: string[]) => a.join("\n") === b.join("\n");
+
+/** правило в форме поменяли (если правило серии не загрузилось, правка невозможна) */
+export const recurrenceEdited = (d: EventDraft): boolean =>
+  d.originalRecurrence !== undefined && !sameLines(d.recurrence, d.originalRecurrence);
+
+const hasCount = (lines: string[]) => lines.some((l) => /^RRULE:(?:.*;)?COUNT=/i.test(l));
+
+/** Правило для повторений «с этого и дальше». Если правило не правили, оно следует за новым началом
+ *  («каждую среду» → «каждый четверг»), а число повторов уменьшается на уже прошедшие */
+export const followingRecurrence = (draft: EventDraft, master: RawEvent, countBefore: number): string[] => {
+  const original = master.recurrence ?? [];
+  if (recurrenceEdited(draft)) return draft.recurrence;
+  const from = instant(draft.originalStart) ?? draftStart(draft);
+  const to = draftStart(draft);
+  const { rule, extra } = parseRecurrence(original, from);
+  if (!rule) return original;
+  let next = followStart(rule, from, to);
+  if (next.end.kind === "count") next = { ...next, end: { kind: "count", count: Math.max(1, next.end.count - countBefore) } };
+  return buildRecurrence(next, extra, to, draft.allDay);
+};
+
+/** поля главного события, которые переходят в новую серию: участники, видеовстреча, напоминания… */
+const COPIED = [
+  "summary",
+  "description",
+  "location",
+  "colorId",
+  "attendees",
+  "reminders",
+  "conferenceData",
+  "visibility",
+  "transparency",
+  "guestsCanInviteOthers",
+  "guestsCanModify",
+  "guestsCanSeeOtherGuests",
+  "anyoneCanAddSelf",
+  "source",
+  "extendedProperties",
+];
+
+export type FollowingPlan =
+  /** правка с первого повторения — это правка всей серии */
+  | { kind: "series"; patch: Record<string, unknown> }
+  /** иначе новая серия с этого повторения, а старая заканчивается перед ним */
+  | { kind: "split"; create: Record<string, unknown>; truncate: { recurrence: string[] } };
+
+export const planFollowing = (draft: EventDraft, master: FullEvent, countBefore: number): FollowingPlan => {
+  const body = { ...draftToBody(draft), recurrence: followingRecurrence(draft, master, countBefore) };
+  const split = instant(draft.originalStart);
+  const first = instant(master.start);
+  if (!split || !first || split <= first) return { kind: "series", patch: body };
+  const copied = Object.fromEntries(COPIED.filter((k) => k in master).map((k) => [k, master[k]]));
+  return {
+    kind: "split",
+    create: { ...copied, ...body },
+    truncate: { recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)) },
+  };
+};
+
+/** Сколько повторений серии было до split, включая удалённые: они тоже считаются в COUNT */
+const countBefore = async (calendarId: string, master: FullEvent, split: Date): Promise<number> => {
+  let count = 0;
+  let pageToken: string | undefined;
+  do {
+    const page = await googleRequest<Page<RawEvent>>("GET", `${eventPath(calendarId, master.id)}/instances`, {
+      showDeleted: "true",
+      timeMax: split.toISOString(),
+      maxResults: "2500",
+      ...(pageToken ? { pageToken } : {}),
+    });
+    count += (page.items ?? []).filter((e) => {
+      const at = instant(e.originalStartTime ?? e.start);
+      return at !== null && at < split;
+    }).length;
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+  return count;
+};
+
+const saveFollowing = async (draft: EventDraft): Promise<void> => {
+  const calendarId = draft.originalCalendarId ?? draft.calendarId;
+  const master = await getEvent(calendarId, draft.recurringEventId ?? "");
+  const split = instant(draft.originalStart);
+  const needCount = split && !recurrenceEdited(draft) && hasCount(master.recurrence ?? []);
+  const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split) : 0);
+  if (plan.kind === "series") {
+    await googleRequest("PATCH", eventPath(calendarId, master.id), { conferenceDataVersion: "1" }, plan.patch);
+    return;
+  }
+  const created = await googleRequest<RawEvent>("POST", eventsPath(calendarId), { conferenceDataVersion: "1" }, plan.create);
+  try {
+    await googleRequest("PATCH", eventPath(calendarId, master.id), undefined, plan.truncate);
+  } catch (e) {
+    // старую серию обрезать не вышло: убираем новую, чтобы повторения не задвоились
+    await googleRequest("DELETE", eventPath(calendarId, created.id)).catch(() => {});
+    throw e;
+  }
+};
+
+export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promise<void> => {
+  if (draft.recurringEventId && scope === "following") return saveFollowing(draft);
+  const body = {
+    ...draftToBody(draft),
+    // у повторения серии своего правила нет; у обычного события правило превращает его в серию
+    ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
+  };
   if (!draft.id) {
     await googleRequest("POST", eventsPath(draft.calendarId), undefined, body);
     return;
   }
   let calendarId = draft.originalCalendarId ?? draft.calendarId;
   if (calendarId !== draft.calendarId) {
-    await googleRequest("POST", `${eventsPath(calendarId)}/${enc(draft.id)}/move`, {
+    await googleRequest("POST", `${eventPath(calendarId, draft.id)}/move`, {
       destination: draft.calendarId,
     });
     calendarId = draft.calendarId;
   }
-  await googleRequest("PATCH", `${eventsPath(calendarId)}/${enc(draft.id)}`, undefined, body);
+  await googleRequest("PATCH", eventPath(calendarId, draft.id), undefined, body);
 };
 
 export const deleteEvent = (calendarId: string, eventId: string): Promise<void> =>
-  googleRequest("DELETE", `${eventsPath(calendarId)}/${enc(eventId)}`);
+  googleRequest("DELETE", eventPath(calendarId, eventId));
+
+/** Удалить повторение: только его или его и все следующие (с первого — всю серию) */
+export const deleteOccurrence = async (draft: EventDraft, scope: Scope): Promise<void> => {
+  const calendarId = draft.originalCalendarId ?? draft.calendarId;
+  if (!draft.recurringEventId || scope === "this") return deleteEvent(calendarId, draft.id ?? "");
+  const master = await getEvent(calendarId, draft.recurringEventId);
+  const split = instant(draft.originalStart);
+  const first = instant(master.start);
+  if (!split || !first || split <= first) return deleteEvent(calendarId, master.id);
+  await googleRequest("PATCH", eventPath(calendarId, master.id), undefined, {
+    recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)),
+  });
+};

@@ -142,4 +142,17 @@ mod tests {
         assert!(url.as_str().contains("en.polish%23holiday%40group"));
         assert!(url.as_str().ends_with("?singleEvents=true"));
     }
+
+    /// повторения серии и её главное событие: нужны для «это и следующие»
+    #[test]
+    fn allows_series_instances() {
+        let url = build_url(
+            "/calendar/v3/calendars/primary/events/abc123/instances",
+            &[("showDeleted".into(), "true".into()), ("timeMax".into(), "2026-11-11T11:00:00.000Z".into())],
+        )
+        .unwrap();
+        assert_eq!(url.path(), "/calendar/v3/calendars/primary/events/abc123/instances");
+        assert!(url.as_str().contains("timeMax=2026-11-11T11%3A00%3A00.000Z"));
+        assert!(build_url("/calendar/v3/calendars/primary/events/abc_20261111T110000Z", &[]).is_ok());
+    }
 }

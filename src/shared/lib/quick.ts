@@ -54,7 +54,7 @@ export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => ({
   endTime: toTimeKey(r.end),
   location: r.location ?? "",
   description: "",
-  recurring: false,
+  recurrence: [] as string[],
 });
 
 /** «Чт, 5 ноября · 19:00–19:50» для подсказки под строкой */

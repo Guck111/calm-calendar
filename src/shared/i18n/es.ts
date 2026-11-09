@@ -1,5 +1,13 @@
 // Spanish UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const esUnits: Record<Freq, [string, string]> = {
+  DAILY: ["día", "días"],
+  WEEKLY: ["semana", "semanas"],
+  MONTHLY: ["mes", "meses"],
+  YEARLY: ["año", "años"],
+};
 
 export const es: Dict = {
   common: {
@@ -73,7 +81,41 @@ export const es: Dict = {
     startTime: "Hora de inicio",
     endDate: "Fecha de fin",
     endTime: "Hora de fin",
-    recurringNote: "Los cambios solo se aplican a esta repetición.",
+  },
+  repeat: {
+    label: "Repetir",
+    none: "No se repite",
+    custom: "Personalizar…",
+    special: "Repetición personalizada en Google",
+    loading: "Cargando la repetición…",
+    interval: "Repetir cada",
+    unit: (freq: Freq, n: number) => esUnits[freq][n === 1 ? 0 : 1],
+    days: "Días de la semana",
+    ends: "Termina",
+    never: "Nunca",
+    until: "El día",
+    count: "Después de",
+    countUnit: (n: number) => (n === 1 ? "repetición" : "repeticiones"),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Cada día", WEEKLY: "Cada semana", MONTHLY: "Cada mes", YEARLY: "Cada año" }[freq]
+        : `Cada ${n} ${esUnits[freq][1]}`,
+    weekdays: "Todos los días laborables",
+    onDays: (days: string) => `los ${days}`,
+    onMonthDay: (n: number) => `el día ${n}`,
+    onNth: (n: number, _day: number, name: string) =>
+      `el ${n === -1 ? "último" : ["primer", "segundo", "tercer", "cuarto"][n - 1]} ${name}`,
+    onDate: (date: string) => `el ${date}`,
+    untilDate: (date: string) => `hasta el ${date}`,
+    times: (n: number) => (n === 1 ? "1 vez" : `${n} veces`),
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Guardar evento periódico",
+    deleteTitle: "Eliminar evento periódico",
+    this: "Solo este evento",
+    following: "Este y los siguientes",
+    ruleChanged: "La repetición ha cambiado, así que el cambio afectará a este evento y a los siguientes.",
   },
   meeting: {
     join: "Unirse",

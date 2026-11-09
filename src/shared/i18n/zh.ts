@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Same keys as ru.ts, the compiler checks it.
 import type { Dict } from "./ru";
+import type { Freq } from "../lib/rrule";
+
+const zhUnits: Record<Freq, string> = { DAILY: "天", WEEKLY: "周", MONTHLY: "个月", YEARLY: "年" };
 
 export const zh: Dict = {
   common: {
@@ -73,7 +76,38 @@ export const zh: Dict = {
     startTime: "开始时间",
     endDate: "结束日期",
     endTime: "结束时间",
-    recurringNote: "更改只对这一次生效。",
+  },
+  repeat: {
+    label: "重复",
+    none: "不重复",
+    custom: "自定义…",
+    special: "在 Google 中设置的自定义重复",
+    loading: "正在加载重复规则…",
+    interval: "每",
+    unit: (freq: Freq, _n: number) => zhUnits[freq],
+    days: "星期",
+    ends: "结束",
+    never: "永不",
+    until: "日期",
+    count: "重复",
+    countUnit: (_n: number) => "次后",
+    every: (freq: Freq, n: number) =>
+      n === 1 ? { DAILY: "每天", WEEKLY: "每周", MONTHLY: "每月", YEARLY: "每年" }[freq] : `每${n}${zhUnits[freq]}`,
+    weekdays: "每个工作日",
+    onDays: (days: string) => days,
+    onMonthDay: (n: number) => `${n}日`,
+    onNth: (n: number, _day: number, name: string) => (n === -1 ? `最后一个${name}` : `第${n}个${name}`),
+    onDate: (date: string) => date,
+    untilDate: (date: string) => `直到${date}`,
+    times: (n: number) => `共${n}次`,
+    sep: "，",
+  },
+  scope: {
+    saveTitle: "保存重复日程",
+    deleteTitle: "删除重复日程",
+    this: "仅此日程",
+    following: "此日程及后续日程",
+    ruleChanged: "重复规则已更改，修改将应用于此日程及后续日程。",
   },
   meeting: {
     join: "加入",

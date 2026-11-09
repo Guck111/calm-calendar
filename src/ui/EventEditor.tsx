@@ -3,21 +3,28 @@ import { t } from "../shared/i18n";
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { $calendarById, $writableCalendars } from "../model/calendars";
 import {
+  $askScope,
   $busy,
   $draft,
   $editorError,
   $mode,
   $opened,
+  $recurrenceEdited,
+  $series,
   deleteClicked,
   draftChanged,
   editCancelled,
   editClicked,
   editorClosed,
   saveClicked,
+  scopeCancelled,
+  scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
 import type { CalendarEvent } from "../shared/api/types";
 import { addDays, formatFullDate, formatTime, isSameDay } from "../shared/lib/date";
+import { describeRule, parseRecurrence } from "../shared/lib/rrule";
+import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
 import { Close, External, Video } from "./icons";
 import s from "./EventEditor.module.css";
@@ -47,11 +54,24 @@ const plainText = (html: string): string =>
     .replace(/&quot;/g, '"')
     .trim();
 
-const DeleteButton = ({ busy, onConfirm, resetKey }: { busy: boolean; onConfirm: () => void; resetKey: string }) => {
+type DeleteProps = {
+  busy: boolean;
+  onConfirm: () => void;
+  resetKey: string;
+  /** у повторения серии подтверждением служит вопрос «только это или это и следующие» */
+  askFirst?: boolean;
+};
+
+const DeleteButton = ({ busy, onConfirm, resetKey, askFirst = true }: DeleteProps) => {
   const [confirm, setConfirm] = useState(false);
   useEffect(() => setConfirm(false), [resetKey]);
   return (
-    <Button danger variant="ghost" disabled={busy} onClick={() => (confirm ? onConfirm() : setConfirm(true))}>
+    <Button
+      danger
+      variant="ghost"
+      disabled={busy}
+      onClick={() => (confirm || !askFirst ? onConfirm() : setConfirm(true))}
+    >
       {confirm ? t.editor.confirmDelete : t.editor.delete}
     </Button>
   );
@@ -64,12 +84,55 @@ const GoogleLink = ({ href }: { href?: string }) =>
     </Button>
   ) : null;
 
+/** Вопрос перед сохранением или удалением повторения серии */
+const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
+  const [busy, edited, choose, cancel] = useUnit([$busy, $recurrenceEdited, scopeChosen, scopeCancelled]);
+  // новое правило может начаться только с этого повторения
+  const onlyFollowing = kind === "save" && edited;
+  const title = kind === "save" ? t.scope.saveTitle : t.scope.deleteTitle;
+  return (
+    <div className={s.scope} role="group" aria-label={title}>
+      <p className={s.scopeTitle}>{title}</p>
+      {onlyFollowing && <p className={s.note}>{t.scope.ruleChanged}</p>}
+      <div className={s.actions}>
+        <div className={s.spacer} />
+        <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
+          {t.common.cancel}
+        </Button>
+        {!onlyFollowing && (
+          <Button variant="primary" danger={kind === "delete"} onClick={() => choose("this")} disabled={busy} autoFocus>
+            {t.scope.this}
+          </Button>
+        )}
+        <Button
+          variant={onlyFollowing ? "primary" : "default"}
+          danger={kind === "delete"}
+          onClick={() => choose("following")}
+          disabled={busy}
+          autoFocus={onlyFollowing}
+        >
+          {t.scope.following}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+/** «Каждую неделю, по пн и ср» у повторения серии; пока правило грузится — просто «повторяющееся» */
+const SeriesNote = ({ event }: { event: CalendarEvent }) => {
+  const series = useUnit($series);
+  const lines = series?.id === event.recurringEventId ? series?.lines : null;
+  const text = lines?.length ? describeRule(parseRecurrence(lines, event.start).rule, event.start) : t.editor.recurring;
+  return <p className={s.note}>{text}</p>;
+};
+
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
-  const [byId, busy, error, close, edit, remove] = useUnit([
+  const [byId, busy, error, ask, close, edit, remove] = useUnit([
     $calendarById,
     $busy,
     $editorError,
+    $askScope,
     editorClosed,
     editClicked,
     deleteClicked,
@@ -115,19 +178,25 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           </>
         )}
       </dl>
-      {event.recurring && <p className={s.note}>{t.editor.recurring}</p>}
+      {event.recurring && <SeriesNote event={event} />}
       {!editable && <p className={s.note}>{t.editor.readOnly}</p>}
       {error && <p className={s.error}>{error}</p>}
-      <div className={s.actions}>
-        <GoogleLink href={event.htmlLink} />
-        <div className={s.spacer} />
-        {editable && <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} />}
-        {editable && (
-          <Button variant={event.meeting ? "default" : "primary"} onClick={() => edit()} autoFocus={!event.meeting}>
-            {t.editor.edit}
-          </Button>
-        )}
-      </div>
+      {ask === "delete" ? (
+        <ScopePrompt kind="delete" />
+      ) : (
+        <div className={s.actions}>
+          <GoogleLink href={event.htmlLink} />
+          <div className={s.spacer} />
+          {editable && (
+            <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} askFirst={!event.recurring} />
+          )}
+          {editable && (
+            <Button variant={event.meeting ? "default" : "primary"} onClick={() => edit()} autoFocus={!event.meeting}>
+              {t.editor.edit}
+            </Button>
+          )}
+        </div>
+      )}
     </>
   );
 };
@@ -141,12 +210,14 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
 
 /** Форма создания и правки */
 const EventForm = () => {
-  const [draft, error, busy, writable, byId] = useUnit([
+  const [draft, error, busy, writable, byId, ask, series] = useUnit([
     $draft,
     $editorError,
     $busy,
     $writableCalendars,
     $calendarById,
+    $askScope,
+    $series,
   ]);
   const [change, close, save, cancel, remove] = useUnit([
     draftChanged,
@@ -160,7 +231,10 @@ const EventForm = () => {
   const isNew = !draft.id;
   const calendar = byId.get(draft.originalCalendarId ?? draft.calendarId);
   // перенести одно повторение в другой календарь Google не позволяет
-  const calendarLocked = !isNew && draft.recurring;
+  const calendarLocked = !isNew && Boolean(draft.recurringEventId);
+  // правило серии ещё грузится; если не загрузилось, поле не показываем: правка одного повторения работает и без него
+  const seriesFailed = Boolean(series?.failed && series.id === draft.recurringEventId);
+  const seriesLoading = Boolean(draft.recurringEventId) && draft.originalRecurrence === undefined && !seriesFailed;
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -222,6 +296,10 @@ const EventForm = () => {
         )}
       </div>
 
+      {!seriesFailed && (
+        <RepeatField draft={draft} loading={seriesLoading} onChange={(recurrence) => change({ recurrence })} />
+      )}
+
       <Field label={t.common.calendar}>
         {calendarLocked ? (
           <div className={s.static}>
@@ -247,47 +325,61 @@ const EventForm = () => {
         <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />
       </Field>
 
-      {draft.recurring && <p className={s.note}>{t.editor.recurringNote}</p>}
       {error && <p className={s.error}>{error}</p>}
 
-      <div className={s.actions}>
-        {!isNew && <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={draft.id ?? ""} />}
-        <div className={s.spacer} />
-        {!isNew && (
-          <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
-            {t.common.cancel}
+      {ask ? (
+        <ScopePrompt kind={ask} />
+      ) : (
+        <div className={s.actions}>
+          {!isNew && (
+            <DeleteButton
+              busy={busy}
+              onConfirm={() => remove()}
+              resetKey={draft.id ?? ""}
+              askFirst={!draft.recurringEventId}
+            />
+          )}
+          <div className={s.spacer} />
+          {!isNew && (
+            <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
+              {t.common.cancel}
+            </Button>
+          )}
+          <Button variant="primary" type="submit" disabled={busy}>
+            {busy ? t.common.saving : t.common.save}
           </Button>
-        )}
-        <Button variant="primary" type="submit" disabled={busy}>
-          {busy ? t.common.saving : t.common.save}
-        </Button>
-      </div>
+        </div>
+      )}
     </form>
   );
 };
 
 export const EventEditor = () => {
-  const [draft, opened, mode, writable, byId, close, cancel] = useUnit([
+  const [draft, opened, mode, writable, byId, ask, close, cancel, cancelScope] = useUnit([
     $draft,
     $opened,
     $mode,
     $writableCalendars,
     $calendarById,
+    $askScope,
     editorClosed,
     editCancelled,
+    scopeCancelled,
   ]);
 
   useEffect(() => {
     if (!draft) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // сначала закрывается вопрос о повторениях
+      if (ask) return cancelScope();
       // из правки существующего события Esc возвращает к просмотру
       if (mode === "edit" && opened) cancel();
       else close();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [draft, mode, opened, close, cancel]);
+  }, [draft, mode, opened, ask, close, cancel, cancelScope]);
 
   if (!draft) return null;
 

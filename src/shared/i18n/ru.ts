@@ -1,5 +1,37 @@
 // Русские строки интерфейса. Это эталон: английский словарь обязан иметь те же ключи.
 
+import type { Freq } from "../lib/rrule";
+
+/** 1 день, 2 дня, 5 дней */
+const ruPlural = (n: number, [one, few, many]: string[]): string => {
+  const d = n % 10;
+  const dd = n % 100;
+  if (d === 1 && dd !== 11) return one;
+  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return few;
+  return many;
+};
+
+const ruUnits: Record<Freq, string[]> = {
+  DAILY: ["день", "дня", "дней"],
+  WEEKLY: ["неделю", "недели", "недель"],
+  MONTHLY: ["месяц", "месяца", "месяцев"],
+  YEARLY: ["год", "года", "лет"],
+};
+
+/** в первый понедельник, во вторую среду, в последнее воскресенье */
+const ruNth = (n: number, day: number): string => {
+  const names = ["воскресенье", "понедельник", "вторник", "среду", "четверг", "пятницу", "субботу"];
+  const gender = [2, 0, 0, 1, 0, 1, 1][day];
+  const forms = [
+    ["первый", "первую", "первое"],
+    ["второй", "вторую", "второе"],
+    ["третий", "третью", "третье"],
+    ["четвёртый", "четвёртую", "четвёртое"],
+  ];
+  const word = (n === -1 ? ["последний", "последнюю", "последнее"] : forms[n - 1])[gender];
+  return `${word.startsWith("вт") ? "во" : "в"} ${word} ${names[day]}`;
+};
+
 export const ru = {
   common: {
     close: "Закрыть",
@@ -72,7 +104,41 @@ export const ru = {
     startTime: "Время начала",
     endDate: "Дата конца",
     endTime: "Время конца",
-    recurringNote: "Изменения коснутся только этого повторения.",
+  },
+  repeat: {
+    label: "Повтор",
+    none: "Не повторяется",
+    custom: "Настроить…",
+    special: "Особый повтор, настроенный в Google",
+    loading: "Загружаю повтор…",
+    interval: "Повторять раз в",
+    unit: (freq: Freq, n: number) => ruPlural(n, ruUnits[freq]),
+    days: "Дни недели",
+    ends: "Окончание",
+    never: "Никогда",
+    until: "В дату",
+    count: "После",
+    countUnit: (n: number) => ruPlural(n, ["повтора", "повторов", "повторов"]),
+    every: (freq: Freq, n: number) =>
+      n === 1
+        ? { DAILY: "Каждый день", WEEKLY: "Каждую неделю", MONTHLY: "Каждый месяц", YEARLY: "Каждый год" }[freq]
+        : `Раз в ${n} ${ruPlural(n, ruUnits[freq])}`,
+    weekdays: "По будням",
+    onDays: (days: string) => `по ${days}`,
+    onMonthDay: (n: number) => `${n}-го числа`,
+    /** day — номер дня недели как в Date.getDay(), name — его название из Intl */
+    onNth: (n: number, day: number, _name: string) => ruNth(n, day),
+    onDate: (date: string) => date,
+    untilDate: (date: string) => `до ${date}`,
+    times: (n: number) => `${n} ${ruPlural(n, ["раз", "раза", "раз"])}`,
+    sep: ", ",
+  },
+  scope: {
+    saveTitle: "Сохранить повторяющееся событие",
+    deleteTitle: "Удалить повторяющееся событие",
+    this: "Только это событие",
+    following: "Это и следующие",
+    ruleChanged: "Повтор изменён, поэтому правка коснётся этого и следующих событий.",
   },
   meeting: {
     /** кнопка видеовстречи: Meet, Zoom, Teams */

@@ -226,3 +226,109 @@
   overflow-y: auto;
   align-items: flex-start !important;
 }
+
+/* своё правило повтора */
+.custom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.custom input:not([type="radio"]),
+.custom select {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+}
+
+.custom > select {
+  align-self: flex-start;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowLabel {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.custom .num {
+  width: 64px;
+}
+
+.days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.day {
+  min-width: 36px;
+  height: 30px;
+  padding-inline: 6px;
+  border-radius: 15px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dayOn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.ends {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ends legend {
+  padding: 0;
+  margin-block-end: 4px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.end input[type="radio"] {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* вопрос «только это событие или это и следующие» */
+.scope {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--border);
+}
+
+.scopeTitle {
+  margin: 0;
+  font-weight: 600;
+}
