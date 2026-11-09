@@ -31,6 +31,10 @@ Stage 3 — needs new Google scopes, so a new verification; do them together:
 - [ ] Google Tasks in the sidebar, drag a task into the calendar.
 - [ ] Outlook calendars; read-only `.ics` subscriptions need no Google scope and can come earlier.
 
+## Testing
+
+- [ ] End-to-end tests of the real app (asked for on 2026-11-09). Today only unit tests run; the windows, tray, notifications and alerts were checked by hand. Candidates: tauri-driver with WebdriverIO on Windows for the main window, widget, alert and tray agenda (debug hooks `CALM_DEMO_ALERT` and `CALM_DEMO_AGENDA` already open the last two); Playwright against `npm run dev` with mock data for the UI flows (quick add in every language, event card, settings, right-to-left Arabic). Run them in CI on a Windows runner.
+
 ## Languages
 
 - [ ] Native speakers review the translations (Japanese, Hindi, Arabic and Bengali first).
