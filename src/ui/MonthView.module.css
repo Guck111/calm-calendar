@@ -38,6 +38,21 @@
   cursor: default;
 }
 
+/* номер недели в углу первой ячейки строки */
+.cell {
+  position: relative;
+}
+
+.weekNo {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
 .cell:nth-child(7n) {
   border-inline-end: 0;
 }

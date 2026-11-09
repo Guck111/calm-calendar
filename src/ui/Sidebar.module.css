@@ -44,6 +44,20 @@
   grid-template-columns: repeat(7, 1fr);
 }
 
+.miniGrid.withWeeks {
+  grid-template-columns: auto repeat(7, 1fr);
+}
+
+/* номер недели перед строкой мини-календаря */
+.weekNo {
+  display: grid;
+  place-items: center;
+  padding-inline-end: 4px;
+  font-size: 10px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
 .miniWeekday {
   text-align: center;
   font-size: 11px;
@@ -163,6 +177,12 @@
   background: none;
   color: var(--text-2);
   padding: 2px 4px;
+}
+
+.signOut.asking {
+  color: var(--danger);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .signOut:hover {

@@ -3,6 +3,8 @@ import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting 
 import { useUnit } from "effector-react";
 import { reloadRequested } from "../model/events";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
+import { $holidayRegion, $weekNumbers, holidayRegionChanged, weekNumbersToggled } from "../model/display";
+import { sortedRegions, systemRegion } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { inTauri } from "../shared/api/bus";
 import {
@@ -33,6 +35,18 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [error, setError] = useState<string | null>(null);
   const reschedule = useUnit(reloadRequested);
   const [secondZone, changeSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
+  const [weekNumbers, toggleWeekNumbers, holidayRegion, changeHolidays] = useUnit([
+    $weekNumbers,
+    weekNumbersToggled,
+    $holidayRegion,
+    holidayRegionChanged,
+  ]);
+  // страна системы — первой в списке
+  const [regions] = useState(() => {
+    const all = sortedRegions();
+    const own = systemRegion();
+    return own ? [...all.filter((r) => r.region === own), ...all.filter((r) => r.region !== own)] : all;
+  });
 
   useEffect(() => {
     void readSettings().then((st) => {
@@ -165,6 +179,39 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
             disabled={!secondZone.enabled}
             onChange={(zone) => changeSecondZone({ zone })}
           />
+        </section>
+
+        <section className={s.section}>
+          <label className={s.toggle}>
+            <span>
+              <b>{t.settings.weekNumbers}</b>
+              <small>{t.settings.weekNumbersText}</small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={weekNumbers}
+              onChange={(e) => toggleWeekNumbers(e.target.checked)}
+            />
+          </label>
+        </section>
+
+        <section className={s.section}>
+          <h3>{t.settings.holidays}</h3>
+          <small className={s.hint}>{t.settings.holidaysText}</small>
+          <select
+            className={s.select}
+            aria-label={t.settings.holidays}
+            value={holidayRegion ?? ""}
+            onChange={(e) => changeHolidays(e.target.value || null)}
+          >
+            <option value="">{t.settings.holidaysNone}</option>
+            {regions.map((r) => (
+              <option key={r.region} value={r.region}>
+                {r.name}
+              </option>
+            ))}
+          </select>
         </section>
 
         <section className={s.section}>

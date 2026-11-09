@@ -54,6 +54,8 @@ const ruEvents = (): Record<string, Json[]> => ({
     { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня" },
     // в рабочее время из рабочего аккаунта: пересечение
     { id: "e4", summary: "Стоматолог", start: { dateTime: at(3, 16) }, end: { dateTime: at(3, 17) } },
+    // позвали оба аккаунта: на экране одна встреча
+    { id: "e5", iCalUID: "demo-both@example.com", summary: "Встреча выпускников", start: { dateTime: at(4, 18) }, end: { dateTime: at(4, 19) } },
   ],
   work: ([
     {
@@ -64,6 +66,7 @@ const ruEvents = (): Record<string, Json[]> => ({
       end: { dateTime: series(0, 18) },
     },
   ] as Json[]).concat([
+    { id: "w12", iCalUID: "demo-both@example.com", summary: "Встреча выпускников", start: { dateTime: at(4, 18) }, end: { dateTime: at(4, 19) } },
     { id: "w9", summary: "Созвон с командой", start: { dateTime: at(1, 14) }, end: { dateTime: at(1, 15) }, hangoutLink: MEET },
     // начинается через 10 минут: в виджете видна кнопка «Подключиться»
     { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
@@ -225,6 +228,24 @@ const google = (
   const m = path.match(/^\/calendar\/v3\/calendars\/([^/]+)\/events(?:\/([^/]+))?(\/move|\/instances)?$/);
   if (!m) throw { kind: "google", message: `mock: нет обработчика ${path}` };
   const calId = decodeURIComponent(m[1]);
+  // публичный календарь праздников страны: два праздника в каждом месяце диапазона
+  if (calId.endsWith("#holiday@group.v.calendar.google.com") && method === "GET") {
+    const from = new Date(q.timeMin);
+    const items: Json[] = [];
+    for (let d = new Date(from.getFullYear(), from.getMonth(), 1); d < new Date(q.timeMax); d.setMonth(d.getMonth() + 1)) {
+      for (const day of [11, 25]) {
+        const date = new Date(d.getFullYear(), d.getMonth(), day);
+        items.push({
+          id: `h${toDateKey(date)}`,
+          summary: `Праздник ${calId.split("#")[0]}`,
+          start: { date: toDateKey(date) },
+          end: { date: toDateKey(addDays(date, 1)) },
+          transparency: "transparent",
+        });
+      }
+    }
+    return { items, timeZone: localTimeZone() };
+  }
   if (ownerOf(calId) !== account) throw { kind: "google", message: "404: Not Found" };
   const list = (events[calId] ??= []);
   const id = m[2] && decodeURIComponent(m[2]);

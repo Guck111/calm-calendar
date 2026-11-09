@@ -20,6 +20,8 @@ export type Calendar = {
   defaultReminders: number[];
   /** пояс календаря в Google: в нём живут события, у которых свой пояс не указан */
   timeZone?: string;
+  /** праздники страны, выбранной в настройках приложения: в списке календарей Google их нет */
+  holiday?: boolean;
 };
 
 /** время события в Google: date для событий на весь день, dateTime для остальных */
@@ -35,6 +37,8 @@ export type CalendarEvent = {
   account: string;
   /** общий id встречи во всех календарях: одна встреча в двух аккаунтах — не пересечение */
   iCalUID?: string;
+  /** та же встреча (общий iCalUID) в календарях других аккаунтов: на экране она одна, тут id остальных */
+  alsoIn?: string[];
   /** в Google отмечено «свободен»: такое событие ни с чем не пересекается */
   free?: boolean;
   title: string;

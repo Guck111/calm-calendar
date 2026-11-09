@@ -5,6 +5,7 @@ import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
 import type { DateRange } from "../shared/lib/date";
 import { findConflicts, type Conflicts } from "../shared/lib/conflicts";
+import { mergeSharedMeetings } from "../shared/lib/shared-meetings";
 import { $signedIn, sessionLost, signOutFx } from "./auth";
 import { $failedAccounts, $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
 import { $range } from "./view";
@@ -29,7 +30,9 @@ export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ ca
     throw toAppError(firstError.reason);
   }
   const lost = results.some((r) => r.status === "rejected" && toAppError(r.reason).kind === "not_signed_in");
-  const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const writable = new Set(calendars.filter((c) => c.accessRole === "owner" || c.accessRole === "writer").map((c) => c.id));
+  const events = mergeSharedMeetings(all, writable);
   return { events, failed, lost, id };
 });
 

@@ -3,7 +3,7 @@ import { shiftCursor, startOfDay, viewRange, type ViewMode } from "../shared/lib
 import { readJson, writeJson } from "../shared/lib/storage";
 
 const VIEW_KEY = "calm.view";
-const isView = (v: unknown): v is ViewMode => v === "month" || v === "week" || v === "day";
+const isView = (v: unknown): v is ViewMode => v === "month" || v === "week" || v === "day" || v === "agenda";
 
 export const viewChanged = createEvent<ViewMode>();
 export const prevClicked = createEvent();

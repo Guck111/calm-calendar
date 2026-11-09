@@ -22,6 +22,7 @@ import {
 import { AuthScreen } from "../ui/AuthScreen";
 import { EventEditor } from "../ui/EventEditor";
 import { MonthView } from "../ui/MonthView";
+import { ScheduleView } from "../ui/ScheduleView";
 import { Sidebar } from "../ui/Sidebar";
 import { TimeGrid } from "../ui/TimeGrid";
 import { Toolbar } from "../ui/Toolbar";
@@ -111,6 +112,7 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
       d: () => setView("day"),
       w: () => setView("week"),
       m: () => setView("month"),
+      a: () => setView("agenda"),
       n: () => create(),
     };
     const onKey = (e: KeyboardEvent) => {
@@ -141,7 +143,7 @@ export const App = () => {
       <main className={s.main}>
         <Toolbar />
         {loadError ? <div className={s.banner}>{loadError}</div> : offline && <div className={s.banner}>{offline}</div>}
-        <div className={s.view}>{view === "month" ? <MonthView /> : <TimeGrid />}</div>
+        <div className={s.view}>{view === "month" ? <MonthView /> : view === "agenda" ? <ScheduleView /> : <TimeGrid />}</div>
       </main>
       <EventEditor />
     </div>

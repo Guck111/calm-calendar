@@ -2,7 +2,10 @@
 // Язык и регион (первый день недели, 12 или 24 часа) берутся из i18n.
 import { locale, uses12h, weekStart } from "../i18n";
 
-export type ViewMode = "month" | "week" | "day";
+export type ViewMode = "month" | "week" | "day" | "agenda";
+
+/** сколько дней показывает «Расписание» и на сколько листает */
+export const AGENDA_DAYS = 28;
 
 export type DateRange = { start: Date; end: Date };
 
@@ -90,6 +93,8 @@ export const viewDays = (view: ViewMode, cursor: Date): Date[] => {
       return weekDays(cursor);
     case "day":
       return [startOfDay(cursor)];
+    case "agenda":
+      return Array.from({ length: AGENDA_DAYS }, (_, i) => addDays(startOfDay(cursor), i));
   }
 };
 
@@ -106,6 +111,8 @@ export const shiftCursor = (view: ViewMode, cursor: Date, step: 1 | -1): Date =>
       return addDays(cursor, 7 * step);
     case "day":
       return addDays(cursor, step);
+    case "agenda":
+      return addDays(cursor, AGENDA_DAYS * step);
   }
 };
 
@@ -131,6 +138,25 @@ let numbers: { locale: string; f: Intl.NumberFormat } | null = null;
 export const formatDayNumber = (d: Date): string => {
   if (numbers?.locale !== locale) numbers = { locale, f: new Intl.NumberFormat(locale, { useGrouping: false }) };
   return numbers.f.format(d.getDate());
+};
+
+/** Номер недели по ISO 8601: неделя с понедельника, первая — та, где первый четверг года */
+export const isoWeek = (d: Date): number => {
+  const day = startOfDay(d);
+  const thursday = addDays(day, 3 - ((day.getDay() + 6) % 7));
+  const firstThursday = new Date(thursday.getFullYear(), 0, 4);
+  const firstWeekThursday = addDays(firstThursday, 3 - ((firstThursday.getDay() + 6) % 7));
+  return 1 + Math.round((thursday.getTime() - firstWeekThursday.getTime()) / (7 * 86_400_000));
+};
+
+/** Номер недели строки календаря, начатой с d. Строка может начинаться с воскресенья или субботы,
+ *  поэтому берём её середину: так у всей строки один номер */
+export const weekNumberOf = (rowStart: Date): number => isoWeek(addDays(rowStart, 3));
+
+/** номер недели цифрами языка */
+export const formatWeekNumber = (rowStart: Date): string => {
+  if (numbers?.locale !== locale) numbers = { locale, f: new Intl.NumberFormat(locale, { useGrouping: false }) };
+  return numbers.f.format(weekNumberOf(rowStart));
 };
 
 export const formatMonthYear = (d: Date): string =>
@@ -179,9 +205,11 @@ export const weekdayLabels = (style: "short" | "narrow" = "short"): string[] => 
 export const viewTitle = (view: ViewMode, cursor: Date): string => {
   if (view === "month") return formatMonthYear(cursor);
   if (view === "day") return formatFullDate(cursor);
-  const days = weekDays(cursor);
+  const days = viewDays(view, cursor);
   // «2–8 ноября 2026», «November 2 – 8, 2026»: диапазон по правилам языка
-  return dropYearSuffix(formatter({ day: "numeric", month: "long", year: "numeric" }).formatRange(days[0], days[6]));
+  return dropYearSuffix(
+    formatter({ day: "numeric", month: "long", year: "numeric" }).formatRange(days[0], days[days.length - 1]),
+  );
 };
 
 export const localTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone;

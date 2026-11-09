@@ -223,6 +223,11 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           {calendar?.name ?? event.calendarId}
           {accounts.length > 1 && <span className={s.accountName}>{event.account}</span>}
         </dd>
+        {event.alsoIn?.length ? (
+          <dd className={s.alsoIn}>
+            {t.accounts.alsoIn(event.alsoIn.map((id) => byId.get(id)?.account ?? id).join(", "))}
+          </dd>
+        ) : null}
         {event.location && (
           <>
             <dt>{t.common.location}</dt>

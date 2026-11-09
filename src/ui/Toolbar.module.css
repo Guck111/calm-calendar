@@ -14,7 +14,8 @@
 }
 
 .title {
-  margin: 0 0 0 6px;
+  margin: 0;
+  margin-inline-start: 6px;
   font-size: 18px;
   font-weight: 600;
   white-space: nowrap;
@@ -22,11 +23,20 @@
   text-overflow: ellipsis;
 }
 
+/* «Неделя 46» после дат */
+.week {
+  margin-inline-start: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
 .spacer {
   flex: 1;
 }
 
 .segmented {
+  flex: none;
   display: flex;
   padding: 3px;
   border-radius: 8px;
@@ -54,5 +64,26 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* узкое окно: четыре вида, поиск и кнопки должны поместиться, заголовок сокращается первым */
+@media (max-width: 1100px) {
+  .bar {
+    gap: 4px;
+    padding-inline: 10px;
+  }
+
+  .title {
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  .week {
+    display: none;
+  }
+
+  .segment {
+    padding-inline: 8px;
   }
 }

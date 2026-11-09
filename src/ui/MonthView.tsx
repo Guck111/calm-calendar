@@ -5,9 +5,11 @@ import { $calendarById } from "../model/calendars";
 import { eventOpened, slotClicked } from "../model/editor";
 import { $events } from "../model/events";
 import { $cursor, $today, dayOpened } from "../model/view";
+import { $weekNumbers } from "../model/display";
 import type { CalendarEvent } from "../shared/api/types";
 import {
   formatDayNumber,
+  formatWeekNumber,
   formatMonthShort,
   formatTime,
   isSameDay,
@@ -24,7 +26,13 @@ import s from "./MonthView.module.css";
 const MAX_VISIBLE = 4;
 
 export const MonthView = () => {
-  const [cursor, today, events, calendars] = useUnit([$cursor, $today, $events, $calendarById]);
+  const [cursor, today, events, calendars, weekNumbers] = useUnit([
+    $cursor,
+    $today,
+    $events,
+    $calendarById,
+    $weekNumbers,
+  ]);
   const [openEvent, openDay, createAt] = useUnit([eventOpened, dayOpened, slotClicked]);
   const days = monthGrid(cursor);
 
@@ -61,7 +69,7 @@ export const MonthView = () => {
         ))}
       </div>
       <div className={s.grid}>
-        {days.map((day) => {
+        {days.map((day, i) => {
           const list = eventsForDay(events, day);
           const hidden = list.length - MAX_VISIBLE;
           const visible = hidden > 0 ? list.slice(0, MAX_VISIBLE - 1) : list;
@@ -71,6 +79,11 @@ export const MonthView = () => {
               className={cx(s.cell, !isSameMonth(day, cursor) && s.outside)}
               onClick={onCellClick(day)}
             >
+              {weekNumbers && i % 7 === 0 && (
+                <span className={s.weekNo} title={t.time.week(formatWeekNumber(day))}>
+                  {formatWeekNumber(day)}
+                </span>
+              )}
               <button
                 className={cx(s.dayNumber, isSameDay(day, today) && s.today)}
                 onClick={() => openDay(day)}

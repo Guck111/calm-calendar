@@ -354,3 +354,10 @@
   flex: none;
   margin-block-start: 2px;
 }
+
+/* та же встреча есть и в другом аккаунте: показываем её один раз */
+.alsoIn {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--text-3);
+}

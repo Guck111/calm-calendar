@@ -8,8 +8,10 @@ import { createClicked, draftOpened } from "../model/editor";
 import { quickCreateFx, quickFocusRequested } from "../model/quick";
 import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
+import { $weekNumbers } from "../model/display";
 import {
   formatDayNumber,
+  formatWeekNumber,
   addMonths,
   formatMonthYear,
   isSameDay,
@@ -24,7 +26,14 @@ import s from "./Sidebar.module.css";
 
 
 const MiniMonth = () => {
-  const [cursor, today, range, view, select] = useUnit([$cursor, $today, $range, $view, dateSelected]);
+  const [cursor, today, range, view, select, weekNumbers] = useUnit([
+    $cursor,
+    $today,
+    $range,
+    $view,
+    dateSelected,
+    $weekNumbers,
+  ]);
   // мини-календарь листается сам, но догоняет основной вид при его смене
   const [month, setMonth] = useState(() => startOfMonth(cursor));
   useEffect(() => setMonth(startOfMonth(cursor)), [cursor]);
@@ -42,13 +51,21 @@ const MiniMonth = () => {
           </Button>
         </div>
       </div>
-      <div className={s.miniGrid}>
+      <div className={cx(s.miniGrid, weekNumbers && s.withWeeks)}>
+        {weekNumbers && <span className={s.miniWeekday} />}
         {weekdayLabels("narrow").map((d, i) => (
           <span key={i} className={s.miniWeekday}>
             {d}
           </span>
         ))}
-        {monthGrid(month).map((d) => (
+        {monthGrid(month).flatMap((d, i) => [
+          ...(weekNumbers && i % 7 === 0
+            ? [
+                <span key={`w${d.getTime()}`} className={s.weekNo} title={t.time.week(formatWeekNumber(d))}>
+                  {formatWeekNumber(d)}
+                </span>,
+              ]
+            : []),
           <button
             key={d.getTime()}
             className={cx(
@@ -60,8 +77,8 @@ const MiniMonth = () => {
             onClick={() => select(d)}
           >
             {formatDayNumber(d)}
-          </button>
-        ))}
+          </button>,
+        ])}
       </div>
     </section>
   );
@@ -75,6 +92,29 @@ const CalendarRow = ({ c, toggle }: { c: Calendar & { visible: boolean }; toggle
   </label>
 );
 
+/** «Выйти» спрашивает второй раз: выход сразу отзывает доступ, и войти заново — это снова окно Google.
+ *  Вопрос пропадает, если увести с кнопки фокус или подождать */
+const SignOutButton = ({ email, onConfirm }: { email: string; onConfirm: () => void }) => {
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const timer = window.setTimeout(() => setAsking(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [asking]);
+  return (
+    <button
+      type="button"
+      className={cx(s.signOut, asking && s.asking)}
+      onClick={() => (asking ? onConfirm() : setAsking(true))}
+      onBlur={() => setAsking(false)}
+      onKeyDown={(e) => e.key === "Escape" && setAsking(false)}
+      title={t.accounts.signOutTitle(email)}
+    >
+      {asking ? t.accounts.confirmSignOut : t.sidebar.signOut}
+    </button>
+  );
+};
+
 /** Календари по аккаунтам: у каждого аккаунта свой заголовок с email и «Выйти» */
 const CalendarList = () => {
   const [calendars, accounts, toggle, signOut, signIn, signingIn] = useUnit([
@@ -85,6 +125,7 @@ const CalendarList = () => {
     signInClicked,
     $signingIn,
   ]);
+  const holidays = calendars.filter((c) => c.holiday);
   return (
     <section className={s.calendars}>
       <h3 className={s.heading}>{t.sidebar.calendars}</h3>
@@ -94,18 +135,11 @@ const CalendarList = () => {
             <span className={s.email} title={a.email}>
               {a.email}
             </span>
-            <button
-              type="button"
-              className={s.signOut}
-              onClick={() => signOut(a.email)}
-              title={t.accounts.signOutTitle(a.email)}
-            >
-              {t.sidebar.signOut}
-            </button>
+            <SignOutButton email={a.email} onConfirm={() => signOut(a.email)} />
           </div>
           {a.signedIn ? (
             calendars
-              .filter((c) => c.account === a.email)
+              .filter((c) => c.account === a.email && !c.holiday)
               .map((c) => <CalendarRow key={c.id} c={c} toggle={toggle} />)
           ) : (
             <p className={s.expired}>
@@ -117,6 +151,16 @@ const CalendarList = () => {
           )}
         </div>
       ))}
+      {holidays.length > 0 && (
+        <div className={s.group} role="group" aria-label={t.sidebar.holidays}>
+          <div className={s.groupHead}>
+            <span className={s.email}>{t.sidebar.holidays}</span>
+          </div>
+          {holidays.map((c) => (
+            <CalendarRow key={c.id} c={c} toggle={toggle} />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

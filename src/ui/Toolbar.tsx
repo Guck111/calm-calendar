@@ -2,10 +2,12 @@ import { useUnit } from "effector-react";
 import { t } from "../shared/i18n";
 import { $loading, refreshRequested } from "../model/events";
 import { $cursor, $view, nextClicked, prevClicked, todayClicked, viewChanged } from "../model/view";
-import { viewTitle, type ViewMode } from "../shared/lib/date";
+import { formatWeekNumber, startOfWeek, viewTitle, type ViewMode } from "../shared/lib/date";
+import { $weekNumbers } from "../model/display";
 import { useEffect, useState, type JSX } from "react";
 import { Button, cx } from "./Button";
 import { Search } from "./Search";
+import { FreeSlotsButton } from "./FreeSlots";
 import { SettingsButton } from "./Settings";
 import { followTheme, nextTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Auto, ChevronLeft, ChevronRight, Moon, Refresh, Sun } from "./icons";
@@ -15,6 +17,7 @@ const VIEWS: { id: ViewMode; key: string }[] = [
   { id: "day", key: "D" },
   { id: "week", key: "W" },
   { id: "month", key: "M" },
+  { id: "agenda", key: "A" },
 ];
 
 const THEME_ICON: Record<Theme, (props: { size?: number }) => JSX.Element> = { system: Auto, light: Sun, dark: Moon };
@@ -41,7 +44,10 @@ const ThemeButton = () => {
 };
 
 export const Toolbar = () => {
-  const [view, cursor, loading] = useUnit([$view, $cursor, $loading]);
+  const [view, cursor, loading, weekNumbers] = useUnit([$view, $cursor, $loading, $weekNumbers]);
+  // в видах «Неделя» и «День» номер недели — в заголовке
+  const week =
+    weekNumbers && (view === "week" || view === "day") ? t.time.week(formatWeekNumber(startOfWeek(cursor))) : null;
   const [onPrev, onNext, onToday, onView, onRefresh] = useUnit([
     prevClicked,
     nextClicked,
@@ -63,9 +69,13 @@ export const Toolbar = () => {
           <ChevronRight />
         </Button>
       </div>
-      <h2 className={s.title}>{viewTitle(view, cursor)}</h2>
+      <h2 className={s.title}>
+        {viewTitle(view, cursor)}
+        {week && <span className={s.week}>{week}</span>}
+      </h2>
       <div className={s.spacer} />
       <Search />
+      <FreeSlotsButton />
       <ThemeButton />
       <Button
         variant="ghost"
