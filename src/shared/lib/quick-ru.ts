@@ -38,6 +38,15 @@ const toHour = (h: number, part?: string): number => {
   return h;
 };
 
+/** Число месяца без месяца: в этом месяце, а если уже прошло — в следующем; «31» в ноябре — нет такого дня */
+const monthDay = (today: Date, day: number): Date | null => {
+  for (const shift of [0, 1, 2]) {
+    const d = new Date(today.getFullYear(), today.getMonth() + shift, day);
+    if (d.getDate() === day && d >= today) return d;
+  }
+  return null;
+};
+
 const parseDate = (cut: Cut, now: Date): Date | null => {
   const today = startOfDay(now);
 
@@ -62,6 +71,14 @@ const parseDate = (cut: Cut, now: Date): Date | null => {
   const dotted = cut.take(re("(?<!в\\s)(0?[1-9]|[12]\\d|3[01])\\.(0?[1-9]|1[0-2])(?:\\.(\\d{4}))?"));
   if (dotted) {
     return upcomingDate(today, Number(dotted[2]) - 1, Number(dotted[1]), dotted[3] ? Number(dotted[3]) : null);
+  }
+
+  // «14-го», «14 числа», «…, 14» в конце строки — ближайшее такое число месяца
+  const day =
+    cut.take(re("(\\d{1,2})(?:-?го|\\s+числа)")) ?? cut.take(/,\s*(\d{1,2})\s*$/u);
+  if (day) {
+    const d = monthDay(today, Number(day[1]));
+    if (d) return d;
   }
 
   // «пт», «в пятницу» — ближайший такой день, включая сегодня

@@ -109,9 +109,9 @@ Last updated: 2026-11-10 (version 0.7.0, stage 3a complete).
 
 ## Quick add
 
-A field under the "Create" button and in the widget; `N` focuses it. One line, a live preview of how it was understood; Enter creates, Ctrl+Enter opens the full form filled in. Works in all 11 languages (`src/shared/lib/quick-*.ts`, tests in `quick-*.test.ts`).
+A field under the "Create" button and in the widget; `N` focuses it. One line, a live preview of how it was understood; Enter or a click on the preview creates, Ctrl+Enter (or Ctrl+click) opens the full form filled in. Works in all 11 languages (`src/shared/lib/quick-*.ts`, tests in `quick-*.test.ts`). The phrase is read in the language of its letters: a Russian phrase works with the English interface, an English one with the Russian interface; the interface language wins when the phrase uses its script, so Latin letters stay Spanish with the Spanish interface (`src/shared/lib/quick-detect.ts`).
 
-- Date: today, tomorrow, the day after tomorrow, weekday names ("next Wednesday" skips today), "Nov 5", "05.11", "in 3 days", "in 2 weeks". No date: today, or tomorrow if the time has passed.
+- Date: today, tomorrow, the day after tomorrow, weekday names ("next Wednesday" skips today), "Nov 5", "05.11", "in 3 days", "in 2 weeks"; in Russian also a day of the month alone: "14-го", "14 числа", or ", 14" at the end of the line (this month, or the next one if the day has passed). No date: today, or tomorrow if the time has passed.
 - Time: "7pm", "19:00", "at 7", "noon", ranges "7-9pm", "from 2 to 3:30pm", and "fri 18" (a number right after a day is an hour).
 - Length: "50 min", "2h", "1.5 hours", "half an hour"; one hour by default; no time means all day.
 - `#work` picks a calendar by the start of its name, `@Gdynia` sets the location (`@Office_Gdynia` for a name with a space).
