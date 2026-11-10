@@ -110,6 +110,7 @@ export const ar: Dict = {
     guestStatus: { accepted: "سيحضر", declined: "لن يحضر", tentative: "ربما", needsAction: "لم يرد بعد" },
     organizer: "المنظِّم",
     invitesNote: "يتلقى الضيوف رسالة من Google عن الاجتماع وتغييراته.",
+    addMeet: "إضافة مكالمة فيديو عبر Google Meet",
   },
   repeat: {
     label: "التكرار",

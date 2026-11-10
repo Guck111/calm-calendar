@@ -94,6 +94,7 @@ export const zh: Dict = {
     guestStatus: { accepted: "参加", declined: "不参加", tentative: "可能参加", needsAction: "尚未回复" },
     organizer: "组织者",
     invitesNote: "邀请对象会收到 Google 发送的关于会议及其更改的电子邮件。",
+    addMeet: "添加 Google Meet 视频会议",
   },
   repeat: {
     label: "重复",

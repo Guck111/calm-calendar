@@ -95,6 +95,7 @@ export const bn: Dict = {
     guestStatus: { accepted: "আসবেন", declined: "আসবেন না", tentative: "হয়তো", needsAction: "এখনও উত্তর দেননি" },
     organizer: "আয়োজক",
     invitesNote: "অতিথিরা মিটিং ও তার পরিবর্তন নিয়ে Google থেকে ইমেল পাবেন।",
+    addMeet: "Google Meet ভিডিও কল যোগ করুন",
   },
   repeat: {
     label: "পুনরাবৃত্তি",

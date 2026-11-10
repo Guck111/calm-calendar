@@ -94,6 +94,7 @@ export const ja: Dict = {
     guestStatus: { accepted: "参加", declined: "不参加", tentative: "未定", needsAction: "未回答" },
     organizer: "主催者",
     invitesNote: "ゲストには予定とその変更について Google からメールが届きます。",
+    addMeet: "Google Meet のビデオ会議を追加",
   },
   repeat: {
     label: "繰り返し",

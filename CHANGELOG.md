@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Add Google Meet**: a switch in the event form creates a video call when the event is saved.
+
 ## 0.6.0 — 2026-11-10
 
 ### New

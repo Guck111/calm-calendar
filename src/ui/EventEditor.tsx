@@ -544,6 +544,13 @@ const EventForm = () => {
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
       </Field>
 
+      {draft.addMeet !== undefined && (
+        <label className={s.check}>
+          <input type="checkbox" checked={draft.addMeet} onChange={(e) => change({ addMeet: e.target.checked })} />
+          {t.editor.addMeet}
+        </label>
+      )}
+
       {draft.guests && <GuestsField guests={draft.guests} onChange={(guests) => change({ guests })} />}
 
       <Field label={t.common.description}>

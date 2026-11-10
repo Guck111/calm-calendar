@@ -94,6 +94,7 @@ export const hi: Dict = {
     guestStatus: { accepted: "आएँगे", declined: "नहीं आएँगे", tentative: "शायद", needsAction: "अभी जवाब नहीं" },
     organizer: "आयोजक",
     invitesNote: "मेहमानों को मीटिंग और उसके बदलावों के बारे में Google से ईमेल मिलेगा।",
+    addMeet: "Google Meet वीडियो कॉल जोड़ें",
   },
   repeat: {
     label: "दोहराएँ",

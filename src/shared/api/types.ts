@@ -111,6 +111,8 @@ export type EventDraft = {
   travelMinutes?: number;
   /** гости; undefined — список не трогаем (событие чужое, менять его может только организатор) */
   guests?: Attendee[];
+  /** создать видеовстречу Google Meet при сохранении; undefined — у события она уже есть */
+  addMeet?: boolean;
 };
 
 /** какие повторения серии затронуть */

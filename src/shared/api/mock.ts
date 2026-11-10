@@ -226,6 +226,23 @@ const flatten = (list: Json[], before: Date): Json[] => {
 
 const FAR = new Date(2100, 0, 1);
 
+/** Заявка на Google Meet (conferenceData.createRequest): Google создаёт встречу и отдаёт ссылку.
+ *  Без conferenceDataVersion=1 Google заявку молча пропускает */
+const withMeet = (body: Json | undefined, q: Record<string, string>): Json | undefined => {
+  const request = (body?.conferenceData as { createRequest?: unknown } | undefined)?.createRequest;
+  if (!body || !request || q.conferenceDataVersion !== "1") return body;
+  const code = `mock-${(seq++).toString(36).padStart(4, "a")}-xyz`.replace(/[^a-z-]/g, "q");
+  const uri = `https://meet.google.com/${code}`;
+  return {
+    ...body,
+    hangoutLink: uri,
+    conferenceData: {
+      conferenceSolution: { name: "Google Meet", key: { type: "hangoutsMeet" } },
+      entryPoints: [{ entryPointType: "video", uri }],
+    },
+  };
+};
+
 const google = (
   account: string,
   method: string,
@@ -272,6 +289,7 @@ const google = (
     // как Google: у списка событий указан пояс календаря
     return { items: items.sort(byStart), timeZone: localTimeZone() };
   }
+  body = withMeet(body, q);
   if (method === "POST" && !id) {
     const created = { ...body, id: `n${seq++}` };
     list.push(created);

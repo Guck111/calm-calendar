@@ -122,6 +122,7 @@ export const ru = {
     guestStatus: { accepted: "придёт", declined: "не придёт", tentative: "может быть", needsAction: "ещё не ответил" },
     organizer: "организатор",
     invitesNote: "Гостям придёт письмо от Google о встрече и её изменениях.",
+    addMeet: "Добавить видеовстречу Google Meet",
   },
   repeat: {
     label: "Повтор",

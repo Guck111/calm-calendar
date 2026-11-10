@@ -55,7 +55,7 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location, guests with their answers, description, overlaps, the repeat rule, and "In Google".
-- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, location, guests, description.
+- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, location, "Add Google Meet video call", guests, description.
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Delete asks once ("Delete?").
 - Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone.
@@ -133,6 +133,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 ## Video calls
 
 - Events with a call get "Join": in the card, in the widget from 15 minutes before the start until the end, in the tray agenda, in the reminder notification and in the hard-to-miss alert.
+- "Add Google Meet video call" in the form of a new event or of an event without a call: Google creates the call when the event is saved, and the card gets Join (`conferenceData.createRequest`, within the `calendar.events` permission).
 - The link comes from the event's conference (Google Meet, Zoom or Teams add-ons) or from a Meet, Zoom, Teams, Webex, Telemost, Jitsi, Whereby, GoTo, Chime or Skype link in the location or description (`src/shared/lib/meeting.ts`).
 
 ## Reminders and the hard-to-miss alert

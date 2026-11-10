@@ -99,6 +99,7 @@ export const de: Dict = {
     guestStatus: { accepted: "nimmt teil", declined: "nimmt nicht teil", tentative: "vielleicht", needsAction: "noch keine Antwort" },
     organizer: "Organisator",
     invitesNote: "Gäste bekommen eine E-Mail von Google über den Termin und seine Änderungen.",
+    addMeet: "Google Meet-Videokonferenz hinzufügen",
   },
   repeat: {
     label: "Wiederholen",

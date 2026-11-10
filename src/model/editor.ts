@@ -89,6 +89,8 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     ...(e.travelMinutes ? { travelMinutes: e.travelMinutes } : {}),
     // список гостей меняет только организатор; у чужой встречи его не трогаем
     ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
+    // видеовстречу можно добавить, только если её ещё нет
+    ...(e.meeting ? {} : { addMeet: false }),
   };
 };
 
@@ -107,6 +109,7 @@ const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft 
     description: "",
     recurrence: [],
     guests: [],
+    addMeet: false,
   };
 };
 

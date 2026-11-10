@@ -306,12 +306,27 @@ export const draftToBody = (draft: EventDraft) => {
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
       : {}),
     ...(draft.guests !== undefined ? { attendees: draft.guests.map(cleanAttendee) } : {}),
+    // Google сам создаёт встречу и присылает ссылку; requestId не должен повторяться
+    ...(draft.addMeet
+      ? { conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: "hangoutsMeet" } } } }
+      : {}),
   };
 };
+
+const requestId = (): string =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
 /** Гостям — письмо о новой встрече, переносе или отмене, как в Google Календаре */
 const notify = (draft: EventDraft): Record<string, string> | undefined =>
   hasGuests(draft.guests) ? { sendUpdates: "all" } : undefined;
+
+/** параметры сохранения: письма гостям и, для новой видеовстречи, поддержка conferenceData */
+const saveQuery = (draft: EventDraft): Record<string, string> | undefined => {
+  const query = { ...(draft.addMeet ? { conferenceDataVersion: "1" } : {}), ...notify(draft) };
+  return Object.keys(query).length ? query : undefined;
+};
 
 /** Событие целиком, как его отдаёт Google: при разбиении серии копируем и поля, которых нет в форме */
 type FullEvent = RawEvent & Record<string, unknown>;
@@ -453,7 +468,7 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
   };
   if (!draft.id) {
-    await api(draft.calendarId, "POST", "", notify(draft), body);
+    await api(draft.calendarId, "POST", "", saveQuery(draft), body);
     return;
   }
   let calendarId = draft.originalCalendarId ?? draft.calendarId;
@@ -465,7 +480,7 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     await api(calendarId, "POST", `${one(draft.id)}/move`, { destination: to.googleId });
     calendarId = draft.calendarId;
   }
-  await api(calendarId, "PATCH", one(draft.id), notify(draft), body);
+  await api(calendarId, "PATCH", one(draft.id), saveQuery(draft), body);
 };
 
 export const deleteEvent = (calendarId: string, eventId: string, query?: Record<string, string>): Promise<void> =>
