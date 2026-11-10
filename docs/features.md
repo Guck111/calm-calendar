@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-10 (version 0.8.0 and unreleased styles and fonts).
+Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 
 ## Contents
 
