@@ -11,6 +11,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Event colors**: give one event its own color, one of the 11 colors of Google Calendar.
 - **Answer invitations** from the event card: yes, no or maybe.
 - The sidebar shows **when the calendar was last updated** from Google.
+- **Attachments**: see the Google Drive files of an event in its card, and attach one by pasting its link.
 
 ### Changed
 

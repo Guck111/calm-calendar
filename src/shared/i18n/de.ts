@@ -108,6 +108,10 @@ export const de: Dict = {
     rsvpYes: "Ja",
     rsvpNo: "Nein",
     rsvpMaybe: "Vielleicht",
+    attachments: "Anhänge",
+    addAttachment: "Google Drive-Link einfügen",
+    badAttachment: "Nur Links zu Google Drive-Dateien können angehängt werden",
+    removeAttachment: (title: string) => `${title} entfernen`,
   },
   repeat: {
     label: "Wiederholen",

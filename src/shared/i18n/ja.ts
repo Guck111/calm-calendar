@@ -103,6 +103,10 @@ export const ja: Dict = {
     rsvpYes: "はい",
     rsvpNo: "いいえ",
     rsvpMaybe: "未定",
+    attachments: "添付ファイル",
+    addAttachment: "Google ドライブのリンクを貼り付け",
+    badAttachment: "添付できるのは Google ドライブのファイルへのリンクだけです",
+    removeAttachment: (title: string) => `${title} を削除`,
   },
   repeat: {
     label: "繰り返し",

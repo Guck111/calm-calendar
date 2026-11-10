@@ -104,6 +104,10 @@ export const bn: Dict = {
     rsvpYes: "হ্যাঁ",
     rsvpNo: "না",
     rsvpMaybe: "হয়তো",
+    attachments: "সংযুক্তি",
+    addAttachment: "Google Drive-এর লিংক পেস্ট করুন",
+    badAttachment: "শুধু Google Drive ফাইলের লিংক যুক্ত করা যায়",
+    removeAttachment: (title: string) => `${title} সরান`,
   },
   repeat: {
     label: "পুনরাবৃত্তি",

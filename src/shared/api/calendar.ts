@@ -6,6 +6,7 @@ import { locale, t } from "../i18n";
 import type {
   AccessRole,
   AppError,
+  Attachment,
   Attendee,
   Calendar,
   CalendarEvent,
@@ -67,7 +68,16 @@ export type RawEvent = {
   organizer?: { email?: string; self?: boolean };
   extendedProperties?: { private?: Record<string, string>; shared?: Record<string, string> };
   colorId?: string;
+  attachments?: (Attachment & { iconLink?: string })[];
 };
+
+/** вложение без лишних полей: картинку значка (iconLink) интерфейс не грузит, своя иконка */
+const cleanAttachment = (a: Attachment): Attachment => ({
+  fileUrl: a.fileUrl,
+  title: a.title || a.fileUrl,
+  ...(a.mimeType ? { mimeType: a.mimeType } : {}),
+  ...(a.fileId ? { fileId: a.fileId } : {}),
+});
 
 /** ключ времени в пути в скрытых полях события: их видит только наше приложение */
 export const TRAVEL_KEY = "calmTravelMinutes";
@@ -230,6 +240,7 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?
     // self: false Google не присылает; без организатора событие своё
     organizerSelf: raw.organizer ? raw.organizer.self === true : true,
     ...(isColorId(raw.colorId) ? { colorId: raw.colorId } : {}),
+    ...(raw.attachments?.length ? { attachments: raw.attachments.filter((a) => a.fileUrl).map(cleanAttachment) } : {}),
   };
 };
 
@@ -309,6 +320,7 @@ export const draftToBody = (draft: EventDraft) => {
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
       : {}),
     ...(draft.guests !== undefined ? { attendees: draft.guests.map(cleanAttendee) } : {}),
+    ...(sendsAttachments(draft) ? { attachments: (draft.attachments ?? []).map(cleanAttachment) } : {}),
     // свой цвет; у существующего события «цвет календаря» — это сброс colorId
     ...(draft.colorId ? { colorId: draft.colorId } : draft.colorId === "" && draft.id ? { colorId: null } : {}),
     // Google сам создаёт встречу и присылает ссылку; requestId не должен повторяться
@@ -323,13 +335,21 @@ const requestId = (): string =>
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
+/** вложения уходят в Google, только если список меняли: правка и перетаскивание их не трогают */
+const sendsAttachments = (draft: EventDraft): boolean => Boolean(draft.attachmentsChanged && draft.attachments);
+
 /** Гостям — письмо о новой встрече, переносе или отмене, как в Google Календаре */
 const notify = (draft: EventDraft): Record<string, string> | undefined =>
   hasGuests(draft.guests) ? { sendUpdates: "all" } : undefined;
 
 /** параметры сохранения: письма гостям и, для новой видеовстречи, поддержка conferenceData */
 const saveQuery = (draft: EventDraft): Record<string, string> | undefined => {
-  const query = { ...(draft.addMeet ? { conferenceDataVersion: "1" } : {}), ...notify(draft) };
+  const query = {
+    ...(draft.addMeet ? { conferenceDataVersion: "1" } : {}),
+    // без этого Google не меняет вложения
+    ...(sendsAttachments(draft) ? { supportsAttachments: "true" } : {}),
+    ...notify(draft),
+  };
   return Object.keys(query).length ? query : undefined;
 };
 
@@ -383,6 +403,7 @@ const COPIED = [
   "description",
   "location",
   "colorId",
+  "attachments",
   "attendees",
   "reminders",
   "conferenceData",
@@ -451,10 +472,11 @@ const saveFollowing = async (draft: EventDraft): Promise<void> => {
   const needCount = split && !recurrenceEdited(draft) && hasCount(master.recurrence ?? []);
   const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split) : 0);
   if (plan.kind === "series") {
-    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", ...notify(draft) }, plan.patch);
+    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", supportsAttachments: "true", ...notify(draft) }, plan.patch);
     return;
   }
-  const query = { conferenceDataVersion: "1", ...notify(draft) };
+  // вложения главного события переходят в новую серию
+  const query = { conferenceDataVersion: "1", supportsAttachments: "true", ...notify(draft) };
   const created = await api<RawEvent>(calendarId, "POST", "", query, plan.create);
   try {
     await api(calendarId, "PATCH", one(master.id), undefined, plan.truncate);

@@ -69,7 +69,12 @@ export type CalendarEvent = {
   organizerSelf?: boolean;
   /** свой цвет события в Google (1–11); нет — цвет календаря */
   colorId?: string;
+  /** прикреплённые файлы Google Диска */
+  attachments?: Attachment[];
 };
+
+/** вложение события: файл Google Диска */
+export type Attachment = { fileUrl: string; title: string; mimeType?: string; fileId?: string };
 
 /** участник встречи, как его отдаёт Google */
 export type Attendee = {
@@ -117,6 +122,10 @@ export type EventDraft = {
   addMeet?: boolean;
   /** свой цвет события; "" — цвет календаря; undefined — не трогаем */
   colorId?: string;
+  /** вложения; undefined — не трогаем (у чужой встречи их меняет организатор) */
+  attachments?: Attachment[];
+  /** список вложений меняли: только тогда он уходит в Google */
+  attachmentsChanged?: boolean;
 };
 
 /** какие повторения серии затронуть */

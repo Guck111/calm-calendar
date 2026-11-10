@@ -26,14 +26,15 @@ import {
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
 import { draftZone, hasGuests, myResponse, type ResponseStatus } from "../shared/api/calendar";
-import type { Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
+import type { Attachment, Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
 import { addDays, formatSpan as travelSpan, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
 import { fromZoned, wallClock, zoneLabel } from "../shared/lib/tz";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
-import { Close, External, Video, Warning } from "./icons";
+import { Close, External, Paperclip, Video, Warning } from "./icons";
+import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
 import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
 
@@ -288,6 +289,22 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             </dd>
           </>
         ) : null}
+        {event.attachments?.length ? (
+          <>
+            <dt>{t.editor.attachments}</dt>
+            <dd>
+              <ul className={s.files}>
+                {event.attachments.map((a) => (
+                  <li key={a.fileUrl}>
+                    <button type="button" className={s.file} onClick={() => void openExternal(a.fileUrl)} title={a.fileUrl}>
+                      <Paperclip /> {a.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </>
+        ) : null}
         {event.description && (
           <>
             <dt>{t.common.description}</dt>
@@ -491,6 +508,69 @@ const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (gues
   );
 };
 
+/** Вложения в форме: файлы Google Диска; новый — по ссылке (Enter или уход из поля) */
+const AttachmentsField = ({ files, onChange }: { files: Attachment[]; onChange: (files: Attachment[]) => void }) => {
+  const [text, setText] = useState("");
+  const [bad, setBad] = useState(false);
+  const add = () => {
+    if (!text.trim()) return;
+    const file = parseDriveLink(text);
+    if (!file) {
+      setBad(true);
+      return;
+    }
+    if (!files.some((f) => f.fileUrl === file.fileUrl)) onChange([...files, file]);
+    setText("");
+  };
+  return (
+    <div className={s.field}>
+      <span>{t.editor.attachments}</span>
+      {files.length > 0 && (
+        <ul className={s.files}>
+          {files.map((f) => (
+            <li key={f.fileUrl} className={s.guest}>
+              <span className={s.guestName} title={f.fileUrl}>
+                <Paperclip /> {f.title}
+              </span>
+              <button
+                type="button"
+                className={s.removeGuest}
+                onClick={() => onChange(files.filter((x) => x !== f))}
+                aria-label={t.editor.removeAttachment(f.title)}
+                title={t.editor.removeAttachment(f.title)}
+              >
+                <Close size={12} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {files.length < MAX_ATTACHMENTS && (
+        <input
+          type="url"
+          value={text}
+          placeholder={t.editor.addAttachment}
+          aria-label={t.editor.addAttachment}
+          aria-invalid={bad}
+          onChange={(e) => {
+            setText(e.target.value);
+            setBad(false);
+          }}
+          onKeyDown={(e) => {
+            // Enter со ссылкой в поле прикрепляет файл, а не сохраняет форму
+            if (e.key === "Enter" && text.trim()) {
+              e.preventDefault();
+              add();
+            }
+          }}
+          onBlur={() => add()}
+        />
+      )}
+      {bad && <small className={s.error}>{t.editor.badAttachment}</small>}
+    </div>
+  );
+};
+
 /** Гости в карточке: «Анна — придёт», организатор отмечен */
 const GuestList = ({ guests }: { guests: Attendee[] }) => (
   <ul className={s.guests}>
@@ -640,6 +720,10 @@ const EventForm = () => {
       )}
 
       {draft.guests && <GuestsField guests={draft.guests} onChange={(guests) => change({ guests })} />}
+
+      {draft.attachments && (
+        <AttachmentsField files={draft.attachments} onChange={(attachments) => change({ attachments })} />
+      )}
 
       <Field label={t.common.description}>
         <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />

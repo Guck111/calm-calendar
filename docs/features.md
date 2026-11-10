@@ -56,9 +56,10 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location, guests with their answers, description, overlaps, the repeat rule, and "In Google".
-- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, color, location, "Add Google Meet video call", guests, description.
+- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, color, location, "Add Google Meet video call", guests, attachments, description.
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Delete asks once ("Delete?").
+- Attachments: the card lists the Google Drive files attached to the event, a click opens one in the browser. In the form a Drive file is attached by pasting its link (Docs, Sheets, Slides, Forms or a Drive file; other links are refused), and removed with ×; up to 25. Attachments go to Google only when the list was changed, so editing and dragging keep them, and "this and following" passes them to the new series. Uploading a file from the computer needs a Google Drive permission (stage 3b) (`src/shared/lib/attachments.ts`).
 - Color of a single event: the calendar color or one of Google's 11 event colors (Lavender … Tomato), as on the Google Calendar website. Shown in every view, the card, the widget and the tray agenda; stored in Google (`colorId`), so the website and phones show it too (`src/shared/lib/colors.ts`).
 - "Duplicate" in the card opens the form of a new event with the same title, time, time zone, location, description, travel time and guests. An occurrence of a series is copied as one event; the old video call and the guests' answers are not copied. An event from a read-only calendar (holidays, someone else's calendar) is copied into your first calendar.
 - Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone.

@@ -131,6 +131,10 @@ export const ru = {
     rsvpYes: "Да",
     rsvpNo: "Нет",
     rsvpMaybe: "Может быть",
+    attachments: "Вложения",
+    addAttachment: "Вставьте ссылку на файл Google Диска",
+    badAttachment: "Прикрепить можно только ссылку на файл Google Диска",
+    removeAttachment: (title: string) => `Убрать ${title}`,
   },
   repeat: {
     label: "Повтор",

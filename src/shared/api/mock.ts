@@ -150,7 +150,23 @@ const enEvents = (): Record<string, Json[]> => ({
     },
     ...timed("w", [
       [1, "Product review", [14, 0], [15, 0]],
-      [2, "Design sync", [11, 0], [12, 0], { description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}` }],
+      [
+        2,
+        "Design sync",
+        [11, 0],
+        [12, 0],
+        {
+          description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}`,
+          attachments: [
+            {
+              fileUrl: "https://docs.google.com/document/d/1DesignSyncAgenda/edit",
+              title: "Design sync agenda",
+              mimeType: "application/vnd.google-apps.document",
+              fileId: "1DesignSyncAgenda",
+            },
+          ],
+        },
+      ],
       // в то же время, что и Dentist в личном аккаунте: пересечение
       [2, "Hiring panel", [15, 30], [16, 30]],
       [3, "Focus time", [13, 0], [16, 0]],

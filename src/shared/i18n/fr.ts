@@ -108,6 +108,10 @@ export const fr: Dict = {
     rsvpYes: "Oui",
     rsvpNo: "Non",
     rsvpMaybe: "Peut-être",
+    attachments: "Pièces jointes",
+    addAttachment: "Collez un lien Google Drive",
+    badAttachment: "Seuls les liens vers des fichiers Google Drive peuvent être joints",
+    removeAttachment: (title: string) => `Retirer ${title}`,
   },
   repeat: {
     label: "Répétition",

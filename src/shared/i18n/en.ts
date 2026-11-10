@@ -105,6 +105,10 @@ export const en: Dict = {
     rsvpYes: "Yes",
     rsvpNo: "No",
     rsvpMaybe: "Maybe",
+    attachments: "Attachments",
+    addAttachment: "Paste a Google Drive link",
+    badAttachment: "Only links to Google Drive files can be attached",
+    removeAttachment: (title: string) => `Remove ${title}`,
   },
   repeat: {
     label: "Repeat",

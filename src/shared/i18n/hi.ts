@@ -103,6 +103,10 @@ export const hi: Dict = {
     rsvpYes: "हाँ",
     rsvpNo: "नहीं",
     rsvpMaybe: "शायद",
+    attachments: "अटैचमेंट",
+    addAttachment: "Google Drive लिंक पेस्ट करें",
+    badAttachment: "सिर्फ़ Google Drive फ़ाइलों के लिंक जोड़े जा सकते हैं",
+    removeAttachment: (title: string) => `${title} हटाएँ`,
   },
   repeat: {
     label: "दोहराएँ",

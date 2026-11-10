@@ -103,6 +103,10 @@ export const zh: Dict = {
     rsvpYes: "是",
     rsvpNo: "否",
     rsvpMaybe: "待定",
+    attachments: "附件",
+    addAttachment: "粘贴 Google 云端硬盘链接",
+    badAttachment: "只能附加 Google 云端硬盘文件的链接",
+    removeAttachment: (title: string) => `移除 ${title}`,
   },
   repeat: {
     label: "重复",

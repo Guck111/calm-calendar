@@ -119,6 +119,10 @@ export const ar: Dict = {
     rsvpYes: "نعم",
     rsvpNo: "لا",
     rsvpMaybe: "ربما",
+    attachments: "المرفقات",
+    addAttachment: "الصق رابط ملف من Google Drive",
+    badAttachment: "يمكن إرفاق روابط ملفات Google Drive فقط",
+    removeAttachment: (title: string) => `إزالة ${title}`,
   },
   repeat: {
     label: "التكرار",

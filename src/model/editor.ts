@@ -105,6 +105,8 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     ...(e.travelMinutes ? { travelMinutes: e.travelMinutes } : {}),
     // список гостей меняет только организатор; у чужой встречи его не трогаем
     ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
+    // вложения чужой встречи меняет её организатор
+    ...(e.organizerSelf !== false ? { attachments: e.attachments ?? [] } : {}),
     colorId: e.colorId ?? "",
     // видеовстречу можно добавить, только если её ещё нет
     ...(e.meeting ? {} : { addMeet: false }),
@@ -130,6 +132,9 @@ export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft
       .filter((a) => !a.self)
       .map((a) => ({ email: a.email, ...(a.displayName ? { displayName: a.displayName } : {}) })),
     addMeet: false,
+    // у копии вложения те же, их надо отправить вместе с новым событием
+    attachmentsChanged: Boolean(e.attachments?.length),
+    attachments: e.attachments ?? [],
   };
 };
 
@@ -149,6 +154,7 @@ const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft 
     recurrence: [],
     guests: [],
     addMeet: false,
+    attachments: [],
   };
 };
 
@@ -179,7 +185,7 @@ const followRule = (prev: EventDraft, next: EventDraft): EventDraft => {
 /** Если начало сдвинули позже конца, конец сдвигается следом с той же длительностью.
  *  Смена пояса оставляет часы в форме как есть (как в Google), а свой пояс конца забывается */
 export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): EventDraft => {
-  const next = { ...draft, ...patch };
+  const next = { ...draft, ...patch, ...("attachments" in patch ? { attachmentsChanged: true } : {}) };
   if ("timeZone" in patch && patch.timeZone !== draft.timeZone) {
     delete next.endTimeZone;
     return followRule(draft, next);
