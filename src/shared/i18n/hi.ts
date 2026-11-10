@@ -174,7 +174,7 @@ export const hi: Dict = {
     placeholder: (example: string) => `जैसे: ${example}`,
     widgetPlaceholder: "+ नया इवेंट",
     label: "जल्दी से इवेंट जोड़ें",
-    keys: "जोड़ने के लिए Enter · ज़्यादा जानकारी के लिए Ctrl+Enter",
+    keys: "जोड़ने के लिए Enter या क्लिक · ज़्यादा जानकारी के लिए Ctrl+Enter",
     nextDay: "(अगले दिन)",
   },
   search: {

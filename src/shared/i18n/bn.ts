@@ -178,7 +178,7 @@ export const bn: Dict = {
     placeholder: (example: string) => `যেমন: ${example}`,
     widgetPlaceholder: "+ নতুন ইভেন্ট",
     label: "দ্রুত ইভেন্ট যোগ করুন",
-    keys: "যোগ করতে Enter · বিস্তারিত দেখতে Ctrl+Enter",
+    keys: "যোগ করতে Enter বা ক্লিক · বিস্তারিত দেখতে Ctrl+Enter",
     nextDay: "(পরের দিন)",
   },
   search: {

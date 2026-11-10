@@ -182,7 +182,7 @@ export const de: Dict = {
     placeholder: (example: string) => `z. B. ${example}`,
     widgetPlaceholder: "+ Neuer Termin",
     label: "Termin schnell hinzufügen",
-    keys: "Enter zum Anlegen · Strg+Enter für Details",
+    keys: "Enter oder Klick zum Anlegen · Strg+Enter für Details",
     nextDay: "(am nächsten Tag)",
   },
   search: {

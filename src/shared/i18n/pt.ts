@@ -188,7 +188,7 @@ export const pt: Dict = {
     placeholder: (example: string) => `ex.: ${example}`,
     widgetPlaceholder: "+ Novo evento",
     label: "Criar evento rápido",
-    keys: "Enter para criar · Ctrl+Enter para detalhes",
+    keys: "Enter ou clique para criar · Ctrl+Enter para detalhes",
     nextDay: "(no dia seguinte)",
   },
   search: {

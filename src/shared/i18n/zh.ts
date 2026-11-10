@@ -174,7 +174,7 @@ export const zh: Dict = {
     placeholder: (example: string) => `例如：${example}`,
     widgetPlaceholder: "+ 新建日程",
     label: "快速添加日程",
-    keys: "Enter 添加 · Ctrl+Enter 查看详情",
+    keys: "Enter 或点击添加 · Ctrl+Enter 查看详情",
     nextDay: "（次日）",
   },
   search: {

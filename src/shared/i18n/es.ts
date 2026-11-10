@@ -182,7 +182,7 @@ export const es: Dict = {
     placeholder: (example: string) => `p. ej.: ${example}`,
     widgetPlaceholder: "+ Nuevo evento",
     label: "Crear evento rápido",
-    keys: "Enter para crear · Ctrl+Enter para más detalles",
+    keys: "Enter o clic para crear · Ctrl+Enter para más detalles",
     nextDay: "(al día siguiente)",
   },
   search: {

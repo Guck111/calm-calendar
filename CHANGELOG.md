@@ -11,6 +11,10 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Command menu on an event**: choose an event and press Ctrl+K to move it to tomorrow, an hour later, add Google Meet or change its color ("tomato").
 - **All keyboard shortcuts in one list**: press ? (or "Keyboard shortcuts" in the Ctrl+K menu).
 
+### Changed
+
+- The hint under quick add says that a click on it also creates the event.
+
 ## 0.7.1 — 2026-11-10
 
 ### Fixed

@@ -195,7 +195,7 @@ export const ar: Dict = {
     placeholder: (example: string) => `مثال: ${example}`,
     widgetPlaceholder: "+ حدث جديد",
     label: "إضافة حدث سريعة",
-    keys: "Enter للإضافة · Ctrl+Enter للتفاصيل",
+    keys: "Enter أو النقر للإضافة · Ctrl+Enter للتفاصيل",
     nextDay: "(في اليوم التالي)",
   },
   search: {

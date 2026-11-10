@@ -174,7 +174,7 @@ export const ja: Dict = {
     placeholder: (example: string) => `例：${example}`,
     widgetPlaceholder: "＋ 新しい予定",
     label: "予定をすばやく追加",
-    keys: "Enter で追加 · Ctrl+Enter で詳細",
+    keys: "Enter またはクリックで追加 · Ctrl+Enter で詳細",
     nextDay: "（翌日）",
   },
   search: {

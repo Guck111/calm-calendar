@@ -208,7 +208,7 @@ export const ru = {
     placeholder: (example: string) => `Например: ${example}`,
     widgetPlaceholder: "+ Новое событие",
     label: "Быстрое создание события",
-    keys: "Enter — создать · Ctrl+Enter — подробнее",
+    keys: "Enter или клик — создать · Ctrl+Enter — подробнее",
     nextDay: "(на следующий день)",
   },
   search: {
