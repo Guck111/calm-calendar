@@ -67,6 +67,8 @@ export type CalendarEvent = {
   attendees?: Attendee[];
   /** организатор — этот аккаунт: только он может менять список гостей */
   organizerSelf?: boolean;
+  /** свой цвет события в Google (1–11); нет — цвет календаря */
+  colorId?: string;
 };
 
 /** участник встречи, как его отдаёт Google */
@@ -113,6 +115,8 @@ export type EventDraft = {
   guests?: Attendee[];
   /** создать видеовстречу Google Meet при сохранении; undefined — у события она уже есть */
   addMeet?: boolean;
+  /** свой цвет события; "" — цвет календаря; undefined — не трогаем */
+  colorId?: string;
 };
 
 /** какие повторения серии затронуть */

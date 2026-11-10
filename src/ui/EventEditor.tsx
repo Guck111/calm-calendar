@@ -33,6 +33,7 @@ import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
 import { Close, External, Video, Warning } from "./icons";
+import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
 
 const formatWhen = (e: CalendarEvent): string => {
@@ -325,6 +326,42 @@ const CalendarSelect = ({
   );
 };
 
+/** Цвет события: цвет календаря или один из 11 цветов Google */
+const ColorField = ({
+  value,
+  calendarColor,
+  onChange,
+}: {
+  value: string;
+  calendarColor: string;
+  onChange: (colorId: string) => void;
+}) => {
+  const names = t.editor.colorNames as Record<string, string>;
+  return (
+    <div className={s.field}>
+      <span>{t.editor.color}</span>
+      <div className={s.colors} role="radiogroup" aria-label={t.editor.color}>
+        {["", ...COLOR_IDS].map((id) => {
+          const name = id ? names[id] : t.editor.calendarColor;
+          return (
+            <button
+              key={id || "calendar"}
+              type="button"
+              role="radio"
+              aria-checked={value === id}
+              aria-label={name}
+              title={name}
+              className={cx(s.color, !id && s.calendarColor, value === id && s.colorOn)}
+              style={{ "--swatch": id ? EVENT_COLORS[id] : calendarColor } as CSSProperties}
+              onClick={() => onChange(id)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const TRAVEL_OPTIONS = [0, 5, 10, 15, 30, 45, 60, 90, 120];
 
 /** Время в пути: Google Календарь такого поля не знает, храним его в скрытых полях события */
@@ -549,6 +586,12 @@ const EventForm = () => {
         )}
       </Field>
 
+      <ColorField
+        value={draft.colorId ?? ""}
+        calendarColor={eventColor(undefined, byId.get(draft.calendarId))}
+        onChange={(colorId) => change({ colorId })}
+      />
+
       <Field label={t.common.location}>
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
       </Field>
@@ -634,7 +677,7 @@ export const EventEditor = () => {
         role="dialog"
         aria-modal="true"
         aria-label={draft.id ? t.common.event : t.common.newEvent}
-        style={{ "--c": calendar?.color ?? "var(--accent)" } as CSSProperties}
+        style={{ "--c": eventColor(mode === "view" && opened ? opened : draft, calendar) } as CSSProperties}
       >
         {mode === "view" && opened ? <EventDetails event={opened} editable={editable} /> : <EventForm />}
       </div>

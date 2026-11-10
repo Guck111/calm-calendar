@@ -101,6 +101,9 @@ export const pt: Dict = {
     invitesNote: "Os convidados recebem um e-mail do Google sobre a reunião e suas alterações.",
     addMeet: "Adicionar videochamada do Google Meet",
     duplicate: "Duplicar",
+    color: "Cor",
+    calendarColor: "Cor da agenda",
+    colorNames: { "1": "Lavanda", "2": "Sálvia", "3": "Uva", "4": "Flamingo", "5": "Banana", "6": "Tangerina", "7": "Pavão", "8": "Grafite", "9": "Mirtilo", "10": "Manjericão", "11": "Tomate" },
   },
   repeat: {
     label: "Repetir",

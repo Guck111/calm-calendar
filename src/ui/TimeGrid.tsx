@@ -197,7 +197,7 @@ export const TimeGrid = () => {
                 <button
                   key={e.key}
                   className={s.allDayEvent}
-                  style={eventStyle(calendars.get(e.calendarId))}
+                  style={eventStyle(calendars.get(e.calendarId), e)}
                   onClick={() => openEvent(e)}
                   title={e.title}
                 >
@@ -248,7 +248,7 @@ export const TimeGrid = () => {
                         key={`${event.key}-travel`}
                         className={s.travel}
                         style={{
-                          ...eventStyle(calendars.get(event.calendarId)),
+                          ...eventStyle(calendars.get(event.calendarId), event),
                           top: `${(travelStart / MINUTES_IN_DAY) * 100}%`,
                           height: `${((startMin - travelStart) / MINUTES_IN_DAY) * 100}%`,
                           insetInlineStart: left,
@@ -269,7 +269,7 @@ export const TimeGrid = () => {
                         clash && s.conflict,
                       )}
                       style={{
-                        ...eventStyle(calendars.get(event.calendarId)),
+                        ...eventStyle(calendars.get(event.calendarId), event),
                         top: `${(startMin / MINUTES_IN_DAY) * 100}%`,
                         height: `${((endMin - startMin) / MINUTES_IN_DAY) * 100}%`,
                         insetInlineStart: left,

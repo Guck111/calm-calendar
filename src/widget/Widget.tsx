@@ -27,6 +27,7 @@ import { QuickAdd } from "../ui/QuickAdd";
 import { broadcast } from "../shared/api/bus";
 import { saveEvent } from "../shared/api/calendar";
 import { countdown } from "./countdown";
+import { EVENT_COLORS } from "../shared/lib/colors";
 import { $offlineText } from "../model/connection";
 import {
   $calendars,
@@ -153,7 +154,8 @@ export const Widget = () => {
     .sort((a, b) => a.start.getTime() - b.start.getTime() || Number(b.allDay) - Number(a.allDay))
     .slice(0, MAX_EVENTS);
 
-  const color = (e: CalendarEvent) => ({ "--c": colors[e.calendarId] ?? "var(--accent)" }) as CSSProperties;
+  const color = (e: CalendarEvent) =>
+    ({ "--c": (e.colorId && EVENT_COLORS[e.colorId]) || colors[e.calendarId] || "var(--accent)" }) as CSSProperties;
 
   return (
     <div className={s.card} ref={cardRef} onMouseDown={startDrag}>

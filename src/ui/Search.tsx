@@ -80,7 +80,7 @@ export const Search = () => {
               <button
                 key={e.key}
                 className={s.item}
-                style={eventStyle(byId.get(e.calendarId))}
+                style={eventStyle(byId.get(e.calendarId), e)}
                 onClick={() => pick(e)}
                 role="option"
               >

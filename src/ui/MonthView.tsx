@@ -50,7 +50,7 @@ export const MonthView = () => {
       <button
         key={event.key}
         className={cx(s.event, block && s.block, continues && s.continues)}
-        style={eventStyle(calendars.get(event.calendarId))}
+        style={eventStyle(calendars.get(event.calendarId), event)}
         onClick={() => openEvent(event)}
         title={event.title}
       >

@@ -96,6 +96,9 @@ export const zh: Dict = {
     invitesNote: "邀请对象会收到 Google 发送的关于会议及其更改的电子邮件。",
     addMeet: "添加 Google Meet 视频会议",
     duplicate: "创建副本",
+    color: "颜色",
+    calendarColor: "日历颜色",
+    colorNames: { "1": "薰衣草紫", "2": "鼠尾草绿", "3": "葡萄紫", "4": "火烈鸟粉", "5": "香蕉黄", "6": "橘橙", "7": "孔雀蓝", "8": "石墨灰", "9": "蓝莓蓝", "10": "罗勒绿", "11": "番茄红" },
   },
   repeat: {
     label: "重复",

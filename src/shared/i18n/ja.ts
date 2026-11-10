@@ -96,6 +96,9 @@ export const ja: Dict = {
     invitesNote: "ゲストには予定とその変更について Google からメールが届きます。",
     addMeet: "Google Meet のビデオ会議を追加",
     duplicate: "複製",
+    color: "色",
+    calendarColor: "カレンダーの色",
+    colorNames: { "1": "ラベンダー", "2": "セージ", "3": "ブドウ", "4": "フラミンゴ", "5": "バナナ", "6": "ミカン", "7": "ピーコック", "8": "グラファイト", "9": "ブルーベリー", "10": "バジル", "11": "トマト" },
   },
   repeat: {
     label: "繰り返し",

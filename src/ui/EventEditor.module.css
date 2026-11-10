@@ -429,3 +429,36 @@
 .field > .hintText {
   color: var(--text-3);
 }
+
+/* цвет события: кружки цвета календаря и 11 цветов Google */
+.colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.color {
+  inline-size: 20px;
+  block-size: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--swatch);
+  cursor: pointer;
+}
+
+/* цвет календаря — кольцом, чтобы отличался от своих цветов */
+.calendarColor {
+  background: transparent;
+  box-shadow: inset 0 0 0 5px var(--swatch);
+}
+
+.colorOn {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.color:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

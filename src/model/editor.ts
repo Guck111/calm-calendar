@@ -91,6 +91,7 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     ...(e.travelMinutes ? { travelMinutes: e.travelMinutes } : {}),
     // список гостей меняет только организатор; у чужой встречи его не трогаем
     ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
+    colorId: e.colorId ?? "",
     // видеовстречу можно добавить, только если её ещё нет
     ...(e.meeting ? {} : { addMeet: false }),
   };

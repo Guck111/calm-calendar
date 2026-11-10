@@ -15,6 +15,7 @@ import type {
 } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
 import { fromZoned, wallClock } from "../lib/tz";
+import { isColorId } from "../lib/colors";
 
 /** пояс, по часам которого заданы дата и время в черновике */
 export const draftZone = (d: EventDraft): string => d.timeZone ?? localTimeZone();
@@ -65,6 +66,7 @@ export type RawEvent = {
   attendees?: Attendee[];
   organizer?: { email?: string; self?: boolean };
   extendedProperties?: { private?: Record<string, string>; shared?: Record<string, string> };
+  colorId?: string;
 };
 
 /** ключ времени в пути в скрытых полях события: их видит только наше приложение */
@@ -227,6 +229,7 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?
     ...(raw.attendees?.length ? { attendees: raw.attendees } : {}),
     // self: false Google не присылает; без организатора событие своё
     organizerSelf: raw.organizer ? raw.organizer.self === true : true,
+    ...(isColorId(raw.colorId) ? { colorId: raw.colorId } : {}),
   };
 };
 
@@ -306,6 +309,8 @@ export const draftToBody = (draft: EventDraft) => {
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
       : {}),
     ...(draft.guests !== undefined ? { attendees: draft.guests.map(cleanAttendee) } : {}),
+    // свой цвет; у существующего события «цвет календаря» — это сброс colorId
+    ...(draft.colorId ? { colorId: draft.colorId } : draft.colorId === "" && draft.id ? { colorId: null } : {}),
     // Google сам создаёт встречу и присылает ссылку; requestId не должен повторяться
     ...(draft.addMeet
       ? { conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: "hangoutsMeet" } } } }
