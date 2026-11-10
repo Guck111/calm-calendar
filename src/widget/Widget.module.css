@@ -47,11 +47,13 @@
 
 .clock {
   display: block;
-  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  /* !important — как у размера: .card button { font: inherit } сильнее */
+  font-family: var(--font-clock) !important;
   font-size: 58px !important;
-  font-weight: 300 !important;
+  font-weight: var(--clock-weight) !important;
+  letter-spacing: var(--display-tracking);
   line-height: 1.15 !important;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums !important;
 }
 
 /* «Нет сети. Показаны данные от 16:40» */
@@ -112,8 +114,10 @@
 .month {
   flex: 1;
   text-align: start;
-  font-size: 13px !important;
+  font-size: var(--mini-head-size) !important;
   font-weight: 600 !important;
+  font-family: var(--font-display) !important;
+  font-variant-numeric: lining-nums !important;
 }
 
 .month:disabled {
@@ -281,6 +285,7 @@
 .when {
   min-width: 90px;
   color: var(--muted);
+  font-family: var(--font-time);
   white-space: nowrap;
 }
 
@@ -321,4 +326,35 @@ button.note:hover {
 
 :global(html[data-glass][data-theme="light"]) .card {
   background: rgba(255, 255, 255, 0.5);
+}
+
+/* стили оформления, кроме «Классического»: цвета, скругление и шрифты карточки — из стиля
+   (styles/styles.css). :root[…] сильнее правил выше, поэтому стоит в конце файла */
+:global(:root[data-style]) .card {
+  border-radius: var(--widget-radius);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+  --accent: inherit;
+  --muted: var(--text-2);
+  --dim: var(--text-3);
+  --today-bg: var(--accent);
+  --today-fg: var(--accent-text);
+}
+
+:global(:root[data-style]) .num {
+  border-radius: var(--mini-today-radius);
+}
+
+/* на кнопке «Подключиться» — цвет текста под цвет акцента стиля (в тёмной «Витрине» он светлый) */
+:global(:root[data-style]) .join,
+:global(:root[data-style]) .joinIcon {
+  color: var(--accent-text) !important;
+}
+
+/* стекло: углы окна скругляет Windows 11 */
+:global(:root[data-style][data-glass]) .card {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  box-shadow: none;
 }

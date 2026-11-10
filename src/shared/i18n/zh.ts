@@ -186,6 +186,11 @@ export const zh: Dict = {
   settings: {
     theme: "主题",
     themes: { system: "跟随系统", light: "浅色", dark: "深色" },
+    style: "风格",
+    styles: { classic: "经典", paper: "纸张", obsidian: "黑曜石", showcase: "橱窗", mono: "黑白" },
+    displayFont: "标题和数字字体",
+    textFont: "正文字体",
+    fontAuto: (font: string) => `跟随风格（${font}）`,
     language: "语言",
     systemLanguage: "跟随系统",
     glass: "玻璃效果",

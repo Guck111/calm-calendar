@@ -191,6 +191,11 @@ export const en: Dict = {
   settings: {
     theme: "Theme",
     themes: { system: "System", light: "Light", dark: "Dark" },
+    style: "Style",
+    styles: { classic: "Classic", paper: "Paper", obsidian: "Obsidian", showcase: "Showcase", mono: "Monochrome" },
+    displayFont: "Heading and number font",
+    textFont: "Text font",
+    fontAuto: (font: string) => `Style default (${font})`,
     language: "Language",
     systemLanguage: "System",
     glass: "Glass effect",

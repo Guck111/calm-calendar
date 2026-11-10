@@ -14,6 +14,40 @@ test.describe("settings", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
 
+  test("style and fonts: applied at once, remembered, back to the style's own font", async ({ page, t }) => {
+    await openApp(page);
+    const html = page.locator("html");
+    await expect(html).not.toHaveAttribute("data-style", /./);
+    await page.getByRole("button", { name: t.common.settings }).click();
+    const settings = page.getByRole("dialog", { name: t.common.settings });
+
+    await settings.getByRole("radio", { name: t.settings.styles.paper }).click();
+    await expect(html).toHaveAttribute("data-style", "paper");
+    await expect(settings.getByRole("radio", { name: t.settings.styles.paper })).toHaveAttribute("aria-checked", "true");
+    // the style's own fonts are named in the "auto" option
+    await expect(settings.getByLabel(t.settings.displayFont)).toContainText(t.settings.fontAuto("Cormorant Garamond"));
+    const titleFont = () =>
+      page.getByRole("heading", { level: 2 }).first().evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(await titleFont()).toContain("Cormorant Garamond");
+
+    await settings.getByLabel(t.settings.displayFont).selectOption("geistMono");
+    expect(await titleFont()).toContain("Geist Mono");
+    await settings.getByLabel(t.settings.textFont).selectOption("manrope");
+    expect(await page.locator("body").evaluate((el) => getComputedStyle(el).fontFamily)).toContain("Manrope");
+    // display-only fonts are not offered for text
+    await expect(settings.getByLabel(t.settings.textFont).locator('option[value="unbounded"]')).toHaveCount(0);
+
+    await page.reload();
+    await expect(html).toHaveAttribute("data-style", "paper");
+    expect(await titleFont()).toContain("Geist Mono");
+
+    await page.getByRole("button", { name: t.common.settings }).click();
+    await settings.getByLabel(t.settings.displayFont).selectOption("auto");
+    expect(await titleFont()).toContain("Cormorant Garamond");
+    await settings.getByRole("radio", { name: t.settings.styles.classic }).click();
+    await expect(html).not.toHaveAttribute("data-style", /./);
+  });
+
   test("language: German changes the interface after a reload", async ({ page, t }) => {
     await openApp(page);
     await page.getByRole("button", { name: t.common.settings }).click();

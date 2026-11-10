@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-10 (version 0.8.0, stage 3a and keyboard complete).
+Last updated: 2026-11-10 (version 0.8.0 and unreleased styles and fonts).
 
 ## Contents
 
@@ -164,6 +164,8 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 ## Look and feel
 
 - Theme: system, light or dark; the widget follows.
+- Style (Settings → Style): Classic, Paper, Obsidian, Showcase, Monochrome. Each style has a light and a dark version and follows the theme; the widget, the tray agenda and the alert follow the style. A style is a set of CSS variables on `<html data-style>` (`src/styles/styles.css`, `src/shared/lib/appearance.ts`); the classic values are in `src/styles/global.css`. In the settings each style has a small preview drawn with its own variables.
+- Fonts (Settings → Style): one font for headings and numbers (period title, day numbers, the widget clock), one for text. "Style default" uses the style's pair: Segoe UI (Classic), Cormorant Garamond + Inter (Paper), Manrope (Obsidian), Unbounded + Onest (Showcase), Geist Mono + Geist (Monochrome). Unbounded and Cormorant Garamond are offered for headings only. The fonts are variable WOFF2 files from `@fontsource-variable` packages (SIL Open Font License 1.1), built into the app; letters a font lacks (Arabic, Devanagari, Bengali, Chinese, Japanese) come from the Windows fonts of that script. The choice is kept per computer, like the theme.
 - Glass effect (on by default): the Windows Acrylic backdrop in the main window and the widget; the main window turns opaque when it loses focus, as Windows does.
 - Right-to-left layout for Arabic: all spacing uses logical CSS properties.
 - The toolbar fits the smallest window size (760 px).

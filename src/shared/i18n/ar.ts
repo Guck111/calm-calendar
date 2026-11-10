@@ -207,6 +207,11 @@ export const ar: Dict = {
   settings: {
     theme: "المظهر",
     themes: { system: "حسب النظام", light: "فاتح", dark: "داكن" },
+    style: "النمط",
+    styles: { classic: "كلاسيكي", paper: "ورق", obsidian: "أوبسيديان", showcase: "واجهة عرض", mono: "أحادي اللون" },
+    displayFont: "خط العناوين والأرقام",
+    textFont: "خط النص",
+    fontAuto: (font: string) => `حسب النمط (${font})`,
     language: "اللغة",
     systemLanguage: "حسب النظام",
     glass: "تأثير الزجاج",

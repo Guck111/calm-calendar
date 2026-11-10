@@ -79,6 +79,7 @@
 
 .time {
   color: var(--text-2);
+  font-family: var(--font-time);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

@@ -108,13 +108,25 @@
   background: var(--surface-2);
 }
 
+/* заливка и цвет текста — как у событий в сетке недели (TimeGrid.module.css) */
 .block {
-  background: color-mix(in srgb, var(--c) 24%, var(--surface));
-  color: var(--text);
+  --tone: var(--c);
+  --ink: color-mix(
+    in srgb,
+    oklch(from var(--tone) clamp(0.16, (0.58 - l) * 1000, 1) 0 0) var(--event-ink-auto),
+    var(--text)
+  );
+  border-radius: min(var(--event-radius), 10px);
+  background: color-mix(in srgb, var(--tone) min(100%, var(--event-fill) + 2%), var(--event-fill-base));
+  color: var(--ink);
+}
+
+:global(:root[data-style="showcase"]) .block {
+  --tone: oklch(from var(--c) min(l, 0.56) c h);
 }
 
 .block:hover {
-  background: color-mix(in srgb, var(--c) 36%, var(--surface));
+  background: color-mix(in srgb, var(--tone) min(100%, var(--event-fill-hover) + 2%), var(--event-fill-base));
 }
 
 .continues {
@@ -133,6 +145,7 @@
 .time {
   color: var(--text-2);
   flex: none;
+  font-family: var(--font-time);
   font-variant-numeric: tabular-nums;
 }
 

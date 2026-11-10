@@ -200,6 +200,11 @@ export const pt: Dict = {
   settings: {
     theme: "Tema",
     themes: { system: "Do sistema", light: "Claro", dark: "Escuro" },
+    style: "Estilo",
+    styles: { classic: "Clássico", paper: "Papel", obsidian: "Obsidiana", showcase: "Vitrine", mono: "Monocromo" },
+    displayFont: "Fonte dos títulos e números",
+    textFont: "Fonte do texto",
+    fontAuto: (font: string) => `A do estilo (${font})`,
     language: "Idioma",
     systemLanguage: "Do sistema",
     glass: "Efeito de vidro",

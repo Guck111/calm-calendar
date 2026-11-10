@@ -220,6 +220,11 @@ export const ru = {
   settings: {
     theme: "Тема",
     themes: { system: "Как в системе", light: "Светлая", dark: "Тёмная" },
+    style: "Стиль",
+    styles: { classic: "Классика", paper: "Бумага", obsidian: "Обсидиан", showcase: "Витрина", mono: "Монохром" },
+    displayFont: "Шрифт заголовков и цифр",
+    textFont: "Шрифт текста",
+    fontAuto: (font: string) => `Как в стиле (${font})`,
     language: "Язык",
     systemLanguage: "Как в системе",
     glass: "Эффект стекла",

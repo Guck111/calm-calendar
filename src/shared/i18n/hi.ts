@@ -186,6 +186,11 @@ export const hi: Dict = {
   settings: {
     theme: "थीम",
     themes: { system: "सिस्टम जैसी", light: "हल्की", dark: "गहरी" },
+    style: "शैली",
+    styles: { classic: "क्लासिक", paper: "कागज़", obsidian: "ऑब्सीडियन", showcase: "शोकेस", mono: "मोनोक्रोम" },
+    displayFont: "शीर्षक और अंकों का फ़ॉन्ट",
+    textFont: "टेक्स्ट का फ़ॉन्ट",
+    fontAuto: (font: string) => `शैली के अनुसार (${font})`,
     language: "भाषा",
     systemLanguage: "सिस्टम जैसी",
     glass: "ग्लास इफ़ेक्ट",

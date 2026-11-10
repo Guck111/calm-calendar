@@ -231,7 +231,7 @@ export const TimeGrid = () => {
           {days.map((day) => {
             const isToday = isSameDay(day, today);
             return (
-              <div key={day.getTime()} className={s.column} onClick={onColumnClick(day)}>
+              <div key={day.getTime()} className={cx(s.column, isToday && s.todayColumn)} onClick={onColumnClick(day)}>
                 {layoutDay(shown, day).map(({ event, startMin, endMin, column, columns: count }) => {
                   const short = endMin - startMin < 45;
                   const canDrag = editable.has(event.calendarId);
