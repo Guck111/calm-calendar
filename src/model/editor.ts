@@ -49,6 +49,8 @@ export const rsvpFx = createEffect<{ event: CalendarEvent; status: ResponseStatu
 );
 /** «Создать копию» в карточке события */
 export const duplicateClicked = createEvent();
+/** Delete на выбранном событии: карточка открывается с кнопкой «Нажмите ещё раз, чтобы удалить» */
+export const deleteArmed = createEvent();
 
 type Change = { draft: EventDraft; scope: Scope };
 
@@ -236,6 +238,11 @@ export const $draft = createStore<EventDraft | null>(null)
       : d,
   )
   .reset([editorClosed, saveFx.done, deleteFx.done]);
+
+/** карточка открыта клавишей Delete: кнопка удаления уже спрашивает подтверждение */
+export const $deleteArmed = createStore(false)
+  .on(deleteArmed, () => true)
+  .reset([eventOpened, editorClosed, editClicked, duplicateClicked, deleteFx.done]);
 
 /** черновик копии: открытое событие берём до того, как карточка закроется */
 const duplicated = sample({
