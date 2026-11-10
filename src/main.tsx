@@ -30,7 +30,13 @@ initGlass();
 followLang();
 if (!isWidget && !isAlert && !isAgenda) void syncLangToRust();
 
-const Root = isWidget ? Widget : isAlert ? AlertWindow : isAgenda ? AgendaWindow : App;
+const Window = isWidget ? Widget : isAlert ? AlertWindow : isAgenda ? AgendaWindow : App;
+
+// только в npm run dev: ?crash=1 ломает отрисовку окна, чтобы автотесты видели экран ошибки
+const Crash = () => {
+  throw new Error("test crash (?crash=1)");
+};
+const Root = import.meta.env.DEV && new URLSearchParams(window.location.search).has("crash") ? Crash : Window;
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>

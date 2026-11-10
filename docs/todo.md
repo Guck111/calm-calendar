@@ -4,7 +4,7 @@ Order of work after 0.6.0 (agreed on 2026-11-10): tests first, then stage 3a, th
 
 ## Testing
 
-- [ ] End-to-end tests (asked for on 2026-11-09). Today only unit tests run; the windows, tray, notifications and alerts were checked by hand.
+- [x] End-to-end tests (asked for on 2026-11-09, done on 2026-11-10; how to run them: README → Checks). Not covered: Windows notifications (toasts), the tray menu itself (right click), the real Google sign-in.
   - Playwright against `npm run dev` with mock data and a fixed clock, on every push: quick add in all 11 languages, event card and form, drag and resize, recurring events ("this event" / "this and following"), time zones and the second zone, guests, travel time, free time and Copy, schedule view, week numbers, holidays, settings (scrolling in a low window too), the sign-out confirmation, the window error screen, right-to-left Arabic.
   - The real app with tauri-driver and WebdriverIO on Windows, without Google (mock data): the main window, the widget, the hard-to-miss alert (`CALM_DEMO_ALERT=1`) and the tray agenda (`CALM_DEMO_AGENDA=1`).
   - CI on a Windows runner: the fast tests on every push, the app tests on demand.

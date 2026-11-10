@@ -30,6 +30,19 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx tsc --noEmit
+      - run: npx tsc -p e2e
+
+      # тесты интерфейса: Playwright против npm run dev на подставных данных, в установленном Chrome
+      - name: Interface tests
+        run: npm run test:ui
+
+      - if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
 
       - name: Rust tests
         working-directory: src-tauri

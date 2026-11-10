@@ -26,6 +26,7 @@ What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 - `CALM_DEMO_AGENDA=1 npx tauri dev` opens the tray agenda without the tray.
 - `CALM_DEMO_ALERT=1 npx tauri dev` shows the hard-to-miss alert without a Google event.
+- `npm run dev`, then `/?crash=1` (or `/?window=widget&crash=1`) shows the window error screen. Only in the dev server.
 
 ## How sign-in works
 
@@ -86,8 +87,26 @@ To build without a tag: Actions → release → Run workflow. The installers wil
 ```powershell
 npm test               # dates, event layout, quick add parser, reminders, forms
 npx tsc --noEmit       # types
+npx tsc -p e2e         # types of the end-to-end tests
 cd src-tauri; cargo test
 ```
+
+### Interface tests (Playwright)
+
+`npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 11 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.
+
+### App tests (tauri-driver)
+
+The real app on Windows, without Google: a debug build where sign-in and Google requests go to the mock data, with its own identifier `com.arseni.calmcalendar.e2e`, so the installed app, its settings and its sign-in are not touched.
+
+```powershell
+cargo install tauri-driver --locked                                  # once
+powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1    # Edge WebDriver for the installed WebView2, again after WebView2 updates
+npm run build:app-e2e                                                # debug build with mock data
+npm run test:app                                                     # main window, widget, alert, tray agenda, log
+```
+
+Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.
 
 ## Project layout
 
