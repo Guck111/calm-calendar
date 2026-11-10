@@ -15,6 +15,7 @@ import {
   $series,
   deleteClicked,
   draftChanged,
+  duplicateClicked,
   editCancelled,
   editClicked,
   editorClosed,
@@ -183,7 +184,7 @@ const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
 
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
-  const [byId, accounts, busy, error, ask, close, edit, remove] = useUnit([
+  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable] = useUnit([
     $calendarById,
     $accounts,
     $busy,
@@ -192,6 +193,8 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
     editorClosed,
     editClicked,
     deleteClicked,
+    duplicateClicked,
+    $writableCalendars,
   ]);
   const calendar = byId.get(event.calendarId);
   return (
@@ -265,6 +268,12 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <div className={s.actions}>
           <GoogleLink href={event.htmlLink} />
           <div className={s.spacer} />
+          {/* копию можно сделать и из чужого календаря: она ляжет в свой */}
+          {writable.length > 0 && (
+            <Button variant="ghost" onClick={() => duplicate()} disabled={busy}>
+              {t.editor.duplicate}
+            </Button>
+          )}
           {editable && (
             <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} askFirst={!event.recurring} />
           )}

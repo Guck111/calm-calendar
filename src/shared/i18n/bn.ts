@@ -96,6 +96,7 @@ export const bn: Dict = {
     organizer: "আয়োজক",
     invitesNote: "অতিথিরা মিটিং ও তার পরিবর্তন নিয়ে Google থেকে ইমেল পাবেন।",
     addMeet: "Google Meet ভিডিও কল যোগ করুন",
+    duplicate: "কপি তৈরি করুন",
   },
   repeat: {
     label: "পুনরাবৃত্তি",

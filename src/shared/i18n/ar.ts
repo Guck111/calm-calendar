@@ -111,6 +111,7 @@ export const ar: Dict = {
     organizer: "المنظِّم",
     invitesNote: "يتلقى الضيوف رسالة من Google عن الاجتماع وتغييراته.",
     addMeet: "إضافة مكالمة فيديو عبر Google Meet",
+    duplicate: "إنشاء نسخة",
   },
   repeat: {
     label: "التكرار",

@@ -33,6 +33,8 @@ export const deleteClicked = createEvent();
 /** ответ на вопрос «только это событие или это и следующие» */
 export const scopeChosen = createEvent<Scope>();
 export const scopeCancelled = createEvent();
+/** «Создать копию» в карточке события */
+export const duplicateClicked = createEvent();
 
 type Change = { draft: EventDraft; scope: Scope };
 
@@ -91,6 +93,28 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
     // видеовстречу можно добавить, только если её ещё нет
     ...(e.meeting ? {} : { addMeet: false }),
+  };
+};
+
+/** Копия события — новое событие с теми же полями. Повторение серии копируется одним событием,
+ *  старая видеовстреча и ответы гостей не переносятся: сам аккаунт станет организатором копии.
+ *  Событие из календаря только для чтения копируется в первый календарь, куда можно писать */
+export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft => {
+  const draft: EventDraft = { ...fromEvent(e) };
+  delete draft.id;
+  delete draft.originalCalendarId;
+  delete draft.recurringEventId;
+  delete draft.originalStart;
+  delete draft.originalRecurrence;
+  delete draft.htmlLink;
+  return {
+    ...draft,
+    calendarId: writable.includes(e.calendarId) ? e.calendarId : (writable[0] ?? e.calendarId),
+    recurrence: [],
+    guests: (e.attendees ?? [])
+      .filter((a) => !a.self)
+      .map((a) => ({ email: a.email, ...(a.displayName ? { displayName: a.displayName } : {}) })),
+    addMeet: false,
   };
 };
 
@@ -192,6 +216,17 @@ export const $draft = createStore<EventDraft | null>(null)
   )
   .reset([editorClosed, saveFx.done, deleteFx.done]);
 
+/** черновик копии: открытое событие берём до того, как карточка закроется */
+const duplicated = sample({
+  clock: duplicateClicked,
+  source: { opened: $opened, writable: $writableCalendars },
+  filter: ({ opened }) => Boolean(opened),
+  fn: ({ opened, writable }) => duplicateDraft(opened as CalendarEvent, writable.map((c) => c.id)),
+});
+$draft.on(duplicated, (_, d) => d);
+$opened.reset(duplicated);
+$mode.on(duplicated, () => "edit");
+
 sample({
   clock: eventOpened,
   filter: (e) => Boolean(e.recurringEventId),
@@ -230,14 +265,14 @@ sample({
 /** открыт вопрос, к каким повторениям серии применить сохранение или удаление */
 export const $askScope = createStore<"save" | "delete" | null>(null)
   // не по scopeChosen: ответ ещё нужен, чтобы выбрать сохранение или удаление
-  .reset([saveFx, deleteFx, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed]);
+  .reset([saveFx, deleteFx, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
 
 /** правило в форме поменяли: тогда правка возможна только для «это и следующие» */
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
   .on([saveFx.failData, deleteFx.failData], (_, e) => e.message)
-  .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteFx]);
+  .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteFx, duplicated]);
 
 export const $busy = sample({
   source: { save: saveFx.pending, del: deleteFx.pending },

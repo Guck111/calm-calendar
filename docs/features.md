@@ -58,6 +58,7 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 - The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, location, "Add Google Meet video call", guests, description.
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Delete asks once ("Delete?").
+- "Duplicate" in the card opens the form of a new event with the same title, time, time zone, location, description, travel time and guests. An occurrence of a series is copied as one event; the old video call and the guests' answers are not copied. An event from a read-only calendar (holidays, someone else's calendar) is copied into your first calendar.
 - Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone.
 - Read-only calendars (holidays, other people's calendars) open in the card only.
 

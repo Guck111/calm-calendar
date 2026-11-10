@@ -7,6 +7,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 ### New
 
 - **Add Google Meet**: a switch in the event form creates a video call when the event is saved.
+- **Duplicate** an event from its card, then change what differs.
 
 ## 0.6.0 — 2026-11-10
 

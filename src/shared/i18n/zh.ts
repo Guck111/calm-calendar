@@ -95,6 +95,7 @@ export const zh: Dict = {
     organizer: "组织者",
     invitesNote: "邀请对象会收到 Google 发送的关于会议及其更改的电子邮件。",
     addMeet: "添加 Google Meet 视频会议",
+    duplicate: "创建副本",
   },
   repeat: {
     label: "重复",

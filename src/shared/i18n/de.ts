@@ -100,6 +100,7 @@ export const de: Dict = {
     organizer: "Organisator",
     invitesNote: "Gäste bekommen eine E-Mail von Google über den Termin und seine Änderungen.",
     addMeet: "Google Meet-Videokonferenz hinzufügen",
+    duplicate: "Duplizieren",
   },
   repeat: {
     label: "Wiederholen",

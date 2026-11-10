@@ -123,6 +123,7 @@ export const ru = {
     organizer: "организатор",
     invitesNote: "Гостям придёт письмо от Google о встрече и её изменениях.",
     addMeet: "Добавить видеовстречу Google Meet",
+    duplicate: "Создать копию",
   },
   repeat: {
     label: "Повтор",

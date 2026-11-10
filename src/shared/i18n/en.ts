@@ -97,6 +97,7 @@ export const en: Dict = {
     organizer: "organizer",
     invitesNote: "Guests get an email from Google about the meeting and its changes.",
     addMeet: "Add Google Meet video call",
+    duplicate: "Duplicate",
   },
   repeat: {
     label: "Repeat",

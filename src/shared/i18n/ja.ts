@@ -95,6 +95,7 @@ export const ja: Dict = {
     organizer: "主催者",
     invitesNote: "ゲストには予定とその変更について Google からメールが届きます。",
     addMeet: "Google Meet のビデオ会議を追加",
+    duplicate: "複製",
   },
   repeat: {
     label: "繰り返し",

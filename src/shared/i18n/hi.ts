@@ -95,6 +95,7 @@ export const hi: Dict = {
     organizer: "आयोजक",
     invitesNote: "मेहमानों को मीटिंग और उसके बदलावों के बारे में Google से ईमेल मिलेगा।",
     addMeet: "Google Meet वीडियो कॉल जोड़ें",
+    duplicate: "कॉपी बनाएँ",
   },
   repeat: {
     label: "दोहराएँ",
