@@ -213,6 +213,10 @@ export const en: Dict = {
     logsText: "If something doesn't work, attach the files from this folder to an email to support. The log has no event titles, passwords or full email addresses.",
     openLogs: "Open log folder",
     trayHint: "The widget, \"always on top\" and launch at sign-in are in the tray icon menu.",
+    quickHotkey: "Quick add from anywhere",
+    quickHotkeyText: "Opens quick add over any window, even when the calendar is in the tray.",
+    hotkeyOff: "Off",
+    hotkeyBusy: "Another app already uses this shortcut. Choose another one.",
   },
   sidebar: {
     calendars: "Calendars",

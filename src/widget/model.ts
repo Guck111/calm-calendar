@@ -72,6 +72,8 @@ export const $signedIn = $accounts.map((list) => list.length > 0);
 const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => activeAccounts(s).length === 0 });
 
 export const $calendars = createStore<Calendar[]>([]).on(fetchCalendarsFx.doneData, (_, c) => c).reset(signedOut);
+/** список календарей уже запрашивали (удачно или нет): до этого «нет календарей» ещё ничего не значит */
+export const $calendarsTried = createStore(false).on(fetchCalendarsFx.finally, () => true).reset(signedOut);
 
 export const $colors = $calendars.map((list) => Object.fromEntries(list.map((c) => [c.id, c.color])));
 

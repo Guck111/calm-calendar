@@ -222,6 +222,10 @@ export const pt: Dict = {
     logsText: "Se algo não funcionar, anexe os arquivos desta pasta a um e-mail para o suporte. O log não contém títulos de eventos, senhas nem endereços completos.",
     openLogs: "Abrir pasta de log",
     trayHint: "O widget, “sempre visível” e a inicialização com o Windows ficam no menu do ícone da bandeja.",
+    quickHotkey: "Criação rápida de qualquer lugar",
+    quickHotkeyText: "Abre a criação rápida sobre qualquer janela, mesmo com o calendário na bandeja.",
+    hotkeyOff: "Desativado",
+    hotkeyBusy: "Outro aplicativo já usa este atalho. Escolha outro.",
   },
   sidebar: {
     calendars: "Agendas",

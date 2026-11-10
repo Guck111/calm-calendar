@@ -72,6 +72,17 @@
   color: var(--danger);
 }
 
+/* окно по сочетанию клавиш: строка крупнее, как у поиска Windows */
+.popup .input {
+  height: 42px;
+  padding: 0 14px;
+  font-size: 16px;
+}
+
+.popup .preview {
+  font-size: 13px;
+}
+
 /* в виджете — свои цвета, без токенов главного окна */
 .widget .input {
   height: 30px;

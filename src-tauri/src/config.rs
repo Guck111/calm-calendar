@@ -204,11 +204,34 @@ pub struct Settings {
     /// язык интерфейса ("ru", "en", "es"…); нет — язык Windows
     pub language: Option<String>,
     pub alerts: AlertMode,
+    /// сочетание клавиш на всю Windows для быстрого создания ("ctrl+alt+space"); None — выключено
+    pub quick_hotkey: Option<String>,
+}
+
+/// Сочетания на выбор в настройках; список тот же, что в src/shared/lib/hotkeys.ts
+pub const QUICK_HOTKEYS: [&str; 3] = ["ctrl+alt+space", "ctrl+shift+space", "alt+shift+space"];
+
+pub fn valid_hotkey(hotkey: &str) -> bool {
+    QUICK_HOTKEYS.contains(&hotkey)
+}
+
+/// В каком порядке пробовать сочетания при запуске: сначала выбранное, потом остальные из списка.
+/// Сочетание по умолчанию бывает занято другой программой — тогда берём первое свободное
+pub fn hotkey_candidates(chosen: &str) -> Vec<&'static str> {
+    let first = QUICK_HOTKEYS.iter().copied().filter(|h| *h == chosen);
+    first.chain(QUICK_HOTKEYS.iter().copied().filter(|h| *h != chosen)).collect()
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { glass: true, notifications: true, private_notifications: false, language: None, alerts: AlertMode::Off }
+        Self {
+            glass: true,
+            notifications: true,
+            private_notifications: false,
+            language: None,
+            alerts: AlertMode::Off,
+            quick_hotkey: Some(QUICK_HOTKEYS[0].to_owned()),
+        }
     }
 }
 
@@ -245,6 +268,24 @@ mod tests {
         assert_eq!(s.alerts, AlertMode::Off);
         let s: Settings = serde_json::from_str(r#"{"alerts":"calls"}"#).unwrap();
         assert_eq!(s.alerts, AlertMode::Calls);
+    }
+
+    #[test]
+    fn quick_hotkey_is_on_by_default_and_can_be_off() {
+        let s: Settings = serde_json::from_str(r#"{"glass":true}"#).unwrap();
+        assert_eq!(s.quick_hotkey.as_deref(), Some("ctrl+alt+space"));
+        let s: Settings = serde_json::from_str(r#"{"quick_hotkey":null}"#).unwrap();
+        assert_eq!(s.quick_hotkey, None);
+        assert!(valid_hotkey("ctrl+shift+space"));
+        assert!(!valid_hotkey("ctrl+alt+delete"));
+    }
+
+    #[test]
+    fn hotkey_candidates_start_with_the_chosen_one() {
+        assert_eq!(hotkey_candidates("ctrl+shift+space"), ["ctrl+shift+space", "ctrl+alt+space", "alt+shift+space"]);
+        assert_eq!(hotkey_candidates("ctrl+alt+space"), QUICK_HOTKEYS);
+        // неизвестное сочетание из старого файла — просто список по порядку
+        assert_eq!(hotkey_candidates("f13"), QUICK_HOTKEYS);
     }
 
     #[test]

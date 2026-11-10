@@ -216,6 +216,10 @@ export const es: Dict = {
     logsText: "Si algo no funciona, adjunta los archivos de esta carpeta a un correo a soporte. El registro no contiene títulos de eventos, contraseñas ni direcciones completas.",
     openLogs: "Abrir carpeta del registro",
     trayHint: "El widget, «siempre visible» y el inicio con Windows están en el menú del icono de la bandeja.",
+    quickHotkey: "Creación rápida desde cualquier lugar",
+    quickHotkeyText: "Abre la creación rápida sobre cualquier ventana, incluso con el calendario en la bandeja.",
+    hotkeyOff: "Desactivado",
+    hotkeyBusy: "Otra aplicación ya usa este atajo. Elige otro.",
   },
   sidebar: {
     calendars: "Calendarios",

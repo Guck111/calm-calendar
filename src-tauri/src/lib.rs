@@ -6,6 +6,7 @@ mod google;
 mod i18n;
 mod logging;
 mod oauth;
+mod quick;
 mod reminders;
 #[cfg(windows)]
 mod toast;
@@ -96,6 +97,26 @@ fn open_main(app: AppHandle, date: Option<String>) {
 #[tauri::command]
 fn hide_agenda(app: AppHandle) {
     desktop::hide_agenda(&app);
+}
+
+/// Спрятать окно быстрого создания (после создания или по Esc)
+#[tauri::command]
+fn hide_quick(app: AppHandle) {
+    quick::hide(&app);
+}
+
+/// Сочетание для быстрого создания из любого места; None — выключить.
+/// Занято другой программой — ошибка, настройка не меняется, прежнее сочетание возвращается
+#[tauri::command]
+fn set_quick_hotkey(app: AppHandle, hotkey: Option<String>) -> Result<()> {
+    let previous = config::load_settings(&app).quick_hotkey;
+    if let Err(e) = quick::register(&app, hotkey.as_deref()) {
+        let _ = quick::register(&app, previous.as_deref());
+        log::warn!("quick add shortcut: {e}");
+        return Err(e);
+    }
+    let settings = config::Settings { quick_hotkey: hotkey, ..config::load_settings(&app) };
+    config::save_settings(&app, settings)
 }
 
 #[tauri::command]
@@ -200,13 +221,14 @@ pub fn run() {
             desktop::show_main(app, None);
         }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(quick::plugin())
         .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
                 // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
                 .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
                 // окно напоминания всегда открывается по центру экрана
-                .with_denylist(&[desktop::ALERT, desktop::AGENDA])
+                .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK])
                 .build(),
         )
         .plugin(tauri_plugin_autostart::init(
@@ -227,6 +249,7 @@ pub fn run() {
             // вход старой версии (один аккаунт) переезжает в список аккаунтов
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
+            quick::setup(app.handle());
             reminders::start(app.handle().clone());
             Ok(())
         })
@@ -242,6 +265,9 @@ pub fn run() {
             if let WindowEvent::Focused(false) = event {
                 if window.label() == desktop::AGENDA {
                     desktop::agenda_lost_focus(window.app_handle());
+                }
+                if window.label() == quick::QUICK {
+                    quick::lost_focus(window.app_handle());
                 }
             }
             // окно напоминания закрыли не кнопкой, а Alt+F4: забываем все открытые напоминания
@@ -272,6 +298,8 @@ pub fn run() {
             dismiss_alert,
             snooze_alert,
             hide_agenda,
+            hide_quick,
+            set_quick_hotkey,
             log_message,
             open_logs
         ])

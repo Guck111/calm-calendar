@@ -216,6 +216,10 @@ export const de: Dict = {
     logsText: "Wenn etwas nicht funktioniert, häng die Dateien aus diesem Ordner an eine E-Mail an den Support. Das Protokoll enthält keine Termintitel, Passwörter oder vollständigen E-Mail-Adressen.",
     openLogs: "Protokollordner öffnen",
     trayHint: "Widget, „immer im Vordergrund“ und Autostart findest du im Menü des Infobereich-Symbols.",
+    quickHotkey: "Schnell hinzufügen von überall",
+    quickHotkeyText: "Öffnet das schnelle Hinzufügen über jedem Fenster, auch wenn der Kalender im Infobereich ist.",
+    hotkeyOff: "Aus",
+    hotkeyBusy: "Eine andere App nutzt dieses Tastenkürzel schon. Wählen Sie ein anderes.",
   },
   sidebar: {
     calendars: "Kalender",

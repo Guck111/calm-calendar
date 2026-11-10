@@ -197,6 +197,8 @@ Gear button in the toolbar:
 
 `←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
 
+Quick add from anywhere: a shortcut for the whole of Windows (Ctrl+Alt+Space by default; Ctrl+Shift+Space, Alt+Shift+Space or off in Settings) opens a small quick add window over any app, even when the calendar is in the tray. The window appears in the upper third of the screen with the mouse, the same line and preview as in the sidebar; Enter creates and hides it, Ctrl+Enter opens the full form in the main window, Esc or a click elsewhere hides it. At start, if the chosen shortcut is taken by another app, the next free one from the list is used and saved; choosing a taken one in Settings says so and keeps the old one. Until the calendars load the window shows "Loading…" instead of the line (`src-tauri/src/quick.rs`, `src/quick/QuickWindow.tsx`, `src/shared/lib/hotkeys.ts`).
+
 Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 11 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`).
 
 ## Errors and the log

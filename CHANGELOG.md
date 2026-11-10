@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Quick add from anywhere**: press Ctrl+Alt+Space in any app, type "fri 18 call with Ola", Enter. Works even when the calendar is in the tray. The shortcut can be changed or turned off in Settings; if another app already uses it, the next free one is taken.
+
 ## 0.7.1 — 2026-11-10
 
 ### Fixed

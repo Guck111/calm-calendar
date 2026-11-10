@@ -216,6 +216,10 @@ export const fr: Dict = {
     logsText: "Si quelque chose ne fonctionne pas, joignez les fichiers de ce dossier à un e-mail au support. Le journal ne contient ni titres d’événements, ni mots de passe, ni adresses complètes.",
     openLogs: "Ouvrir le dossier du journal",
     trayHint: "Le widget, « toujours au premier plan » et le lancement au démarrage sont dans le menu de l’icône de la barre des tâches.",
+    quickHotkey: "Ajout rapide depuis n'importe où",
+    quickHotkeyText: "Ouvre l'ajout rapide par-dessus toute fenêtre, même quand le calendrier est dans la zone de notification.",
+    hotkeyOff: "Désactivé",
+    hotkeyBusy: "Une autre application utilise déjà ce raccourci. Choisissez-en un autre.",
   },
   sidebar: {
     calendars: "Agendas",

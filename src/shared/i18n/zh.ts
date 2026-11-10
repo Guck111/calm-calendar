@@ -206,6 +206,10 @@ export const zh: Dict = {
     logsText: "如果某些功能无法使用，请将此文件夹中的文件附在发给支持的邮件中。日志中不包含活动标题、密码或完整的电子邮件地址。",
     openLogs: "打开日志文件夹",
     trayHint: "小组件、“始终置顶”和开机启动位于托盘图标的菜单中。",
+    quickHotkey: "随处快速添加",
+    quickHotkeyText: "在任意窗口上方打开快速添加，即使日历在托盘中。",
+    hotkeyOff: "关闭",
+    hotkeyBusy: "其他应用已在使用此快捷键，请选择另一个。",
   },
   sidebar: {
     calendars: "日历",
