@@ -49,6 +49,23 @@ test("quick add: Ctrl+Enter opens the full form filled in", async ({ page, t }) 
   await expect(form.getByLabel(t.common.location)).toHaveValue("Gdynia");
 });
 
+test("quick add: a click on the preview creates the event; a Russian phrase in the English interface", async ({
+  page,
+  t,
+}) => {
+  await openApp(page);
+  const input = page.getByRole("textbox", { name: t.quick.label });
+  await input.fill("занятие спортом в 12:00, 14");
+  const preview = page.getByRole("button", { name: /занятие спортом/ });
+  await expect(preview).toContainText("14 November · 12:00–13:00");
+  await preview.click();
+  await expect(input).toHaveValue("");
+  const block = eventBlock(page, "занятие спортом");
+  const range = await rangeText(page, 14, [12, 0], [13, 0]);
+  await expect(block).toHaveAttribute("title", new RegExp(`^${escapeRe(range)} `));
+  expect(await dayOfBlock(page, block)).toBe(await dayNumber(page, 14));
+});
+
 test("quick add: N focuses the field, a phrase without a title is refused", async ({ page, t }) => {
   await openApp(page);
   await page.keyboard.press("n");

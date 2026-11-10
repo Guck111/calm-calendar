@@ -2,6 +2,14 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## 0.7.1 — 2026-11-10
+
+### Fixed
+
+- **Quick add**: click the preview to create the event (Enter still works).
+- **Quick add** understands a phrase in another language than the interface: "занятие спортом в 12:00" works with the English interface.
+- **Quick add** in Russian: a day of the month alone, "14-го", "14 числа" or ", 14" at the end.
+
 ## 0.7.0 — 2026-11-10
 
 ### New

@@ -15,6 +15,7 @@ import { parseQuickDe } from "./quick-de";
 import { parseQuickPt } from "./quick-pt";
 import { parseQuickFr } from "./quick-fr";
 import { parseQuickEs } from "./quick-es";
+import { phraseLang } from "./quick-detect";
 
 export type { QuickCalendar, QuickResult } from "./quick-core";
 
@@ -40,7 +41,10 @@ export const parseQuick = (
   now: Date,
   calendars: QuickCalendar[] = [],
   language: Lang = uiLang,
-): QuickResult => PARSERS[language](normalizeInput(input), now, calendars);
+): QuickResult => {
+  const text = normalizeInput(input);
+  return PARSERS[phraseLang(text, language)](text, now, calendars);
+};
 
 /** Черновик формы из разобранной строки */
 export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => ({

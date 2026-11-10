@@ -86,17 +86,26 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
         aria-label={t.quick.label}
       />
       {result && (
-        <div className={s.preview} aria-live="polite">
+        <div aria-live="polite">
           {error ? (
-            <span className={s.error}>{error}</span>
+            <div className={s.preview}>
+              <span className={s.error}>{error}</span>
+            </div>
           ) : (
-            <>
+            // клик по подсказке — то же, что Enter; фокус остаётся в строке
+            <button
+              type="button"
+              className={cx(s.preview, s.action)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => void submit(e.ctrlKey || e.metaKey)}
+              disabled={busy}
+            >
               <span className={s.title}>{result.title || t.common.untitledShort}</span>
               <span>{quickWhen(result)}</span>
               {calendarName && <span>{calendarName}</span>}
               {result.location && <span>{result.location}</span>}
               <span className={s.keys}>{t.quick.keys}</span>
-            </>
+            </button>
           )}
         </div>
       )}
