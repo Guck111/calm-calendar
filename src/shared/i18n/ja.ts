@@ -41,6 +41,7 @@ export const ja: Dict = {
     google: (status: number) => `Google がエラー ${status} を返しました`,
     calendarsFailed: (names: string) => `カレンダーを読み込めませんでした：${names}`,
     moveFailed: (message: string) => `予定を移動できませんでした：${message}`,
+    changeFailed: (message: string) => `予定を変更できませんでした: ${message}`,
     noWritableCalendar: "予定を追加できるカレンダーがありません",
     checkDateTime: "日付と時刻を確認してください",
     endBeforeStart: "終了が開始より前になっています",
@@ -250,6 +251,9 @@ export const ja: Dict = {
     create: (text: string) => `「${text}」を作成`,
     search: (text: string) => `「${text}」を検索`,
     none: "該当なし",
+    moveTomorrow: "明日に移動",
+    hourLater: "1 時間後に移動",
+    color: (name: string) => `色: ${name}`,
   },
   schedule: {
     empty: "この期間に予定はありません",

@@ -46,6 +46,7 @@ export const fr: Dict = {
     google: (status: number) => `Google a renvoyé l’erreur ${status}`,
     calendarsFailed: (names: string) => `Impossible de charger les agendas : ${names}`,
     moveFailed: (message: string) => `Impossible de déplacer l’événement : ${message}`,
+    changeFailed: (message: string) => `Impossible de modifier l'événement : ${message}`,
     noWritableCalendar: "Aucun agenda dans lequel ajouter des événements",
     checkDateTime: "Vérifiez la date et l’heure",
     endBeforeStart: "L’événement se termine avant de commencer",
@@ -258,6 +259,9 @@ export const fr: Dict = {
     create: (text: string) => `Créer « ${text} »`,
     search: (text: string) => `Rechercher « ${text} »`,
     none: "Aucun résultat",
+    moveTomorrow: "Déplacer à demain",
+    hourLater: "Une heure plus tard",
+    color: (name: string) => `Couleur : ${name}`,
   },
   schedule: {
     empty: "Aucun événement ces jours-là",

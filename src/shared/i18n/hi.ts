@@ -41,6 +41,7 @@ export const hi: Dict = {
     google: (status: number) => `Google ने त्रुटि ${status} लौटाई`,
     calendarsFailed: (names: string) => `ये कैलेंडर लोड नहीं हुए: ${names}`,
     moveFailed: (message: string) => `इवेंट नहीं खिसकाया जा सका: ${message}`,
+    changeFailed: (message: string) => `इवेंट नहीं बदला जा सका: ${message}`,
     noWritableCalendar: "ऐसा कोई कैलेंडर नहीं है जिसमें इवेंट जोड़े जा सकें",
     checkDateTime: "तारीख और समय जांचें",
     endBeforeStart: "इवेंट शुरू होने से पहले खत्म हो रहा है",
@@ -250,6 +251,9 @@ export const hi: Dict = {
     create: (text: string) => `“${text}” बनाएँ`,
     search: (text: string) => `“${text}” खोजें`,
     none: "कुछ नहीं मिला",
+    moveTomorrow: "कल पर ले जाएँ",
+    hourLater: "एक घंटा बाद",
+    color: (name: string) => `रंग: ${name}`,
   },
   schedule: {
     empty: "इन दिनों कोई इवेंट नहीं",

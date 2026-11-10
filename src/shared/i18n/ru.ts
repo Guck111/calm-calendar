@@ -69,6 +69,7 @@ export const ru = {
     google: (status: number) => `Google ответил ошибкой ${status}`,
     calendarsFailed: (names: string) => `Не загрузились календари: ${names}`,
     moveFailed: (message: string) => `Не удалось перенести событие: ${message}`,
+    changeFailed: (message: string) => `Не удалось изменить событие: ${message}`,
     noWritableCalendar: "Нет календаря, в который можно записать событие",
     checkDateTime: "Проверь дату и время",
     endBeforeStart: "Конец события раньше начала",
@@ -284,6 +285,9 @@ export const ru = {
     create: (text: string) => `Создать «${text}»`,
     search: (text: string) => `Найти «${text}»`,
     none: "Ничего не подходит",
+    moveTomorrow: "Перенести на завтра",
+    hourLater: "На час позже",
+    color: (name: string) => `Цвет: ${name}`,
   },
   schedule: {
     empty: "В эти дни событий нет",

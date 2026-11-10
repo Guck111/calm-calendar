@@ -46,6 +46,7 @@ export const pt: Dict = {
     google: (status: number) => `O Google retornou o erro ${status}`,
     calendarsFailed: (names: string) => `Não foi possível carregar as agendas: ${names}`,
     moveFailed: (message: string) => `Não foi possível mover o evento: ${message}`,
+    changeFailed: (message: string) => `Não foi possível alterar o evento: ${message}`,
     noWritableCalendar: "Nenhuma agenda permite adicionar eventos",
     checkDateTime: "Verifique a data e a hora",
     endBeforeStart: "O evento termina antes de começar",
@@ -264,6 +265,9 @@ export const pt: Dict = {
     create: (text: string) => `Criar “${text}”`,
     search: (text: string) => `Pesquisar “${text}”`,
     none: "Nada corresponde",
+    moveTomorrow: "Mover para amanhã",
+    hourLater: "Uma hora mais tarde",
+    color: (name: string) => `Cor: ${name}`,
   },
   schedule: {
     empty: "Nenhum evento nesses dias",

@@ -31,6 +31,18 @@
   outline: none;
 }
 
+/* выбранное событие: к нему относятся первые команды */
+.subject {
+  margin: 0;
+  padding: 8px 16px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .list {
   margin: 0;
   padding: 6px;

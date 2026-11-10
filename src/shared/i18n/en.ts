@@ -43,6 +43,7 @@ export const en: Dict = {
     google: (status: number) => `Google returned error ${status}`,
     calendarsFailed: (names: string) => `Couldn't load calendars: ${names}`,
     moveFailed: (message: string) => `Couldn't move the event: ${message}`,
+    changeFailed: (message: string) => `Couldn't change the event: ${message}`,
     noWritableCalendar: "No calendar you can add events to",
     checkDateTime: "Check the date and time",
     endBeforeStart: "The event ends before it starts",
@@ -255,6 +256,9 @@ export const en: Dict = {
     create: (text: string) => `Create “${text}”`,
     search: (text: string) => `Search for “${text}”`,
     none: "Nothing matches",
+    moveTomorrow: "Move to tomorrow",
+    hourLater: "An hour later",
+    color: (name: string) => `Color: ${name}`,
   },
   schedule: {
     empty: "No events on these days",

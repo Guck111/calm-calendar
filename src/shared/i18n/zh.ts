@@ -41,6 +41,7 @@ export const zh: Dict = {
     google: (status: number) => `Google 返回错误 ${status}`,
     calendarsFailed: (names: string) => `无法加载日历：${names}`,
     moveFailed: (message: string) => `无法移动日程：${message}`,
+    changeFailed: (message: string) => `无法更改活动：${message}`,
     noWritableCalendar: "没有可以添加日程的日历",
     checkDateTime: "请检查日期和时间",
     endBeforeStart: "结束时间早于开始时间",
@@ -248,6 +249,9 @@ export const zh: Dict = {
     create: (text: string) => `创建“${text}”`,
     search: (text: string) => `搜索“${text}”`,
     none: "没有匹配项",
+    moveTomorrow: "移到明天",
+    hourLater: "推迟一小时",
+    color: (name: string) => `颜色：${name}`,
   },
   schedule: {
     empty: "这几天没有活动",

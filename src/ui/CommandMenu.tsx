@@ -4,21 +4,31 @@ import { useUnit } from "effector-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { t } from "../shared/i18n";
 import { $writableCalendars } from "../model/calendars";
-import { createClicked, draftOpened } from "../model/editor";
+import { $opened, createClicked, draftOpened, eventMoved, eventPatched } from "../model/editor";
+import { $events } from "../model/events";
+import { eventElement } from "../app/useEventKeys";
+import type { CalendarEvent } from "../shared/api/types";
 import { queryChanged, searchFocusRequested, searchRequested } from "../model/search";
 import { dateSelected, todayClicked, viewChanged } from "../model/view";
 import { buildCommands, commandLabel, type Command } from "../shared/lib/commands";
-import { localTimeZone } from "../shared/lib/date";
+import { addDays, addMinutes, localTimeZone } from "../shared/lib/date";
 import { parseQuick, quickToDraft } from "../shared/lib/quick";
 import { cx } from "./Button";
 import s from "./CommandMenu.module.css";
 
 const LIST_ID = "command-menu-list";
 
-const CommandDialog = ({ onClose }: { onClose: () => void }) => {
+type DialogProps = {
+  onClose: () => void;
+  /** выбранное событие, которое можно менять: его действия — первыми */
+  subject: CalendarEvent | null;
+};
+
+const CommandDialog = ({ onClose, subject }: DialogProps) => {
   const [text, setText] = useState("");
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
+  const [move, patch] = useUnit([eventMoved, eventPatched]);
   const [writable, goTo, today, setView, create, openDraft, search, request, focusSearch] = useUnit([
     $writableCalendars,
     dateSelected,
@@ -30,7 +40,11 @@ const CommandDialog = ({ onClose }: { onClose: () => void }) => {
     searchRequested,
     searchFocusRequested,
   ]);
-  const commands = buildCommands(text, new Date());
+  const commands = buildCommands(
+    text,
+    new Date(),
+    subject && { title: subject.title, allDay: subject.allDay, hasMeet: Boolean(subject.meeting) },
+  );
   const current = Math.min(active, Math.max(0, commands.length - 1));
 
   useEffect(() => input.current?.focus(), []);
@@ -55,6 +69,17 @@ const CommandDialog = ({ onClose }: { onClose: () => void }) => {
         search(c.text);
         request();
         return focusSearch();
+    }
+    if (!subject) return;
+    switch (c.kind) {
+      case "tomorrow":
+        return move({ event: subject, start: addDays(subject.start, 1), end: addDays(subject.end, 1) });
+      case "later":
+        return move({ event: subject, start: addMinutes(subject.start, 60), end: addMinutes(subject.end, 60) });
+      case "meet":
+        return patch({ event: subject, patch: { addMeet: true } });
+      case "color":
+        return patch({ event: subject, patch: { colorId: c.colorId } });
     }
   };
 
@@ -92,6 +117,7 @@ const CommandDialog = ({ onClose }: { onClose: () => void }) => {
           }}
           onKeyDown={onKeyDown}
         />
+        {subject && <p className={s.subject}>{subject.title}</p>}
         <ul className={s.list} id={LIST_ID} role="listbox" aria-label={t.commands.title}>
           {commands.map((c, i) => (
             <li
@@ -117,15 +143,26 @@ const CommandDialog = ({ onClose }: { onClose: () => void }) => {
 /** Ctrl+K в любой раскладке (по коду клавиши) открывает меню, даже из поля ввода */
 export const CommandMenu = () => {
   const [open, setOpen] = useState(false);
+  const [subject, setSubject] = useState<CalendarEvent | null>(null);
+  const [events, opened, writable] = useUnit([$events, $opened, $writableCalendars]);
+  // свежие значения для обработчика клавиш без его пересоздания
+  const latest = useRef({ events, opened, writable });
+  latest.current = { events, opened, writable };
+
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === "KeyK") {
         e.preventDefault();
+        // выбранное событие: блок под фокусом или открытая карточка; только то, что можно менять
+        const { events: list, opened: card, writable: own } = latest.current;
+        const key = eventElement(document.activeElement)?.dataset.eventKey;
+        const event = (key && list.find((x) => x.key === key)) || card;
+        setSubject(event && own.some((c) => c.id === event.calendarId) ? event : null);
         setOpen((o) => !o);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  return open ? <CommandDialog onClose={() => setOpen(false)} /> : null;
+  return open ? <CommandDialog onClose={() => setOpen(false)} subject={subject} /> : null;
 };

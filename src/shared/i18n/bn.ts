@@ -42,6 +42,7 @@ export const bn: Dict = {
     google: (status: number) => `Google ত্রুটি ${status} ফেরত দিয়েছে`,
     calendarsFailed: (names: string) => `এই ক্যালেন্ডারগুলো লোড হয়নি: ${names}`,
     moveFailed: (message: string) => `ইভেন্টটি সরানো যায়নি: ${message}`,
+    changeFailed: (message: string) => `ইভেন্ট বদলানো গেল না: ${message}`,
     noWritableCalendar: "ইভেন্ট যোগ করা যায় এমন কোনো ক্যালেন্ডার নেই",
     checkDateTime: "তারিখ ও সময় দেখুন",
     endBeforeStart: "ইভেন্টটি শুরুর আগেই শেষ হচ্ছে",
@@ -254,6 +255,9 @@ export const bn: Dict = {
     create: (text: string) => `“${text}” তৈরি করুন`,
     search: (text: string) => `“${text}” খুঁজুন`,
     none: "কিছু মেলেনি",
+    moveTomorrow: "আগামীকালে সরান",
+    hourLater: "এক ঘণ্টা পরে",
+    color: (name: string) => `রং: ${name}`,
   },
   schedule: {
     empty: "এই দিনগুলোতে কোনো ইভেন্ট নেই",

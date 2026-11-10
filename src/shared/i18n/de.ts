@@ -46,6 +46,7 @@ export const de: Dict = {
     google: (status: number) => `Google meldet Fehler ${status}`,
     calendarsFailed: (names: string) => `Kalender konnten nicht geladen werden: ${names}`,
     moveFailed: (message: string) => `Termin konnte nicht verschoben werden: ${message}`,
+    changeFailed: (message: string) => `Termin konnte nicht geändert werden: ${message}`,
     noWritableCalendar: "Kein Kalender, in den Termine eingetragen werden können",
     checkDateTime: "Prüfe Datum und Uhrzeit",
     endBeforeStart: "Der Termin endet, bevor er beginnt",
@@ -258,6 +259,9 @@ export const de: Dict = {
     create: (text: string) => `„${text}“ erstellen`,
     search: (text: string) => `Nach „${text}“ suchen`,
     none: "Keine Treffer",
+    moveTomorrow: "Auf morgen verschieben",
+    hourLater: "Eine Stunde später",
+    color: (name: string) => `Farbe: ${name}`,
   },
   schedule: {
     empty: "Keine Termine an diesen Tagen",

@@ -57,6 +57,7 @@ export const ar: Dict = {
     google: (status: number) => `أعاد Google الخطأ ${status}`,
     calendarsFailed: (names: string) => `تعذّر تحميل التقويمات: ${names}`,
     moveFailed: (message: string) => `تعذّر نقل الحدث: ${message}`,
+    changeFailed: (message: string) => `تعذّر تغيير الحدث: ${message}`,
     noWritableCalendar: "لا يوجد تقويم يمكن إضافة أحداث إليه",
     checkDateTime: "تحقّق من التاريخ والوقت",
     endBeforeStart: "ينتهي الحدث قبل أن يبدأ",
@@ -269,6 +270,9 @@ export const ar: Dict = {
     create: (text: string) => `إنشاء «${text}»`,
     search: (text: string) => `البحث عن «${text}»`,
     none: "لا توجد نتائج",
+    moveTomorrow: "نقل إلى الغد",
+    hourLater: "بعد ساعة",
+    color: (name: string) => `اللون: ${name}`,
   },
   schedule: {
     empty: "لا أحداث في هذه الأيام",
