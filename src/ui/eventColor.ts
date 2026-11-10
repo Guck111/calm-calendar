@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
-import type { Calendar } from "../shared/api/types";
+import type { Calendar, CalendarEvent } from "../shared/api/types";
+import { eventColor } from "../shared/lib/colors";
 
-const FALLBACK = "#8ab4f8";
-
-/** Цвет события берём из цвета календаря; переменная --c используется в CSS */
-export const eventStyle = (calendar: Calendar | undefined): CSSProperties =>
-  ({ "--c": calendar?.color ?? FALLBACK }) as CSSProperties;
+/** Цвет события: свой цвет события, иначе цвет календаря; переменная --c используется в CSS */
+export const eventStyle = (calendar: Calendar | undefined, event?: Pick<CalendarEvent, "colorId">): CSSProperties =>
+  ({ "--c": eventColor(event, calendar) }) as CSSProperties;

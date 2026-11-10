@@ -9,6 +9,7 @@ import { quickCreateFx, quickFocusRequested } from "../model/quick";
 import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
 import { $weekNumbers } from "../model/display";
+import { $lastSynced, syncedText } from "../model/sync";
 import {
   formatDayNumber,
   formatWeekNumber,
@@ -166,9 +167,10 @@ const CalendarList = () => {
 };
 
 const AddAccount = () => {
-  const [signIn, signingIn, error] = useUnit([signInClicked, $signingIn, $authError]);
+  const [signIn, signingIn, error, synced] = useUnit([signInClicked, $signingIn, $authError, $lastSynced]);
   return (
     <div className={s.account}>
+      {synced !== null && <p className={s.synced}>{syncedText(synced)}</p>}
       {error && <p className={s.error}>{error}</p>}
       <button type="button" className={s.add} onClick={() => signIn()} disabled={signingIn}>
         <Plus size={12} /> {signingIn ? t.auth.finishInBrowser : t.accounts.add}

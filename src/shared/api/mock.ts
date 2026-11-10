@@ -150,10 +150,41 @@ const enEvents = (): Record<string, Json[]> => ({
     },
     ...timed("w", [
       [1, "Product review", [14, 0], [15, 0]],
-      [2, "Design sync", [11, 0], [12, 0], { description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}` }],
+      [
+        2,
+        "Design sync",
+        [11, 0],
+        [12, 0],
+        {
+          description: `Agenda and notes in the doc. Join Zoom: ${ZOOM}`,
+          attachments: [
+            {
+              fileUrl: "https://docs.google.com/document/d/1DesignSyncAgenda/edit",
+              title: "Design sync agenda",
+              mimeType: "application/vnd.google-apps.document",
+              fileId: "1DesignSyncAgenda",
+            },
+          ],
+        },
+      ],
       // в то же время, что и Dentist в личном аккаунте: пересечение
       [2, "Hiring panel", [15, 30], [16, 30]],
       [3, "Focus time", [13, 0], [16, 0]],
+      // чужая встреча, рабочий аккаунт приглашён и ещё не ответил
+      [
+        1,
+        "Quarterly planning",
+        [16, 0],
+        [17, 0],
+        {
+          organizer: { email: "boss@example.com", displayName: "Kate" },
+          attendees: [
+            { email: "boss@example.com", displayName: "Kate", organizer: true, responseStatus: "accepted" },
+            { email: WORK, self: true, responseStatus: "needsAction" },
+            { email: "sam@example.com", displayName: "Sam", responseStatus: "tentative" },
+          ],
+        },
+      ],
       [
         4,
         "1:1 with Sam",
@@ -226,6 +257,23 @@ const flatten = (list: Json[], before: Date): Json[] => {
 
 const FAR = new Date(2100, 0, 1);
 
+/** Заявка на Google Meet (conferenceData.createRequest): Google создаёт встречу и отдаёт ссылку.
+ *  Без conferenceDataVersion=1 Google заявку молча пропускает */
+const withMeet = (body: Json | undefined, q: Record<string, string>): Json | undefined => {
+  const request = (body?.conferenceData as { createRequest?: unknown } | undefined)?.createRequest;
+  if (!body || !request || q.conferenceDataVersion !== "1") return body;
+  const code = `mock-${(seq++).toString(36).padStart(4, "a")}-xyz`.replace(/[^a-z-]/g, "q");
+  const uri = `https://meet.google.com/${code}`;
+  return {
+    ...body,
+    hangoutLink: uri,
+    conferenceData: {
+      conferenceSolution: { name: "Google Meet", key: { type: "hangoutsMeet" } },
+      entryPoints: [{ entryPointType: "video", uri }],
+    },
+  };
+};
+
 const google = (
   account: string,
   method: string,
@@ -272,6 +320,7 @@ const google = (
     // как Google: у списка событий указан пояс календаря
     return { items: items.sort(byStart), timeZone: localTimeZone() };
   }
+  body = withMeet(body, q);
   if (method === "POST" && !id) {
     const created = { ...body, id: `n${seq++}` };
     list.push(created);
@@ -291,6 +340,16 @@ const google = (
     const [moved] = list.splice(index, 1);
     (events[q.destination] ??= []).push(moved);
     return moved;
+  }
+  // ответ на приглашение: Google меняет только ответы перечисленных гостей, остальной список остаётся
+  if (method === "PATCH" && body?.attendeesOmitted) {
+    const current = list[index] ?? instance;
+    const answers = new Map((body.attendees as { email: string; responseStatus: string }[]).map((a) => [a.email, a.responseStatus]));
+    const attendees = ((current?.attendees as { email: string }[] | undefined) ?? []).map((a) =>
+      answers.has(a.email) ? { ...a, responseStatus: answers.get(a.email) } : a,
+    );
+    const { attendeesOmitted: _, attendees: __, ...rest } = body;
+    body = { ...rest, attendees };
   }
   if (method === "PATCH") {
     if (instance) {
@@ -312,6 +371,10 @@ const google = (
   throw { kind: "other", message: `mock: ${method}` };
 };
 
+/** Для автотестов: window.calmMock.outage = "network" | "503" — Google не отвечает, null — снова отвечает */
+const mockControl: { outage: "network" | "503" | null } = { outage: null };
+(globalThis as unknown as { calmMock: typeof mockControl }).calmMock = mockControl;
+
 const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(value), ms));
 
 export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown> => {
@@ -330,6 +393,8 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
     case "save_client_config":
       return null;
     case "google_request":
+      if (mockControl.outage === "network") throw { kind: "network", message: "mock: no network" };
+      if (mockControl.outage === "503") throw { kind: "google", message: "503: Backend Error" };
       return delay(
         google(
           String(args.account),

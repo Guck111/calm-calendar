@@ -6,6 +6,7 @@ import { locale, t } from "../i18n";
 import type {
   AccessRole,
   AppError,
+  Attachment,
   Attendee,
   Calendar,
   CalendarEvent,
@@ -15,6 +16,7 @@ import type {
 } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
 import { fromZoned, wallClock } from "../lib/tz";
+import { isColorId } from "../lib/colors";
 
 /** пояс, по часам которого заданы дата и время в черновике */
 export const draftZone = (d: EventDraft): string => d.timeZone ?? localTimeZone();
@@ -65,7 +67,17 @@ export type RawEvent = {
   attendees?: Attendee[];
   organizer?: { email?: string; self?: boolean };
   extendedProperties?: { private?: Record<string, string>; shared?: Record<string, string> };
+  colorId?: string;
+  attachments?: (Attachment & { iconLink?: string })[];
 };
+
+/** вложение без лишних полей: картинку значка (iconLink) интерфейс не грузит, своя иконка */
+const cleanAttachment = (a: Attachment): Attachment => ({
+  fileUrl: a.fileUrl,
+  title: a.title || a.fileUrl,
+  ...(a.mimeType ? { mimeType: a.mimeType } : {}),
+  ...(a.fileId ? { fileId: a.fileId } : {}),
+});
 
 /** ключ времени в пути в скрытых полях события: их видит только наше приложение */
 export const TRAVEL_KEY = "calmTravelMinutes";
@@ -227,6 +239,8 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?
     ...(raw.attendees?.length ? { attendees: raw.attendees } : {}),
     // self: false Google не присылает; без организатора событие своё
     organizerSelf: raw.organizer ? raw.organizer.self === true : true,
+    ...(isColorId(raw.colorId) ? { colorId: raw.colorId } : {}),
+    ...(raw.attachments?.length ? { attachments: raw.attachments.filter((a) => a.fileUrl).map(cleanAttachment) } : {}),
   };
 };
 
@@ -306,12 +320,38 @@ export const draftToBody = (draft: EventDraft) => {
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
       : {}),
     ...(draft.guests !== undefined ? { attendees: draft.guests.map(cleanAttendee) } : {}),
+    ...(sendsAttachments(draft) ? { attachments: (draft.attachments ?? []).map(cleanAttachment) } : {}),
+    // свой цвет; у существующего события «цвет календаря» — это сброс colorId
+    ...(draft.colorId ? { colorId: draft.colorId } : draft.colorId === "" && draft.id ? { colorId: null } : {}),
+    // Google сам создаёт встречу и присылает ссылку; requestId не должен повторяться
+    ...(draft.addMeet
+      ? { conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: "hangoutsMeet" } } } }
+      : {}),
   };
 };
+
+const requestId = (): string =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+/** вложения уходят в Google, только если список меняли: правка и перетаскивание их не трогают */
+const sendsAttachments = (draft: EventDraft): boolean => Boolean(draft.attachmentsChanged && draft.attachments);
 
 /** Гостям — письмо о новой встрече, переносе или отмене, как в Google Календаре */
 const notify = (draft: EventDraft): Record<string, string> | undefined =>
   hasGuests(draft.guests) ? { sendUpdates: "all" } : undefined;
+
+/** параметры сохранения: письма гостям и, для новой видеовстречи, поддержка conferenceData */
+const saveQuery = (draft: EventDraft): Record<string, string> | undefined => {
+  const query = {
+    ...(draft.addMeet ? { conferenceDataVersion: "1" } : {}),
+    // без этого Google не меняет вложения
+    ...(sendsAttachments(draft) ? { supportsAttachments: "true" } : {}),
+    ...notify(draft),
+  };
+  return Object.keys(query).length ? query : undefined;
+};
 
 /** Событие целиком, как его отдаёт Google: при разбиении серии копируем и поля, которых нет в форме */
 type FullEvent = RawEvent & Record<string, unknown>;
@@ -363,6 +403,7 @@ const COPIED = [
   "description",
   "location",
   "colorId",
+  "attachments",
   "attendees",
   "reminders",
   "conferenceData",
@@ -431,10 +472,11 @@ const saveFollowing = async (draft: EventDraft): Promise<void> => {
   const needCount = split && !recurrenceEdited(draft) && hasCount(master.recurrence ?? []);
   const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split) : 0);
   if (plan.kind === "series") {
-    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", ...notify(draft) }, plan.patch);
+    await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", supportsAttachments: "true", ...notify(draft) }, plan.patch);
     return;
   }
-  const query = { conferenceDataVersion: "1", ...notify(draft) };
+  // вложения главного события переходят в новую серию
+  const query = { conferenceDataVersion: "1", supportsAttachments: "true", ...notify(draft) };
   const created = await api<RawEvent>(calendarId, "POST", "", query, plan.create);
   try {
     await api(calendarId, "PATCH", one(master.id), undefined, plan.truncate);
@@ -453,7 +495,7 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
   };
   if (!draft.id) {
-    await api(draft.calendarId, "POST", "", notify(draft), body);
+    await api(draft.calendarId, "POST", "", saveQuery(draft), body);
     return;
   }
   let calendarId = draft.originalCalendarId ?? draft.calendarId;
@@ -465,8 +507,34 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     await api(calendarId, "POST", `${one(draft.id)}/move`, { destination: to.googleId });
     calendarId = draft.calendarId;
   }
-  await api(calendarId, "PATCH", one(draft.id), notify(draft), body);
+  await api(calendarId, "PATCH", one(draft.id), saveQuery(draft), body);
 };
+
+export type ResponseStatus = NonNullable<Attendee["responseStatus"]>;
+
+/** Свой ответ на приглашение; undefined — встреча своя или аккаунт не в списке гостей */
+export const myResponse = (e: CalendarEvent): ResponseStatus | undefined => {
+  if (e.organizerSelf !== false) return undefined;
+  const me = e.attendees?.find((a) => a.self);
+  return me ? (me.responseStatus ?? "needsAction") : undefined;
+};
+
+/** Ответить на приглашение. attendeesOmitted: в Google уходит только свой ответ, список остальных гостей
+ *  не трогаем (Google может прислать его не целиком). У повторения серии — ответ на это повторение */
+export const respondToEvent = async (e: CalendarEvent, status: ResponseStatus): Promise<void> => {
+  const me = e.attendees?.find((a) => a.self);
+  if (!me) throw { kind: "other", message: "not invited" };
+  await api(e.calendarId, "PATCH", one(e.id), { sendUpdates: "all" }, {
+    attendeesOmitted: true,
+    attendees: [{ email: me.email, responseStatus: status }],
+  });
+};
+
+/** то же событие с новым своим ответом */
+export const withResponse = (e: CalendarEvent, status: ResponseStatus): CalendarEvent => ({
+  ...e,
+  attendees: e.attendees?.map((a) => (a.self ? { ...a, responseStatus: status } : a)),
+});
 
 export const deleteEvent = (calendarId: string, eventId: string, query?: Record<string, string>): Promise<void> =>
   api(calendarId, "DELETE", one(eventId), query);

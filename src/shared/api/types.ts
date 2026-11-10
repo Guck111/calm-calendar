@@ -67,7 +67,14 @@ export type CalendarEvent = {
   attendees?: Attendee[];
   /** организатор — этот аккаунт: только он может менять список гостей */
   organizerSelf?: boolean;
+  /** свой цвет события в Google (1–11); нет — цвет календаря */
+  colorId?: string;
+  /** прикреплённые файлы Google Диска */
+  attachments?: Attachment[];
 };
+
+/** вложение события: файл Google Диска */
+export type Attachment = { fileUrl: string; title: string; mimeType?: string; fileId?: string };
 
 /** участник встречи, как его отдаёт Google */
 export type Attendee = {
@@ -111,6 +118,14 @@ export type EventDraft = {
   travelMinutes?: number;
   /** гости; undefined — список не трогаем (событие чужое, менять его может только организатор) */
   guests?: Attendee[];
+  /** создать видеовстречу Google Meet при сохранении; undefined — у события она уже есть */
+  addMeet?: boolean;
+  /** свой цвет события; "" — цвет календаря; undefined — не трогаем */
+  colorId?: string;
+  /** вложения; undefined — не трогаем (у чужой встречи их меняет организатор) */
+  attachments?: Attachment[];
+  /** список вложений меняли: только тогда он уходит в Google */
+  attachmentsChanged?: boolean;
 };
 
 /** какие повторения серии затронуть */
@@ -135,4 +150,5 @@ export type AppErrorKind =
   | "network"
   | "other";
 
-export type AppError = { kind: AppErrorKind; message: string };
+/** status — код ответа Google у ошибок kind "google" */
+export type AppError = { kind: AppErrorKind; message: string; status?: number };

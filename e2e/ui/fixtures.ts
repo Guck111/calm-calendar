@@ -132,10 +132,15 @@ export const blocksByDay = (page: Page): Promise<Record<string, string[]>> =>
 export const blockOn = async (page: Page, title: string, day: number) => {
   const want = await dayNumber(page, day);
   await expect(eventBlock(page, title)).toBeVisible();
-  for (const block of await page.locator("main button[title]").filter({ hasText: title }).all()) {
-    if ((await dayOfBlock(page, block)) === want) return block;
+  // the event may still be on its way from the (mock) Google after saving
+  const deadline = Date.now() + 5000;
+  for (;;) {
+    for (const block of await page.locator("main button[title]").filter({ hasText: title }).all()) {
+      if ((await dayOfBlock(page, block).catch(() => "")) === want) return block;
+    }
+    if (Date.now() > deadline) throw new Error(`no "${title}" on day ${day}`);
+    await page.waitForTimeout(200);
   }
-  throw new Error(`no "${title}" on day ${day}`);
 };
 
 /** Day numbers as the app writes them ("12", "١٢", "১২") */

@@ -11,6 +11,7 @@ import { formatTime, formatWeekdayDayMonth, toDateKey } from "../shared/lib/date
 import { isJoinable } from "../shared/lib/meeting";
 import { cx } from "../ui/Button";
 import { Video } from "../ui/icons";
+import { EVENT_COLORS } from "../shared/lib/colors";
 import { $colors, $loading, $now, $signedIn, $status, $upcoming, minuteTicked, refreshRequested, widgetStarted } from "../widget/model";
 import { agendaDays, isNow, isPast } from "./agenda";
 import s from "./Agenda.module.css";
@@ -52,7 +53,8 @@ export const AgendaWindow = () => {
     };
   }, [start, tick, refresh]);
 
-  const color = (e: CalendarEvent) => ({ "--c": colors[e.calendarId] ?? "var(--accent)" }) as CSSProperties;
+  const color = (e: CalendarEvent) =>
+    ({ "--c": (e.colorId && EVENT_COLORS[e.colorId]) || colors[e.calendarId] || "var(--accent)" }) as CSSProperties;
   const days = agendaDays(events, now);
 
   return (

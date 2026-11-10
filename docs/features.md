@@ -49,15 +49,19 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
 - Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search, free time, theme, refresh, settings, view switch.
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
-- Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button.
+- Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).
+- When Google does not answer (no network, Google busy or down: 429 and 5xx), the app tries again by itself after 5 seconds, 15 seconds and a minute, then goes on with the usual refresh. The error or "Offline" banner has a Retry button (`src/model/sync.ts`).
 
 ## Events
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location, guests with their answers, description, overlaps, the repeat rule, and "In Google".
-- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, location, guests, description.
+- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, color, location, "Add Google Meet video call", guests, attachments, description.
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Delete asks once ("Delete?").
+- Attachments: the card lists the Google Drive files attached to the event, a click opens one in the browser. In the form a Drive file is attached by pasting its link (Docs, Sheets, Slides, Forms or a Drive file; other links are refused), and removed with ×; up to 25. Attachments go to Google only when the list was changed, so editing and dragging keep them, and "this and following" passes them to the new series. Uploading a file from the computer needs a Google Drive permission (stage 3b) (`src/shared/lib/attachments.ts`).
+- Color of a single event: the calendar color or one of Google's 11 event colors (Lavender … Tomato), as on the Google Calendar website. Shown in every view, the card, the widget and the tray agenda; stored in Google (`colorId`), so the website and phones show it too (`src/shared/lib/colors.ts`).
+- "Duplicate" in the card opens the form of a new event with the same title, time, time zone, location, description, travel time and guests. An occurrence of a series is copied as one event; the old video call and the guests' answers are not copied. An event from a read-only calendar (holidays, someone else's calendar) is copied into your first calendar.
 - Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone.
 - Read-only calendars (holidays, other people's calendars) open in the card only.
 
@@ -79,6 +83,7 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 
 - Guests field in the form: add by email with Enter or a comma, a wrong address is refused, remove with ×. Each guest shows the answer: going, not going, maybe, no reply yet; the organizer is marked.
 - Google emails the guests about the new meeting, its changes and its cancellation, as on the Google Calendar website.
+- Answer an invitation in its card: "Going? Yes · No · Maybe", shown for someone else's meeting that this account is invited to. Only your own answer goes to Google (`attendeesOmitted`), the organizer gets Google's email; in a series the answer is for that occurrence.
 - Only the organizer can change the guest list; for someone else's meeting the field is hidden and the list is left alone.
 - A meeting that two of your accounts are invited to is shown once; its card says "Also in: <other account>". The copy you can edit is the one shown.
 
@@ -133,6 +138,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 ## Video calls
 
 - Events with a call get "Join": in the card, in the widget from 15 minutes before the start until the end, in the tray agenda, in the reminder notification and in the hard-to-miss alert.
+- "Add Google Meet video call" in the form of a new event or of an event without a call: Google creates the call when the event is saved, and the card gets Join (`conferenceData.createRequest`, within the `calendar.events` permission).
 - The link comes from the event's conference (Google Meet, Zoom or Teams add-ons) or from a Meet, Zoom, Teams, Webex, Telemost, Jitsi, Whereby, GoTo, Chime or Skype link in the location or description (`src/shared/lib/meeting.ts`).
 
 ## Reminders and the hard-to-miss alert
@@ -189,7 +195,9 @@ Gear button in the toolbar:
 
 ## Keyboard shortcuts
 
-`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+
+Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 11 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`).
 
 ## Errors and the log
 

@@ -2,6 +2,22 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Add Google Meet**: a switch in the event form creates a video call when the event is saved.
+- **Duplicate** an event from its card, then change what differs.
+- **Event colors**: give one event its own color, one of the 11 colors of Google Calendar.
+- **Answer invitations** from the event card: yes, no or maybe.
+- The sidebar shows **when the calendar was last updated** from Google.
+- **Attachments**: see the Google Drive files of an event in its card, and attach one by pasting its link.
+- **Command menu** on Ctrl+K: go to a date written in words, create an event, search or switch the view without the mouse.
+
+### Changed
+
+- When Google does not answer, the app tries again by itself, and the error banner has a **Retry** button.
+
 ## 0.6.0 — 2026-11-10
 
 ### New

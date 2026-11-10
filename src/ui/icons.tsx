@@ -52,6 +52,12 @@ export const Video = ({ size = 16 }: P) => (
   </svg>
 );
 
+export const Paperclip = ({ size = 14 }: P) => (
+  <svg {...base(size)}>
+    <path d="M13 7.5 8 12.5a3.2 3.2 0 0 1-4.5-4.5L9 2.5a2.1 2.1 0 0 1 3 3L6.5 11a1 1 0 0 1-1.5-1.5L10 4.5" />
+  </svg>
+);
+
 export const External = ({ size = 14 }: P) => (
   <svg {...base(size)}>
     <path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5" />

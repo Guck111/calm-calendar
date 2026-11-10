@@ -15,7 +15,9 @@ import {
   $series,
   deleteClicked,
   draftChanged,
+  duplicateClicked,
   editCancelled,
+  rsvpClicked,
   editClicked,
   editorClosed,
   saveClicked,
@@ -23,15 +25,17 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
-import { draftZone, hasGuests } from "../shared/api/calendar";
-import type { Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
+import { draftZone, hasGuests, myResponse, type ResponseStatus } from "../shared/api/calendar";
+import type { Attachment, Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
 import { addDays, formatSpan as travelSpan, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
 import { fromZoned, wallClock, zoneLabel } from "../shared/lib/tz";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
-import { Close, External, Video, Warning } from "./icons";
+import { Close, External, Paperclip, Video, Warning } from "./icons";
+import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
+import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
 
 const formatWhen = (e: CalendarEvent): string => {
@@ -181,9 +185,42 @@ const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
   return <p className={s.note}>{t.editor.yourTime(text)}</p>;
 };
 
+const ANSWERS = ["accepted", "declined", "tentative"] as const;
+
+/** «Пойдёте? Да · Нет · Может быть» у чужой встречи, куда позвали этот аккаунт */
+const RsvpButtons = ({
+  response,
+  busy,
+  onAnswer,
+}: {
+  response: ResponseStatus;
+  busy: boolean;
+  onAnswer: (status: ResponseStatus) => void;
+}) => {
+  const label = { accepted: t.editor.rsvpYes, declined: t.editor.rsvpNo, tentative: t.editor.rsvpMaybe };
+  return (
+    <div className={s.rsvp} role="group" aria-label={t.editor.rsvpQuestion}>
+      <span className={s.rsvpQuestion}>{t.editor.rsvpQuestion}</span>
+      {ANSWERS.map((status) => (
+        <button
+          key={status}
+          type="button"
+          aria-pressed={response === status}
+          className={cx(s.rsvpOption, response === status && s.rsvpOn)}
+          disabled={busy}
+          onClick={() => response !== status && onAnswer(status)}
+        >
+          {label[status]}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
-  const [byId, accounts, busy, error, ask, close, edit, remove] = useUnit([
+  const response = myResponse(event);
+  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable, rsvp] = useUnit([
     $calendarById,
     $accounts,
     $busy,
@@ -192,6 +229,9 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
     editorClosed,
     editClicked,
     deleteClicked,
+    duplicateClicked,
+    $writableCalendars,
+    rsvpClicked,
   ]);
   const calendar = byId.get(event.calendarId);
   return (
@@ -216,6 +256,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           <span className={s.provider}>{event.meeting.provider}</span>
         </Button>
       )}
+      {response && <RsvpButtons response={response} busy={busy} onAnswer={rsvp} />}
       <dl className={s.details}>
         <dt>{t.common.calendar}</dt>
         <dd>
@@ -248,6 +289,22 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             </dd>
           </>
         ) : null}
+        {event.attachments?.length ? (
+          <>
+            <dt>{t.editor.attachments}</dt>
+            <dd>
+              <ul className={s.files}>
+                {event.attachments.map((a) => (
+                  <li key={a.fileUrl}>
+                    <button type="button" className={s.file} onClick={() => void openExternal(a.fileUrl)} title={a.fileUrl}>
+                      <Paperclip /> {a.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </>
+        ) : null}
         {event.description && (
           <>
             <dt>{t.common.description}</dt>
@@ -265,6 +322,12 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <div className={s.actions}>
           <GoogleLink href={event.htmlLink} />
           <div className={s.spacer} />
+          {/* копию можно сделать и из чужого календаря: она ляжет в свой */}
+          {writable.length > 0 && (
+            <Button variant="ghost" onClick={() => duplicate()} disabled={busy}>
+              {t.editor.duplicate}
+            </Button>
+          )}
           {editable && (
             <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} askFirst={!event.recurring} />
           )}
@@ -313,6 +376,42 @@ const CalendarSelect = ({
           ))
         : calendars.map(option)}
     </select>
+  );
+};
+
+/** Цвет события: цвет календаря или один из 11 цветов Google */
+const ColorField = ({
+  value,
+  calendarColor,
+  onChange,
+}: {
+  value: string;
+  calendarColor: string;
+  onChange: (colorId: string) => void;
+}) => {
+  const names = t.editor.colorNames as Record<string, string>;
+  return (
+    <div className={s.field}>
+      <span>{t.editor.color}</span>
+      <div className={s.colors} role="radiogroup" aria-label={t.editor.color}>
+        {["", ...COLOR_IDS].map((id) => {
+          const name = id ? names[id] : t.editor.calendarColor;
+          return (
+            <button
+              key={id || "calendar"}
+              type="button"
+              role="radio"
+              aria-checked={value === id}
+              aria-label={name}
+              title={name}
+              className={cx(s.color, !id && s.calendarColor, value === id && s.colorOn)}
+              style={{ "--swatch": id ? EVENT_COLORS[id] : calendarColor } as CSSProperties}
+              onClick={() => onChange(id)}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 };
 
@@ -405,6 +504,69 @@ const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (gues
       />
       {bad && <small className={s.error}>{t.editor.badEmail}</small>}
       {hasGuests(guests) && <small className={s.hintText}>{t.editor.invitesNote}</small>}
+    </div>
+  );
+};
+
+/** Вложения в форме: файлы Google Диска; новый — по ссылке (Enter или уход из поля) */
+const AttachmentsField = ({ files, onChange }: { files: Attachment[]; onChange: (files: Attachment[]) => void }) => {
+  const [text, setText] = useState("");
+  const [bad, setBad] = useState(false);
+  const add = () => {
+    if (!text.trim()) return;
+    const file = parseDriveLink(text);
+    if (!file) {
+      setBad(true);
+      return;
+    }
+    if (!files.some((f) => f.fileUrl === file.fileUrl)) onChange([...files, file]);
+    setText("");
+  };
+  return (
+    <div className={s.field}>
+      <span>{t.editor.attachments}</span>
+      {files.length > 0 && (
+        <ul className={s.files}>
+          {files.map((f) => (
+            <li key={f.fileUrl} className={s.guest}>
+              <span className={s.guestName} title={f.fileUrl}>
+                <Paperclip /> {f.title}
+              </span>
+              <button
+                type="button"
+                className={s.removeGuest}
+                onClick={() => onChange(files.filter((x) => x !== f))}
+                aria-label={t.editor.removeAttachment(f.title)}
+                title={t.editor.removeAttachment(f.title)}
+              >
+                <Close size={12} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {files.length < MAX_ATTACHMENTS && (
+        <input
+          type="url"
+          value={text}
+          placeholder={t.editor.addAttachment}
+          aria-label={t.editor.addAttachment}
+          aria-invalid={bad}
+          onChange={(e) => {
+            setText(e.target.value);
+            setBad(false);
+          }}
+          onKeyDown={(e) => {
+            // Enter со ссылкой в поле прикрепляет файл, а не сохраняет форму
+            if (e.key === "Enter" && text.trim()) {
+              e.preventDefault();
+              add();
+            }
+          }}
+          onBlur={() => add()}
+        />
+      )}
+      {bad && <small className={s.error}>{t.editor.badAttachment}</small>}
     </div>
   );
 };
@@ -540,11 +702,28 @@ const EventForm = () => {
         )}
       </Field>
 
+      <ColorField
+        value={draft.colorId ?? ""}
+        calendarColor={eventColor(undefined, byId.get(draft.calendarId))}
+        onChange={(colorId) => change({ colorId })}
+      />
+
       <Field label={t.common.location}>
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
       </Field>
 
+      {draft.addMeet !== undefined && (
+        <label className={s.check}>
+          <input type="checkbox" checked={draft.addMeet} onChange={(e) => change({ addMeet: e.target.checked })} />
+          {t.editor.addMeet}
+        </label>
+      )}
+
       {draft.guests && <GuestsField guests={draft.guests} onChange={(guests) => change({ guests })} />}
+
+      {draft.attachments && (
+        <AttachmentsField files={draft.attachments} onChange={(attachments) => change({ attachments })} />
+      )}
 
       <Field label={t.common.description}>
         <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />
@@ -618,7 +797,7 @@ export const EventEditor = () => {
         role="dialog"
         aria-modal="true"
         aria-label={draft.id ? t.common.event : t.common.newEvent}
-        style={{ "--c": calendar?.color ?? "var(--accent)" } as CSSProperties}
+        style={{ "--c": eventColor(mode === "view" && opened ? opened : draft, calendar) } as CSSProperties}
       >
         {mode === "view" && opened ? <EventDetails event={opened} editable={editable} /> : <EventForm />}
       </div>

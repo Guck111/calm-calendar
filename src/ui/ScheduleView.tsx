@@ -48,7 +48,7 @@ export const ScheduleView = () => {
                 <li key={e.key}>
                   <button
                     className={s.event}
-                    style={eventStyle(calendars.get(e.calendarId))}
+                    style={eventStyle(calendars.get(e.calendarId), e)}
                     onClick={() => openEvent(e)}
                   >
                     <span className={s.dot} />

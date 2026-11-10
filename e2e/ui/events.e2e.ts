@@ -67,7 +67,7 @@ test.describe("event form", () => {
     await form.getByLabel(t.editor.startTime).fill("08:00");
     await form.getByLabel(t.editor.endDate).fill("2026-11-12");
     await form.getByLabel(t.editor.endTime).fill("08:30");
-    await form.getByLabel(t.common.calendar).selectOption({ label: "Family" });
+    await form.getByRole("combobox", { name: t.common.calendar }).selectOption({ label: "Family" });
     await form.getByLabel(t.common.description).fill("Tickets and hotel");
     await form.getByRole("button", { name: t.common.save }).click();
     await expect(form).toBeHidden();

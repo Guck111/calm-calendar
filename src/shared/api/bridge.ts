@@ -23,7 +23,12 @@ const localize = (e: AppError): AppError => {
   };
   // ошибка Google приходит как «403: Rate limit exceeded»
   const google = e.kind === "google" ? /^(\d{3}): (.*)$/s.exec(e.message) : null;
-  return { ...e, message: text[e.kind] ?? (google ? `${t.errors.google(Number(google[1]))}. ${google[2]}` : e.message) };
+  return {
+    ...e,
+    message: text[e.kind] ?? (google ? `${t.errors.google(Number(google[1]))}. ${google[2]}` : e.message),
+    // код ответа нужен, чтобы отличить временный сбой Google (503) от отказа (403)
+    ...(google ? { status: Number(google[1]) } : {}),
+  };
 };
 
 

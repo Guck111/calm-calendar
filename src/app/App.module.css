@@ -16,11 +16,30 @@
 }
 
 .banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
   padding: 8px 16px;
   font-size: 13px;
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   color: var(--danger);
   border-bottom: 1px solid var(--border);
+}
+
+.retry {
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.retry:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
 .splash {
