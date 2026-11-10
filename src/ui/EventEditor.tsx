@@ -7,6 +7,7 @@ import { $conflicts } from "../model/events";
 import {
   $askScope,
   $busy,
+  $deleteArmed,
   $draft,
   $editorError,
   $mode,
@@ -69,16 +70,19 @@ type DeleteProps = {
   resetKey: string;
   /** у повторения серии подтверждением служит вопрос «только это или это и следующие» */
   askFirst?: boolean;
+  /** открыто клавишей Delete: кнопка сразу спрашивает и в фокусе, Enter удаляет */
+  armed?: boolean;
 };
 
-const DeleteButton = ({ busy, onConfirm, resetKey, askFirst = true }: DeleteProps) => {
-  const [confirm, setConfirm] = useState(false);
-  useEffect(() => setConfirm(false), [resetKey]);
+const DeleteButton = ({ busy, onConfirm, resetKey, askFirst = true, armed = false }: DeleteProps) => {
+  const [confirm, setConfirm] = useState(armed && askFirst);
+  useEffect(() => setConfirm(armed && askFirst), [resetKey, armed, askFirst]);
   return (
     <Button
       danger
       variant="ghost"
       disabled={busy}
+      autoFocus={armed}
       onClick={() => (confirm || !askFirst ? onConfirm() : setConfirm(true))}
     >
       {confirm ? t.editor.confirmDelete : t.editor.delete}
@@ -220,7 +224,7 @@ const RsvpButtons = ({
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
   const response = myResponse(event);
-  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable, rsvp] = useUnit([
+  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable, rsvp, armed] = useUnit([
     $calendarById,
     $accounts,
     $busy,
@@ -232,6 +236,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
     duplicateClicked,
     $writableCalendars,
     rsvpClicked,
+    $deleteArmed,
   ]);
   const calendar = byId.get(event.calendarId);
   return (
@@ -250,7 +255,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           className={s.join}
           onClick={() => event.meeting && void openExternal(event.meeting.url)}
           title={t.meeting.joinTitle(event.meeting.provider)}
-          autoFocus
+          autoFocus={!armed}
         >
           <Video /> {t.meeting.join}
           <span className={s.provider}>{event.meeting.provider}</span>
@@ -329,10 +334,20 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             </Button>
           )}
           {editable && (
-            <DeleteButton busy={busy} onConfirm={() => remove()} resetKey={event.key} askFirst={!event.recurring} />
+            <DeleteButton
+              busy={busy}
+              onConfirm={() => remove()}
+              resetKey={event.key}
+              askFirst={!event.recurring}
+              armed={armed}
+            />
           )}
           {editable && (
-            <Button variant={event.meeting ? "default" : "primary"} onClick={() => edit()} autoFocus={!event.meeting}>
+            <Button
+              variant={event.meeting ? "default" : "primary"}
+              onClick={() => edit()}
+              autoFocus={!event.meeting && !armed}
+            >
               {t.editor.edit}
             </Button>
           )}

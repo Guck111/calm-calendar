@@ -30,6 +30,8 @@ rand = "0.8"
 url = "2"
 thiserror = "2"
 tauri-plugin-log = "2"
+# сочетание клавиш на всю Windows для быстрого создания
+tauri-plugin-global-shortcut = "2"
 log = "0.4"
 
 # Токен входа хранится в системном хранилище паролей

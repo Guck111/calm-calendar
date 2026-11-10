@@ -49,6 +49,8 @@ export const rsvpFx = createEffect<{ event: CalendarEvent; status: ResponseStatu
 );
 /** «Создать копию» в карточке события */
 export const duplicateClicked = createEvent();
+/** Delete на выбранном событии: карточка открывается с кнопкой «Нажмите ещё раз, чтобы удалить» */
+export const deleteArmed = createEvent();
 
 type Change = { draft: EventDraft; scope: Scope };
 
@@ -60,6 +62,10 @@ export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Dat
   ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
+
+/** одно поле без формы (меню Ctrl+K: Google Meet, цвет); у серии — только это повторение */
+export const eventPatched = createEvent<{ event: CalendarEvent; patch: Partial<EventDraft> }>();
+export const patchFx = createEffect<EventDraft, void, AppError>((draft) => saveEvent(draft));
 
 /** правило серии хранится у главного события: загружаем, когда открыли повторение */
 export const loadSeriesFx = createEffect<{ calendarId: string; id: string }, string[], AppError>(({ calendarId, id }) =>
@@ -237,6 +243,11 @@ export const $draft = createStore<EventDraft | null>(null)
   )
   .reset([editorClosed, saveFx.done, deleteFx.done]);
 
+/** карточка открыта клавишей Delete: кнопка удаления уже спрашивает подтверждение */
+export const $deleteArmed = createStore(false)
+  .on(deleteArmed, () => true)
+  .reset([eventOpened, editorClosed, editClicked, duplicateClicked, deleteFx.done]);
+
 /** черновик копии: открытое событие берём до того, как карточка закроется */
 const duplicated = sample({
   clock: duplicateClicked,
@@ -386,7 +397,10 @@ sample({
   target: actionFailed,
 });
 
-sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally, rsvpFx.done], target: reloadRequested });
+sample({ clock: eventPatched, fn: ({ event, patch }) => ({ ...fromEvent(event), ...patch }), target: patchFx });
+sample({ clock: patchFx.failData, fn: (e) => t.errors.changeFailed(e.message), target: actionFailed });
+sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally, rsvpFx.done, patchFx.finally], target: reloadRequested });
+patchFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 rsvpFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 // ошибки самого интерфейса при сохранении (ответы Google пишет Rust) — в журнал

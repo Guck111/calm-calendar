@@ -2,6 +2,7 @@
 // атрибуты на <html>, по которым CSS делает фон окна полупрозрачным.
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri, subscribe } from "../api/bus";
+import { DEFAULT_QUICK_HOTKEY } from "./hotkeys";
 
 const root = document.documentElement;
 
@@ -13,9 +14,22 @@ const setAttr = (enabled: boolean) => {
 /** Заметное напоминание: выключено, только видеовстречи, все события со временем */
 export type AlertMode = "off" | "calls" | "all";
 
-export type AppSettings = { glass: boolean; notifications: boolean; private_notifications: boolean; alerts: AlertMode };
+export type AppSettings = {
+  glass: boolean;
+  notifications: boolean;
+  private_notifications: boolean;
+  alerts: AlertMode;
+  /** сочетание клавиш для быстрого создания из любого места; null — выключено */
+  quick_hotkey: string | null;
+};
 
-const OFFLINE_SETTINGS: AppSettings = { glass: false, notifications: false, private_notifications: false, alerts: "off" };
+const OFFLINE_SETTINGS: AppSettings = {
+  glass: false,
+  notifications: false,
+  private_notifications: false,
+  alerts: "off",
+  quick_hotkey: DEFAULT_QUICK_HOTKEY,
+};
 
 export const readSettings = async (): Promise<AppSettings> => {
   if (!inTauri) return OFFLINE_SETTINGS;
@@ -24,6 +38,11 @@ export const readSettings = async (): Promise<AppSettings> => {
   } catch {
     return OFFLINE_SETTINGS;
   }
+};
+
+/** Не получилось (сочетание занято другой программой) — исключение, прежнее сочетание остаётся */
+export const setQuickHotkey = async (hotkey: string | null): Promise<void> => {
+  if (inTauri) await invoke("set_quick_hotkey", { hotkey });
 };
 
 export const setAlerts = async (mode: AlertMode): Promise<void> => {

@@ -53,6 +53,7 @@ export const MonthView = () => {
         style={eventStyle(calendars.get(event.calendarId), event)}
         onClick={() => openEvent(event)}
         title={event.title}
+        data-event-key={event.key}
       >
         {!block && <span className={s.dot} />}
         {!block && <span className={s.time}>{formatTime(event.start)}</span>}

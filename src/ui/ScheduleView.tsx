@@ -50,6 +50,7 @@ export const ScheduleView = () => {
                     className={s.event}
                     style={eventStyle(calendars.get(e.calendarId), e)}
                     onClick={() => openEvent(e)}
+                    data-event-key={e.key}
                   >
                     <span className={s.dot} />
                     <span className={s.time}>

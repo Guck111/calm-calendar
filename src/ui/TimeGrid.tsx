@@ -200,6 +200,7 @@ export const TimeGrid = () => {
                   style={eventStyle(calendars.get(e.calendarId), e)}
                   onClick={() => openEvent(e)}
                   title={e.title}
+                  data-event-key={e.key}
                 >
                   {e.title}
                 </button>
@@ -278,6 +279,7 @@ export const TimeGrid = () => {
                       onPointerDown={startDrag(event, "move")}
                       // клик мышью по своему событию обрабатывает перетаскивание; здесь — клавиатура и чужие календари
                       onClick={(e) => (e.detail === 0 || !canDrag) && openEvent(event)}
+                      data-event-key={event.key}
                       title={`${formatTime(event.start)}–${formatTime(event.end)} ${event.title}${clash ? `\n${clashText}` : ""}`}
                     >
                       <span className={s.eventTitle}>

@@ -21,8 +21,10 @@ import {
   viewChanged,
 } from "../model/view";
 import { AuthScreen } from "../ui/AuthScreen";
+import { eventElement, useEventKeys } from "./useEventKeys";
 import { EventEditor } from "../ui/EventEditor";
 import { CommandMenu } from "../ui/CommandMenu";
+import { Shortcuts } from "../ui/Shortcuts";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
 import { Sidebar } from "../ui/Sidebar";
@@ -119,6 +121,8 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
+      // на выбранном событии стрелки ходят между событиями (useEventKeys), а не по неделям
+      if (e.key.startsWith("Arrow") && eventElement(e.target)) return;
       // e.code не зависит от раскладки: работает и на русской
       const key = e.key.startsWith("Arrow") ? e.key : e.code.replace(/^Key/, "").toLowerCase();
       const action = actions[key];
@@ -149,6 +153,7 @@ const Banner = ({ text }: { text: string }) => {
 export const App = () => {
   const [status, signedIn, view, draft, loadError, offline] = useUnit([$status, $signedIn, $view, $draft, $loadError, $offlineText]);
   useAppEffects(signedIn, Boolean(draft));
+  useEventKeys(signedIn);
 
   if (!status) return <div className={s.splash} />;
   if (!signedIn) return <AuthScreen />;
@@ -163,6 +168,7 @@ export const App = () => {
       </main>
       <EventEditor />
       <CommandMenu />
+      <Shortcuts />
     </div>
   );
 };

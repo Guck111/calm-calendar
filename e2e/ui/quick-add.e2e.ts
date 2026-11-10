@@ -58,6 +58,8 @@ test("quick add: a click on the preview creates the event; a Russian phrase in t
   await input.fill("занятие спортом в 12:00, 14");
   const preview = page.getByRole("button", { name: /занятие спортом/ });
   await expect(preview).toContainText("14 November · 12:00–13:00");
+  // the hint says that a click creates too
+  await expect(preview).toContainText(t.quick.keys);
   await preview.click();
   await expect(input).toHaveValue("");
   const block = eventBlock(page, "занятие спортом");

@@ -136,7 +136,7 @@ fn set_accent_acrylic<R: Runtime>(_w: &WebviewWindow<R>, _enabled: bool) {}
 
 /// Окно без рамки в Windows 11 по умолчанию квадратное: просим DWM скруглить углы и убрать рамку
 #[cfg(windows)]
-fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
+pub fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
     use windows_sys::Win32::Graphics::Dwm::{
         DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND,
         DwmSetWindowAttribute,
@@ -162,7 +162,7 @@ fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
 }
 
 #[cfg(not(windows))]
-fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
+pub fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
 
 /// Показывает окно заметного напоминания поверх всех окон или обновляет уже открытое
 pub fn show_alert(app: &AppHandle) {

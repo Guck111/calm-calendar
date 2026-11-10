@@ -15,8 +15,10 @@ import {
   setNotifications,
   setAlerts,
   setPrivateNotifications,
+  setQuickHotkey,
   type AlertMode,
 } from "../shared/lib/glass";
+import { DEFAULT_QUICK_HOTKEY, QUICK_HOTKEYS, hotkeyLabel } from "../shared/lib/hotkeys";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
@@ -25,6 +27,8 @@ import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
 const ALERT_MODES: AlertMode[] = ["off", "calls", "all"];
+/** значение списка для выключенного сочетания */
+const OFF = "off";
 
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
@@ -33,6 +37,8 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [notify, setNotify] = useState(false);
   const [privateNotify, setPrivateNotify] = useState(false);
   const [alerts, setAlertsState] = useState<AlertMode>("off");
+  const [hotkey, setHotkeyState] = useState<string>(DEFAULT_QUICK_HOTKEY);
+  const [hotkeyError, setHotkeyError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const reschedule = useUnit(reloadRequested);
   const [secondZone, changeSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
@@ -54,8 +60,21 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
       setNotify(st.notifications);
       setPrivateNotify(st.private_notifications);
       setAlertsState(st.alerts);
+      setHotkeyState(st.quick_hotkey ?? OFF);
     });
   }, []);
+
+  const pickHotkey = async (value: string) => {
+    const previous = hotkey;
+    setHotkeyState(value);
+    setHotkeyError(null);
+    try {
+      await setQuickHotkey(value === OFF ? null : value);
+    } catch {
+      setHotkeyError(t.settings.hotkeyBusy);
+      setHotkeyState(previous);
+    }
+  };
 
   const pickAlerts = async (mode: AlertMode) => {
     const previous = alerts;
@@ -279,6 +298,26 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
             ))}
           </select>
           <small className={s.sectionText}>{t.alert.text}</small>
+        </section>
+
+        <section className={s.section}>
+          <h3>{t.settings.quickHotkey}</h3>
+          <select
+            className={s.select}
+            aria-label={t.settings.quickHotkey}
+            value={hotkey}
+            disabled={!inTauri}
+            onChange={(e) => void pickHotkey(e.target.value)}
+          >
+            <option value={OFF}>{t.settings.hotkeyOff}</option>
+            {QUICK_HOTKEYS.map((h) => (
+              <option key={h} value={h}>
+                {hotkeyLabel(h)}
+              </option>
+            ))}
+          </select>
+          <small className={s.sectionText}>{t.settings.quickHotkeyText}</small>
+          {hotkeyError && <p className={s.error}>{hotkeyError}</p>}
         </section>
 
         {inTauri && (

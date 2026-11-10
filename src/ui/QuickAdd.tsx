@@ -11,7 +11,8 @@ type Props = {
   onCreate: (draft: EventDraft) => Promise<void>;
   /** Ctrl+Enter: открыть полную форму с заполненными полями */
   onExpand: (draft: EventDraft) => void;
-  variant?: "main" | "widget";
+  /** popup — окно быстрого создания по сочетанию клавиш: строка крупнее */
+  variant?: "main" | "widget" | "popup";
 };
 
 export type QuickAddHandle = { focus: () => void };
@@ -70,7 +71,7 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
   };
 
   return (
-    <div className={cx(s.quick, variant === "widget" && s.widget)}>
+    <div className={cx(s.quick, variant === "widget" && s.widget, variant === "popup" && s.popup)}>
       <input
         ref={input}
         className={s.input}
@@ -80,7 +81,7 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
           setError(null);
         }}
         onKeyDown={onKeyDown}
-        placeholder={variant === "widget" ? t.quick.widgetPlaceholder : t.quick.placeholder(t.quick.example)}
+        placeholder={variant === "main" ? t.quick.placeholder(t.quick.example) : t.quick.widgetPlaceholder}
         disabled={busy}
         spellCheck={false}
         aria-label={t.quick.label}
