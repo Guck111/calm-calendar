@@ -13,6 +13,8 @@ export type Command =
   | { kind: "new" }
   | { kind: "today" }
   | { kind: "view"; view: ViewMode }
+  /** окно со списком сочетаний клавиш */
+  | { kind: "shortcuts" }
   /** действия с выбранным событием */
   | { kind: "tomorrow" }
   | { kind: "later" }
@@ -25,7 +27,12 @@ export type CommandSubject = { title: string; allDay: boolean; hasMeet: boolean 
 
 const VIEWS: ViewMode[] = ["day", "week", "month", "agenda"];
 
-const STATIC: Command[] = [{ kind: "new" }, { kind: "today" }, ...VIEWS.map((view) => ({ kind: "view" as const, view }))];
+const STATIC: Command[] = [
+  { kind: "new" },
+  { kind: "today" },
+  ...VIEWS.map((view) => ({ kind: "view" as const, view })),
+  { kind: "shortcuts" },
+];
 
 const COLORS: Command[] = ["", ...COLOR_IDS].map((colorId) => ({ kind: "color" as const, colorId }));
 
@@ -43,6 +50,8 @@ export const commandLabel = (c: Command): string => {
       return t.common.today;
     case "view":
       return t.toolbar.views[c.view];
+    case "shortcuts":
+      return t.shortcuts.title;
     case "tomorrow":
       return t.commands.moveTomorrow;
     case "later":

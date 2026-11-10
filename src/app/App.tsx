@@ -24,6 +24,7 @@ import { AuthScreen } from "../ui/AuthScreen";
 import { eventElement, useEventKeys } from "./useEventKeys";
 import { EventEditor } from "../ui/EventEditor";
 import { CommandMenu } from "../ui/CommandMenu";
+import { Shortcuts } from "../ui/Shortcuts";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
 import { Sidebar } from "../ui/Sidebar";
@@ -167,6 +168,7 @@ export const App = () => {
       </main>
       <EventEditor />
       <CommandMenu />
+      <Shortcuts />
     </div>
   );
 };
