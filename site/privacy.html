@@ -45,6 +45,7 @@
           <li><a href="#data-accessed">Data the app accesses</a></li>
           <li><a href="#data-use">How the data is used</a></li>
           <li><a href="#data-storage">Where the data is stored</a></li>
+          <li><a href="#protection">How we protect your data</a></li>
           <li><a href="#deleting">Deleting your data</a></li>
           <li><a href="#sharing">Sharing and disclosure</a></li>
           <li><a href="#store-google">Microsoft Store and Google</a></li>
@@ -106,6 +107,23 @@
           <li><strong>Recently loaded calendar data.</strong> The latest calendar lists and events received from Google are saved in the app's local storage so that your calendar and the widget still show your schedule when you are offline. At most the 80 most recent responses are kept; older ones are removed automatically.</li>
           <li><strong>Settings</strong>, such as theme, language, the widget position and which calendars are shown.</li>
           <li><strong>Log file.</strong> A technical log in <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> records app starts, sign-ins and sign-outs, and errors, so that problems can be investigated. It contains no event titles or descriptions and no tokens; email addresses are shortened to the first letter and the domain (<code>a***@gmail.com</code>). Up to five files of 1&nbsp;MB are kept, older ones are deleted automatically. The log never leaves your computer by itself: we see it only if you attach it to an email to support (Settings → “Open log folder”).</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="protection">
+        <h2 id="protection">How we protect your data</h2>
+        <p>Your calendar data is sensitive, so Calm Calendar is built to keep it on your computer and to limit who and what can reach it. These are the protection mechanisms in place:</p>
+        <ul>
+          <li><strong>Encryption in transit.</strong> All communication with Google uses HTTPS (TLS). The app has no other network destination and no servers of ours in between.</li>
+          <li><strong>Safe sign-in.</strong> You sign in in your normal web browser on Google's own page, so the app never sees your Google password. The sign-in uses the OAuth 2.0 authorization-code flow for desktop apps with PKCE (RFC 7636) and a random <code>state</code> check, and receives the response only on a temporary local address (<code>127.0.0.1</code>) that closes when sign-in ends.</li>
+          <li><strong>Protected sign-in token.</strong> The long-lived refresh token is stored only in Windows Credential Manager, which encrypts it with keys tied to your Windows account (Windows Data Protection API). It is never written to a plain file, to the log, or to settings. The short-lived access token is kept only in memory.</li>
+          <li><strong>Least privilege.</strong> The app requests only the Google permissions listed above, nothing for Gmail, Drive or contacts.</li>
+          <li><strong>Restricted app window.</strong> The app's interface runs under a strict Content Security Policy: it can load only its own files and cannot make network requests or load remote code. Only the app's native part talks to Google, and only to the three Google hosts named above.</li>
+          <li><strong>Local cache.</strong> Recently loaded calendar data is kept in the app's private storage inside your Windows user profile, so other Windows users on the same computer cannot read it by default. The app does not add its own encryption to this cache; for protection against someone with physical access to your computer we recommend turning on Windows device encryption (BitLocker). The cache is deleted when you sign out.</li>
+          <li><strong>No access by us.</strong> We run no servers and receive no data, so there is no database of user data that could be accessed or leaked on our side, and nobody at Calm Calendar can read your calendar.</li>
+          <li><strong>Log hygiene.</strong> The log contains no event content and no tokens, and email addresses in it are masked.</li>
+          <li><strong>Revocation.</strong> Signing out revokes the app's access at Google and removes the token from your computer; you can also revoke access from your Google Account at any time.</li>
+          <li><strong>Updates.</strong> Security fixes are released as app updates (through the Microsoft Store or GitHub releases). To report a vulnerability, write to <a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a>.</li>
         </ul>
       </section>
 
