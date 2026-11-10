@@ -99,6 +99,10 @@ export const zh: Dict = {
     color: "颜色",
     calendarColor: "日历颜色",
     colorNames: { "1": "薰衣草紫", "2": "鼠尾草绿", "3": "葡萄紫", "4": "火烈鸟粉", "5": "香蕉黄", "6": "橘橙", "7": "孔雀蓝", "8": "石墨灰", "9": "蓝莓蓝", "10": "罗勒绿", "11": "番茄红" },
+    rsvpQuestion: "是否参加？",
+    rsvpYes: "是",
+    rsvpNo: "否",
+    rsvpMaybe: "待定",
   },
   repeat: {
     label: "重复",

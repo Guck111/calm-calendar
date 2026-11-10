@@ -81,6 +81,7 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 
 - Guests field in the form: add by email with Enter or a comma, a wrong address is refused, remove with ×. Each guest shows the answer: going, not going, maybe, no reply yet; the organizer is marked.
 - Google emails the guests about the new meeting, its changes and its cancellation, as on the Google Calendar website.
+- Answer an invitation in its card: "Going? Yes · No · Maybe", shown for someone else's meeting that this account is invited to. Only your own answer goes to Google (`attendeesOmitted`), the organizer gets Google's email; in a series the answer is for that occurrence.
 - Only the organizer can change the guest list; for someone else's meeting the field is hidden and the list is left alone.
 - A meeting that two of your accounts are invited to is shown once; its card says "Also in: <other account>". The copy you can edit is the one shown.
 

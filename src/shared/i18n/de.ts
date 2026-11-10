@@ -104,6 +104,10 @@ export const de: Dict = {
     color: "Farbe",
     calendarColor: "Kalenderfarbe",
     colorNames: { "1": "Lavendel", "2": "Salbei", "3": "Traube", "4": "Flamingo", "5": "Banane", "6": "Mandarine", "7": "Pfau", "8": "Graphit", "9": "Heidelbeere", "10": "Basilikum", "11": "Tomate" },
+    rsvpQuestion: "Teilnehmen?",
+    rsvpYes: "Ja",
+    rsvpNo: "Nein",
+    rsvpMaybe: "Vielleicht",
   },
   repeat: {
     label: "Wiederholen",

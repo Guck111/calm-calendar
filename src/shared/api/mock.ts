@@ -154,6 +154,21 @@ const enEvents = (): Record<string, Json[]> => ({
       // в то же время, что и Dentist в личном аккаунте: пересечение
       [2, "Hiring panel", [15, 30], [16, 30]],
       [3, "Focus time", [13, 0], [16, 0]],
+      // чужая встреча, рабочий аккаунт приглашён и ещё не ответил
+      [
+        1,
+        "Quarterly planning",
+        [16, 0],
+        [17, 0],
+        {
+          organizer: { email: "boss@example.com", displayName: "Kate" },
+          attendees: [
+            { email: "boss@example.com", displayName: "Kate", organizer: true, responseStatus: "accepted" },
+            { email: WORK, self: true, responseStatus: "needsAction" },
+            { email: "sam@example.com", displayName: "Sam", responseStatus: "tentative" },
+          ],
+        },
+      ],
       [
         4,
         "1:1 with Sam",
@@ -309,6 +324,16 @@ const google = (
     const [moved] = list.splice(index, 1);
     (events[q.destination] ??= []).push(moved);
     return moved;
+  }
+  // ответ на приглашение: Google меняет только ответы перечисленных гостей, остальной список остаётся
+  if (method === "PATCH" && body?.attendeesOmitted) {
+    const current = list[index] ?? instance;
+    const answers = new Map((body.attendees as { email: string; responseStatus: string }[]).map((a) => [a.email, a.responseStatus]));
+    const attendees = ((current?.attendees as { email: string }[] | undefined) ?? []).map((a) =>
+      answers.has(a.email) ? { ...a, responseStatus: answers.get(a.email) } : a,
+    );
+    const { attendeesOmitted: _, attendees: __, ...rest } = body;
+    body = { ...rest, attendees };
   }
   if (method === "PATCH") {
     if (instance) {

@@ -1,7 +1,16 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { logError } from "../shared/lib/log";
 import { t } from "../shared/i18n";
-import { deleteOccurrence, draftZone, loadRecurrence, recurrenceEdited, saveEvent } from "../shared/api/calendar";
+import {
+  deleteOccurrence,
+  draftZone,
+  loadRecurrence,
+  recurrenceEdited,
+  respondToEvent,
+  saveEvent,
+  withResponse,
+  type ResponseStatus,
+} from "../shared/api/calendar";
 import { wallClock } from "../shared/lib/tz";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import {
@@ -33,6 +42,11 @@ export const deleteClicked = createEvent();
 /** ответ на вопрос «только это событие или это и следующие» */
 export const scopeChosen = createEvent<Scope>();
 export const scopeCancelled = createEvent();
+/** ответ на приглашение в карточке чужой встречи */
+export const rsvpClicked = createEvent<ResponseStatus>();
+export const rsvpFx = createEffect<{ event: CalendarEvent; status: ResponseStatus }, void, AppError>(({ event, status }) =>
+  respondToEvent(event, status),
+);
 /** «Создать копию» в карточке события */
 export const duplicateClicked = createEvent();
 
@@ -225,6 +239,16 @@ const duplicated = sample({
   fn: ({ opened, writable }) => duplicateDraft(opened as CalendarEvent, writable.map((c) => c.id)),
 });
 $draft.on(duplicated, (_, d) => d);
+
+sample({
+  clock: rsvpClicked,
+  source: $opened,
+  filter: (opened) => Boolean(opened),
+  fn: (event, status) => ({ event: event as CalendarEvent, status }),
+  target: rsvpFx,
+});
+// карточка сразу показывает новый ответ, события перечитываются следом
+$opened.on(rsvpFx.done, (e, { params }) => (e && e.key === params.event.key ? withResponse(e, params.status) : e));
 $opened.reset(duplicated);
 $mode.on(duplicated, () => "edit");
 
@@ -272,12 +296,12 @@ export const $askScope = createStore<"save" | "delete" | null>(null)
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
-  .on([saveFx.failData, deleteFx.failData], (_, e) => e.message)
+  .on([saveFx.failData, deleteFx.failData, rsvpFx.failData], (_, e) => e.message)
   .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteFx, duplicated]);
 
 export const $busy = sample({
-  source: { save: saveFx.pending, del: deleteFx.pending },
-  fn: ({ save, del }) => save || del,
+  source: { save: saveFx.pending, del: deleteFx.pending, rsvp: rsvpFx.pending },
+  fn: ({ save, del, rsvp }) => save || del || rsvp,
 });
 
 const $validationError = $draft.map((d) => (d ? validate(d) : null));
@@ -356,7 +380,8 @@ sample({
   target: actionFailed,
 });
 
-sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally], target: reloadRequested });
+sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally, rsvpFx.done], target: reloadRequested });
+rsvpFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 // ошибки самого интерфейса при сохранении (ответы Google пишет Rust) — в журнал
 for (const [name, fx] of [["save", saveFx], ["delete", deleteFx], ["move", moveFx]] as const) {
@@ -368,7 +393,7 @@ saveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 deleteFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 
 sample({
-  clock: [saveFx.failData, deleteFx.failData, moveFx.failData, loadSeriesFx.failData],
+  clock: [saveFx.failData, deleteFx.failData, moveFx.failData, loadSeriesFx.failData, rsvpFx.failData],
   filter: (e) => e.kind === "not_signed_in",
   target: sessionLost,
 });

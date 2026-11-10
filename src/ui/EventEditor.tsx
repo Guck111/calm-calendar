@@ -17,6 +17,7 @@ import {
   draftChanged,
   duplicateClicked,
   editCancelled,
+  rsvpClicked,
   editClicked,
   editorClosed,
   saveClicked,
@@ -24,7 +25,7 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
-import { draftZone, hasGuests } from "../shared/api/calendar";
+import { draftZone, hasGuests, myResponse, type ResponseStatus } from "../shared/api/calendar";
 import type { Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
 import { addDays, formatSpan as travelSpan, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
 import { fromZoned, wallClock, zoneLabel } from "../shared/lib/tz";
@@ -183,9 +184,42 @@ const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
   return <p className={s.note}>{t.editor.yourTime(text)}</p>;
 };
 
+const ANSWERS = ["accepted", "declined", "tentative"] as const;
+
+/** «Пойдёте? Да · Нет · Может быть» у чужой встречи, куда позвали этот аккаунт */
+const RsvpButtons = ({
+  response,
+  busy,
+  onAnswer,
+}: {
+  response: ResponseStatus;
+  busy: boolean;
+  onAnswer: (status: ResponseStatus) => void;
+}) => {
+  const label = { accepted: t.editor.rsvpYes, declined: t.editor.rsvpNo, tentative: t.editor.rsvpMaybe };
+  return (
+    <div className={s.rsvp} role="group" aria-label={t.editor.rsvpQuestion}>
+      <span className={s.rsvpQuestion}>{t.editor.rsvpQuestion}</span>
+      {ANSWERS.map((status) => (
+        <button
+          key={status}
+          type="button"
+          aria-pressed={response === status}
+          className={cx(s.rsvpOption, response === status && s.rsvpOn)}
+          disabled={busy}
+          onClick={() => response !== status && onAnswer(status)}
+        >
+          {label[status]}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 /** Карточка события: только просмотр, правка по кнопке */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
-  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable] = useUnit([
+  const response = myResponse(event);
+  const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable, rsvp] = useUnit([
     $calendarById,
     $accounts,
     $busy,
@@ -196,6 +230,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
     deleteClicked,
     duplicateClicked,
     $writableCalendars,
+    rsvpClicked,
   ]);
   const calendar = byId.get(event.calendarId);
   return (
@@ -220,6 +255,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
           <span className={s.provider}>{event.meeting.provider}</span>
         </Button>
       )}
+      {response && <RsvpButtons response={response} busy={busy} onAnswer={rsvp} />}
       <dl className={s.details}>
         <dt>{t.common.calendar}</dt>
         <dd>

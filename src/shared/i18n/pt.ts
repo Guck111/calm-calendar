@@ -104,6 +104,10 @@ export const pt: Dict = {
     color: "Cor",
     calendarColor: "Cor da agenda",
     colorNames: { "1": "Lavanda", "2": "Sálvia", "3": "Uva", "4": "Flamingo", "5": "Banana", "6": "Tangerina", "7": "Pavão", "8": "Grafite", "9": "Mirtilo", "10": "Manjericão", "11": "Tomate" },
+    rsvpQuestion: "Vai participar?",
+    rsvpYes: "Sim",
+    rsvpNo: "Não",
+    rsvpMaybe: "Talvez",
   },
   repeat: {
     label: "Repetir",

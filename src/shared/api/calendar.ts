@@ -488,6 +488,32 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
   await api(calendarId, "PATCH", one(draft.id), saveQuery(draft), body);
 };
 
+export type ResponseStatus = NonNullable<Attendee["responseStatus"]>;
+
+/** Свой ответ на приглашение; undefined — встреча своя или аккаунт не в списке гостей */
+export const myResponse = (e: CalendarEvent): ResponseStatus | undefined => {
+  if (e.organizerSelf !== false) return undefined;
+  const me = e.attendees?.find((a) => a.self);
+  return me ? (me.responseStatus ?? "needsAction") : undefined;
+};
+
+/** Ответить на приглашение. attendeesOmitted: в Google уходит только свой ответ, список остальных гостей
+ *  не трогаем (Google может прислать его не целиком). У повторения серии — ответ на это повторение */
+export const respondToEvent = async (e: CalendarEvent, status: ResponseStatus): Promise<void> => {
+  const me = e.attendees?.find((a) => a.self);
+  if (!me) throw { kind: "other", message: "not invited" };
+  await api(e.calendarId, "PATCH", one(e.id), { sendUpdates: "all" }, {
+    attendeesOmitted: true,
+    attendees: [{ email: me.email, responseStatus: status }],
+  });
+};
+
+/** то же событие с новым своим ответом */
+export const withResponse = (e: CalendarEvent, status: ResponseStatus): CalendarEvent => ({
+  ...e,
+  attendees: e.attendees?.map((a) => (a.self ? { ...a, responseStatus: status } : a)),
+});
+
 export const deleteEvent = (calendarId: string, eventId: string, query?: Record<string, string>): Promise<void> =>
   api(calendarId, "DELETE", one(eventId), query);
 
