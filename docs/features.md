@@ -30,6 +30,7 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 - [Privacy and permissions](#privacy-and-permissions)
 - [Installation and updates](#installation-and-updates)
 - [Not there yet](#not-there-yet)
+- [Tests](#tests)
 
 ## Google accounts and sign-in
 
@@ -209,4 +210,10 @@ Gear button in the toolbar:
 
 ## Not there yet
 
-See `docs/todo.md`: Google Tasks and Outlook (need new Google permissions), location suggestions and maps, end-to-end tests, native-speaker review of the translations.
+Planned next: stage 3a (answering invitations, Google Meet, event colors, duplicate, Ctrl+K command menu, last sync time), the style rework, Google Tasks and finding a time (need new Google permissions), Outlook, location suggestions and maps, native-speaker review of the translations.
+
+## Tests
+
+- Unit tests (`npm test`, `cargo test`).
+- Interface tests in Chrome on mock data with a fixed clock, on every push (`e2e/ui`, README → Checks).
+- Tests of the real app on Windows under tauri-driver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, run by hand).

@@ -26,6 +26,13 @@ dist-ssr
 # файл клиента OAuth, скачанный из Google Cloud
 client_secret*.json
 
-# отчёты аудита и исследования: только для себя
+# отчёты аудита, исследования, план работы и список дел: только для себя
 docs/audit-*.md
 docs/research-*.md
+docs/next-steps.md
+docs/todo.md
+
+# Playwright: reports and traces of the interface tests
+test-results
+playwright-report
+e2e/.drivers

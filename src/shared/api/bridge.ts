@@ -27,9 +27,14 @@ const localize = (e: AppError): AppError => {
 };
 
 
+// Сборка для автотестов приложения (VITE_CALM_MOCK=1, npm run build:e2e): вход и запросы к Google идут
+// в подставные данные, всё остальное (окна, трей, напоминания) — в настоящий Rust. В обычную сборку не попадает
+const MOCK_IN_APP = import.meta.env.VITE_CALM_MOCK === "1";
+const MOCKED = new Set(["auth_status", "sign_in", "sign_out", "save_client_config", "google_request"]);
+
 // в браузере без Tauri (npm run dev) работаем на подставных данных
 const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
-  if (inTauri || !import.meta.env.DEV) return invoke<T>(cmd, args);
+  if (MOCK_IN_APP ? !MOCKED.has(cmd) : inTauri || !import.meta.env.DEV) return invoke<T>(cmd, args);
   const { mockInvoke } = await import("./mock");
   return (await mockInvoke(cmd, args)) as T;
 };

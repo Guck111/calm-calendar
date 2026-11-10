@@ -8,7 +8,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:ui": "playwright test",
+    "typecheck:e2e": "tsc -p e2e",
+    "build:e2e": "tsc && vite build --mode e2e",
+    "build:app-e2e": "tauri build --debug --no-bundle --config src-tauri/tauri.e2e.conf.json",
+    "test:app": "node --test --test-concurrency=1 \"e2e/app/*.app.mjs\""
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -20,13 +25,15 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@tauri-apps/cli": "^2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^6.0.2",
     "typescript": "~6.0.3",
     "vite": "^8.0.16",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "webdriverio": "^10.1.0"
   },
   "description": "Calendar for Windows without ads"
 }
