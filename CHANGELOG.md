@@ -2,7 +2,7 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
-## Unreleased
+## 0.8.0 — 2026-11-10
 
 ### New
 

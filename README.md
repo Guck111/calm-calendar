@@ -77,7 +77,7 @@ npm run tauri build    # installers in src-tauri\target\release\bundle\
 Every push to `main` runs tests only (the `ci` workflow). Installers come from the `release` workflow:
 
 1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
-2. Commit and tag: `git tag v0.7.1` and `git push origin main v0.7.1`.
+2. Commit and tag: `git tag v0.8.0` and `git push origin main v0.8.0`.
 3. In 10–15 minutes a release with `.exe` and `.msi` appears under Releases.
 
 To build without a tag: Actions → release → Run workflow. The installers will be in that run's Artifacts.
