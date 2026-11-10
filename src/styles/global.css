@@ -22,8 +22,81 @@
   --canvas: var(--surface);
   --canvas-dim: var(--bg);
 
+  /* Ниже — ручки стилей оформления (styles/styles.css) со значениями «Классического» */
+
+  /* шрифты: стиль задаёт свои, выбранные в настройках пишутся прямо на <html> (lib/appearance.ts);
+     --font-fallback — шрифты Windows для письменностей, которых нет в выбранном шрифте */
+  --font-fallback: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-text: var(--font-fallback);
+  --font-display: var(--font-fallback);
+  /* крупные часы виджета: в «Классическом» — шрифт текста, в остальных стилях
+     и при выбранном шрифте заголовков — шрифт заголовков */
+  --font-clock: var(--font-text);
+  /* время событий и подписи часов; «Монохром» ставит моноширинный */
+  --font-time: var(--font-text);
+  /* заголовок периода, числа дней, месяц в боковой панели */
+  --display-weight: 600;
+  --display-tracking: normal;
+  --title-size: 18px;
+  --mini-head-size: 13px;
+  --date-size: 19px;
+  --date-weight: 400;
+  --date-radius: 17px;
+
+  /* сегодня: число в шапке дня, вся шапка дня, колонка дня в сетке */
+  --today-date-bg: var(--accent);
+  --today-date-fg: var(--accent-text);
+  --today-weekday: var(--accent);
+  --today-head-bg: transparent;
+  --today-head-fg: inherit;
+  --today-head-shadow: none;
+  --today-glow: none;
+  --today-column: transparent;
+  --mini-today-radius: 50%;
+  --now-glow: none;
+
+  /* события: доля цвета календаря в заливке, полоса по краю, рамка, метка перед названием.
+     Цвет события (--c) есть только на самом событии, поэтому здесь — проценты и ширины */
+  --event-radius: 4px;
+  --event-fill: 22%;
+  --event-fill-hover: 34%;
+  --event-fill-base: var(--surface);
+  --event-bar-width: 3px;
+  --event-bar-mix: 100%;
+  --event-edge-width: 0px;
+  --event-edge-mix: 0%;
+  --event-edge-base: transparent;
+  /* 100% — белый или тёмный текст по яркости цвета события (сплошная заливка) */
+  --event-ink-auto: 0%;
+  --event-sub-tint: 0%;
+  --event-sub-base: var(--text-2);
+  --event-sub-ink: 0%;
+  --event-marker: none;
+  --event-marker-size: 7px;
+  --event-marker-radius: 50%;
+  --event-shadow: none;
+
+  /* окно: отступы вокруг панелей, скругления и тени панелей («Витрина») */
+  --shell-gap: 0px;
+  --panel-radius: 0px;
+  --panel-shadow: none;
+  --panel-divider: 1px;
+
+  /* кнопки и переключатели */
+  --control-radius: var(--radius-sm);
+  --seg-radius: 8px;
+  --seg-item-radius: 6px;
+  --seg-active-bg: var(--surface);
+  --seg-active-fg: var(--text);
+  --create-radius: 20px;
+  /* кружок переключателя в настройках; в «Витрине» акцент тёмной темы светлый */
+  --switch-knob: #fff;
+  --switch-knob-on: #fff;
+  --widget-radius: 18px;
+  --clock-weight: 300;
+
   color-scheme: light;
-  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-text);
   font-size: 14px;
   line-height: 1.4;
   color: var(--text);
@@ -36,16 +109,16 @@
   transform: scaleX(-1);
 }
 
-/* шрифты интерфейса Windows для письменностей, которых нет в Segoe UI */
+/* шрифты интерфейса Windows для письменностей, которых нет в Segoe UI и шрифтах стилей */
 :root:lang(ja) {
-  font-family: "Segoe UI Variable Text", "Yu Gothic UI", "Meiryo UI", system-ui, sans-serif;
+  --font-fallback: "Segoe UI Variable Text", "Yu Gothic UI", "Meiryo UI", system-ui, sans-serif;
 }
 :root:lang(zh) {
-  font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", system-ui, sans-serif;
+  --font-fallback: "Segoe UI Variable Text", "Microsoft YaHei UI", system-ui, sans-serif;
 }
 :root:lang(hi),
 :root:lang(bn) {
-  font-family: "Segoe UI Variable Text", "Nirmala UI", system-ui, sans-serif;
+  --font-fallback: "Segoe UI Variable Text", "Nirmala UI", system-ui, sans-serif;
 }
 
 /* тема: data-theme="light" | "dark" на <html>, без атрибута — как в системе */

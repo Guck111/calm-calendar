@@ -20,6 +20,20 @@ import {
 } from "../shared/lib/glass";
 import { DEFAULT_QUICK_HOTKEY, QUICK_HOTKEYS, hotkeyLabel } from "../shared/lib/hotkeys";
 import { followTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
+import {
+  DISPLAY_FONTS,
+  FONT_NAMES,
+  STYLES,
+  STYLE_FONTS,
+  TEXT_FONTS,
+  fontStack,
+  followAppearance,
+  readAppearance,
+  saveAppearance,
+  type Appearance,
+  type FontChoice,
+  type FontId,
+} from "../shared/lib/appearance";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
 import { Close, Gear } from "./icons";
@@ -30,8 +44,43 @@ const ALERT_MODES: AlertMode[] = ["off", "calls", "all"];
 /** значение списка для выключенного сочетания */
 const OFF = "off";
 
+/** список шрифтов: первым — шрифт стиля, каждый шрифт показан им самим */
+const FontSelect = ({
+  label,
+  value,
+  fonts,
+  styleFont,
+  onChange,
+}: {
+  label: string;
+  value: FontChoice;
+  fonts: readonly FontId[];
+  styleFont: FontId;
+  onChange: (v: FontChoice) => void;
+}) => (
+  <label className={s.field}>
+    <span>{label}</span>
+    <select
+      className={s.select}
+      value={value}
+      style={{ fontFamily: fontStack(value === "auto" ? styleFont : value) }}
+      onChange={(e) => onChange(e.target.value as FontChoice)}
+    >
+      <option value="auto" style={{ fontFamily: fontStack(styleFont) }}>
+        {t.settings.fontAuto(FONT_NAMES[styleFont])}
+      </option>
+      {fonts.map((id) => (
+        <option key={id} value={id} style={{ fontFamily: fontStack(id) }}>
+          {FONT_NAMES[id]}
+        </option>
+      ))}
+    </select>
+  </label>
+);
+
 const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [theme, setTheme] = useState(readTheme);
+  const [appearance, setAppearance] = useState(readAppearance);
   const [language] = useState(readLangSetting);
   const [glass, setGlassState] = useState(false);
   const [notify, setNotify] = useState(false);
@@ -112,6 +161,7 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   };
 
   useEffect(() => followTheme(setTheme), []);
+  useEffect(() => followAppearance(setAppearance), []);
   useEffect(() => initGlass(setGlassState), []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -123,6 +173,13 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
     saveTheme(t);
     setTheme(t);
   };
+
+  const changeAppearance = (patch: Partial<Appearance>) => {
+    const next = { ...appearance, ...patch };
+    saveAppearance(next);
+    setAppearance(next);
+  };
+  const styleFonts = STYLE_FONTS[appearance.style];
 
   const toggleGlass = async (enabled: boolean) => {
     setGlassState(enabled);
@@ -159,6 +216,45 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
                 {t.settings.themes[id]}
               </button>
             ))}
+          </div>
+        </section>
+
+        <section className={s.section}>
+          <h3>{t.settings.style}</h3>
+          <div className={s.styles} role="radiogroup" aria-label={t.settings.style}>
+            {STYLES.map((id) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={appearance.style === id}
+                className={cx(s.styleCard, appearance.style === id && s.styleActive)}
+                onClick={() => changeAppearance({ style: id })}
+              >
+                {/* образец стиля: те же переменные, что у окна в этом стиле (styles.css) */}
+                <span className={s.preview} data-style-preview={id} aria-hidden>
+                  <span className={s.previewAa}>Aa</span>
+                  <span className={s.previewToday} />
+                  <span className={s.previewEvent} />
+                </span>
+                <span className={s.styleName}>{t.settings.styles[id]}</span>
+              </button>
+            ))}
+          </div>
+          <div className={s.fonts}>
+            <FontSelect
+              label={t.settings.displayFont}
+              value={appearance.display}
+              fonts={DISPLAY_FONTS}
+              styleFont={styleFonts.display}
+              onChange={(display) => changeAppearance({ display })}
+            />
+            <FontSelect
+              label={t.settings.textFont}
+              value={appearance.text}
+              fonts={TEXT_FONTS}
+              styleFont={styleFonts.text}
+              onChange={(text) => changeAppearance({ text })}
+            />
           </div>
         </section>
 

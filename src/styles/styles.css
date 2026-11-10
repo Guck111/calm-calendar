@@ -1,0 +1,260 @@
+/* Стили оформления: атрибут data-style на <html> (lib/appearance.ts). Без атрибута — «Классический»,
+   его значения — в global.css. Каждый стиль задаёт цвета для светлой и тёмной темы через light-dark():
+   какую половину брать, решает color-scheme, а его выставляет тема в global.css.
+   Здесь только переменные; компоненты читают их в своих .module.css.
+   Подключается после global.css: те же селекторы, побеждает позднее правило */
+
+/* Образцы стилей в настройках (data-style-preview): сначала значения «Классического»,
+   ниже каждый стиль переопределяет свои. Цвета классики — те же, что в global.css */
+[data-style-preview] {
+  --bg: light-dark(#f7f7f5, #161618);
+  --surface: light-dark(#ffffff, #1e1e21);
+  --border: light-dark(#e4e4e0, #2e2e33);
+  --text: light-dark(#1d1d1f, #ececef);
+  --accent: light-dark(#3b6fe0, #6f9bff);
+  --app-bg: var(--bg);
+  --font-display: var(--font-fallback);
+  --display-weight: 600;
+  --display-tracking: normal;
+  --event-radius: 4px;
+  --event-fill: 22%;
+  --event-fill-base: var(--surface);
+  --event-bar-width: 3px;
+  --event-bar-mix: 100%;
+  --event-edge-width: 0px;
+  --event-edge-mix: 0%;
+  --event-edge-base: transparent;
+}
+
+/* ── Бумага: тёплая бумага, заголовки с засечками, терракота ───────────────────────── */
+:root[data-style="paper"],
+[data-style-preview="paper"] {
+  --bg: light-dark(#f6f3ee, #1a1816);
+  --surface: light-dark(#fffdf9, #23201c);
+  --surface-2: light-dark(#ede7dd, #2d2925);
+  --border: light-dark(#e4ded4, #353029);
+  --border-strong: light-dark(#d3cabc, #4a433b);
+  --text: light-dark(#1c1a17, #efe9e1);
+  --text-2: light-dark(#5f594f, #b3ab9f);
+  --text-3: light-dark(#6b655c, #9a9287);
+  --accent: light-dark(#a2462b, #e3906c);
+  --accent-soft: light-dark(#f4e8e0, #33261f);
+  --accent-text: light-dark(#ffffff, #1a1816);
+  --danger: light-dark(#b53a2e, #ff7b6b);
+  --now: var(--accent);
+  --shadow: 0 12px 40px light-dark(rgba(60, 40, 20, 0.14), rgba(0, 0, 0, 0.5)),
+    0 2px 8px light-dark(rgba(60, 40, 20, 0.06), rgba(0, 0, 0, 0.3));
+  --app-bg: var(--bg);
+  --chrome: var(--bg);
+  --canvas: var(--bg);
+  --canvas-dim: light-dark(#f0ebe3, #1f1c19);
+
+  --font-display: "Cormorant Garamond Variable", Georgia, var(--font-fallback);
+  --font-clock: var(--font-display);
+  --font-text: "Inter Variable", var(--font-fallback);
+  --display-weight: 500;
+  --display-tracking: -0.01em;
+  --title-size: 24px;
+  --mini-head-size: 18px;
+  --date-size: 28px;
+  --date-weight: 500;
+
+  --today-date-bg: transparent;
+  --today-date-fg: var(--accent);
+  --today-column: var(--surface);
+
+  --event-radius: 8px;
+  --event-fill: 16%;
+  --event-fill-hover: 26%;
+  --event-bar-width: 0px;
+  --event-marker: block;
+  --event-marker-size: 6px;
+  --event-marker-radius: 50%;
+
+  --control-radius: 999px;
+  --seg-radius: 999px;
+  --seg-item-radius: 999px;
+  --create-radius: 999px;
+  --widget-radius: 20px;
+  --clock-weight: 500;
+}
+
+/* ── Обсидиан: стекло, шампань, мягкие цветные пятна под панелями ──────────────────── */
+:root[data-style="obsidian"],
+[data-style-preview="obsidian"] {
+  --bg: light-dark(#f3f1ee, #0c0d10);
+  --surface: light-dark(#ffffff, #16171c);
+  --surface-2: light-dark(#ecebe7, #1f2026);
+  --border: light-dark(#e3e0db, #24252b);
+  --border-strong: light-dark(#d0ccc5, #34353c);
+  --text: light-dark(#16171c, #edeae4);
+  --text-2: light-dark(#57544f, #a39e97);
+  --text-3: light-dark(#6a665f, #8c8780);
+  --accent: light-dark(#7d6240, #d8c3a5);
+  --accent-soft: light-dark(#efe7db, #24211c);
+  --accent-text: light-dark(#ffffff, #14130f);
+  --now: var(--accent);
+  --shadow: 0 16px 48px light-dark(rgba(20, 20, 30, 0.16), rgba(0, 0, 0, 0.55)),
+    0 2px 8px light-dark(rgba(20, 20, 30, 0.06), rgba(0, 0, 0, 0.3));
+  --app-bg: radial-gradient(60% 55% at 0% 0%, light-dark(#e2edf1, #183140) 0%, transparent 70%),
+    radial-gradient(55% 50% at 90% 100%, light-dark(#f0e4ee, #2e1e35) 0%, transparent 70%), var(--bg);
+  --chrome: color-mix(in srgb, var(--surface) 72%, transparent);
+  --canvas: color-mix(in srgb, var(--surface) 58%, transparent);
+  --canvas-dim: color-mix(in srgb, var(--bg) 45%, transparent);
+
+  --font-display: "Manrope Variable", var(--font-fallback);
+  --font-clock: var(--font-display);
+  --font-text: "Manrope Variable", var(--font-fallback);
+  --display-weight: 700;
+  --display-tracking: -0.02em;
+  --title-size: 20px;
+  --date-weight: 700;
+  --date-radius: 999px;
+
+  --today-glow: 0 0 22px color-mix(in srgb, var(--accent) 40%, transparent);
+  --today-column: color-mix(in srgb, var(--accent) 6%, transparent);
+  --now-glow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
+
+  --event-radius: 10px;
+  --event-fill: 16%;
+  --event-fill-hover: 26%;
+  --event-bar-width: 0px;
+  --event-bar-mix: 0%;
+  --event-edge-width: 1px;
+  --event-edge-mix: 34%;
+  --event-edge-base: transparent;
+  --event-sub-tint: 35%;
+  --event-sub-base: var(--text);
+  --event-shadow: inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.05));
+
+  --control-radius: 10px;
+  --seg-radius: 12px;
+  --seg-item-radius: 9px;
+  --create-radius: 12px;
+  --widget-radius: 24px;
+}
+
+/* ── Витрина: плавающие панели, сплошные события, крупный широкий шрифт ────────────── */
+:root[data-style="showcase"],
+[data-style-preview="showcase"] {
+  --bg: light-dark(#e9ecf2, #07080b);
+  --surface: light-dark(#ffffff, #14161d);
+  --surface-2: light-dark(#f2f4f8, #1d2029);
+  --border: light-dark(#eceef3, #222633);
+  --border-strong: light-dark(#dde1e8, #2f3546);
+  --text: light-dark(#10131a, #eef1f7);
+  --text-2: light-dark(#5b6170, #a3aaba);
+  --text-3: light-dark(#5b6170, #8d94a5);
+  --accent: light-dark(#10131a, #eef1f7);
+  --accent-soft: light-dark(#e3e9fb, #252b3b);
+  --accent-text: light-dark(#ffffff, #10131a);
+  --now: var(--accent);
+  --shadow: 0 16px 48px light-dark(rgba(16, 24, 40, 0.16), rgba(0, 0, 0, 0.55)),
+    0 2px 8px light-dark(rgba(16, 24, 40, 0.06), rgba(0, 0, 0, 0.3));
+  --app-bg: var(--bg);
+  --chrome: var(--surface);
+  --canvas: var(--surface);
+  --canvas-dim: var(--surface-2);
+
+  --font-display: "Unbounded Variable", var(--font-fallback);
+  --font-clock: var(--font-display);
+  --font-text: "Onest Variable", var(--font-fallback);
+  --display-weight: 600;
+  --display-tracking: -0.02em;
+  --title-size: 20px;
+  --date-size: 18px;
+  --date-weight: 600;
+  --date-radius: 12px;
+
+  --today-head-bg: var(--accent);
+  --today-head-fg: var(--accent-text);
+  --today-weekday: var(--accent-text);
+  --today-date-bg: transparent;
+  --today-date-fg: var(--accent-text);
+  --today-column: color-mix(in srgb, var(--text) 3%, transparent);
+
+  --event-radius: 12px;
+  --event-fill: 100%;
+  --event-fill-hover: 88%;
+  --event-fill-base: var(--text);
+  --event-bar-width: 0px;
+  --event-ink-auto: 100%;
+  --event-sub-ink: 100%;
+
+  --shell-gap: 12px;
+  --panel-radius: 22px;
+  --panel-shadow: 0 1px 2px light-dark(rgba(16, 24, 40, 0.04), rgba(0, 0, 0, 0.3)),
+    0 8px 24px light-dark(rgba(16, 24, 40, 0.06), rgba(0, 0, 0, 0.35));
+  --panel-divider: 0px;
+
+  --control-radius: 999px;
+  --seg-radius: 999px;
+  --seg-item-radius: 999px;
+  --seg-active-bg: var(--accent);
+  --seg-active-fg: var(--accent-text);
+  --switch-knob-on: var(--accent-text);
+  --create-radius: 14px;
+  --widget-radius: 28px;
+  --clock-weight: 600;
+}
+
+/* ── Монохром: чёрно-белый, моноширинные цифры, один сигнальный цвет ───────────────── */
+:root[data-style="mono"],
+[data-style-preview="mono"] {
+  --bg: light-dark(#ffffff, #0a0a0a);
+  --surface: light-dark(#ffffff, #111111);
+  --surface-2: light-dark(#f4f4f4, #171717);
+  --border: light-dark(#e8e8e8, #1e1e1e);
+  --border-strong: light-dark(#d0d0d0, #2e2e2e);
+  --text: light-dark(#0a0a0a, #ededed);
+  --text-2: light-dark(#5e5e5e, #9a9a9a);
+  --text-3: light-dark(#6e6e6e, #8a8a8a);
+  --accent: light-dark(#d13a12, #ff5b2e);
+  --accent-soft: light-dark(#fdeee8, #2a1610);
+  --accent-text: light-dark(#ffffff, #0a0a0a);
+  --now: var(--accent);
+  --app-bg: var(--bg);
+  --chrome: var(--bg);
+  --canvas: var(--bg);
+  --canvas-dim: var(--surface-2);
+
+  --font-display: "Geist Mono Variable", ui-monospace, var(--font-fallback);
+  --font-clock: var(--font-display);
+  --font-text: "Geist Variable", var(--font-fallback);
+  --font-time: "Geist Mono Variable", ui-monospace, var(--font-fallback);
+  --display-weight: 600;
+  --display-tracking: -0.03em;
+  --title-size: 22px;
+  --date-size: 20px;
+  --date-weight: 500;
+  --date-radius: 3px;
+
+  --today-date-bg: transparent;
+  --today-date-fg: var(--accent);
+  --today-weekday: var(--accent);
+  --today-head-shadow: inset 0 2px 0 var(--accent);
+  --today-column: color-mix(in srgb, var(--text) 3%, transparent);
+  --mini-today-radius: 3px;
+
+  --event-radius: 4px;
+  --event-fill: 0%;
+  --event-fill-hover: 10%;
+  --event-fill-base: var(--surface-2);
+  --event-bar-width: 0px;
+  --event-bar-mix: 0%;
+  --event-edge-width: 1px;
+  --event-edge-mix: 0%;
+  --event-edge-base: var(--border-strong);
+  --event-marker: block;
+  --event-marker-size: 7px;
+  --event-marker-radius: 1px;
+
+  --control-radius: 4px;
+  --seg-radius: 4px;
+  --seg-item-radius: 2px;
+  --seg-active-bg: var(--text);
+  --seg-active-fg: var(--bg);
+  --create-radius: 4px;
+  --widget-radius: 6px;
+  --clock-weight: 500;
+}

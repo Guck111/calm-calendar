@@ -42,23 +42,36 @@
   min-width: 34px;
   height: 34px;
   padding: 0 6px;
-  border-radius: 17px;
+  border-radius: var(--date-radius);
   display: grid;
   place-items: center;
-  font-size: 19px;
+  font-family: var(--font-display);
+  font-size: var(--date-size);
+  font-weight: var(--date-weight);
+  font-variant-numeric: lining-nums;
   color: var(--text);
 }
 
+/* шапка сегодняшнего дня: в «Витрине» — плашка целиком, в «Монохроме» — черта сверху */
+.today {
+  margin-inline: 3px;
+  border-radius: var(--date-radius);
+  background: var(--today-head-bg);
+  color: var(--today-head-fg);
+  box-shadow: var(--today-head-shadow);
+}
+
 .today .weekday {
-  color: var(--accent);
+  color: var(--today-weekday);
   font-weight: 600;
 }
 
 .today .date,
 .today:not(:disabled):hover .date {
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
+  background: var(--today-date-bg);
+  color: var(--today-date-fg);
+  box-shadow: var(--today-glow);
+  font-weight: max(600, var(--date-weight));
 }
 
 .single .dayHead {
@@ -90,12 +103,31 @@
   min-width: 0;
 }
 
+/* цвет текста на событии: обычный или, при сплошной заливке («Витрина»), белый либо тёмный
+   по яркости цвета события; без поддержки относительных цветов остаётся обычный */
+.allDayEvent,
+.event {
+  --tone: var(--c);
+  --ink: color-mix(
+    in srgb,
+    oklch(from var(--tone) clamp(0.16, (0.58 - l) * 1000, 1) 0 0) var(--event-ink-auto),
+    var(--text)
+  );
+  color: var(--ink);
+}
+
+/* «Витрина»: сплошная заливка темнее светлых цветов Google, чтобы текст на ней был белым */
+:global(:root[data-style="showcase"]) .allDayEvent,
+:global(:root[data-style="showcase"]) .event {
+  --tone: oklch(from var(--c) min(l, 0.56) c h);
+}
+
 .allDayEvent {
   height: 22px;
   padding: 0 8px;
   border: 0;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--c) 24%, var(--surface));
+  border-radius: min(var(--event-radius), 11px);
+  background: color-mix(in srgb, var(--tone) min(100%, var(--event-fill) + 2%), var(--event-fill-base));
   font-size: 12px;
   text-align: start;
   overflow: hidden;
@@ -104,7 +136,7 @@
 }
 
 .allDayEvent:hover {
-  background: color-mix(in srgb, var(--c) 36%, var(--surface));
+  background: color-mix(in srgb, var(--tone) min(100%, var(--event-fill-hover) + 2%), var(--event-fill-base));
 }
 
 .scroll {
@@ -128,6 +160,7 @@
   position: relative;
   top: -8px;
   padding-inline-end: 8px;
+  font-family: var(--font-time);
   font-size: 11px;
   color: var(--text-3);
   text-align: end;
@@ -166,17 +199,25 @@
   cursor: default;
 }
 
+.todayColumn {
+  background-color: var(--today-column);
+}
+
 .event {
+  /* рамка («Обсидиан», «Монохром») и полоса цвета календаря по краю («Классический») */
+  --edge: color-mix(in srgb, var(--c) var(--event-edge-mix), var(--event-edge-base));
   position: absolute;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1px;
   padding: 3px 6px;
-  border: 0;
-  border-inline-start: 3px solid var(--c);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--c) 22%, var(--surface));
+  border: var(--event-edge-width) solid var(--edge);
+  border-inline-start: max(var(--event-bar-width), var(--event-edge-width)) solid
+    color-mix(in srgb, var(--c) var(--event-bar-mix), var(--edge));
+  border-radius: var(--event-radius);
+  background: color-mix(in srgb, var(--tone) var(--event-fill), var(--event-fill-base));
+  box-shadow: var(--event-shadow);
   font-size: 12px;
   text-align: start;
   overflow: hidden;
@@ -184,7 +225,7 @@
 }
 
 .event:hover {
-  background: color-mix(in srgb, var(--c) 34%, var(--surface));
+  background: color-mix(in srgb, var(--tone) var(--event-fill-hover), var(--event-fill-base));
   z-index: 2;
 }
 
@@ -223,8 +264,24 @@
   opacity: 0.7;
 }
 
+/* метка цвета календаря перед названием: точка в «Бумаге», квадрат в «Монохроме» */
+.eventTitle::before {
+  content: "";
+  display: var(--event-marker);
+  flex: none;
+  width: var(--event-marker-size);
+  height: var(--event-marker-size);
+  border-radius: var(--event-marker-radius);
+  background: var(--c);
+}
+
 .eventTime {
-  color: var(--text-2);
+  color: color-mix(
+    in srgb,
+    var(--ink) var(--event-sub-ink),
+    color-mix(in srgb, var(--c) var(--event-sub-tint), var(--event-sub-base))
+  );
+  font-family: var(--font-time);
   font-size: 11px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -236,6 +293,7 @@
   inset-inline-end: 0;
   height: 2px;
   background: var(--now);
+  box-shadow: var(--now-glow);
   z-index: 3;
   pointer-events: none;
 }
@@ -249,6 +307,7 @@
   height: 10px;
   border-radius: 50%;
   background: var(--now);
+  box-shadow: var(--now-glow);
 }
 
 .draggable {
@@ -300,7 +359,7 @@
   align-items: flex-start;
   padding: 2px 6px;
   border-inline-start: 3px solid color-mix(in srgb, var(--c) 55%, transparent);
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--event-radius) var(--event-radius) 0 0;
   background: repeating-linear-gradient(
     135deg,
     color-mix(in srgb, var(--c) 18%, transparent) 0 4px,

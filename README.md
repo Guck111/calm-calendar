@@ -14,7 +14,7 @@ The full list, by area, is in [docs/features.md](docs/features.md). In short:
 - Create, edit, drag and resize events; recurring events with "this event" / "this and following"; time zones, guests, travel time.
 - Quick add from one line in 11 languages, search, free time as text for a messenger, holidays of 76 countries, week numbers.
 - "Join" for video calls, Windows notifications, an optional hard-to-miss alert, a desktop widget and a tray agenda.
-- Light and dark themes, a glass effect, right-to-left Arabic, offline reading of the last loaded weeks.
+- Five styles (Classic, Paper, Obsidian, Showcase, Monochrome), each light and dark, a choice of fonts, a glass effect, right-to-left Arabic, offline reading of the last loaded weeks.
 
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 

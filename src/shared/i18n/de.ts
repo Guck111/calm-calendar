@@ -194,6 +194,11 @@ export const de: Dict = {
   settings: {
     theme: "Design",
     themes: { system: "System", light: "Hell", dark: "Dunkel" },
+    style: "Stil",
+    styles: { classic: "Klassisch", paper: "Papier", obsidian: "Obsidian", showcase: "Vitrine", mono: "Monochrom" },
+    displayFont: "Schrift für Überschriften und Zahlen",
+    textFont: "Schrift für Text",
+    fontAuto: (font: string) => `Wie im Stil (${font})`,
     language: "Sprache",
     systemLanguage: "System",
     glass: "Glaseffekt",

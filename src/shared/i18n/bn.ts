@@ -190,6 +190,11 @@ export const bn: Dict = {
   settings: {
     theme: "থিম",
     themes: { system: "সিস্টেমের মতো", light: "হালকা", dark: "গাঢ়" },
+    style: "স্টাইল",
+    styles: { classic: "ক্লাসিক", paper: "কাগজ", obsidian: "অবসিডিয়ান", showcase: "শোকেস", mono: "মনোক্রোম" },
+    displayFont: "শিরোনাম ও সংখ্যার ফন্ট",
+    textFont: "লেখার ফন্ট",
+    fontAuto: (font: string) => `স্টাইল অনুযায়ী (${font})`,
     language: "ভাষা",
     systemLanguage: "সিস্টেমের মতো",
     glass: "গ্লাস ইফেক্ট",

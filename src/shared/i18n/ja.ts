@@ -186,6 +186,11 @@ export const ja: Dict = {
   settings: {
     theme: "テーマ",
     themes: { system: "システム", light: "ライト", dark: "ダーク" },
+    style: "スタイル",
+    styles: { classic: "クラシック", paper: "ペーパー", obsidian: "オブシディアン", showcase: "ショーケース", mono: "モノクロ" },
+    displayFont: "見出しと数字のフォント",
+    textFont: "本文のフォント",
+    fontAuto: (font: string) => `スタイルの既定（${font}）`,
     language: "言語",
     systemLanguage: "システム",
     glass: "ガラス効果",

@@ -1,18 +1,27 @@
+/* в «Витрине» панели отделены от края окна и друг от друга */
 .app {
   height: 100%;
   display: flex;
+  gap: var(--shell-gap);
+  padding: var(--shell-gap);
 }
 
+/* без overflow: выпадающий поиск выходит за панель; углы скругляют панель инструментов и .view */
 .main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
 }
 
 .view {
   flex: 1;
   min-height: 0;
+  border-end-start-radius: var(--panel-radius);
+  border-end-end-radius: var(--panel-radius);
+  overflow: hidden;
 }
 
 .banner {

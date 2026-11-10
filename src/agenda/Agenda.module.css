@@ -90,6 +90,7 @@
 .when {
   color: var(--text-2);
   white-space: nowrap;
+  font-family: var(--font-time);
   font-variant-numeric: tabular-nums;
 }
 

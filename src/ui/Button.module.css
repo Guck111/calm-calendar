@@ -5,7 +5,7 @@
   gap: 6px;
   height: 32px;
   padding: 0 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--control-radius);
   border: 1px solid var(--border-strong);
   background: var(--surface);
   white-space: nowrap;

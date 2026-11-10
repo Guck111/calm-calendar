@@ -5,7 +5,9 @@
   flex-direction: column;
   gap: 18px;
   padding: 14px 14px 12px;
-  border-inline-end: 1px solid var(--border);
+  border-inline-end: var(--panel-divider) solid var(--border);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
   background: var(--chrome);
   transition: background 0.2s;
   overflow-y: auto;
@@ -16,7 +18,7 @@
   height: 40px;
   align-self: flex-start;
   padding: 0 18px 0 14px;
-  border-radius: 20px;
+  border-radius: var(--create-radius);
 }
 
 .mini {
@@ -30,8 +32,11 @@
   align-items: center;
   justify-content: space-between;
   padding-inline-start: 4px;
-  font-weight: 600;
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--mini-head-size);
+  letter-spacing: var(--display-tracking);
+  font-variant-numeric: lining-nums;
 }
 
 .miniHead button {
@@ -91,7 +96,7 @@
   content: "";
   position: absolute;
   inset: 2px 5px;
-  border-radius: 50%;
+  border-radius: var(--mini-today-radius);
   background: var(--accent);
   z-index: -1;
 }

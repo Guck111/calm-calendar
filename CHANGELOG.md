@@ -2,6 +2,13 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Styles**: besides the classic look there are four new ones in Settings → Style: Paper (warm paper, serif headings), Obsidian (glass with a champagne accent), Showcase (floating panels, solid event colors) and Monochrome (black and white, monospaced digits, one signal color). Each has a light and a dark version and follows the Theme setting; the widget and the tray agenda follow the style.
+- **Fonts**: pick the font for headings and numbers and the font for text, or keep the style's own. Inter, Manrope, Onest, Geist, Geist Mono, Unbounded and Cormorant Garamond are built into the app and work offline; Segoe UI is the Windows font.
+
 ## 0.8.0 — 2026-11-10
 
 ### New

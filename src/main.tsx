@@ -5,9 +5,12 @@ import { Widget } from "./widget/Widget";
 import { AlertWindow } from "./alert/AlertWindow";
 import { AgendaWindow } from "./agenda/AgendaWindow";
 import { QuickWindow } from "./quick/QuickWindow";
+import "./styles/fonts.css";
 import "./styles/global.css";
+import "./styles/styles.css";
 import { initGlass } from "./shared/lib/glass";
 import { applyTheme, followTheme, readTheme } from "./shared/lib/theme";
+import { applyAppearance, followAppearance, readAppearance } from "./shared/lib/appearance";
 import { followLang, syncLangToRust } from "./shared/i18n";
 import { catchUnhandled } from "./shared/lib/log";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
@@ -34,9 +37,11 @@ document.documentElement.dataset.window = isWidget
 // необработанные ошибки любого окна — в журнал
 catchUnhandled();
 
-// тему применяем до первой отрисовки, чтобы не мигало
+// тему, стиль и шрифты применяем до первой отрисовки, чтобы не мигало
 applyTheme(readTheme());
 followTheme();
+applyAppearance(readAppearance());
+followAppearance();
 initGlass();
 // язык сменили в другом окне — перезагружаемся; главное окно сообщает язык Rust (меню трея)
 followLang();

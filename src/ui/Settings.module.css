@@ -30,8 +30,11 @@
 
 .head h2 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  font-variant-numeric: lining-nums;
 }
 
 .section {
@@ -51,7 +54,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding: 3px;
-  border-radius: 8px;
+  border-radius: var(--seg-radius);
   background: var(--surface-2);
 }
 
@@ -59,14 +62,120 @@
   border: 0;
   background: transparent;
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: var(--seg-item-radius);
   color: var(--text-2);
 }
 
 .active {
-  background: var(--surface);
-  color: var(--text);
+  background: var(--seg-active-bg);
+  color: var(--seg-active-fg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* стили оформления: образцы в ряд */
+.styles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.styleCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  text-align: center;
+}
+
+.styleCard:hover {
+  background: var(--surface-2);
+}
+
+.styleActive,
+.styleActive:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.styleName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* образец берёт переменные своего стиля из styles.css, цвета — по текущей теме */
+.preview {
+  position: relative;
+  display: block;
+  height: 52px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--app-bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.previewAa {
+  position: absolute;
+  top: 5px;
+  inset-inline-start: 7px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  line-height: 1.1;
+}
+
+.previewToday {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.previewEvent {
+  --c: #4f8ef7;
+  --edge: color-mix(in srgb, var(--c) var(--event-edge-mix), var(--event-edge-base));
+  position: absolute;
+  inset-inline: 7px;
+  bottom: 7px;
+  height: 11px;
+  border: var(--event-edge-width) solid var(--edge);
+  border-inline-start: max(var(--event-bar-width), var(--event-edge-width)) solid
+    color-mix(in srgb, var(--c) var(--event-bar-mix), var(--edge));
+  border-radius: min(var(--event-radius), 4px);
+  background: color-mix(in srgb, var(--c) var(--event-fill), var(--event-fill-base));
+}
+
+.fonts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.field .select {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text);
 }
 
 .toggle {
@@ -115,7 +224,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--switch-knob);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s;
 }
@@ -126,6 +235,7 @@
 
 .toggle input:checked::after {
   transform: translateX(16px);
+  background: var(--switch-knob-on);
 }
 
 :global(:root[dir="rtl"]) .toggle input:checked::after {

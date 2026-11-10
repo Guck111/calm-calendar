@@ -1,0 +1,11 @@
+/* Шрифты стилей оформления (настройки → «Шрифт заголовков» и «Шрифт текста»).
+   Вариативные шрифты из пакетов @fontsource-variable, лицензия SIL Open Font License 1.1.
+   Файлы лежат в сборке приложения, сеть не нужна. Браузер загружает только те шрифты
+   и только те наборы символов (латиница, кириллица…), что есть на экране */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/manrope/wght.css";
+@import "@fontsource-variable/onest/wght.css";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
+@import "@fontsource-variable/unbounded/wght.css";
+@import "@fontsource-variable/cormorant-garamond/wght.css";
