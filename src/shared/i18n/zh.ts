@@ -228,6 +228,11 @@ export const zh: Dict = {
     loadFailed: "无法加载日程。重试",
     noUpcoming: "近期没有日程",
   },
+  sync: {
+    updated: (when: string) => `更新于 ${when}`,
+    retry: "重试",
+    retrying: "正在重试…",
+  },
   schedule: {
     empty: "这几天没有活动",
   },

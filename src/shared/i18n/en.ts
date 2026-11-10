@@ -235,6 +235,11 @@ export const en: Dict = {
     loadFailed: "Couldn't load events. Retry",
     noUpcoming: "No upcoming events",
   },
+  sync: {
+    updated: (when: string) => `Updated ${when}`,
+    retry: "Retry",
+    retrying: "Trying again…",
+  },
   schedule: {
     empty: "No events on these days",
   },

@@ -219,6 +219,12 @@
 }
 
 .link,
+.synced {
+  margin: 0 0 2px;
+  color: var(--text-3);
+  font-size: 11.5px;
+}
+
 .add {
   border: 0;
   background: none;

@@ -234,6 +234,11 @@ export const bn: Dict = {
     loadFailed: "ইভেন্ট লোড হয়নি। আবার চেষ্টা করুন",
     noUpcoming: "সামনে কোনো ইভেন্ট নেই",
   },
+  sync: {
+    updated: (when: string) => `${when}-এ হালনাগাদ`,
+    retry: "আবার চেষ্টা করুন",
+    retrying: "আবার চেষ্টা হচ্ছে…",
+  },
   schedule: {
     empty: "এই দিনগুলোতে কোনো ইভেন্ট নেই",
   },

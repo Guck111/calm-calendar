@@ -141,4 +141,5 @@ export type AppErrorKind =
   | "network"
   | "other";
 
-export type AppError = { kind: AppErrorKind; message: string };
+/** status — код ответа Google у ошибок kind "google" */
+export type AppError = { kind: AppErrorKind; message: string; status?: number };

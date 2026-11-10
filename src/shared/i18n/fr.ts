@@ -238,6 +238,11 @@ export const fr: Dict = {
     loadFailed: "Impossible de charger les événements. Réessayer",
     noUpcoming: "Aucun événement à venir",
   },
+  sync: {
+    updated: (when: string) => `Mis à jour ${when}`,
+    retry: "Réessayer",
+    retrying: "Nouvel essai…",
+  },
   schedule: {
     empty: "Aucun événement ces jours-là",
   },

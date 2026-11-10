@@ -249,6 +249,11 @@ export const ar: Dict = {
     loadFailed: "تعذّر تحميل الأحداث. إعادة المحاولة",
     noUpcoming: "لا توجد أحداث قادمة",
   },
+  sync: {
+    updated: (when: string) => `آخر تحديث ${when}`,
+    retry: "إعادة المحاولة",
+    retrying: "جارٍ إعادة المحاولة…",
+  },
   schedule: {
     empty: "لا أحداث في هذه الأيام",
   },

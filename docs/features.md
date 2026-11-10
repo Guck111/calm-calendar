@@ -49,7 +49,8 @@ Last updated: 2026-11-10 (version 0.6.0, stage 2 complete).
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
 - Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search, free time, theme, refresh, settings, view switch.
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
-- Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button.
+- Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).
+- When Google does not answer (no network, Google busy or down: 429 and 5xx), the app tries again by itself after 5 seconds, 15 seconds and a minute, then goes on with the usual refresh. The error or "Offline" banner has a Retry button (`src/model/sync.ts`).
 
 ## Events
 

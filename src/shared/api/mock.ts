@@ -355,6 +355,10 @@ const google = (
   throw { kind: "other", message: `mock: ${method}` };
 };
 
+/** Для автотестов: window.calmMock.outage = "network" | "503" — Google не отвечает, null — снова отвечает */
+const mockControl: { outage: "network" | "503" | null } = { outage: null };
+(globalThis as unknown as { calmMock: typeof mockControl }).calmMock = mockControl;
+
 const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(value), ms));
 
 export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown> => {
@@ -373,6 +377,8 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
     case "save_client_config":
       return null;
     case "google_request":
+      if (mockControl.outage === "network") throw { kind: "network", message: "mock: no network" };
+      if (mockControl.outage === "503") throw { kind: "google", message: "503: Backend Error" };
       return delay(
         google(
           String(args.account),

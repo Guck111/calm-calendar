@@ -1,14 +1,15 @@
 import { useUnit } from "effector-react";
 import { useEffect } from "react";
 import { subscribe } from "../shared/api/bus";
-import { isRtl } from "../shared/i18n";
+import { isRtl, t } from "../shared/i18n";
 import { fromDateKey } from "../shared/lib/date";
 import { $signedIn, $status, appStarted } from "../model/auth";
 import { $draft, draftOpened } from "../model/editor";
 import { quickFocusRequested } from "../model/quick";
 import "../model/reminders";
 import type { EventDraft } from "../shared/api/types";
-import { $loadError, refreshRequested, reloadRequested } from "../model/events";
+import { $loadError, $loading, refreshRequested, reloadRequested } from "../model/events";
+import { retryClicked } from "../model/sync";
 import { $offlineText } from "../model/connection";
 import {
   $view,
@@ -130,6 +131,20 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   }, [signedIn, editorOpen, prev, next, today, setView, create]);
 };
 
+/** Полоса над календарём: ошибка загрузки или «нет сети», с кнопкой «Повторить».
+ *  Повтор и так идёт сам через 5 секунд, 15 секунд и минуту (model/sync) */
+const Banner = ({ text }: { text: string }) => {
+  const [loading, retry] = useUnit([$loading, retryClicked]);
+  return (
+    <div className={s.banner} role="status">
+      <span>{text}</span>
+      <button type="button" className={s.retry} onClick={() => retry()} disabled={loading}>
+        {loading ? t.sync.retrying : t.sync.retry}
+      </button>
+    </div>
+  );
+};
+
 export const App = () => {
   const [status, signedIn, view, draft, loadError, offline] = useUnit([$status, $signedIn, $view, $draft, $loadError, $offlineText]);
   useAppEffects(signedIn, Boolean(draft));
@@ -142,7 +157,7 @@ export const App = () => {
       <Sidebar />
       <main className={s.main}>
         <Toolbar />
-        {loadError ? <div className={s.banner}>{loadError}</div> : offline && <div className={s.banner}>{offline}</div>}
+        {loadError ? <Banner text={loadError} /> : offline && <Banner text={offline} />}
         <div className={s.view}>{view === "month" ? <MonthView /> : view === "agenda" ? <ScheduleView /> : <TimeGrid />}</div>
       </main>
       <EventEditor />

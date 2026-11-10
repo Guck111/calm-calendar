@@ -10,6 +10,11 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Duplicate** an event from its card, then change what differs.
 - **Event colors**: give one event its own color, one of the 11 colors of Google Calendar.
 - **Answer invitations** from the event card: yes, no or maybe.
+- The sidebar shows **when the calendar was last updated** from Google.
+
+### Changed
+
+- When Google does not answer, the app tries again by itself, and the error banner has a **Retry** button.
 
 ## 0.6.0 — 2026-11-10
 

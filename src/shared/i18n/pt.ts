@@ -244,6 +244,11 @@ export const pt: Dict = {
     loadFailed: "Não foi possível carregar os eventos. Tentar de novo",
     noUpcoming: "Nenhum evento próximo",
   },
+  sync: {
+    updated: (when: string) => `Atualizado ${when}`,
+    retry: "Tentar de novo",
+    retrying: "Tentando de novo…",
+  },
   schedule: {
     empty: "Nenhum evento nesses dias",
   },

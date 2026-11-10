@@ -238,6 +238,11 @@ export const de: Dict = {
     loadFailed: "Termine konnten nicht geladen werden. Erneut versuchen",
     noUpcoming: "Keine anstehenden Termine",
   },
+  sync: {
+    updated: (when: string) => `Aktualisiert ${when}`,
+    retry: "Erneut versuchen",
+    retrying: "Neuer Versuch…",
+  },
   schedule: {
     empty: "Keine Termine an diesen Tagen",
   },

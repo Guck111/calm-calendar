@@ -230,6 +230,11 @@ export const hi: Dict = {
     loadFailed: "इवेंट लोड नहीं हुए। फिर से कोशिश करें",
     noUpcoming: "आने वाले कोई इवेंट नहीं",
   },
+  sync: {
+    updated: (when: string) => `${when} पर अपडेट हुआ`,
+    retry: "फिर से कोशिश करें",
+    retrying: "फिर से कोशिश हो रही है…",
+  },
   schedule: {
     empty: "इन दिनों कोई इवेंट नहीं",
   },

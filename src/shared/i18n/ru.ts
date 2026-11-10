@@ -264,6 +264,11 @@ export const ru = {
     loadFailed: "Не удалось загрузить события. Повторить",
     noUpcoming: "Ближайших событий нет",
   },
+  sync: {
+    updated: (when: string) => `Обновлено ${when}`,
+    retry: "Повторить",
+    retrying: "Пробуем ещё раз…",
+  },
   schedule: {
     empty: "В эти дни событий нет",
   },

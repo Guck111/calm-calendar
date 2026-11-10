@@ -230,6 +230,11 @@ export const ja: Dict = {
     loadFailed: "予定を読み込めませんでした。再試行",
     noUpcoming: "今後の予定はありません",
   },
+  sync: {
+    updated: (when: string) => `${when} に更新`,
+    retry: "再試行",
+    retrying: "再試行しています…",
+  },
   schedule: {
     empty: "この期間に予定はありません",
   },
