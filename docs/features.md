@@ -210,7 +210,7 @@ Gear button in the toolbar:
 
 ## Not there yet
 
-See `docs/todo.md`: stage 3a (answering invitations, Google Meet, event colors, duplicate, Ctrl+K command menu, last sync time), the style rework, Google Tasks and finding a time (need new Google permissions), Outlook, location suggestions and maps, native-speaker review of the translations.
+Planned next: stage 3a (answering invitations, Google Meet, event colors, duplicate, Ctrl+K command menu, last sync time), the style rework, Google Tasks and finding a time (need new Google permissions), Outlook, location suggestions and maps, native-speaker review of the translations.
 
 ## Tests
 
