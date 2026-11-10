@@ -12,6 +12,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Answer invitations** from the event card: yes, no or maybe.
 - The sidebar shows **when the calendar was last updated** from Google.
 - **Attachments**: see the Google Drive files of an event in its card, and attach one by pasting its link.
+- **Command menu** on Ctrl+K: go to a date written in words, create an event, search or switch the view without the mouse.
 
 ### Changed
 

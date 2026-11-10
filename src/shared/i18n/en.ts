@@ -244,6 +244,14 @@ export const en: Dict = {
     retry: "Retry",
     retrying: "Trying again…",
   },
+  commands: {
+    title: "Commands",
+    placeholder: "A date, an event to create, or what to find",
+    goTo: (date: string) => `Go to ${date}`,
+    create: (text: string) => `Create “${text}”`,
+    search: (text: string) => `Search for “${text}”`,
+    none: "Nothing matches",
+  },
   schedule: {
     empty: "No events on these days",
   },

@@ -195,7 +195,9 @@ Gear button in the toolbar:
 
 ## Keyboard shortcuts
 
-`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+
+Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 11 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`).
 
 ## Errors and the log
 

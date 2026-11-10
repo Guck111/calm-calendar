@@ -273,6 +273,14 @@ export const ru = {
     retry: "Повторить",
     retrying: "Пробуем ещё раз…",
   },
+  commands: {
+    title: "Команды",
+    placeholder: "Дата, новое событие или что найти",
+    goTo: (date: string) => `Перейти: ${date}`,
+    create: (text: string) => `Создать «${text}»`,
+    search: (text: string) => `Найти «${text}»`,
+    none: "Ничего не подходит",
+  },
   schedule: {
     empty: "В эти дни событий нет",
   },

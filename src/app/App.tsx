@@ -22,6 +22,7 @@ import {
 } from "../model/view";
 import { AuthScreen } from "../ui/AuthScreen";
 import { EventEditor } from "../ui/EventEditor";
+import { CommandMenu } from "../ui/CommandMenu";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
 import { Sidebar } from "../ui/Sidebar";
@@ -161,6 +162,7 @@ export const App = () => {
         <div className={s.view}>{view === "month" ? <MonthView /> : view === "agenda" ? <ScheduleView /> : <TimeGrid />}</div>
       </main>
       <EventEditor />
+      <CommandMenu />
     </div>
   );
 };

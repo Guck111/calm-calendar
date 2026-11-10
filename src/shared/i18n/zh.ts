@@ -237,6 +237,14 @@ export const zh: Dict = {
     retry: "重试",
     retrying: "正在重试…",
   },
+  commands: {
+    title: "命令",
+    placeholder: "日期、新活动或要搜索的内容",
+    goTo: (date: string) => `转到 ${date}`,
+    create: (text: string) => `创建“${text}”`,
+    search: (text: string) => `搜索“${text}”`,
+    none: "没有匹配项",
+  },
   schedule: {
     empty: "这几天没有活动",
   },

@@ -258,6 +258,14 @@ export const ar: Dict = {
     retry: "إعادة المحاولة",
     retrying: "جارٍ إعادة المحاولة…",
   },
+  commands: {
+    title: "الأوامر",
+    placeholder: "تاريخ أو حدث جديد أو ما تبحث عنه",
+    goTo: (date: string) => `الانتقال إلى ${date}`,
+    create: (text: string) => `إنشاء «${text}»`,
+    search: (text: string) => `البحث عن «${text}»`,
+    none: "لا توجد نتائج",
+  },
   schedule: {
     empty: "لا أحداث في هذه الأيام",
   },

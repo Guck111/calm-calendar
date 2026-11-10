@@ -243,6 +243,14 @@ export const bn: Dict = {
     retry: "আবার চেষ্টা করুন",
     retrying: "আবার চেষ্টা হচ্ছে…",
   },
+  commands: {
+    title: "কমান্ড",
+    placeholder: "তারিখ, নতুন ইভেন্ট বা কী খুঁজবেন",
+    goTo: (date: string) => `${date}-এ যান`,
+    create: (text: string) => `“${text}” তৈরি করুন`,
+    search: (text: string) => `“${text}” খুঁজুন`,
+    none: "কিছু মেলেনি",
+  },
   schedule: {
     empty: "এই দিনগুলোতে কোনো ইভেন্ট নেই",
   },

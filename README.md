@@ -20,7 +20,7 @@ What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ### Keyboard shortcuts
 
-`←` `→` previous and next, `T` today, `D` `W` `M` `A` day, week, month and schedule, `N` quick add, `Ctrl+F` or `/` search, `Esc` close a form. They work with the Russian keyboard layout too.
+`←` `→` previous and next, `T` today, `D` `W` `M` `A` day, week, month and schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Esc` close a form. They work with the Russian keyboard layout too.
 
 ### Debug hooks
 

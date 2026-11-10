@@ -239,6 +239,14 @@ export const ja: Dict = {
     retry: "再試行",
     retrying: "再試行しています…",
   },
+  commands: {
+    title: "コマンド",
+    placeholder: "日付、新しい予定、または検索語",
+    goTo: (date: string) => `${date} に移動`,
+    create: (text: string) => `「${text}」を作成`,
+    search: (text: string) => `「${text}」を検索`,
+    none: "該当なし",
+  },
   schedule: {
     empty: "この期間に予定はありません",
   },

@@ -239,6 +239,14 @@ export const hi: Dict = {
     retry: "फिर से कोशिश करें",
     retrying: "फिर से कोशिश हो रही है…",
   },
+  commands: {
+    title: "कमांड",
+    placeholder: "तारीख़, नया इवेंट या क्या ढूँढना है",
+    goTo: (date: string) => `${date} पर जाएँ`,
+    create: (text: string) => `“${text}” बनाएँ`,
+    search: (text: string) => `“${text}” खोजें`,
+    none: "कुछ नहीं मिला",
+  },
   schedule: {
     empty: "इन दिनों कोई इवेंट नहीं",
   },

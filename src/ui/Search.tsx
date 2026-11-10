@@ -3,7 +3,15 @@ import { t } from "../shared/i18n";
 import { useEffect, useRef, type KeyboardEvent } from "react";
 import { $calendarById } from "../model/calendars";
 import { eventOpened } from "../model/editor";
-import { $query, $results, $searching, queryChanged, searchClosed, searchRequested } from "../model/search";
+import {
+  $query,
+  $results,
+  $searching,
+  queryChanged,
+  searchClosed,
+  searchFocusRequested,
+  searchRequested,
+} from "../model/search";
 import { dayOpened } from "../model/view";
 import type { CalendarEvent } from "../shared/api/types";
 import { formatShortDate, formatTime } from "../shared/lib/date";
@@ -43,6 +51,8 @@ export const Search = () => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => searchFocusRequested.watch(() => input.current?.focus()), []);
 
   const pick = (e: CalendarEvent) => {
     openDay(e.start);

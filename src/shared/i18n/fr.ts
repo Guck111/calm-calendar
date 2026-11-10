@@ -247,6 +247,14 @@ export const fr: Dict = {
     retry: "Réessayer",
     retrying: "Nouvel essai…",
   },
+  commands: {
+    title: "Commandes",
+    placeholder: "Une date, un événement à créer ou une recherche",
+    goTo: (date: string) => `Aller au ${date}`,
+    create: (text: string) => `Créer « ${text} »`,
+    search: (text: string) => `Rechercher « ${text} »`,
+    none: "Aucun résultat",
+  },
   schedule: {
     empty: "Aucun événement ces jours-là",
   },
