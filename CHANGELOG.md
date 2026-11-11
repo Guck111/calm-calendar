@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### Fixed
+
+- The circle around today's date in the month view and the mini calendar is now centered on the number.
+
 ## 0.9.0 — 2026-11-10
 
 ### New
