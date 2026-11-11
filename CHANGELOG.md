@@ -7,6 +7,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 ### Changed
 
 - Settings open in a window of their own: drag it by its header anywhere on the screen, also outside the calendar.
+- The country list of Holidays in Settings is in alphabetical order; the country of Windows is no longer put first.
 
 ### Fixed
 

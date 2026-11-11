@@ -104,7 +104,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 
 ## Holidays and week numbers
 
-- Holidays (Settings): the public holidays of one of 76 countries, from Google's public holiday calendars, with names in the app language when Google has them. Shown as a separate "Holidays" group in the sidebar, in the widget and in the tray agenda. Kept only in the app: adding a calendar to the Google calendar list would need another Google permission. If the same country's holidays are already in your Google calendars, they are not shown twice.
+- Holidays (Settings): the public holidays of one of 76 countries, from Google's public holiday calendars, with names in the app language when Google has them. The countries are listed in the alphabetical order of the app language. Shown as a separate "Holidays" group in the sidebar, in the widget and in the tray agenda. Kept only in the app: adding a calendar to the Google calendar list would need another Google permission. If the same country's holidays are already in your Google calendars, they are not shown twice.
 - Week numbers (Settings): ISO 8601 numbers in the mini month, in the Month view and next to the week title.
 
 ## Quick add

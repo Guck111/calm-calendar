@@ -46,16 +46,6 @@ export const sortedRegions = (): { region: string; name: string }[] =>
     .map((region) => ({ region, name: regionName(region) }))
     .sort((a, b) => a.name.localeCompare(b.name, locale));
 
-/** страна из региона системы: предлагаем её первой */
-export const systemRegion = (): string | null => {
-  try {
-    const region = new Intl.Locale(navigator.language).maximize().region;
-    return region && isHolidayRegion(region) ? region : null;
-  } catch {
-    return null;
-  }
-};
-
 /** Календарь праздников страны из настроек. Читаем через первый аккаунт; если такой календарь
  *  уже есть в списке Google, второй раз не добавляем */
 export const holidayCalendar = (region: string | null, accounts: string[], google: Calendar[]): Calendar | null => {

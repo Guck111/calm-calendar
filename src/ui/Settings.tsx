@@ -3,7 +3,7 @@ import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting 
 import { useUnit } from "effector-react";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
 import { $holidayRegion, $weekNumbers, holidayRegionChanged, weekNumbersToggled } from "../model/display";
-import { sortedRegions, systemRegion } from "../shared/lib/holidays";
+import { sortedRegions } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { broadcast, inTauri } from "../shared/api/bus";
 import {
@@ -122,12 +122,8 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
     setHolidays(v);
     displayChanged();
   };
-  // страна системы — первой в списке
-  const [regions] = useState(() => {
-    const all = sortedRegions();
-    const own = systemRegion();
-    return own ? [...all.filter((r) => r.region === own), ...all.filter((r) => r.region !== own)] : all;
-  });
+  // страны по алфавиту языка приложения
+  const [regions] = useState(sortedRegions);
 
   useEffect(() => {
     void readSettings().then((st) => {
