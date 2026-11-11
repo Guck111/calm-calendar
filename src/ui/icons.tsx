@@ -58,6 +58,13 @@ export const Paperclip = ({ size = 14 }: P) => (
   </svg>
 );
 
+export const MapPin = ({ size = 14 }: P) => (
+  <svg {...base(size)}>
+    <path d="M8 14.5s4.5-4.2 4.5-7.8a4.5 4.5 0 0 0-9 0c0 3.6 4.5 7.8 4.5 7.8Z" />
+    <circle cx="8" cy="6.6" r="1.6" />
+  </svg>
+);
+
 export const External = ({ size = 14 }: P) => (
   <svg {...base(size)}>
     <path d="M9 3h4v4M13 3 7.5 8.5M11 9.5V13H3V5h3.5" />

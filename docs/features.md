@@ -15,6 +15,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 - [Travel time](#travel-time)
 - [Free time](#free-time)
 - [Holidays and week numbers](#holidays-and-week-numbers)
+- [Calendar subscriptions (.ics)](#calendar-subscriptions-ics)
 - [Quick add](#quick-add)
 - [Search](#search)
 - [Video calls](#video-calls)
@@ -55,7 +56,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 ## Events
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
-- The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location, guests with their answers, description, overlaps, the repeat rule, and "In Google".
+- The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location (a click opens it in Google Maps in the browser; a link in the location field opens itself, `src/shared/lib/maps.ts`), guests with their answers, description, overlaps, the repeat rule, and "In Google".
 - The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, color, location, "Add Google Meet video call", guests, attachments, description.
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Delete asks once ("Delete?").
@@ -106,6 +107,13 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 
 - Holidays (Settings): the public holidays of one of 76 countries, from Google's public holiday calendars, with names in the app language when Google has them. The countries are listed in the alphabetical order of the app language. Shown as a separate "Holidays" group in the sidebar, in the widget and in the tray agenda. Kept only in the app: adding a calendar to the Google calendar list would need another Google permission. If the same country's holidays are already in your Google calendars, they are not shown twice.
 - Week numbers (Settings): ISO 8601 numbers in the mini month, in the Month view and next to the week title.
+
+## Calendar subscriptions (.ics)
+
+- Settings → Calendar subscriptions: paste the link of an `.ics` calendar (a class schedule, sports fixtures, a calendar published from Outlook); `webcal://` links work too. The app downloads it first: a web page instead of a calendar, a dead link or a link that is already added gets a message. The name comes from the calendar (`X-WR-CALNAME`), otherwise the site's address; colors go round a small palette.
+- The calendars are shown in a "Subscriptions" group in the sidebar, in the widget and in the tray agenda, can be hidden like any calendar, are read only (Duplicate copies an event into your own calendar) and are found by search. Kept only in the app: adding a calendar by link to Google would need another Google permission.
+- The file is downloaded by Rust (`fetch_feed`, up to 10 MB, http, https and webcal only; the log gets only the site's host, as the path may hold a secret key) and parsed in the interface: time zones (IANA, Outlook's Windows names, `/mozilla.org/…` prefixes), all-day events, DURATION, repeats with INTERVAL, COUNT, UNTIL, BYDAY (also "2nd Tuesday", "last Friday"), BYMONTHDAY, BYMONTH, plus EXDATE, RDATE and moved occurrences (RECURRENCE-ID); cancelled events are skipped. A rule with anything else (BYSETPOS…) shows only the first event of the series. Video call links in the location or description get the Join button.
+- A downloaded calendar is kept in memory for 10 minutes (Refresh downloads it again); the last copy up to 1.5 MB is saved for offline use and deleted with the subscription (`src-tauri/src/feeds.rs`, `src/shared/lib/ics.ts`, `src/shared/lib/feeds.ts`, `src/shared/api/feeds.ts`).
 
 ## Quick add
 
@@ -216,7 +224,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 ## Privacy and permissions
 
 - Two Google permissions: calendar events (`calendar.events`) and the calendar list (`calendarlist.readonly`). Everything else (holidays, travel time, shared meetings, guests) works within them.
-- No servers of our own: the app talks to Google directly. No analytics. Privacy policy: https://calmcalendar.co.uk/privacy.html.
+- No servers of our own: the app talks to Google directly, and to the sites of .ics subscriptions you add. No analytics. Privacy policy: https://calmcalendar.co.uk/privacy.html.
 
 ## Installation and updates
 
@@ -226,7 +234,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 
 ## Not there yet
 
-Planned next: stage 3a (answering invitations, Google Meet, event colors, duplicate, Ctrl+K command menu, last sync time), the style rework, Google Tasks and finding a time (need new Google permissions), Outlook, location suggestions and maps, native-speaker review of the translations.
+Planned next: Google Tasks, attaching a file from the computer through Google Drive and finding a time by colleagues' availability (need new Google permissions), Outlook accounts (not only .ics links), location suggestions and a map in the card, native-speaker review of the translations.
 
 ## Tests
 

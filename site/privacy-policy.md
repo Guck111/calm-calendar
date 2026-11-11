@@ -1,6 +1,6 @@
 # Calm Calendar Privacy Policy
 
-Effective date: November 10, 2026
+Effective date: November 11, 2026
 
 Calm Calendar is a desktop calendar app for Windows that works with your Google Calendar. It is developed by Arseni ("we", "us"). This policy explains what data the app accesses, how it is used and stored, and how you can delete it.
 
@@ -26,11 +26,14 @@ Google user data is used only to provide the calendar features that you see in t
 
 All processing happens on your computer. Calm Calendar talks directly to Google's servers (`accounts.google.com`, `oauth2.googleapis.com`, `www.googleapis.com`) over encrypted HTTPS connections. Nothing is sent to us or to any other third party.
 
+If you add a calendar subscription by link (Settings → Calendar subscriptions), the app also downloads that .ics file directly from the address you entered; that site sees an ordinary download request from your computer. A click on an event's location opens Google Maps in your browser with that location as the search.
+
 The app keeps the following on your computer:
 
 - **Sign-in token.** The Google refresh token is stored in Windows Credential Manager, protected by your Windows account. The short-lived access token is kept only in memory while the app runs.
 - **Account emails**, to show which accounts are signed in.
 - **Recently loaded calendar data.** The latest calendar lists and events received from Google are saved in the app's local storage so that your calendar and the widget still show your schedule when you are offline. At most the 80 most recent responses are kept; older ones are removed automatically.
+- **Calendar subscriptions.** The links you add and the last downloaded copy of each calendar, so that it is shown offline. Removing a subscription deletes its copy.
 - **Settings**, such as theme, language, the widget position and which calendars are shown.
 - **Log file.** A technical log in `%LOCALAPPDATA%\com.arseni.calmcalendar\logs` records app starts, sign-ins and sign-outs, and errors, so that problems can be investigated. It contains no event titles or descriptions and no tokens; email addresses are shortened to the first letter and the domain (`a***@gmail.com`). Up to five files of 1 MB are kept, older ones are deleted automatically. The log never leaves your computer by itself: we see it only if you attach it to an email to support (Settings → "Open log folder").
 

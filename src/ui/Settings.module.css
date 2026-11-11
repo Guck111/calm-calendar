@@ -316,3 +316,45 @@
   color: var(--text-3);
   line-height: 1.35;
 }
+
+/* подписки на календари .ics */
+.feeds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.feedDot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 3px;
+}
+
+.feedName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feedForm {
+  display: flex;
+  gap: 8px;
+}
+
+.feedForm input {
+  flex: 1;
+  min-width: 0;
+}

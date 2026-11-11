@@ -26,6 +26,7 @@ import {
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
+import { placeLink } from "../shared/lib/maps";
 import { draftZone, hasGuests, myResponse, type ResponseStatus } from "../shared/api/calendar";
 import type { Attachment, Attendee, Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
 import { addDays, formatSpan as travelSpan, formatFullDate, formatShortDate, formatTime, isSameDay, localTimeZone } from "../shared/lib/date";
@@ -34,7 +35,7 @@ import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
-import { Close, External, Paperclip, Video, Warning } from "./icons";
+import { Close, External, MapPin, Paperclip, Video, Warning } from "./icons";
 import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
 import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
@@ -147,6 +148,17 @@ const SeriesNote = ({ event }: { event: CalendarEvent }) => {
   const start = zone ? wallClock(event.start, zone) : event.start;
   const text = lines?.length ? describeRule(parseRecurrence(lines, start, zone).rule, start) : t.editor.recurring;
   return <p className={s.note}>{text}</p>;
+};
+
+/** место встречи: по клику — Google Карты в браузере (или сама ссылка, если в поле ссылка) */
+const PlaceLink = ({ location }: { location: string }) => {
+  const href = placeLink(location);
+  if (!href) return <>{location}</>;
+  return (
+    <button type="button" className={s.file} onClick={() => void openExternal(href)} title={t.editor.openMap}>
+      <MapPin /> {location}
+    </button>
+  );
 };
 
 /** «Пересекается с: Созвон 14:00–15:00 (work@company.com)» — событие из другого аккаунта в то же время */
@@ -267,7 +279,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <dd>
           <i className={s.swatch} />
           {calendar?.name ?? event.calendarId}
-          {accounts.length > 1 && <span className={s.accountName}>{event.account}</span>}
+          {accounts.length > 1 && !calendar?.feed && <span className={s.accountName}>{event.account}</span>}
         </dd>
         {event.alsoIn?.length ? (
           <dd className={s.alsoIn}>
@@ -283,7 +295,9 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         {event.location && (
           <>
             <dt>{t.common.location}</dt>
-            <dd>{event.location}</dd>
+            <dd>
+              <PlaceLink location={event.location} />
+            </dd>
           </>
         )}
         {event.attendees?.length ? (

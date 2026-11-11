@@ -1,6 +1,7 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
 import { listEvents } from "../shared/api/calendar";
+import { forgetFeeds } from "../shared/api/feeds";
 import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
 import type { DateRange } from "../shared/lib/date";
@@ -79,6 +80,8 @@ sample({
 
 // новый список календарей сам запустит загрузку событий через $visibleCalendars
 sample({ clock: refreshRequested, target: calendarsRequested });
+// «Обновить» скачивает и подписки .ics заново, не дожидаясь, пока устареет запомненное
+refreshRequested.watch(forgetFeeds);
 
 sample({
   clock: [fetchEventsFx.failData, fetchCalendarsFx.failData],

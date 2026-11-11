@@ -377,6 +377,35 @@ const mockControl: { outage: "network" | "503" | null } = { outage: null };
 
 const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(value), ms));
 
+/** Подписка .ics в подставных данных: йога по понедельникам и средам с этой недели и матч в субботу.
+ *  Ссылка со словом «broken» — не календарь; calmMock.outage = "network" — нет сети и для подписок */
+const mockFeed = (url: string): string => {
+  if (mockControl.outage === "network") throw { kind: "network", message: "mock: no network" };
+  if (url.includes("broken")) return "<html><body>Not found</body></html>";
+  const stamp = (d: Date) => toDateKey(d).replaceAll("-", "");
+  const saturday = addDays(week, (6 - week.getDay() + 7) % 7);
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "X-WR-CALNAME:Studio schedule",
+    "BEGIN:VEVENT",
+    "UID:yoga@mock",
+    `DTSTART:${stamp(week)}T070000`,
+    "DURATION:PT1H",
+    "RRULE:FREQ=WEEKLY;BYDAY=MO,WE",
+    "SUMMARY:Morning yoga",
+    "LOCATION:Studio 5\\, Main Street 12",
+    "END:VEVENT",
+    "BEGIN:VEVENT",
+    "UID:match@mock",
+    `DTSTART:${stamp(saturday)}T180000`,
+    `DTEND:${stamp(saturday)}T200000`,
+    "SUMMARY:Football: City vs United",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+};
+
 export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown> => {
   switch (cmd) {
     case "auth_status":
@@ -404,6 +433,8 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
           args.body as Json | undefined,
         ),
       );
+    case "fetch_feed":
+      return delay(mockFeed(String(args.url)));
     default:
       throw { kind: "other", message: `mock: неизвестная команда ${cmd}` };
   }

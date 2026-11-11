@@ -35,7 +35,7 @@ const localize = (e: AppError): AppError => {
 // Сборка для автотестов приложения (VITE_CALM_MOCK=1, npm run build:e2e): вход и запросы к Google идут
 // в подставные данные, всё остальное (окна, трей, напоминания) — в настоящий Rust. В обычную сборку не попадает
 const MOCK_IN_APP = import.meta.env.VITE_CALM_MOCK === "1";
-const MOCKED = new Set(["auth_status", "sign_in", "sign_out", "save_client_config", "google_request"]);
+const MOCKED = new Set(["auth_status", "sign_in", "sign_out", "save_client_config", "google_request", "fetch_feed"]);
 
 // в браузере без Tauri (npm run dev) работаем на подставных данных
 const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
@@ -71,6 +71,9 @@ export const getAuthStatus = async (): Promise<AuthStatus> => {
     accounts: raw.accounts.map((a) => ({ email: a.email, signedIn: a.signed_in })),
   };
 };
+
+/** Текст календаря .ics по ссылке подписки; webcal:// Rust сам заменит на https:// */
+export const fetchFeed = (url: string): Promise<string> => call<string>("fetch_feed", { url });
 
 export const saveClientConfig = (clientId: string, clientSecret: string): Promise<void> =>
   call("save_client_config", { clientId, clientSecret });

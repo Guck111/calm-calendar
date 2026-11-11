@@ -1,8 +1,10 @@
-import { useEffect, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
-import { $holidayRegion, $weekNumbers, holidayRegionChanged, weekNumbersToggled } from "../model/display";
+import { $feeds, $holidayRegion, $weekNumbers, feedsChanged, holidayRegionChanged, weekNumbersToggled } from "../model/display";
+import { downloadFeed, dropFeedCache } from "../shared/api/feeds";
+import { looksLikeUrl, newFeed, sameFeedUrl, type Feed } from "../shared/lib/feeds";
 import { sortedRegions } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { broadcast, inTauri } from "../shared/api/bus";
@@ -88,6 +90,82 @@ type Props = {
 
 /** второй пояс, номера недель, праздники хранятся в окне календаря: сообщаем ему о смене */
 const displayChanged = () => broadcast("display-changed");
+
+/** Подписки на календари .ics: ссылка проверяется скачиванием, название берётся из самого календаря */
+const FeedsSection = () => {
+  const [feeds, setFeeds] = useUnit([$feeds, feedsChanged]);
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const add = async (e: FormEvent) => {
+    e.preventDefault();
+    const link = url.trim();
+    if (!link) return;
+    if (!looksLikeUrl(link)) return setError(t.settings.feedFailed);
+    if (feeds.some((f) => sameFeedUrl(f.url, link))) return setError(t.settings.feedExists);
+    setBusy(true);
+    setError(null);
+    try {
+      const cal = await downloadFeed(link);
+      setFeeds([...feeds, newFeed(link, cal.name ?? "", feeds)]);
+      displayChanged();
+      setUrl("");
+    } catch (err) {
+      const notIcs = (err as { message?: string } | null)?.message === t.settings.feedNotIcs;
+      setError(notIcs ? t.settings.feedNotIcs : t.settings.feedFailed);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = (feed: Feed) => {
+    setFeeds(feeds.filter((f) => f.id !== feed.id));
+    dropFeedCache(feed.id);
+    displayChanged();
+  };
+
+  return (
+    <section className={s.section}>
+      <h3>{t.settings.feeds}</h3>
+      <small className={s.hint}>{t.settings.feedsText}</small>
+      {feeds.length > 0 && (
+        <ul className={s.feeds}>
+          {feeds.map((f) => (
+            <li key={f.id} className={s.feed}>
+              <i className={s.feedDot} style={{ background: f.color }} />
+              <span className={s.feedName} title={f.url}>
+                {f.name}
+              </span>
+              <Button variant="ghost" icon onClick={() => remove(f)} aria-label={t.settings.feedRemove(f.name)} title={t.settings.feedRemove(f.name)}>
+                <Close />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form className={s.feedForm} onSubmit={(e) => void add(e)}>
+        <input
+          className={s.select}
+          type="url"
+          inputMode="url"
+          placeholder="https://… .ics"
+          aria-label={t.settings.feedUrl}
+          value={url}
+          disabled={busy}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setError(null);
+          }}
+        />
+        <Button type="submit" disabled={busy || !url.trim()}>
+          {t.settings.feedAdd}
+        </Button>
+      </form>
+      {error && <p className={s.error}>{error}</p>}
+    </section>
+  );
+};
 
 export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => {
   const standalone = !!onHeadDrag;
@@ -360,6 +438,8 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
             ))}
           </select>
         </section>
+
+        <FeedsSection />
 
         <section className={s.section}>
           <label className={s.toggle}>

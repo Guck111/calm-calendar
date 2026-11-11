@@ -36,7 +36,7 @@
     <article class="wrap prose">
       <header class="doc-head" id="top">
         <h1>Calm Calendar Privacy Policy</h1>
-        <p class="doc-meta">Effective date: <time datetime="2026-11-10">November 10, 2026</time></p>
+        <p class="doc-meta">Effective date: <time datetime="2026-11-11">November 11, 2026</time></p>
       </header>
 
       <nav class="card toc" aria-labelledby="toc-title">
@@ -100,11 +100,13 @@
       <section aria-labelledby="data-storage">
         <h2 id="data-storage">Where the data is stored</h2>
         <p>All processing happens on your computer. Calm Calendar talks directly to Google's servers (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) over encrypted HTTPS connections. Nothing is sent to us or to any other third party.</p>
+        <p>If you add a calendar subscription by link (Settings → Calendar subscriptions), the app also downloads that .ics file directly from the address you entered; that site sees an ordinary download request from your computer. A click on an event’s location opens Google Maps in your browser with that location as the search.</p>
         <p>The app keeps the following on your computer:</p>
         <ul>
           <li><strong>Sign-in token.</strong> The Google refresh token is stored in Windows Credential Manager, protected by your Windows account. The short-lived access token is kept only in memory while the app runs.</li>
           <li><strong>Account emails</strong>, to show which accounts are signed in.</li>
           <li><strong>Recently loaded calendar data.</strong> The latest calendar lists and events received from Google are saved in the app's local storage so that your calendar and the widget still show your schedule when you are offline. At most the 80 most recent responses are kept; older ones are removed automatically.</li>
+          <li><strong>Calendar subscriptions.</strong> The links you add and the last downloaded copy of each calendar, so that it is shown offline. Removing a subscription deletes its copy.</li>
           <li><strong>Settings</strong>, such as theme, language, the widget position and which calendars are shown.</li>
           <li><strong>Log file.</strong> A technical log in <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> records app starts, sign-ins and sign-outs, and errors, so that problems can be investigated. It contains no event titles or descriptions and no tokens; email addresses are shortened to the first letter and the domain (<code>a***@gmail.com</code>). Up to five files of 1&nbsp;MB are kept, older ones are deleted automatically. The log never leaves your computer by itself: we see it only if you attach it to an email to support (Settings → “Open log folder”).</li>
         </ul>

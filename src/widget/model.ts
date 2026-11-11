@@ -3,10 +3,12 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { getAuthStatus } from "../shared/api/bridge";
 import { calendarVisible, listAllCalendars, listEvents } from "../shared/api/calendar";
+import { forgetFeeds } from "../shared/api/feeds";
 import type { AppError, AuthStatus, Calendar, CalendarEvent } from "../shared/api/types";
 import { addDays, addMonths, isSameMonth, monthGrid, startOfDay, startOfMonth, type DateRange } from "../shared/lib/date";
 import { HOLIDAYS_KEY, holidayCalendar } from "../shared/lib/holidays";
 import { readJson } from "../shared/lib/storage";
+import { FEEDS_KEY, feedCalendar, parseFeeds } from "../shared/lib/feeds";
 
 export const VISIBILITY_KEY = "calm.calendarVisibility";
 const LOOK_AHEAD_DAYS = 45;
@@ -18,14 +20,18 @@ export const minuteTicked = createEvent<Date>();
 export const monthShifted = createEvent<1 | -1>();
 export const monthReset = createEvent();
 
+// обновление виджета скачивает и подписки .ics заново
+refreshRequested.watch(forgetFeeds);
+
 export const fetchStatusFx = createEffect<void, AuthStatus, AppError>(getAuthStatus);
 
-/** календари всех аккаунтов и праздники из настроек, но только включённые в главном окне */
+/** календари всех аккаунтов, праздники и подписки из настроек, но только включённые в главном окне */
 export const fetchCalendarsFx = createEffect<string[], Calendar[], AppError>(async (accounts) => {
   const { calendars } = await listAllCalendars(accounts);
   const holidays = holidayCalendar(readJson<string | null>(HOLIDAYS_KEY, null), accounts, calendars);
   const visibility = readJson<Record<string, boolean>>(VISIBILITY_KEY, {});
-  return [...calendars, ...(holidays ? [holidays] : [])].filter((c) => calendarVisible(c, visibility));
+  const feeds = parseFeeds(readJson<unknown>(FEEDS_KEY, [])).map(feedCalendar);
+  return [...calendars, ...(holidays ? [holidays] : []), ...feeds].filter((c) => calendarVisible(c, visibility));
 });
 
 const loadRange = async (calendars: Calendar[], range: DateRange): Promise<CalendarEvent[]> => {

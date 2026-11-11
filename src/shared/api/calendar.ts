@@ -2,6 +2,8 @@ import { findMeeting, type MeetingSource } from "../lib/meeting";
 // Google Calendar API v3: календари и события
 import { googleRequest, isAppError, type HttpMethod } from "./bridge";
 import { cacheKey, markOffline, markOnline, recall, remember } from "./cache";
+import { listFeedEvents, searchFeedEvents } from "./feeds";
+import { FEED_ACCOUNT } from "../lib/feeds";
 import { locale, t } from "../i18n";
 import type {
   AccessRole,
@@ -263,6 +265,8 @@ const one = (eventId: string) => `/${enc(eventId)}`;
 
 export const listEvents = async (calendarId: string, range: DateRange): Promise<CalendarEvent[]> => {
   const { account, googleId } = splitRef(calendarId);
+  // подписка .ics: файл по ссылке, Google тут не участвует
+  if (account === FEED_ACCOUNT) return listFeedEvents(calendarId, range);
   const { items, timeZone } = await fetchPages<RawEvent>(account, eventsPath(googleId), {
     singleEvents: "true",
     orderBy: "startTime",
@@ -278,6 +282,10 @@ const SEARCH_LIMIT = 50;
 
 /** Поиск по названию, описанию и месту — силами Google, за два года в обе стороны */
 export const searchEvents = async (calendarId: string, query: string, now: Date): Promise<CalendarEvent[]> => {
+  if (splitRef(calendarId).account === FEED_ACCOUNT) {
+    const range = { start: addDays(now, -SEARCH_SPAN_DAYS), end: addDays(now, SEARCH_SPAN_DAYS) };
+    return searchFeedEvents(calendarId, query, range, SEARCH_LIMIT);
+  }
   const page = await api<Page<RawEvent>>(calendarId, "GET", "", {
     q: query,
     singleEvents: "true",

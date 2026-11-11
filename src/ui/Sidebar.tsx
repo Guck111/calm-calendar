@@ -127,6 +127,7 @@ const CalendarList = () => {
     $signingIn,
   ]);
   const holidays = calendars.filter((c) => c.holiday);
+  const feeds = calendars.filter((c) => c.feed);
   return (
     <section className={s.calendars}>
       <h3 className={s.heading}>{t.sidebar.calendars}</h3>
@@ -158,6 +159,16 @@ const CalendarList = () => {
             <span className={s.email}>{t.sidebar.holidays}</span>
           </div>
           {holidays.map((c) => (
+            <CalendarRow key={c.id} c={c} toggle={toggle} />
+          ))}
+        </div>
+      )}
+      {feeds.length > 0 && (
+        <div className={s.group} role="group" aria-label={t.sidebar.feeds}>
+          <div className={s.groupHead}>
+            <span className={s.email}>{t.sidebar.feeds}</span>
+          </div>
+          {feeds.map((c) => (
             <CalendarRow key={c.id} c={c} toggle={toggle} />
           ))}
         </div>

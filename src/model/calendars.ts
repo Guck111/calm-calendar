@@ -2,9 +2,10 @@ import { combine, createEffect, createEvent, createStore, sample } from "effecto
 import { calendarVisible, listAllCalendars, type AllCalendars } from "../shared/api/calendar";
 import type { AppError, Calendar } from "../shared/api/types";
 import { holidayCalendar } from "../shared/lib/holidays";
+import { feedCalendar } from "../shared/lib/feeds";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { $activeAccounts, sessionLost, signOutFx } from "./auth";
-import { $holidayRegion } from "./display";
+import { $feeds, $holidayRegion } from "./display";
 
 
 const VISIBILITY_KEY = "calm.calendarVisibility";
@@ -21,9 +22,11 @@ const $googleCalendars = createStore<Calendar[]>([])
 
 const $holidayCalendar = combine($holidayRegion, $activeAccounts, $googleCalendars, holidayCalendar);
 
-export const $calendars = combine($googleCalendars, $holidayCalendar, (list, holiday) =>
-  holiday ? [...list, holiday] : list,
-);
+export const $calendars = combine($googleCalendars, $holidayCalendar, $feeds, (list, holiday, feeds) => [
+  ...list,
+  ...(holiday ? [holiday] : []),
+  ...feeds.map(feedCalendar),
+]);
 
 /** аккаунты, чьи календари сейчас не загрузились */
 export const $failedAccounts = createStore<string[]>([])

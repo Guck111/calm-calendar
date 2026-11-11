@@ -2,6 +2,7 @@ mod autostart;
 mod config;
 mod desktop;
 mod error;
+mod feeds;
 mod google;
 mod i18n;
 mod logging;
@@ -98,6 +99,12 @@ fn open_main(app: AppHandle, date: Option<String>) {
 #[tauri::command]
 fn hide_agenda(app: AppHandle) {
     desktop::hide_agenda(&app);
+}
+
+/// Скачать календарь .ics по ссылке подписки (из настроек); разбирает его интерфейс
+#[tauri::command]
+async fn fetch_feed(url: String) -> error::Result<String> {
+    feeds::fetch(&url).await
 }
 
 /// Открыть окно настроек (шестерёнка в главном окне) или поднять уже открытое.
@@ -316,6 +323,7 @@ pub fn run() {
             hide_agenda,
             hide_quick,
             open_settings,
+            fetch_feed,
             close_settings,
             set_quick_hotkey,
             log_message,

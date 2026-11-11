@@ -2,6 +2,13 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Calendar subscriptions**: add a calendar by its .ics link in Settings — a class schedule, sports fixtures, a calendar from Outlook. It is shown in its own group, read only, also in the widget and offline.
+- **Location on the map**: click the location in the event card to open it in Google Maps.
+
 ## 0.9.1 — 2026-11-11
 
 ### Changed
