@@ -182,7 +182,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 ## Settings
 
-Gear button in the toolbar:
+Gear button in the toolbar. Settings open in a window of their own without a frame, in the middle of the calendar window and above it; it can be dragged by its header (the cursor shows four arrows there) anywhere on the screen, also outside the calendar. The header stays on top while the settings scroll. × or Esc closes it, hiding the calendar to the tray closes it too; each opening starts in the middle again. Second time zone, week numbers and holidays changed there reach the calendar window at once (bus event `display-changed`). In the browser (`npm run dev`) Settings are a dialog over the page, dragged by the header inside the page (`src-tauri/src/settings.rs`, `src/settings/SettingsWindow.tsx`, `src/ui/useDraggable.ts`).
 
 - Theme, language.
 - Second time zone and its zone.

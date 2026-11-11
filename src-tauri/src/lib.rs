@@ -8,6 +8,7 @@ mod logging;
 mod oauth;
 mod quick;
 mod reminders;
+mod settings;
 #[cfg(windows)]
 mod toast;
 
@@ -97,6 +98,19 @@ fn open_main(app: AppHandle, date: Option<String>) {
 #[tauri::command]
 fn hide_agenda(app: AppHandle) {
     desktop::hide_agenda(&app);
+}
+
+/// Открыть окно настроек (шестерёнка в главном окне) или поднять уже открытое.
+/// Асинхронная: окно, созданное в синхронной команде, в Windows намертво вешает приложение
+#[tauri::command]
+async fn open_settings(app: AppHandle) {
+    settings::show(&app);
+}
+
+/// Закрыть окно настроек (крестик или Esc в нём)
+#[tauri::command]
+fn close_settings(app: AppHandle) {
+    settings::close(&app);
 }
 
 /// Спрятать окно быстрого создания (после создания или по Esc)
@@ -228,7 +242,7 @@ pub fn run() {
                 // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
                 .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
                 // окно напоминания всегда открывается по центру экрана
-                .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK])
+                .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK, settings::SETTINGS])
                 .build(),
         )
         .plugin(tauri_plugin_autostart::init(
@@ -259,6 +273,8 @@ pub fn run() {
                 if window.label() == desktop::MAIN {
                     api.prevent_close();
                     let _ = window.hide();
+                    // настройки принадлежат главному окну: без него им незачем висеть на экране
+                    settings::close(window.app_handle());
                 }
             }
             // список дел у значка в трее прячется, как только уходит фокус
@@ -299,6 +315,8 @@ pub fn run() {
             snooze_alert,
             hide_agenda,
             hide_quick,
+            open_settings,
+            close_settings,
             set_quick_hotkey,
             log_message,
             open_logs

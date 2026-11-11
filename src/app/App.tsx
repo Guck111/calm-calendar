@@ -10,6 +10,8 @@ import "../model/reminders";
 import type { EventDraft } from "../shared/api/types";
 import { $loadError, $loading, refreshRequested, reloadRequested } from "../model/events";
 import { retryClicked } from "../model/sync";
+import { displayReloaded } from "../model/display";
+import { secondZoneReloaded } from "../model/zones";
 import { $offlineText } from "../model/connection";
 import {
   $view,
@@ -64,7 +66,13 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
     });
     // событие создали из виджета
     const offChanged = subscribe<{ from?: string }>("events-changed", (p) => p?.from !== "main" && reload());
+    // второй пояс, номера недель, праздники сменили в окне настроек
+    const offDisplay = subscribe("display-changed", () => {
+      secondZoneReloaded();
+      displayReloaded();
+    });
     return () => {
+      offDisplay();
       offDate();
       offDraft();
       offChanged();

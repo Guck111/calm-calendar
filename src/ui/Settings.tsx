@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
-import { reloadRequested } from "../model/events";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
 import { $holidayRegion, $weekNumbers, holidayRegionChanged, weekNumbersToggled } from "../model/display";
 import { sortedRegions, systemRegion } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
-import { inTauri } from "../shared/api/bus";
+import { broadcast, inTauri } from "../shared/api/bus";
 import {
   glassSupported,
   initGlass,
@@ -36,7 +35,8 @@ import {
 } from "../shared/lib/appearance";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
-import { Close, Gear } from "./icons";
+import { Close } from "./icons";
+import { useDraggable } from "./useDraggable";
 import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
@@ -78,7 +78,20 @@ const FontSelect = ({
   </label>
 );
 
-const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
+type Props = {
+  onClose: () => void;
+  /** включили напоминания — перечитать события и запланировать их заново */
+  onReschedule: () => void;
+  /** в отдельном окне: без затемнения, окно тянут за шапку средствами Windows */
+  onHeadDrag?: (e: ReactPointerEvent<HTMLElement>) => void;
+};
+
+/** второй пояс, номера недель, праздники хранятся в окне календаря: сообщаем ему о смене */
+const displayChanged = () => broadcast("display-changed");
+
+export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => {
+  const standalone = !!onHeadDrag;
+  const drag = useDraggable<HTMLDivElement>();
   const [theme, setTheme] = useState(readTheme);
   const [appearance, setAppearance] = useState(readAppearance);
   const [language] = useState(readLangSetting);
@@ -89,14 +102,26 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   const [hotkey, setHotkeyState] = useState<string>(DEFAULT_QUICK_HOTKEY);
   const [hotkeyError, setHotkeyError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const reschedule = useUnit(reloadRequested);
-  const [secondZone, changeSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
-  const [weekNumbers, toggleWeekNumbers, holidayRegion, changeHolidays] = useUnit([
+  const reschedule = onReschedule;
+  const [secondZone, setSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
+  const [weekNumbers, setWeekNumbers, holidayRegion, setHolidays] = useUnit([
     $weekNumbers,
     weekNumbersToggled,
     $holidayRegion,
     holidayRegionChanged,
   ]);
+  const changeSecondZone = (patch: Parameters<typeof setSecondZone>[0]) => {
+    setSecondZone(patch);
+    displayChanged();
+  };
+  const toggleWeekNumbers = (v: boolean) => {
+    setWeekNumbers(v);
+    displayChanged();
+  };
+  const changeHolidays = (v: string | null) => {
+    setHolidays(v);
+    displayChanged();
+  };
   // страна системы — первой в списке
   const [regions] = useState(() => {
     const all = sortedRegions();
@@ -193,9 +218,19 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
   };
 
   return (
-    <div className={s.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={s.dialog} role="dialog" aria-modal="true" aria-label={t.common.settings}>
-        <div className={s.head}>
+    <div
+      className={standalone ? s.window : s.backdrop}
+      onMouseDown={(e) => !standalone && e.target === e.currentTarget && onClose()}
+    >
+      <div
+        ref={drag.ref}
+        style={standalone ? undefined : drag.style}
+        className={s.dialog}
+        role="dialog"
+        aria-modal={!standalone}
+        aria-label={t.common.settings}
+      >
+        <div className={s.head} {...(standalone ? { onPointerDown: onHeadDrag } : drag.handleProps)}>
           <h2>{t.common.settings}</h2>
           <Button variant="ghost" icon onClick={onClose} aria-label={t.common.close}>
             <Close />
@@ -431,17 +466,5 @@ const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
         <p className={s.hint}>{t.settings.trayHint}</p>
       </div>
     </div>
-  );
-};
-
-export const SettingsButton = () => {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Button variant="ghost" icon onClick={() => setOpen(true)} title={t.common.settings} aria-label={t.common.settings}>
-        <Gear />
-      </Button>
-      {open && <SettingsDialog onClose={() => setOpen(false)} />}
-    </>
   );
 };

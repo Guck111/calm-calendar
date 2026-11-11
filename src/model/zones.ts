@@ -24,5 +24,8 @@ export const $secondZoneSetting = createStore<SecondZone>(parseSecondZone(readJs
 
 $secondZoneSetting.updates.watch((v) => writeJson(KEY, v));
 
+/** пояс сменили в окне настроек — перечитываем сохранённый */
+export const secondZoneReloaded = () => secondZoneChanged(parseSecondZone(readJson<unknown>(KEY, DEFAULT)));
+
 /** пояс второй колонки; null — колонка выключена */
 export const $secondZone = $secondZoneSetting.map((s) => (s.enabled ? s.zone : null));

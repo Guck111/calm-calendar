@@ -4,6 +4,10 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### Changed
+
+- Settings open in a window of their own: drag it by its header anywhere on the screen, also outside the calendar.
+
 ### Fixed
 
 - The circle around today's date in the month view and the mini calendar is now centered on the number.

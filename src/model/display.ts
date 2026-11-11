@@ -14,6 +14,13 @@ export const $weekNumbers = createStore(readJson<unknown>(WEEK_NUMBERS_KEY, fals
 $weekNumbers.updates.watch((v) => writeJson(WEEK_NUMBERS_KEY, v));
 
 /** страна праздников (ключ из HOLIDAY_REGIONS); null — не показывать */
+/** настройки сменили в отдельном окне — перечитываем сохранённые */
+export const displayReloaded = () => {
+  weekNumbersToggled(readJson<unknown>(WEEK_NUMBERS_KEY, false) === true);
+  const region = readJson<unknown>(HOLIDAYS_KEY, null);
+  holidayRegionChanged(isHolidayRegion(region) ? region : null);
+};
+
 export const holidayRegionChanged = createEvent<string | null>();
 const stored = readJson<unknown>(HOLIDAYS_KEY, null);
 export const $holidayRegion = createStore<string | null>(isHolidayRegion(stored) ? stored : null).on(

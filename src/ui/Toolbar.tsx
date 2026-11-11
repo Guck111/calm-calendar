@@ -8,7 +8,7 @@ import { useEffect, useState, type JSX } from "react";
 import { Button, cx } from "./Button";
 import { Search } from "./Search";
 import { FreeSlotsButton } from "./FreeSlots";
-import { SettingsButton } from "./Settings";
+import { SettingsButton } from "./SettingsButton";
 import { followTheme, nextTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
 import { Auto, ChevronLeft, ChevronRight, Moon, Refresh, Sun } from "./icons";
 import s from "./Toolbar.module.css";
