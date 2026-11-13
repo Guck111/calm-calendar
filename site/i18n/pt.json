@@ -73,5 +73,8 @@
   "faq_a_6_post": ".",
   "footer_privacy": "Política de Privacidade",
   "footer_terms": "Termos de Uso",
-  "footer_en_only": " (em inglês)"
+  "privacy_title": "Política de Privacidade",
+  "privacy_description": "Como o Calm Calendar acessa, usa e armazena os dados do seu Google Agenda, e como excluí-los.",
+  "terms_title": "Termos de Uso",
+  "terms_description": "Os termos de uso do app Calm Calendar para Windows e deste site."
 }

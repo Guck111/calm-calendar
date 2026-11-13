@@ -1,0 +1,132 @@
+<header class="doc-head" id="top">
+  <h1>Política de Privacidade do Calm Calendar</h1>
+  <p class="doc-meta">Data de vigência: <time datetime="2026-11-11">11 de novembro de 2026</time></p>
+  <p class="doc-note">Esta é uma tradução. Em caso de divergência com a <a href="../privacy.html" hreflang="en">versão em inglês</a>, prevalece a versão em inglês.</p>
+</header>
+
+<nav class="card toc" aria-labelledby="toc-title">
+  <h2 id="toc-title">Conteúdo</h2>
+  <ol>
+    <li><a href="#data-accessed">Dados que o app acessa</a></li>
+    <li><a href="#data-use">Como os dados são usados</a></li>
+    <li><a href="#data-storage">Onde os dados são armazenados</a></li>
+    <li><a href="#protection">Como protegemos seus dados</a></li>
+    <li><a href="#deleting">Como excluir seus dados</a></li>
+    <li><a href="#sharing">Compartilhamento e divulgação</a></li>
+    <li><a href="#store-google">Microsoft Store e Google</a></li>
+    <li><a href="#children">Crianças</a></li>
+    <li><a href="#changes">Alterações nesta política</a></li>
+    <li><a href="#contact">Contato</a></li>
+  </ol>
+</nav>
+
+<p>O Calm Calendar é um app de calendário para desktop no Windows que funciona com o seu Google Agenda. Ele é desenvolvido por Arseni (“nós”). Esta política explica quais dados o app acessa, como eles são usados e armazenados e como você pode excluí-los.</p>
+
+<div class="card summary-box">
+  <p><strong>Resumindo:</strong> o Calm Calendar não tem servidores próprios. Os dados da sua agenda trafegam apenas entre o seu computador e o Google. Não coletamos, recebemos, vendemos nem compartilhamos seus dados, e o app não tem anúncios, análises ou rastreamento.</p>
+</div>
+
+<section aria-labelledby="data-accessed">
+  <h2 id="data-accessed">Dados que o app acessa</h2>
+  <p>Ao fazer login com o Google, você será solicitado a conceder ao Calm Calendar as permissões abaixo. O app usa cada uma apenas para o recurso descrito.</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Permissões do Google solicitadas pelo Calm Calendar e como cada uma é usada</caption>
+      <thead>
+        <tr>
+          <th scope="col">Permissão do Google</th>
+          <th scope="col">O que o app faz com ela</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><code>calendar.calendarlist.readonly</code><strong>Ver a lista das suas agendas</strong></th>
+          <td>Mostra suas agendas na barra lateral com nomes e cores, permite exibir ou ocultar cada uma e lê os lembretes padrão de cada agenda para as notificações.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>calendar.events</code><strong>Ver e editar eventos das suas agendas</strong></th>
+          <td>Mostra seus eventos nas visualizações da agenda e no widget da área de trabalho; cria, edita, move e exclui eventos quando você faz isso no app, incluindo os convidados que você adiciona (o Google envia o convite a eles por e-mail) e o tempo de deslocamento que você define, salvo nos campos privados do evento; pesquisa seus eventos quando você usa a busca; lê os lembretes dos eventos para mostrar notificações do Windows; lê a agenda pública de feriados do Google do país que você escolher em Configurações.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>openid</code>, <code>email</code><strong>O endereço de e-mail da sua Conta do Google</strong></th>
+          <td>Mostra com qual conta você está conectado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>O app não acessa seu Gmail, contatos, Google Drive ou quaisquer outros dados do Google, e não altera suas agendas a menos que você mesmo crie, edite, mova ou exclua um evento.</p>
+</section>
+
+<section aria-labelledby="data-use">
+  <h2 id="data-use">Como os dados são usados</h2>
+  <p>Os dados de usuário do Google são usados apenas para oferecer os recursos de agenda que você vê no app. Eles não são usados para publicidade, não são vendidos e não são usados para desenvolver, melhorar ou treinar modelos de inteligência artificial ou aprendizado de máquina. Ninguém no Calm Calendar lê seus dados.</p>
+</section>
+
+<section aria-labelledby="data-storage">
+  <h2 id="data-storage">Onde os dados são armazenados</h2>
+  <p>Todo o processamento acontece no seu computador. O Calm Calendar se comunica diretamente com os servidores do Google (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) por conexões HTTPS criptografadas. Nada é enviado para nós ou para terceiros.</p>
+  <p>Se você adicionar uma assinatura de agenda por link (Configurações → Assinaturas de calendários), o app também baixa esse arquivo .ics diretamente do endereço informado; esse site vê uma solicitação comum de download vinda do seu computador. Um clique no local de um evento abre o Google Maps no navegador com esse local na busca.</p>
+  <p>O app mantém no seu computador:</p>
+  <ul>
+    <li><strong>Token de login.</strong> O token de atualização do Google é guardado no Gerenciador de Credenciais do Windows, protegido pela sua conta do Windows. O token de acesso de curta duração fica apenas na memória enquanto o app está aberto.</li>
+    <li><strong>E-mails das contas</strong>, para mostrar quais contas estão conectadas.</li>
+    <li><strong>Dados da agenda carregados recentemente.</strong> As listas de agendas e os eventos mais recentes recebidos do Google ficam salvos no armazenamento local do app, para que a agenda e o widget continuem mostrando seus compromissos offline. São mantidas no máximo as 80 respostas mais recentes; as mais antigas são removidas automaticamente.</li>
+    <li><strong>Assinaturas de calendários.</strong> Os links que você adiciona e a última cópia baixada de cada agenda, para exibi-la offline. Remover uma assinatura exclui a cópia.</li>
+    <li><strong>Configurações</strong>, como tema, idioma, posição do widget e quais agendas são exibidas.</li>
+    <li><strong>Arquivo de log.</strong> Um log técnico em <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> registra inicializações do app, logins, saídas e erros, para que problemas possam ser investigados. Ele não contém títulos nem descrições de eventos nem tokens; os endereços de e-mail são abreviados para a primeira letra e o domínio (<code>a***@gmail.com</code>). São mantidos até cinco arquivos de 1&nbsp;MB; os mais antigos são excluídos automaticamente. O log nunca sai do seu computador sozinho: só o vemos se você anexá-lo a um e-mail para o suporte (Configurações → “Abrir pasta de log”).</li>
+  </ul>
+</section>
+
+<section aria-labelledby="protection">
+  <h2 id="protection">Como protegemos seus dados</h2>
+  <p>Os dados da sua agenda são sensíveis, por isso o Calm Calendar foi feito para mantê-los no seu computador e limitar quem e o que pode alcançá-los. Estes são os mecanismos de proteção:</p>
+  <ul>
+    <li><strong>Criptografia em trânsito.</strong> Toda a comunicação com o Google usa HTTPS (TLS). O app não tem nenhum outro destino na rede nem servidores nossos no meio do caminho.</li>
+    <li><strong>Login seguro.</strong> Você faz login no seu navegador comum, na própria página do Google, então o app nunca vê sua senha do Google. O login usa o fluxo de código de autorização do OAuth 2.0 para apps de desktop com PKCE (RFC 7636) e uma verificação aleatória de <code>state</code>, e recebe a resposta apenas em um endereço local temporário (<code>127.0.0.1</code>) que é fechado ao final do login.</li>
+    <li><strong>Token de login protegido.</strong> O token de atualização de longa duração é guardado apenas no Gerenciador de Credenciais do Windows, que o criptografa com chaves ligadas à sua conta do Windows (Windows Data Protection API). Ele nunca é gravado em arquivo comum, no log ou nas configurações. O token de acesso de curta duração fica apenas na memória.</li>
+    <li><strong>Privilégio mínimo.</strong> O app solicita apenas as permissões do Google listadas acima, nada para Gmail, Drive ou contatos.</li>
+    <li><strong>Janela do app restrita.</strong> A interface do app roda sob uma Content Security Policy rígida: só pode carregar os próprios arquivos e não pode fazer solicitações de rede nem carregar código remoto. Apenas a parte nativa do app se comunica com o Google, e apenas com os três hosts do Google citados acima.</li>
+    <li><strong>Cache local.</strong> Os dados da agenda carregados recentemente ficam no armazenamento privado do app dentro do seu perfil de usuário do Windows, então outros usuários do Windows no mesmo computador não conseguem lê-los por padrão. O app não adiciona criptografia própria a esse cache; para se proteger de alguém com acesso físico ao seu computador, recomendamos ativar a criptografia de dispositivo do Windows (BitLocker). O cache é excluído quando você sai da conta.</li>
+    <li><strong>Sem acesso da nossa parte.</strong> Não temos servidores e não recebemos dados, então não existe do nosso lado um banco de dados de usuários que possa ser acessado ou vazado, e ninguém no Calm Calendar pode ler sua agenda.</li>
+    <li><strong>Log limpo.</strong> O log não contém conteúdo de eventos nem tokens, e os endereços de e-mail aparecem mascarados.</li>
+    <li><strong>Revogação.</strong> Sair da conta revoga o acesso do app no Google e remove o token do seu computador; você também pode revogar o acesso na sua Conta do Google a qualquer momento.</li>
+    <li><strong>Atualizações.</strong> Correções de segurança são lançadas como atualizações do app (pela Microsoft Store ou pelas versões no GitHub). Para relatar uma vulnerabilidade, escreva para <a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a>.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="deleting">
+  <h2 id="deleting">Como excluir seus dados</h2>
+  <ul>
+    <li><strong>Saia da conta</strong> no app (o botão ao lado da conta na barra lateral). Isso revoga o acesso do app no Google, exclui o token do Gerenciador de Credenciais do Windows e apaga do seu computador o e-mail e os dados da agenda salvos. Suas agendas continuam na sua Conta do Google.</li>
+    <li><strong>Remova o acesso</strong> a qualquer momento na sua Conta do Google: <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+    <li><strong>Desinstale</strong> o app para remover as configurações. Se você o instalou pela Microsoft Store, o Windows remove os dados locais do app junto com ele. Em outras instalações, você também pode excluir as pastas <code>%APPDATA%\com.arseni.calmcalendar</code> e <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> (a segunda guarda o log).</li>
+  </ul>
+</section>
+
+<section aria-labelledby="sharing">
+  <h2 id="sharing">Compartilhamento e divulgação</h2>
+  <p>Não compartilhamos, vendemos, alugamos nem transferimos seus dados para ninguém. Como nunca recebemos seus dados, não podemos divulgá-los.</p>
+  <p>O uso e a transferência, pelo Calm Calendar, de informações recebidas das APIs do Google para qualquer outro app seguirão a <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, incluindo os requisitos de uso limitado (Limited Use).</p>
+</section>
+
+<section aria-labelledby="store-google">
+  <h2 id="store-google">Microsoft Store e Google</h2>
+  <p>Se você instalar o app pela Microsoft Store, a Microsoft cuida do download, das atualizações e de qualquer compra conforme a <a href="https://privacy.microsoft.com/privacystatement">Política de Privacidade da Microsoft</a>. Sua Conta do Google e suas agendas são regidas pela <a href="https://policies.google.com/privacy">Política de Privacidade do Google</a>.</p>
+</section>
+
+<section aria-labelledby="children">
+  <h2 id="children">Crianças</h2>
+  <p>O Calm Calendar não se destina a crianças menores de 13 anos, e não coletamos intencionalmente informações pessoais de crianças.</p>
+</section>
+
+<section aria-labelledby="changes">
+  <h2 id="changes">Alterações nesta política</h2>
+  <p>Se esta política mudar, a nova versão será publicada neste endereço com uma nova data de vigência. Mudanças importantes também serão mencionadas nas notas de versão do app.</p>
+</section>
+
+<section aria-labelledby="contact">
+  <h2 id="contact">Contato</h2>
+  <p>Dúvidas sobre esta política ou seus dados: <a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a>.</p>
+</section>
+
+<p class="back-top"><a href="#top">Voltar ao topo</a></p>

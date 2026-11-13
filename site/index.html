@@ -154,7 +154,6 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script>try { localStorage.setItem("site-lang", "en"); } catch (e) {}</script>
 </head>
 <body>
   <div class="lang-suggest" id="lang-suggest" hidden><a></a><button type="button">×</button></div>
@@ -178,6 +177,7 @@
   })();
   </script>
   <a class="skip-link" href="#main">Skip to content</a>
+
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="./" aria-label="Calm Calendar, home">
@@ -193,13 +193,16 @@
       </nav>
     </div>
   </header>
+
   <main id="main">
+
     <!-- 1. Hero -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="wrap">
         <img class="hero-icon" src="icon.png" width="128" height="128" alt="Calm Calendar app icon: a calendar with a leaf in the corner">
         <h1 id="hero-title">Calm Calendar</h1>
         <p class="lead">A free, ad-free desktop calendar for Windows that shows your Google Calendar in day, week, month and schedule views, with a desktop widget and quick add from any app.</p>
+
         <div class="cta">
           <span class="cta-store">
             <a class="btn btn-primary" href="#" aria-disabled="true" aria-describedby="store-soon">
@@ -213,6 +216,7 @@
             Download from GitHub
           </a>
         </div>
+
         <figure class="shot">
           <picture>
             <source srcset="screenshot-week-dark.png" media="(prefers-color-scheme: dark)">
@@ -221,6 +225,7 @@
         </figure>
       </div>
     </section>
+
     <!-- 2. Features -->
     <section class="section" id="features" aria-labelledby="features-title">
       <div class="wrap">
@@ -228,6 +233,7 @@
           <h2 id="features-title">Everything you need, nothing you don't</h2>
           <p>A native Windows window for your Google Calendar. No ads, no feeds, no clutter.</p>
         </div>
+
         <div class="features-layout">
           <ul class="feature-grid">
             <li class="card feature">
@@ -301,6 +307,7 @@
               <p>No ads, no tracking, no servers of ours. Your data goes only between your PC and Google.</p>
             </li>
           </ul>
+
           <figure class="widget-shot">
             <picture>
               <source srcset="screenshot-widget-dark.png" media="(prefers-color-scheme: dark)">
@@ -311,6 +318,7 @@
         </div>
       </div>
     </section>
+
     <!-- 3. Languages -->
     <section class="section languages" id="languages" aria-labelledby="languages-title">
       <div class="wrap">
@@ -335,6 +343,7 @@
         </ul>
       </div>
     </section>
+
     <!-- 4. Google data (required for Google OAuth verification) -->
     <section class="section data-band" id="google-data" aria-labelledby="google-data-title">
       <div class="wrap">
@@ -361,6 +370,7 @@
         </div>
       </div>
     </section>
+
     <!-- 5. FAQ -->
     <section class="section" id="faq" aria-labelledby="faq-title">
       <div class="wrap">
@@ -395,7 +405,9 @@
         </div>
       </div>
     </section>
+
   </main>
+
   <footer class="site-footer">
     <div class="wrap">
       <p>© 2026 Arseni</p>

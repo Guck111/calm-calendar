@@ -73,5 +73,8 @@
   "faq_a_6_post": ".",
   "footer_privacy": "سياسة الخصوصية",
   "footer_terms": "شروط الاستخدام",
-  "footer_en_only": " (بالإنجليزية)"
+  "privacy_title": "سياسة الخصوصية",
+  "privacy_description": "كيف يصل Calm Calendar إلى بيانات تقويم Google ويستخدمها ويخزنها، وكيف تحذفها.",
+  "terms_title": "شروط الاستخدام",
+  "terms_description": "شروط استخدام تطبيق Calm Calendar لنظام Windows وهذا الموقع."
 }

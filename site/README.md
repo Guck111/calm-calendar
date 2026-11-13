@@ -21,13 +21,14 @@ Screenshots are taken at 2× from the real interface with English sample data (n
 
 ## Texts
 
-| File | Page |
-|---|---|
-| `privacy-policy.md` | `privacy.html` — required by Google verification and the Microsoft Store |
-| `terms-of-use.md` | `terms.html` — optional "Terms of service link" in Google Branding |
-| `privacy-policy.ru.md`, `terms-of-use.ru.md` | Russian versions, if the site gets a Russian page |
+The pages are built from HTML fragments in `i18n/docs/` (see Languages below); the Markdown files are older drafts kept for reference and are not used by the site.
 
-Before publishing, replace `[support@calmcalendar.co.uk](mailto:support@calmcalendar.co.uk)` with the real address.
+| Source | Page |
+|---|---|
+| `i18n/docs/privacy.<lang>.html` | `privacy.html`, `<lang>/privacy.html` — required by Google verification and the Microsoft Store |
+| `i18n/docs/terms.<lang>.html` | `terms.html`, `<lang>/terms.html` — optional "Terms of service link" in Google Branding |
+
+The English versions are authoritative: every translation says so at the top, with a link to the English page. `/privacy.html` and `/terms.html` must keep their addresses, because they are registered with Google OAuth and the Microsoft Store.
 
 ## Requirements the site must meet
 
@@ -40,11 +41,12 @@ Google checks the home page during OAuth verification:
 
 ## Languages
 
-The home page exists in all 13 app languages: `index.html` (English, also `x-default`) and `<lang>/index.html` (`/ru/`, `/de/`, …). Do not edit these files by hand: they are generated.
+Every page exists in all 13 app languages: English at the root (`index.html`, `privacy.html`, `terms.html`, also `x-default`) and the others in `<lang>/` (`/ru/`, `/ru/privacy.html`, …). Do not edit these files by hand: they are generated.
 
-- Layout: `templates/index.html`; texts: `i18n/<lang>.json` (same keys in every file).
-- After any change run `node scripts/build-site.mjs`: it writes all pages and `sitemap.xml`, and fails if a key is missing.
-- Each page gets its own title and description, `canonical`, `hreflang` links to every version, `og:locale`, and JSON-LD (`SoftwareApplication` + `FAQPage`) in its language. The sitemap lists every version with its alternates.
-- The English page shows a small link to the visitor's browser language when a translation exists; there is no automatic redirect, so search engines index every version.
-- Privacy Policy and Terms stay in English only; translated pages mark these links as English.
-- A new language: add it to `LANGS` in `scripts/build-site.mjs`, add `i18n/<lang>.json`, and add the folder to the copy loop in `.github/workflows/pages.yml`.
+- Home page: layout `templates/index.html`, texts `i18n/<lang>.json` (same keys in every file).
+- Privacy Policy and Terms of Use: layout `templates/doc.html` (header, footer, SEO tags), body `i18n/docs/<doc>.<lang>.html`. Section ids and links must match the English file; the effective date in `<time datetime>` must be the same in every language.
+- After any change run `node scripts/build-site.mjs`: it writes all pages and `sitemap.xml`, and fails if a key is missing or a translation's date differs from the English one.
+- When the English policy or terms change, update all 13 fragments and the date in each.
+- Each page gets its own title and description, `canonical`, `hreflang` links to every version, and `og:locale`; the home page also gets JSON-LD (`SoftwareApplication` + `FAQPage`) in its language. The sitemap lists every version with its alternates.
+- The English home page shows a small link to the visitor's browser language when a translation exists; there is no automatic redirect, so search engines index every version.
+- A new language: add it to `LANGS` in `scripts/build-site.mjs`, add `i18n/<lang>.json` and `i18n/docs/{privacy,terms}.<lang>.html`, and add the folder to the copy loop in `.github/workflows/pages.yml`.

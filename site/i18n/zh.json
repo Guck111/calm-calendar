@@ -73,5 +73,8 @@
   "faq_a_6_post": "。",
   "footer_privacy": "隐私政策",
   "footer_terms": "使用条款",
-  "footer_en_only": "（英文）"
+  "privacy_title": "隐私政策",
+  "privacy_description": "Calm Calendar 如何访问、使用和存储你的 Google 日历数据，以及如何删除这些数据。",
+  "terms_title": "使用条款",
+  "terms_description": "Calm Calendar Windows 应用及本网站的使用条款。"
 }

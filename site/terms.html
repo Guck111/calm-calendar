@@ -1,13 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Terms of Use — Calm Calendar</title>
-  <meta name="description" content="Terms of use for the Calm Calendar desktop app for Windows and this website.">
+  <meta name="description" content="The terms for using the Calm Calendar app for Windows and this website.">
+  <link rel="canonical" href="https://calmcalendar.co.uk/terms.html">
+  <link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/terms.html">
+  <link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/terms.html">
+  <link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/terms.html">
+  <link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/terms.html">
+  <link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/terms.html">
+  <link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/terms.html">
+  <link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/terms.html">
+  <link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/terms.html">
+  <link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/terms.html">
+  <link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/terms.html">
+  <link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/terms.html">
+  <link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/terms.html">
+  <link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/terms.html">
+  <link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/terms.html">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="Terms of Use — Calm Calendar">
+  <meta property="og:description" content="The terms for using the Calm Calendar app for Windows and this website.">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:url" content="https://calmcalendar.co.uk/terms.html">
+  <meta property="og:site_name" content="Calm Calendar">
+  <meta property="og:image" content="https://calmcalendar.co.uk/icon-512.png">
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,13 +40,13 @@
 
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="index.html" aria-label="Calm Calendar, home">
+      <a class="brand" href="./" aria-label="Calm Calendar, home">
         <img src="icon.png" width="32" height="32" alt="">
         <span>Calm Calendar</span>
       </a>
       <nav class="site-nav" aria-label="Main">
         <ul>
-          <li><a href="index.html#features">Features</a></li>
+          <li><a href="./#features">Features</a></li>
           <li><a href="privacy.html">Privacy</a></li>
           <li><a href="terms.html" aria-current="page">Terms</a></li>
         </ul>
@@ -111,17 +133,24 @@
           <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
         </ul>
       </nav>
+      <nav class="lang-switch" aria-label="Choose language">
+        <ul>
+          <li><a href="terms.html" lang="en" hreflang="en" aria-current="page">English</a></li>
+          <li><a href="es/terms.html" lang="es" hreflang="es">Español</a></li>
+          <li><a href="pt/terms.html" lang="pt" hreflang="pt">Português</a></li>
+          <li><a href="fr/terms.html" lang="fr" hreflang="fr">Français</a></li>
+          <li><a href="de/terms.html" lang="de" hreflang="de">Deutsch</a></li>
+          <li><a href="ru/terms.html" lang="ru" hreflang="ru">Русский</a></li>
+          <li><a href="uk/terms.html" lang="uk" hreflang="uk">Українська</a></li>
+          <li><a href="be/terms.html" lang="be" hreflang="be">Беларуская</a></li>
+          <li><a href="zh/terms.html" lang="zh-Hans" hreflang="zh-Hans">中文（简体）</a></li>
+          <li><a href="ja/terms.html" lang="ja" hreflang="ja">日本語</a></li>
+          <li><a href="hi/terms.html" lang="hi" hreflang="hi">हिन्दी</a></li>
+          <li><a href="bn/terms.html" lang="bn" hreflang="bn">বাংলা</a></li>
+          <li><a href="ar/terms.html" lang="ar" hreflang="ar" dir="rtl">العربية</a></li>
+        </ul>
+      </nav>
     </div>
   </footer>
-  <script>
-  // Links back to the home page lead to the language the visitor was reading (set by the home pages).
-  (function () {
-    var langs = ["es", "pt", "fr", "de", "ru", "uk", "be", "zh", "ja", "hi", "bn", "ar"], lang;
-    try { lang = localStorage.getItem("site-lang"); } catch (e) {}
-    if (langs.indexOf(lang) < 0) return;
-    var links = document.querySelectorAll('a[href^="index.html"]');
-    for (var i = 0; i < links.length; i++) links[i].setAttribute("href", links[i].getAttribute("href").replace("index.html", lang + "/"));
-  })();
-  </script>
 </body>
 </html>

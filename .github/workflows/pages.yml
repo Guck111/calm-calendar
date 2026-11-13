@@ -33,7 +33,7 @@ jobs:
           mkdir -p _site
           cp site/*.html site/*.css site/*.png site/*.ico site/robots.txt site/sitemap.xml _site/
           for lang in es pt fr de ru uk be zh ja hi bn ar; do
-            mkdir -p _site/$lang && cp site/$lang/index.html _site/$lang/
+            mkdir -p _site/$lang && cp site/$lang/*.html _site/$lang/
           done
 
       - uses: actions/upload-pages-artifact@v3

@@ -73,5 +73,8 @@
   "faq_a_6_post": ".",
   "footer_privacy": "Privacy Policy",
   "footer_terms": "Terms of Use",
-  "footer_en_only": " (English)"
+  "privacy_title": "Privacy Policy",
+  "privacy_description": "How Calm Calendar accesses, uses and stores your Google Calendar data, and how to delete it.",
+  "terms_title": "Terms of Use",
+  "terms_description": "The terms for using the Calm Calendar app for Windows and this website."
 }

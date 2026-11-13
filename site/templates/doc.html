@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="{{HTML_LANG}}" dir="{{HTML_DIR}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{DOC_TITLE}} — Calm Calendar</title>
+  <meta name="description" content="{{DOC_DESCRIPTION}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+{{HREFLANG_LINKS}}
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="{{DOC_TITLE}} — Calm Calendar">
+  <meta property="og:description" content="{{DOC_DESCRIPTION}}">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="{{OG_LOCALE}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:site_name" content="Calm Calendar">
+  <meta property="og:image" content="https://calmcalendar.co.uk/icon-512.png">
+  <link rel="icon" href="{{ROOT}}favicon.ico" sizes="any">
+  <link rel="icon" href="{{ROOT}}favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{{ROOT}}apple-touch-icon.png">
+  <link rel="stylesheet" href="{{ROOT}}styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">{{skip_link}}</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./" aria-label="{{brand_aria}}">
+        <img src="{{ROOT}}icon.png" width="32" height="32" alt="">
+        <span>Calm Calendar</span>
+      </a>
+      <nav class="site-nav" aria-label="{{nav_main_aria}}">
+        <ul>
+          <li><a href="./#features">{{nav_features}}</a></li>
+          <li><a href="privacy.html"{{CURRENT_privacy}}>{{nav_privacy}}</a></li>
+          <li><a href="terms.html"{{CURRENT_terms}}>{{nav_terms}}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc">
+    <article class="wrap prose">
+{{DOC_BODY}}
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© 2026 Arseni</p>
+      <nav aria-label="{{nav_footer_aria}}">
+        <ul>
+          <li><a href="privacy.html"{{CURRENT_privacy}}>{{footer_privacy}}</a></li>
+          <li><a href="terms.html"{{CURRENT_terms}}>{{footer_terms}}</a></li>
+          <li><a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a></li>
+          <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
+        </ul>
+      </nav>
+      <nav class="lang-switch" aria-label="{{lang_switch_label}}">
+        <ul>
+{{LANG_SWITCH_LINKS}}
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

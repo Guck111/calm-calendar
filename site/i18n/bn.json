@@ -73,5 +73,8 @@
   "faq_a_6_post": "।",
   "footer_privacy": "গোপনীয়তা নীতি",
   "footer_terms": "ব্যবহারের শর্তাবলি",
-  "footer_en_only": " (ইংরেজিতে)"
+  "privacy_title": "গোপনীয়তা নীতি",
+  "privacy_description": "Calm Calendar কীভাবে আপনার Google ক্যালেন্ডারের ডেটা অ্যাক্সেস, ব্যবহার ও সংরক্ষণ করে এবং কীভাবে তা মুছবেন।",
+  "terms_title": "ব্যবহারের শর্তাবলি",
+  "terms_description": "Windows-এর জন্য Calm Calendar অ্যাপ এবং এই ওয়েবসাইট ব্যবহারের শর্তাবলি।"
 }

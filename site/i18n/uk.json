@@ -73,5 +73,8 @@
   "faq_a_6_post": ".",
   "footer_privacy": "Політика конфіденційності",
   "footer_terms": "Умови використання",
-  "footer_en_only": " (англійською)"
+  "privacy_title": "Політика конфіденційності",
+  "privacy_description": "Як Calm Calendar отримує доступ до даних Google Календаря, як їх використовує й зберігає та як їх видалити.",
+  "terms_title": "Умови використання",
+  "terms_description": "Умови використання програми Calm Calendar для Windows і цього сайту."
 }

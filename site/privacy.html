@@ -1,13 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy Policy — Calm Calendar</title>
   <meta name="description" content="How Calm Calendar accesses, uses and stores your Google Calendar data, and how to delete it.">
+  <link rel="canonical" href="https://calmcalendar.co.uk/privacy.html">
+  <link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/privacy.html">
+  <link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/privacy.html">
+  <link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/privacy.html">
+  <link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/privacy.html">
+  <link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/privacy.html">
+  <link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/privacy.html">
+  <link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/privacy.html">
+  <link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/privacy.html">
+  <link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/privacy.html">
+  <link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/privacy.html">
+  <link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/privacy.html">
+  <link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/privacy.html">
+  <link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/privacy.html">
+  <link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/privacy.html">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="Privacy Policy — Calm Calendar">
+  <meta property="og:description" content="How Calm Calendar accesses, uses and stores your Google Calendar data, and how to delete it.">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:url" content="https://calmcalendar.co.uk/privacy.html">
+  <meta property="og:site_name" content="Calm Calendar">
+  <meta property="og:image" content="https://calmcalendar.co.uk/icon-512.png">
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,13 +40,13 @@
 
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="index.html" aria-label="Calm Calendar, home">
+      <a class="brand" href="./" aria-label="Calm Calendar, home">
         <img src="icon.png" width="32" height="32" alt="">
         <span>Calm Calendar</span>
       </a>
       <nav class="site-nav" aria-label="Main">
         <ul>
-          <li><a href="index.html#features">Features</a></li>
+          <li><a href="./#features">Features</a></li>
           <li><a href="privacy.html" aria-current="page">Privacy</a></li>
           <li><a href="terms.html">Terms</a></li>
         </ul>
@@ -179,17 +201,24 @@
           <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
         </ul>
       </nav>
+      <nav class="lang-switch" aria-label="Choose language">
+        <ul>
+          <li><a href="privacy.html" lang="en" hreflang="en" aria-current="page">English</a></li>
+          <li><a href="es/privacy.html" lang="es" hreflang="es">Español</a></li>
+          <li><a href="pt/privacy.html" lang="pt" hreflang="pt">Português</a></li>
+          <li><a href="fr/privacy.html" lang="fr" hreflang="fr">Français</a></li>
+          <li><a href="de/privacy.html" lang="de" hreflang="de">Deutsch</a></li>
+          <li><a href="ru/privacy.html" lang="ru" hreflang="ru">Русский</a></li>
+          <li><a href="uk/privacy.html" lang="uk" hreflang="uk">Українська</a></li>
+          <li><a href="be/privacy.html" lang="be" hreflang="be">Беларуская</a></li>
+          <li><a href="zh/privacy.html" lang="zh-Hans" hreflang="zh-Hans">中文（简体）</a></li>
+          <li><a href="ja/privacy.html" lang="ja" hreflang="ja">日本語</a></li>
+          <li><a href="hi/privacy.html" lang="hi" hreflang="hi">हिन्दी</a></li>
+          <li><a href="bn/privacy.html" lang="bn" hreflang="bn">বাংলা</a></li>
+          <li><a href="ar/privacy.html" lang="ar" hreflang="ar" dir="rtl">العربية</a></li>
+        </ul>
+      </nav>
     </div>
   </footer>
-  <script>
-  // Links back to the home page lead to the language the visitor was reading (set by the home pages).
-  (function () {
-    var langs = ["es", "pt", "fr", "de", "ru", "uk", "be", "zh", "ja", "hi", "bn", "ar"], lang;
-    try { lang = localStorage.getItem("site-lang"); } catch (e) {}
-    if (langs.indexOf(lang) < 0) return;
-    var links = document.querySelectorAll('a[href^="index.html"]');
-    for (var i = 0; i < links.length; i++) links[i].setAttribute("href", links[i].getAttribute("href").replace("index.html", lang + "/"));
-  })();
-  </script>
 </body>
 </html>

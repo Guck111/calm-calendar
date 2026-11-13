@@ -1,0 +1,132 @@
+<header class="doc-head" id="top">
+  <h1>Calm Calendar プライバシー ポリシー</h1>
+  <p class="doc-meta">発効日：<time datetime="2026-11-11">2026 年 11 月 11 日</time></p>
+  <p class="doc-note">これは翻訳です。<a href="../privacy.html" hreflang="en">英語版</a>と内容が異なる場合は、英語版が優先されます。</p>
+</header>
+
+<nav class="card toc" aria-labelledby="toc-title">
+  <h2 id="toc-title">目次</h2>
+  <ol>
+    <li><a href="#data-accessed">アプリがアクセスするデータ</a></li>
+    <li><a href="#data-use">データの使い方</a></li>
+    <li><a href="#data-storage">データの保存場所</a></li>
+    <li><a href="#protection">データの保護方法</a></li>
+    <li><a href="#deleting">データの削除</a></li>
+    <li><a href="#sharing">共有と開示</a></li>
+    <li><a href="#store-google">Microsoft Store と Google</a></li>
+    <li><a href="#children">お子様について</a></li>
+    <li><a href="#changes">本ポリシーの変更</a></li>
+    <li><a href="#contact">お問い合わせ</a></li>
+  </ol>
+</nav>
+
+<p>Calm Calendar は、Google カレンダーと連携する Windows 用のデスクトップ カレンダー アプリで、Arseni（以下「当方」）が開発しています。本ポリシーでは、アプリがどのデータにアクセスし、それをどのように使用・保存するか、またどのように削除できるかを説明します。</p>
+
+<div class="card summary-box">
+  <p><strong>要点：</strong>Calm Calendar は独自のサーバーを持ちません。カレンダーのデータはお使いのコンピューターと Google の間でのみやり取りされます。当方がデータを収集、受信、販売、共有することはなく、アプリには広告、アクセス解析、トラッキングは一切含まれていません。</p>
+</div>
+
+<section aria-labelledby="data-accessed">
+  <h2 id="data-accessed">アプリがアクセスするデータ</h2>
+  <p>Google でログインすると、Calm Calendar に以下の権限を許可するよう求められます。アプリは各権限を記載の機能にのみ使用します。</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="visually-hidden">Calm Calendar が求める Google の権限と、それぞれの用途</caption>
+      <thead>
+        <tr>
+          <th scope="col">Google の権限</th>
+          <th scope="col">アプリでの用途</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><code>calendar.calendarlist.readonly</code><strong>カレンダーの一覧の表示</strong></th>
+          <td>サイドバーにカレンダーを名前と色付きで表示し、それぞれの表示・非表示を切り替えられるようにします。また、通知のために各カレンダーのデフォルトのリマインダー時間を読み取ります。</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>calendar.events</code><strong>カレンダーの予定の表示と編集</strong></th>
+          <td>カレンダーの各表示とデスクトップ ウィジェットに予定を表示します。アプリで操作したときに予定を作成・編集・移動・削除します（招待したゲストを含みます。その場合、Google がゲストに招待メールを送信します。また、設定した移動時間は予定の非公開フィールドに保存されます）。検索を使ったときに予定を検索します。Windows の通知を表示するために予定のリマインダーを読み取ります。設定で選んだ国の Google の公開祝日カレンダーを読み取ります。</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>openid</code>、<code>email</code><strong>Google アカウントのメールアドレス</strong></th>
+          <td>どのアカウントでログインしているかを表示します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>アプリは Gmail、連絡先、Google ドライブ、その他の Google データにはアクセスしません。また、お客様自身が予定を作成・編集・移動・削除しない限り、カレンダーを変更することはありません。</p>
+</section>
+
+<section aria-labelledby="data-use">
+  <h2 id="data-use">データの使い方</h2>
+  <p>Google ユーザーデータは、アプリに表示されるカレンダー機能の提供にのみ使用されます。広告には使用されず、販売されることもなく、人工知能や機械学習モデルの開発・改善・学習に使用されることもありません。Calm Calendar の誰もお客様のデータを閲覧しません。</p>
+</section>
+
+<section aria-labelledby="data-storage">
+  <h2 id="data-storage">データの保存場所</h2>
+  <p>すべての処理はお使いのコンピューター上で行われます。Calm Calendar は暗号化された HTTPS 接続で Google のサーバー（<code>accounts.google.com</code>、<code>oauth2.googleapis.com</code>、<code>www.googleapis.com</code>）と直接通信します。当方やその他の第三者に何かが送信されることはありません。</p>
+  <p>リンクでカレンダーの購読を追加した場合（設定 → カレンダーの購読）、アプリは入力されたアドレスからその .ics ファイルを直接ダウンロードします。そのサイトには、お使いのコンピューターからの通常のダウンロード要求として見えます。予定の場所をクリックすると、その場所を検索した状態でブラウザーに Google マップが開きます。</p>
+  <p>アプリはお使いのコンピューターに次のものを保存します。</p>
+  <ul>
+    <li><strong>ログイン トークン。</strong>Google のリフレッシュ トークンは Windows 資格情報マネージャーに保存され、お使いの Windows アカウントによって保護されます。有効期間の短いアクセス トークンは、アプリの実行中にメモリ上にのみ保持されます。</li>
+    <li><strong>アカウントのメールアドレス。</strong>どのアカウントでログインしているかを表示するためです。</li>
+    <li><strong>最近読み込んだカレンダー データ。</strong>Google から受け取った最新のカレンダー一覧と予定はアプリのローカル ストレージに保存され、オフラインでもカレンダーとウィジェットに予定が表示されるようにします。保存されるのは最新の 80 件の応答までで、古いものは自動的に削除されます。</li>
+    <li><strong>カレンダーの購読。</strong>追加したリンクと、各カレンダーの最後にダウンロードしたコピーです。オフラインで表示するためのもので、購読を削除するとそのコピーも削除されます。</li>
+    <li><strong>設定。</strong>テーマ、言語、ウィジェットの位置、表示するカレンダーなどです。</li>
+    <li><strong>ログ ファイル。</strong><code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> にある技術ログには、問題を調査できるよう、アプリの起動、ログイン、ログアウト、エラーが記録されます。予定のタイトルや説明、トークンは含まれず、メールアドレスは先頭の 1 文字とドメインに短縮されます（<code>a***@gmail.com</code>）。1&nbsp;MB のファイルが最大 5 つまで保存され、古いものは自動的に削除されます。ログが勝手にコンピューターの外に送られることはありません。お客様がサポートへのメールに添付した場合（設定 → 「ログフォルダーを開く」）にのみ、当方が目にします。</li>
+  </ul>
+</section>
+
+<section aria-labelledby="protection">
+  <h2 id="protection">データの保護方法</h2>
+  <p>カレンダーのデータは機密性が高いため、Calm Calendar はデータをお使いのコンピューターにとどめ、誰が・何がアクセスできるかを制限するよう設計されています。以下の保護の仕組みを備えています。</p>
+  <ul>
+    <li><strong>通信の暗号化。</strong>Google との通信はすべて HTTPS（TLS）を使用します。アプリにはそれ以外のネットワーク接続先はなく、間に当方のサーバーもありません。</li>
+    <li><strong>安全なログイン。</strong>ログインは普段お使いのブラウザーで、Google 自身のページで行うため、アプリが Google のパスワードを目にすることはありません。ログインにはデスクトップ アプリ向けの OAuth 2.0 認可コード フローを PKCE（RFC 7636）とランダムな <code>state</code> の検証付きで使用し、応答はログイン終了時に閉じられる一時的なローカル アドレス（<code>127.0.0.1</code>）でのみ受け取ります。</li>
+    <li><strong>保護されたログイン トークン。</strong>有効期間の長いリフレッシュ トークンは Windows 資格情報マネージャーにのみ保存され、お使いの Windows アカウントに結び付いた鍵（Windows Data Protection API）で暗号化されます。暗号化されていないファイル、ログ、設定に書き込まれることはありません。有効期間の短いアクセス トークンはメモリ上にのみ保持されます。</li>
+    <li><strong>最小限の権限。</strong>アプリが求めるのは上記の Google の権限のみで、Gmail、ドライブ、連絡先の権限は一切求めません。</li>
+    <li><strong>制限されたアプリ ウィンドウ。</strong>アプリの画面は厳格なコンテンツ セキュリティ ポリシー（Content Security Policy）の下で動作し、自身のファイルしか読み込めず、ネットワーク要求やリモート コードの読み込みはできません。Google と通信するのはアプリのネイティブ部分のみで、相手は上記の 3 つの Google ホストに限られます。</li>
+    <li><strong>ローカル キャッシュ。</strong>最近読み込んだカレンダー データは、Windows のユーザー プロファイル内にあるアプリ専用のストレージに保存されるため、同じコンピューターの他の Windows ユーザーは既定では読み取れません。アプリはこのキャッシュに独自の暗号化を追加しません。コンピューターに物理的にアクセスできる人からデータを守るには、Windows のデバイスの暗号化（BitLocker）を有効にすることをおすすめします。キャッシュはログアウト時に削除されます。</li>
+    <li><strong>当方はアクセスしません。</strong>当方はサーバーを運用せず、データも受け取らないため、当方側にはアクセスされたり漏えいしたりしうるユーザーデータのデータベースが存在せず、Calm Calendar の誰もお客様のカレンダーを閲覧できません。</li>
+    <li><strong>ログの配慮。</strong>ログには予定の内容やトークンは含まれず、メールアドレスはマスクされています。</li>
+    <li><strong>アクセスの取り消し。</strong>ログアウトすると、Google でのアプリのアクセスが取り消され、トークンがコンピューターから削除されます。Google アカウントからいつでもアクセスを取り消すこともできます。</li>
+    <li><strong>アップデート。</strong>セキュリティ修正はアプリのアップデートとして提供されます（Microsoft Store または GitHub のリリース経由）。脆弱性の報告は <a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a> までお送りください。</li>
+  </ul>
+</section>
+
+<section aria-labelledby="deleting">
+  <h2 id="deleting">データの削除</h2>
+  <ul>
+    <li>アプリで<strong>ログアウト</strong>します（サイドバーのアカウントの横にあるボタン）。これにより、Google でのアプリのアクセスが取り消され、Windows 資格情報マネージャーからログイン トークンが削除され、保存されたメールアドレスとカレンダー データがコンピューターから削除されます。カレンダー自体は Google アカウントに残ります。</li>
+    <li>Google アカウントからいつでも<strong>アクセスを取り消せます</strong>：<a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>。</li>
+    <li>アプリを<strong>アンインストール</strong>すると設定が削除されます。Microsoft Store からインストールした場合、Windows がアプリのローカル データも一緒に削除します。その他の方法でインストールした場合は、<code>%APPDATA%\com.arseni.calmcalendar</code> と <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code>（後者にログがあります）のフォルダーも削除できます。</li>
+  </ul>
+</section>
+
+<section aria-labelledby="sharing">
+  <h2 id="sharing">共有と開示</h2>
+  <p>当方はお客様のデータを誰とも共有、販売、貸与、譲渡しません。当方がデータを受け取ることはないため、開示することもできません。</p>
+  <p>Calm Calendar による Google API から受け取った情報の使用および他のアプリへの転送は、<a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>（制限付き使用（Limited Use）の要件を含む）に準拠します。</p>
+</section>
+
+<section aria-labelledby="store-google">
+  <h2 id="store-google">Microsoft Store と Google</h2>
+  <p>Microsoft Store からアプリをインストールした場合、ダウンロード、アップデート、購入は <a href="https://privacy.microsoft.com/privacystatement">Microsoft プライバシー ステートメント</a>に基づいて Microsoft が処理します。Google アカウントとカレンダーには <a href="https://policies.google.com/privacy">Google プライバシー ポリシー</a>が適用されます。</p>
+</section>
+
+<section aria-labelledby="children">
+  <h2 id="children">お子様について</h2>
+  <p>Calm Calendar は 13 歳未満のお子様を対象としておらず、当方がお子様の個人情報を故意に収集することはありません。</p>
+</section>
+
+<section aria-labelledby="changes">
+  <h2 id="changes">本ポリシーの変更</h2>
+  <p>本ポリシーが変更された場合、新しい版を新しい発効日とともにこのアドレスで公開します。重要な変更は、アプリのリリース ノートでもお知らせします。</p>
+</section>
+
+<section aria-labelledby="contact">
+  <h2 id="contact">お問い合わせ</h2>
+  <p>本ポリシーやお客様のデータに関するご質問：<a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a></p>
+</section>
+
+<p class="back-top"><a href="#top">ページの先頭へ</a></p>

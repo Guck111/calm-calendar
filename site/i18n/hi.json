@@ -73,5 +73,8 @@
   "faq_a_6_post": "।",
   "footer_privacy": "निजता नीति",
   "footer_terms": "उपयोग की शर्तें",
-  "footer_en_only": " (अंग्रेज़ी में)"
+  "privacy_title": "निजता नीति",
+  "privacy_description": "Calm Calendar आपके Google कैलेंडर डेटा तक कैसे पहुँचता है, उसका उपयोग और भंडारण कैसे करता है, और उसे कैसे हटाएँ।",
+  "terms_title": "उपयोग की शर्तें",
+  "terms_description": "Windows के लिए Calm Calendar ऐप और इस वेबसाइट के उपयोग की शर्तें।"
 }

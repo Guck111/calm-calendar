@@ -73,5 +73,8 @@
   "faq_a_6_post": "。",
   "footer_privacy": "プライバシー ポリシー",
   "footer_terms": "利用規約",
-  "footer_en_only": "（英語）"
+  "privacy_title": "プライバシー ポリシー",
+  "privacy_description": "Calm Calendar が Google カレンダーのデータにどのようにアクセスし、使用・保存するか、またその削除方法について。",
+  "terms_title": "利用規約",
+  "terms_description": "Windows 用アプリ Calm Calendar およびこのウェブサイトの利用規約。"
 }
