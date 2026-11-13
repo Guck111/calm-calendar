@@ -181,5 +181,15 @@
       </nav>
     </div>
   </footer>
+  <script>
+  // Links back to the home page lead to the language the visitor was reading (set by the home pages).
+  (function () {
+    var langs = ["es", "pt", "fr", "de", "ru", "uk", "be", "zh", "ja", "hi", "bn", "ar"], lang;
+    try { lang = localStorage.getItem("site-lang"); } catch (e) {}
+    if (langs.indexOf(lang) < 0) return;
+    var links = document.querySelectorAll('a[href^="index.html"]');
+    for (var i = 0; i < links.length; i++) links[i].setAttribute("href", links[i].getAttribute("href").replace("index.html", lang + "/"));
+  })();
+  </script>
 </body>
 </html>

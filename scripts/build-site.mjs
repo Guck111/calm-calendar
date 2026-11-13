@@ -119,6 +119,7 @@ for (const lang of CODES) {
   const info = LANGS[lang];
   const root = lang === "en" ? "" : "../";
   let html = template
+    .replaceAll("{{HTML_LANG_CODE}}", lang)
     .replaceAll("{{HTML_LANG}}", info.hreflang)
     .replaceAll("{{HTML_DIR}}", info.rtl ? "rtl" : "ltr")
     .replaceAll("{{CANONICAL}}", pageUrl(lang))
