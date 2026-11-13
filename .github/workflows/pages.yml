@@ -31,7 +31,7 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p _site
-          cp site/*.html site/*.css site/*.png site/*.ico _site/
+          cp site/*.html site/*.css site/*.png site/*.ico site/robots.txt site/sitemap.xml _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:

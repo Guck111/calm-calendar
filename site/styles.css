@@ -338,6 +338,27 @@ code {
 }
 .widget-shot figcaption { margin-top: 0.9rem; font-size: 0.9rem; color: var(--text-muted); }
 
+/* languages */
+
+.languages { padding-top: 0; }
+
+.lang-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.lang-list li {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 1.05rem;
+}
+
 /* google data (verification) */
 
 .data-band {
