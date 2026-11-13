@@ -6,6 +6,8 @@ import { broadcast, inTauri, subscribe } from "../api/bus";
 import { readJson, writeJson } from "../lib/storage";
 import { en } from "./en";
 import { ru, type Dict } from "./ru";
+import { uk } from "./uk";
+import { be } from "./be";
 import { bn } from "./bn";
 import { ar } from "./ar";
 import { hi } from "./hi";
@@ -28,6 +30,8 @@ type LangInfo = {
 const LANGUAGES = {
   en: { name: "English", dict: en, region: "en-GB" },
   ru: { name: "Русский", dict: ru, region: "ru-RU" },
+  uk: { name: "Українська", dict: uk, region: "uk-UA" },
+  be: { name: "Беларуская", dict: be, region: "be-BY" },
   es: { name: "Español", dict: es, region: "es-ES" },
   fr: { name: "Français", dict: fr, region: "fr-FR" },
   pt: { name: "Português", dict: pt, region: "pt-BR" },

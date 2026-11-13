@@ -9,6 +9,8 @@ use tauri::AppHandle;
 pub enum Lang {
     En,
     Ru,
+    Uk,
+    Be,
     Es,
     Fr,
     Pt,
@@ -21,7 +23,7 @@ pub enum Lang {
 }
 
 /// Порядок не важен: по нему только ищут код и язык Windows
-const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar, Lang::Bn];
+const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Uk, Lang::Be, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar, Lang::Bn];
 
 pub struct TrayText {
     pub open: &'static str,
@@ -76,6 +78,36 @@ impl Lang {
                 },
                 signed_in: "Готово. Эту вкладку можно закрыть и вернуться в приложение.",
                 sign_in_failed: "Вход не выполнен. Вернись в приложение и попробуй ещё раз.",
+            },
+            Lang::Uk => Texts {
+                code: "uk",
+                hl: "uk",
+                langid: 0x22,
+                rtl: false,
+                tray: TrayText {
+                    open: "Відкрити календар",
+                    widget: "Віджет на робочому столі",
+                    on_top: "Віджет поверх вікон",
+                    autostart: "Запускати під час входу у Windows",
+                    quit: "Вихід",
+                },
+                signed_in: "Готово. Цю вкладку можна закрити й повернутися до застосунку.",
+                sign_in_failed: "Не вдалося увійти. Поверніться до застосунку й спробуйте ще раз.",
+            },
+            Lang::Be => Texts {
+                code: "be",
+                hl: "be",
+                langid: 0x23,
+                rtl: false,
+                tray: TrayText {
+                    open: "Адкрыць каляндар",
+                    widget: "Віджэт на працоўным стале",
+                    on_top: "Віджэт паверх вокнаў",
+                    autostart: "Запускаць пры ўваходзе ў Windows",
+                    quit: "Выхад",
+                },
+                signed_in: "Гатова. Гэтую ўкладку можна закрыць і вярнуцца ў праграму.",
+                sign_in_failed: "Не ўдалося ўвайсці. Вярніцеся ў праграму і паспрабуйце яшчэ раз.",
             },
             Lang::Es => Texts {
                 code: "es",
@@ -294,6 +326,9 @@ mod tests {
         // 0x0419 — русский (Россия), 0x0809 — английский (Великобритания)
         assert_eq!(Lang::from_langid(0x0419), Some(Lang::Ru));
         assert_eq!(Lang::from_langid(0x0809), Some(Lang::En));
+        // 0x0422 — украинский, 0x0423 — белорусский
+        assert_eq!(Lang::from_langid(0x0422), Some(Lang::Uk));
+        assert_eq!(Lang::from_langid(0x0423), Some(Lang::Be));
         assert_eq!(Lang::from_langid(0x0415), None);
     }
 }

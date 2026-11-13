@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **Ukrainian and Belarusian**: the interface, the tray menu and quick add now speak Українська and Беларуская (Settings → Language, or it follows Windows). Quick add tells Russian, Ukrainian and Belarusian phrases apart by their letters, so "заўтра 19:00 кава" works with any interface language.
+
 ## 0.10.0 — 2026-11-11
 
 ### New

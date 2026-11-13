@@ -6,6 +6,8 @@ import { test, expect, openApp, eventBlock, rangeText, dayOfBlock, dayNumber, es
 const EXAMPLES: Record<Lang, { text: string; title: string }> = {
   en: { text: "tomorrow 7pm English class 50 min", title: "English class" },
   ru: { text: "завтра 19:00 английский 50 мин", title: "английский" },
+  uk: { text: "завтра 19:00 англійська 50 хв", title: "англійська" },
+  be: { text: "заўтра 19:00 англійская 50 хв", title: "англійская" },
   es: { text: "mañana a las 19:00 clase de inglés 50 min", title: "clase de inglés" },
   fr: { text: "demain 19h cours d'anglais 50 min", title: "cours d'anglais" },
   pt: { text: "amanhã 19h aula de inglês 50 min", title: "aula de inglês" },

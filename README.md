@@ -2,7 +2,7 @@
 
 An ad-free calendar for Windows that works with Google Calendar. Day, week and month views, a desktop widget, quick add from a single line, reminders as Windows notifications, drag and drop, and search.
 
-The interface and quick add work in 11 languages: English, Russian, Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic (right to left) and Bengali. The language follows Windows and can be changed in Settings → Language. Dates follow the region: in en-US the week starts on Sunday and times use AM/PM.
+The interface and quick add work in 13 languages: English, Russian, Ukrainian, Belarusian, Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic (right to left) and Bengali. The language follows Windows and can be changed in Settings → Language. Dates follow the region: in en-US the week starts on Sunday and times use AM/PM.
 
 Stack: Tauri 2 (Rust), React 19, TypeScript, Effector, CSS Modules. Dates use plain `Date` and `Intl`, no date libraries.
 
@@ -12,7 +12,7 @@ The full list, by area, is in [docs/features.md](docs/features.md). In short:
 
 - Day, week, month and schedule views; several Google accounts in one window with overlaps between them highlighted.
 - Create, edit, drag and resize events; recurring events with "this event" / "this and following"; time zones, guests, travel time.
-- Quick add from one line in 11 languages, search, free time as text for a messenger, holidays of 76 countries, week numbers.
+- Quick add from one line in 13 languages, search, free time as text for a messenger, holidays of 76 countries, week numbers.
 - "Join" for video calls, Windows notifications, an optional hard-to-miss alert, a desktop widget and a tray agenda.
 - Five styles (Classic, Paper, Obsidian, Showcase, Monochrome), each light and dark, a choice of fonts, a glass effect, right-to-left Arabic, offline reading of the last loaded weeks.
 
@@ -93,7 +93,7 @@ cd src-tauri; cargo test
 
 ### Interface tests (Playwright)
 
-`npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 11 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.
+`npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 13 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.
 
 ### App tests (tauri-driver)
 

@@ -3,6 +3,8 @@ import { test as base, expect, type Page } from "@playwright/test";
 import type { Lang } from "../../src/shared/i18n";
 import { en } from "../../src/shared/i18n/en";
 import { ru } from "../../src/shared/i18n/ru";
+import { uk } from "../../src/shared/i18n/uk";
+import { be } from "../../src/shared/i18n/be";
 import { es } from "../../src/shared/i18n/es";
 import { fr } from "../../src/shared/i18n/fr";
 import { pt } from "../../src/shared/i18n/pt";
@@ -13,7 +15,7 @@ import { hi } from "../../src/shared/i18n/hi";
 import { ar } from "../../src/shared/i18n/ar";
 import { bn } from "../../src/shared/i18n/bn";
 
-export const DICTS = { en, ru, es, fr, pt, de, ja, zh, hi, ar, bn };
+export const DICTS = { en, ru, uk, be, es, fr, pt, de, ja, zh, hi, ar, bn };
 
 /** "Now" in every test: Wednesday 11 November 2026, 9:50 in Warsaw. The mock data is built around it:
  *  the week is 9–15 November (Monday first in en-GB), a stand-up every weekday at 9:30 */

@@ -1,6 +1,6 @@
 # Microsoft Store listing
 
-Texts for Partner Center → Calm Calendar → Store listings. English (en-us) is the default listing; the other ten are optional and can be added under "Manage additional languages". Partner Center offers only the languages declared in the package (`src-tauri/msix/AppxManifest.xml`): en-us, ru-ru, es-es, fr-fr, pt-br, de-de, ja-jp, zh-cn, hi-in, ar-sa, bn-bd.
+Texts for Partner Center → Calm Calendar → Store listings. English (en-us) is the default listing; the other twelve are optional and can be added under "Manage additional languages". Partner Center offers only the languages declared in the package (`src-tauri/msix/AppxManifest.xml`): en-us, ru-ru, uk-ua, be-by, es-es, fr-fr, pt-br, de-de, ja-jp, zh-cn, hi-in, ar-sa, bn-bd.
 
 Limits: short description and description up to 10,000 characters, product features up to 20 lines of 200 characters, search terms up to 7 of 30 characters each and 21 words in total. Every quick add example below is checked against the app's parser for that language. The translations were not reviewed by native speakers.
 
@@ -48,7 +48,7 @@ Expected rating: 3+ / Everyone.
 >
 > Private by design: Calm Calendar has no servers of its own, no ads, no tracking and no analytics. Your calendar data goes only between your PC and Google.
 >
-> Requires a Google account. The interface is available in 11 languages: English, Spanish, French, Portuguese, German, Russian, Japanese, Chinese, Hindi, Arabic and Bengali, and quick add understands each of them.
+> Requires a Google account. The interface is available in 13 languages: English, Spanish, French, Portuguese, German, Russian, Ukrainian, Belarusian, Japanese, Chinese, Hindi, Arabic and Bengali, and quick add understands each of them.
 
 **Product features** (one per line, up to 20):
 
@@ -63,7 +63,7 @@ Expected rating: 3+ / Everyone.
 - Light, dark and system themes with a glass effect
 - Launch at sign-in with just the widget
 - No ads, no tracking, no servers of ours
-- Interface and quick add in 11 languages, including Arabic written right to left
+- Interface and quick add in 13 languages, including Arabic written right to left
 
 **Search terms** (up to 7):
 
@@ -95,7 +95,7 @@ Expected rating: 3+ / Everyone.
 >
 > Конфиденциальность по умолчанию: у Calm Calendar нет своих серверов, рекламы, слежки и аналитики. Данные календаря передаются только между вашим компьютером и Google.
 >
-> Нужен аккаунт Google. Интерфейс на 11 языках: русском, английском, испанском, французском, португальском, немецком, японском, китайском, хинди, арабском и бенгальском, и быстрое создание понимает каждый из них.
+> Нужен аккаунт Google. Интерфейс на 13 языках: русском, украинском, белорусском, английском, испанском, французском, португальском, немецком, японском, китайском, хинди, арабском и бенгальском, и быстрое создание понимает каждый из них.
 
 **Product features:**
 
@@ -110,9 +110,83 @@ Expected rating: 3+ / Everyone.
 - Светлая, тёмная и системная темы с эффектом стекла
 - Запуск при входе в Windows только с виджетом
 - Без рекламы, слежки и своих серверов
-- Интерфейс и быстрое создание на 11 языках, включая арабский справа налево
+- Интерфейс и быстрое создание на 13 языках, включая арабский справа налево
 
 **Search terms:** `календарь`, `google календарь`, `виджет`, `планировщик`, `расписание`, `напоминания`, `ежедневник`
+
+## Ukrainian (uk-ua)
+
+**Product name:** Calm Calendar
+
+**Short description:**
+
+> Спокійний календар для Windows без реклами. Ваш Google Календар у виглядах на день, тиждень і місяць, віджет на робочому столі, швидке створення й нагадування.
+
+**Description:**
+
+> Calm Calendar — тихий, швидкий календар для Windows без реклами, який працює з вашим Google Календарем.
+>
+> Дивіться розклад на день, тиждень і місяць, перетягуйте події, щоб перенести їх або змінити тривалість. Віджет на робочому столі показує годинник, відлік до наступної події, місяць і найближчі справи.
+>
+> Створюйте події звичайними словами: «завтра 19:00 англійська 50 хв #особисте» — і подія з'явиться в потрібному календарі в потрібний час. Нагадування Google Календаря приходять сповіщеннями Windows, а без мережі застосунок показує останній завантажений розклад.
+>
+> Конфіденційність за замовчуванням: у Calm Calendar немає власних серверів, реклами, стеження й аналітики. Дані календаря передаються лише між вашим комп'ютером і Google.
+>
+> Потрібен акаунт Google. Інтерфейс 13 мовами, серед них українська, англійська, російська та білоруська, і швидке створення розуміє кожну з них.
+
+**Product features:**
+
+- Вигляди на день, тиждень і місяць для Google Календаря
+- Перетягування подій: перенесення й зміна тривалості
+- Віджет на робочому столі: годинник, відлік, місяць і найближчі події
+- Швидке створення: «завтра 19:00 спортзал 50 хв» і Enter
+- Нагадування Google Календаря сповіщеннями Windows
+- Робота без мережі за останніми завантаженими даними
+- Показ і приховування окремих календарів
+- Пошук подій
+- Світла, темна й системна теми з ефектом скла
+- Запуск під час входу у Windows лише з віджетом
+- Без реклами, стеження й власних серверів
+- Інтерфейс і швидке створення 13 мовами
+
+**Search terms:** `календар`, `google календар`, `віджет`, `планувальник`, `розклад`, `нагадування`, `щоденник`
+
+## Belarusian (be-by)
+
+**Product name:** Calm Calendar
+
+**Short description:**
+
+> Спакойны каляндар для Windows без рэкламы. Ваш Google Каляндар у відах на дзень, тыдзень і месяц, віджэт на працоўным стале, хуткае стварэнне і напамінанні.
+
+**Description:**
+
+> Calm Calendar — ціхі, хуткі каляндар для Windows без рэкламы, які працуе з вашым Google Календаром.
+>
+> Глядзіце расклад на дзень, тыдзень і месяц, перацягвайце падзеі, каб перанесці іх або змяніць працягласць. Віджэт на працоўным стале паказвае гадзіннік, адлік да наступнай падзеі, месяц і бліжэйшыя справы.
+>
+> Стварайце падзеі звычайнымі словамі: «заўтра 19:00 англійская 50 хв #асабістае» — і падзея з'явіцца ў патрэбным календары ў патрэбны час. Напамінанні Google Календара прыходзяць апавяшчэннямі Windows, а без сеткі праграма паказвае апошні загружаны расклад.
+>
+> Канфідэнцыяльнасць па змаўчанні: у Calm Calendar няма сваіх сервераў, рэкламы, сачэння і аналітыкі. Даныя календара перадаюцца толькі паміж вашым камп'ютарам і Google.
+>
+> Патрэбны акаўнт Google. Інтэрфейс на 13 мовах, сярод іх беларуская, англійская, руская і ўкраінская, і хуткае стварэнне разумее кожную з іх.
+
+**Product features:**
+
+- Віды на дзень, тыдзень і месяц для Google Календара
+- Перацягванне падзей: перанос і змена працягласці
+- Віджэт на працоўным стале: гадзіннік, адлік, месяц і бліжэйшыя падзеі
+- Хуткае стварэнне: «заўтра 19:00 спартзала 50 хв» і Enter
+- Напамінанні Google Календара апавяшчэннямі Windows
+- Праца без сеткі па апошніх загружаных даных
+- Паказ і хаванне асобных календароў
+- Пошук па падзеях
+- Светлая, цёмная і сістэмная тэмы з эфектам шкла
+- Запуск пры ўваходзе ў Windows толькі з віджэтам
+- Без рэкламы, сачэння і сваіх сервераў
+- Інтэрфейс і хуткае стварэнне на 13 мовах
+
+**Search terms:** `каляндар`, `google каляндар`, `віджэт`, `планавальнік`, `расклад`, `напамінанні`, `штодзённік`
 
 ## Spanish (es-es)
 
@@ -132,7 +206,7 @@ Expected rating: 3+ / Everyone.
 >
 > Privado por diseño: Calm Calendar no tiene servidores propios, ni anuncios, ni rastreo, ni analíticas. Los datos de tu calendario solo viajan entre tu PC y Google.
 >
-> Necesitas una cuenta de Google. La interfaz está disponible en 11 idiomas, entre ellos español, inglés, portugués y francés, y la creación rápida entiende cada uno de ellos.
+> Necesitas una cuenta de Google. La interfaz está disponible en 13 idiomas, entre ellos español, inglés, portugués y francés, y la creación rápida entiende cada uno de ellos.
 
 **Product features:**
 
@@ -147,7 +221,7 @@ Expected rating: 3+ / Everyone.
 - Temas claro, oscuro y del sistema con efecto cristal
 - Se inicia con Windows mostrando solo el widget
 - Sin anuncios, sin rastreo y sin servidores propios
-- Interfaz y creación rápida en 11 idiomas
+- Interfaz y creación rápida en 13 idiomas
 
 **Search terms:** `calendario`, `google calendar`, `widget de escritorio`, `agenda`, `planificador`, `recordatorios`, `horario`
 
@@ -173,7 +247,7 @@ Expected rating: 3+ / Everyone.
 >
 > Respect de la vie privée : Calm Calendar n’a ni serveurs à lui, ni publicité, ni pistage, ni statistiques. Les données de votre agenda ne circulent qu’entre votre PC et Google.
 >
-> Un compte Google est nécessaire. L’interface est disponible en 11 langues, dont le français, l’anglais, l’arabe et l’allemand, et l’ajout rapide comprend chacune d’elles.
+> Un compte Google est nécessaire. L’interface est disponible en 13 langues, dont le français, l’anglais, l’arabe et l’allemand, et l’ajout rapide comprend chacune d’elles.
 
 **Product features:**
 
@@ -188,7 +262,7 @@ Expected rating: 3+ / Everyone.
 - Thèmes clair, sombre et système avec effet verre
 - Démarrage avec Windows, widget seul
 - Sans publicité, sans pistage, sans serveurs à nous
-- Interface et ajout rapide en 11 langues
+- Interface et ajout rapide en 13 langues
 
 **Search terms:** `agenda`, `calendrier`, `google agenda`, `widget de bureau`, `planning`, `rappels`, `emploi du temps`
 
@@ -214,7 +288,7 @@ Expected rating: 3+ / Everyone.
 >
 > Privacidade desde o início: o Calm Calendar não tem servidores próprios, anúncios, rastreamento nem análises. Os dados da sua agenda trafegam apenas entre o seu PC e o Google.
 >
-> É necessária uma conta do Google. A interface está disponível em 11 idiomas, entre eles português, inglês e espanhol, e a criação rápida entende cada um deles.
+> É necessária uma conta do Google. A interface está disponível em 13 idiomas, entre eles português, inglês e espanhol, e a criação rápida entende cada um deles.
 
 **Product features:**
 
@@ -229,7 +303,7 @@ Expected rating: 3+ / Everyone.
 - Temas claro, escuro e do sistema com efeito de vidro
 - Inicia com o Windows mostrando só o widget
 - Sem anúncios, sem rastreamento e sem servidores próprios
-- Interface e criação rápida em 11 idiomas
+- Interface e criação rápida em 13 idiomas
 
 **Search terms:** `agenda`, `calendário`, `google agenda`, `widget`, `planejador`, `lembretes`, `compromissos`
 
@@ -255,7 +329,7 @@ Expected rating: 3+ / Everyone.
 >
 > Datenschutz von Anfang an: Calm Calendar hat keine eigenen Server, keine Werbung, kein Tracking und keine Analyse. Deine Kalenderdaten gehen nur zwischen deinem PC und Google hin und her.
 >
-> Ein Google-Konto ist erforderlich. Die Oberfläche gibt es in 11 Sprachen, darunter Deutsch, Englisch und Französisch, und die Schnelleingabe versteht jede davon.
+> Ein Google-Konto ist erforderlich. Die Oberfläche gibt es in 13 Sprachen, darunter Deutsch, Englisch und Französisch, und die Schnelleingabe versteht jede davon.
 
 **Product features:**
 
@@ -270,7 +344,7 @@ Expected rating: 3+ / Everyone.
 - Helles, dunkles und System-Design mit Glaseffekt
 - Start mit Windows, nur mit dem Widget
 - Keine Werbung, kein Tracking, keine eigenen Server
-- Oberfläche und Schnelleingabe in 11 Sprachen
+- Oberfläche und Schnelleingabe in 13 Sprachen
 
 **Search terms:** `kalender`, `google kalender`, `desktop widget`, `terminplaner`, `planer`, `erinnerungen`, `termine`
 
@@ -296,7 +370,7 @@ Expected rating: 3+ / Everyone.
 >
 > プライバシーを最優先：Calm Calendar には独自のサーバー、広告、トラッキング、分析が一切ありません。カレンダーのデータはお使いの PC と Google の間でのみやり取りされます。
 >
-> Google アカウントが必要です。画面は日本語、英語、中国語を含む 11 言語に対応し、すばやい予定追加もそれぞれの言語を理解します。
+> Google アカウントが必要です。画面は日本語、英語、中国語を含む 13 言語に対応し、すばやい予定追加もそれぞれの言語を理解します。
 
 **Product features:**
 
@@ -311,7 +385,7 @@ Expected rating: 3+ / Everyone.
 - ライト、ダーク、システムのテーマとガラス効果
 - Windows の起動時にウィジェットだけで起動
 - 広告なし、トラッキングなし、独自サーバーなし
-- 11 言語の画面とすばやい予定追加
+- 13 言語の画面とすばやい予定追加
 
 **Search terms:** `カレンダー`, `Google カレンダー`, `ウィジェット`, `スケジュール`, `予定表`, `リマインダー`, `手帳`
 
@@ -337,7 +411,7 @@ Expected rating: 3+ / Everyone.
 >
 > 隐私优先：Calm Calendar 没有自己的服务器，没有广告、跟踪或数据分析。你的日历数据只在你的电脑和 Google 之间传输。
 >
-> 需要 Google 账号。界面支持包括中文、英语和日语在内的 11 种语言，快速添加也能理解每一种语言。
+> 需要 Google 账号。界面支持包括中文、英语和日语在内的 13 种语言，快速添加也能理解每一种语言。
 
 **Product features:**
 
@@ -352,7 +426,7 @@ Expected rating: 3+ / Everyone.
 - 浅色、深色和跟随系统主题，带玻璃效果
 - 随 Windows 启动，只显示小组件
 - 无广告、无跟踪、没有自己的服务器
-- 界面和快速添加支持 11 种语言
+- 界面和快速添加支持 13 种语言
 
 **Search terms:** `日历`, `Google 日历`, `桌面小组件`, `日程`, `日程安排`, `提醒`, `计划`
 
@@ -378,7 +452,7 @@ Expected rating: 3+ / Everyone.
 >
 > निजता सबसे पहले: Calm Calendar के अपने कोई सर्वर नहीं हैं, न विज्ञापन, न ट्रैकिंग, न एनालिटिक्स। आपके कैलेंडर का डेटा सिर्फ़ आपके PC और Google के बीच जाता है।
 >
-> Google खाता ज़रूरी है। इंटरफ़ेस हिन्दी, अंग्रेज़ी और बांग्ला सहित 11 भाषाओं में है, और जल्दी से इवेंट जोड़ने की सुविधा हर भाषा समझती है।
+> Google खाता ज़रूरी है। इंटरफ़ेस हिन्दी, अंग्रेज़ी और बांग्ला सहित 13 भाषाओं में है, और जल्दी से इवेंट जोड़ने की सुविधा हर भाषा समझती है।
 
 **Product features:**
 
@@ -393,7 +467,7 @@ Expected rating: 3+ / Everyone.
 - हल्की, गहरी और सिस्टम जैसी थीम, ग्लास इफ़ेक्ट के साथ
 - Windows के साथ शुरू होता है, सिर्फ़ विजेट के साथ
 - न विज्ञापन, न ट्रैकिंग, न हमारे अपने सर्वर
-- 11 भाषाओं में इंटरफ़ेस और जल्दी से इवेंट जोड़ना
+- 13 भाषाओं में इंटरफ़ेस और जल्दी से इवेंट जोड़ना
 
 **Search terms:** `कैलेंडर`, `google calendar`, `विजेट`, `शेड्यूल`, `रिमाइंडर`, `प्लानर`, `डायरी`
 
@@ -419,7 +493,7 @@ Expected rating: 3+ / Everyone.
 >
 > الخصوصية أولًا: لا يملك Calm Calendar خوادم خاصة به، ولا إعلانات ولا تتبّع ولا تحليلات. تنتقل بيانات تقويمك بين جهازك وGoogle فقط.
 >
-> يلزم حساب Google. الواجهة متاحة بـ 11 لغة، منها العربية بالكامل من اليمين إلى اليسار، والإضافة السريعة تفهم كل واحدة منها، بما في ذلك الأرقام العربية.
+> يلزم حساب Google. الواجهة متاحة بـ 13 لغة، منها العربية بالكامل من اليمين إلى اليسار، والإضافة السريعة تفهم كل واحدة منها، بما في ذلك الأرقام العربية.
 
 **Product features:**
 
@@ -434,7 +508,7 @@ Expected rating: 3+ / Everyone.
 - مظهر فاتح وداكن وحسب النظام مع تأثير الزجاج
 - يبدأ مع Windows بالأداة فقط
 - بلا إعلانات ولا تتبّع ولا خوادم خاصة
-- واجهة عربية من اليمين إلى اليسار وإضافة سريعة بـ 11 لغة
+- واجهة عربية من اليمين إلى اليسار وإضافة سريعة بـ 13 لغة
 
 **Search terms:** `تقويم`, `تقويم google`, `أداة سطح المكتب`, `جدول المواعيد`, `مواعيد`, `تذكيرات`, `منظم`
 
@@ -460,7 +534,7 @@ Expected rating: 3+ / Everyone.
 >
 > গোপনীয়তা সবার আগে: Calm Calendar-এর নিজস্ব কোনো সার্ভার নেই, নেই বিজ্ঞাপন, ট্র্যাকিং বা অ্যানালিটিক্স। আপনার ক্যালেন্ডারের ডেটা শুধু আপনার PC আর Google-এর মধ্যে যায়।
 >
-> একটি Google অ্যাকাউন্ট লাগবে। ইন্টারফেস বাংলা, ইংরেজি ও হিন্দিসহ 11টি ভাষায় আছে, আর দ্রুত ইভেন্ট যোগের সুবিধা প্রতিটি ভাষা বোঝে, বাংলা অঙ্কও।
+> একটি Google অ্যাকাউন্ট লাগবে। ইন্টারফেস বাংলা, ইংরেজি ও হিন্দিসহ 13টি ভাষায় আছে, আর দ্রুত ইভেন্ট যোগের সুবিধা প্রতিটি ভাষা বোঝে, বাংলা অঙ্কও।
 
 **Product features:**
 
@@ -475,7 +549,7 @@ Expected rating: 3+ / Everyone.
 - হালকা, গাঢ় ও সিস্টেমের মতো থিম, গ্লাস ইফেক্টসহ
 - Windows-এর সাথে চালু হয়, শুধু উইজেট নিয়ে
 - বিজ্ঞাপন নেই, ট্র্যাকিং নেই, নিজস্ব সার্ভার নেই
-- 11টি ভাষায় ইন্টারফেস ও দ্রুত ইভেন্ট যোগ
+- 13টি ভাষায় ইন্টারফেস ও দ্রুত ইভেন্ট যোগ
 
 **Search terms:** `ক্যালেন্ডার`, `google calendar`, `উইজেট`, `সময়সূচি`, `রিমাইন্ডার`, `প্ল্যানার`, `ডায়েরি`
 

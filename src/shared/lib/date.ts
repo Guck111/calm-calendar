@@ -117,8 +117,8 @@ export const shiftCursor = (view: ViewMode, cursor: Date, step: 1 | -1): Date =>
 };
 
 const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-/** «ноябрь 2026 г.» → «ноябрь 2026» */
-const dropYearSuffix = (s: string): string => s.replace(/\s*г\.$/, "");
+/** «ноябрь 2026 г.» → «ноябрь 2026», и украинское «р.» */
+const dropYearSuffix = (s: string): string => s.replace(/\s*[гр]\.$/, "");
 
 // форматтеры создаём лениво и запоминаем для текущего языка
 const cache = new Map<string, Intl.DateTimeFormat>();
@@ -198,7 +198,8 @@ export const formatWeekdayDayMonth = (d: Date): string =>
 /** Подписи дней недели с первого дня недели региона: «Пн», «Вт»… или «S», «M»… в мини-месяце */
 export const weekdayLabels = (style: "short" | "narrow" = "short"): string[] => {
   const ref = startOfWeek(new Date(2026, 0, 7));
-  const format = fmt({ weekday: locale.startsWith("ru") ? "short" : style });
+  // узкие буквы П В С Ч П С у славянских языков не различить
+  const format = fmt({ weekday: /^(ru|be|uk)\b/.test(locale) ? "short" : style });
   return Array.from({ length: 7 }, (_, i) => capitalize(format(addDays(ref, i))));
 };
 

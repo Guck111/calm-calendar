@@ -117,7 +117,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 
 ## Quick add
 
-A field under the "Create" button and in the widget; `N` focuses it. One line, a live preview of how it was understood (its hint says "Enter or click to add"); Enter or a click on the preview creates, Ctrl+Enter (or Ctrl+click) opens the full form filled in. Works in all 11 languages (`src/shared/lib/quick-*.ts`, tests in `quick-*.test.ts`). The phrase is read in the language of its letters: a Russian phrase works with the English interface, an English one with the Russian interface; the interface language wins when the phrase uses its script, so Latin letters stay Spanish with the Spanish interface (`src/shared/lib/quick-detect.ts`).
+A field under the "Create" button and in the widget; `N` focuses it. One line, a live preview of how it was understood (its hint says "Enter or click to add"); Enter or a click on the preview creates, Ctrl+Enter (or Ctrl+click) opens the full form filled in. Works in all 13 languages (`src/shared/lib/quick-*.ts`, tests in `quick-*.test.ts`). The phrase is read in the language of its letters: a Russian phrase works with the English interface, an English one with the Russian interface; Russian, Ukrainian and Belarusian are told apart by the letters only one of them has (ў; ї, є, ґ; ы, э, ъ), otherwise the interface language wins; the interface language wins when the phrase uses its script, so Latin letters stay Spanish with the Spanish interface (`src/shared/lib/quick-detect.ts`).
 
 - Date: today, tomorrow, the day after tomorrow, weekday names ("next Wednesday" skips today), "Nov 5", "05.11", "in 3 days", "in 2 weeks"; in Russian also a day of the month alone: "14-го", "14 числа", or ", 14" at the end of the line (this month, or the next one if the day has passed). No date: today, or tomorrow if the time has passed.
 - Time: "7pm", "19:00", "at 7", "noon", ranges "7-9pm", "from 2 to 3:30pm", and "fri 18" (a number right after a day is an hour).
@@ -180,7 +180,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 ## Languages and regions
 
-- 11 languages: English, Russian, Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic and Bengali. The language follows Windows and can be changed in Settings. The tray menu, the browser sign-in page and Google's consent screen follow it too.
+- 13 languages: English, Russian, Ukrainian, Belarusian, Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic and Bengali. The language follows Windows and can be changed in Settings. The tray menu, the browser sign-in page and Google's consent screen follow it too.
 - Dates, the first day of the week, 12- or 24-hour time and digits follow the region.
 - The translations were written by Claude and are not yet checked by native speakers.
 
@@ -213,7 +213,7 @@ Events without the mouse (`src/app/useEventKeys.ts`, `src/shared/lib/spatial.ts`
 
 Quick add from anywhere: a shortcut for the whole of Windows (Ctrl+Alt+Space by default; Ctrl+Shift+Space, Alt+Shift+Space or off in Settings) opens a small quick add window over any app, even when the calendar is in the tray. The window appears in the upper third of the screen with the mouse, the same line and preview as in the sidebar; Enter creates and hides it, Ctrl+Enter opens the full form in the main window, Esc or a click elsewhere hides it. At start, if the chosen shortcut is taken by another app, the next free one from the list is used and saved; choosing a taken one in Settings says so and keeps the old one. Until the calendars load the window shows "Loading…" instead of the line (`src-tauri/src/quick.rs`, `src/quick/QuickWindow.tsx`, `src/shared/lib/hotkeys.ts`).
 
-Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 11 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`). With an event chosen (the focused event block, or the open card) in a calendar you can change, its name is above the list and its actions come first: Move to tomorrow, An hour later (events with a time), Add Google Meet (events without a call); the 12 colors ("Color: Tomato", "Color: Calendar color") show up when the line matches their name. A series changes only this occurrence, as when dragging; an error goes to the banner.
+Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 13 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`). With an event chosen (the focused event block, or the open card) in a calendar you can change, its name is above the list and its actions come first: Move to tomorrow, An hour later (events with a time), Add Google Meet (events without a call); the 12 colors ("Color: Tomato", "Color: Calendar color") show up when the line matches their name. A series changes only this occurrence, as when dragging; an error goes to the banner.
 
 ## Errors and the log
 

@@ -25,6 +25,17 @@ describe("language of the phrase", () => {
     expect(phraseLang("কাল সন্ধ্যা 7টায়", "en")).toBe("bn");
   });
 
+  it("Cyrillic: Ukrainian and Belarusian by their own letters", () => {
+    expect(phraseLang("завтра о 19 кава", "uk")).toBe("uk");
+    expect(phraseLang("заўтра а 19 кава", "be")).toBe("be");
+    expect(phraseLang("завтра о 19 зустріч", "en")).toBe("uk");
+    expect(phraseLang("у пʼятницю кіно", "ru")).toBe("uk");
+    expect(phraseLang("заўтра кіно", "ru")).toBe("be");
+    expect(phraseLang("заўтра кіно", "uk")).toBe("be");
+    expect(phraseLang("завтра в 19 встреча", "uk")).toBe("uk");
+    expect(phraseLang("завтра в 19 мы встретимся", "uk")).toBe("ru");
+  });
+
   it("a Russian phrase with the English interface", () => {
     const r = parseQuick("занятие спортом в 12:00", now, [], "en");
     expect(r).toMatchObject({ title: "занятие спортом", start: at(11, 12), end: at(11, 13) });
