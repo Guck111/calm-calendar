@@ -112,7 +112,7 @@ code {
 
 .skip-link {
   position: absolute;
-  left: var(--gutter);
+  inset-inline-start: var(--gutter);
   top: -100px;
   z-index: 100;
   padding: 0.5rem 1rem;
@@ -184,7 +184,7 @@ code {
 @media (max-width: 480px) {
   .site-header .wrap { flex-wrap: wrap; gap: 0; padding-block: 0.4rem; }
   .site-nav { width: 100%; }
-  .site-nav ul { margin-left: -0.5rem; }
+  .site-nav ul { margin-inline-start: -0.5rem; }
   .site-nav a { padding: 0.35rem 0.5rem; font-size: 0.9rem; }
 }
 
@@ -377,7 +377,7 @@ code {
   border-radius: var(--radius-sm);
   background: var(--surface-solid);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
+  border-inline-start: 4px solid var(--accent);
 }
 .scope-list strong { display: block; }
 .scope-list span { color: var(--text-muted); }
@@ -497,3 +497,32 @@ tbody th strong { display: block; margin-top: 0.3rem; font-weight: 600; }
 }
 .site-footer a { color: var(--text-muted); }
 .site-footer a:hover { color: var(--accent); }
+
+/* ---------- language switch (footer) and suggestion bar ---------- */
+
+.site-footer .lang-switch { flex-basis: 100%; }
+.lang-switch ul { gap: 0.35rem 1rem; }
+.lang-switch a[aria-current="page"] { color: var(--text); font-weight: 600; text-decoration: none; }
+
+.lang-suggest {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem var(--gutter);
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+.lang-suggest[hidden] { display: none; }
+.lang-suggest a { font-weight: 600; }
+.lang-suggest button {
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}

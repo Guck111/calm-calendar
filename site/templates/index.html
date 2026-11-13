@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="{{HTML_LANG}}" dir="{{HTML_DIR}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+  <meta name="description" content="{{meta_description}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+{{HREFLANG_LINKS}}
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="{{og_title}}">
+  <meta property="og:description" content="{{og_description}}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="{{OG_LOCALE}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:site_name" content="Calm Calendar">
+  <meta property="og:image" content="https://calmcalendar.co.uk/screenshot-week.png">
+  <meta property="og:image:width" content="2880">
+  <meta property="og:image:height" content="1800">
+  <meta property="og:image:alt" content="{{og_image_alt}}">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+{{JSON_LD}}
+  </script>
+  <link rel="icon" href="{{ROOT}}favicon.ico" sizes="any">
+  <link rel="icon" href="{{ROOT}}favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{{ROOT}}apple-touch-icon.png">
+  <link rel="stylesheet" href="{{ROOT}}styles.css">
+</head>
+<body>
+{{LANG_SUGGEST}}
+  <a class="skip-link" href="#main">{{skip_link}}</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="{{SELF_HOME}}" aria-label="{{brand_aria}}">
+        <img src="{{ROOT}}icon.png" width="32" height="32" alt="">
+        <span>Calm Calendar</span>
+      </a>
+      <nav class="site-nav" aria-label="{{nav_main_aria}}">
+        <ul>
+          <li><a href="{{SELF_HOME}}#features">{{nav_features}}</a></li>
+          <li><a href="{{ROOT}}privacy.html">{{nav_privacy}}</a></li>
+          <li><a href="{{ROOT}}terms.html">{{nav_terms}}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- 1. Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap">
+        <img class="hero-icon" src="{{ROOT}}icon.png" width="128" height="128" alt="{{hero_icon_alt}}">
+        <h1 id="hero-title">Calm Calendar</h1>
+        <p class="lead">{{hero_lead}}</p>
+
+        <div class="cta">
+          <span class="cta-store">
+            <a class="btn btn-primary" href="#" aria-disabled="true" aria-describedby="store-soon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1 12H5L4 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+              {{cta_store}}
+            </a>
+            <span class="badge" id="store-soon">{{cta_store_soon}}</span>
+          </span>
+          <a class="btn btn-secondary" href="https://github.com/Guck111/calm-calendar/releases">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            {{cta_github}}
+          </a>
+        </div>
+
+        <figure class="shot">
+          <picture>
+            <source srcset="{{ROOT}}screenshot-week-dark.png" media="(prefers-color-scheme: dark)">
+            <img src="{{ROOT}}screenshot-week.png" width="2880" height="1800" alt="{{hero_shot_alt}}" fetchpriority="high">
+          </picture>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2. Features -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="features-title">{{features_title}}</h2>
+          <p>{{features_lead}}</p>
+        </div>
+
+        <div class="features-layout">
+          <ul class="feature-grid">
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M9.5 10v10M14.5 10v10"/></svg>
+              </div>
+              <h3>{{feature_h_1}}</h3>
+              <p>{{feature_p_1}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="10" r="3.5"/><path d="M12 8.3V10l1.1.8M7.5 17h9"/></svg>
+              </div>
+              <h3>{{feature_h_2}}</h3>
+              <p>{{feature_p_2}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="3"/><path d="M7 12h6M17 10.5v3"/></svg>
+              </div>
+              <h3>{{feature_h_3}}</h3>
+              <p>{{feature_p_3}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="12" height="10" rx="2.5"/><path d="m15 11 5-3v8l-5-3"/></svg>
+              </div>
+              <h3>{{feature_h_4}}</h3>
+              <p>{{feature_p_4}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3"/><circle cx="16.5" cy="10.5" r="2.5"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 19a4 4 0 0 1 7-2.6"/></svg>
+              </div>
+              <h3>{{feature_h_5}}</h3>
+              <p>{{feature_p_5}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 8h8M8 12h5"/><path d="m13.5 16.5 1.5 1.5 3-3"/></svg>
+              </div>
+              <h3>{{feature_h_6}}</h3>
+              <p>{{feature_p_6}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z" fill="currentColor" fill-opacity="0.25"/></svg>
+              </div>
+              <h3>{{feature_h_7}}</h3>
+              <p>{{feature_p_7}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+              </div>
+              <h3>{{feature_h_8}}</h3>
+              <p>{{feature_p_8}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.1 4.5 4.5 0 0 0 7 18Z"/><path d="M4 4l16 16"/></svg>
+              </div>
+              <h3>{{feature_h_9}}</h3>
+              <p>{{feature_p_9}}</p>
+            </li>
+            <li class="card feature">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3>{{feature_h_10}}</h3>
+              <p>{{feature_p_10}}</p>
+            </li>
+          </ul>
+
+          <figure class="widget-shot">
+            <picture>
+              <source srcset="{{ROOT}}screenshot-widget-dark.png" media="(prefers-color-scheme: dark)">
+              <img src="{{ROOT}}screenshot-widget.png" width="600" height="1202" loading="lazy" alt="{{widget_alt}}">
+            </picture>
+            <figcaption>{{widget_caption}}</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Languages -->
+    <section class="section languages" id="languages" aria-labelledby="languages-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="languages-title">{{languages_title}}</h2>
+          <p>{{languages_lead}}</p>
+        </div>
+        <ul class="lang-list">
+          <li lang="en">English</li>
+          <li lang="es">Español</li>
+          <li lang="pt">Português</li>
+          <li lang="fr">Français</li>
+          <li lang="de">Deutsch</li>
+          <li lang="ru">Русский</li>
+          <li lang="uk">Українська</li>
+          <li lang="be">Беларуская</li>
+          <li lang="zh">中文（简体）</li>
+          <li lang="ja">日本語</li>
+          <li lang="hi">हिन्दी</li>
+          <li lang="bn">বাংলা</li>
+          <li lang="ar" dir="rtl">العربية</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. Google data (required for Google OAuth verification) -->
+    <section class="section data-band" id="google-data" aria-labelledby="google-data-title">
+      <div class="wrap">
+        <div class="card data-card">
+          <h2 id="google-data-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5.5c0 4.2 2.9 7.9 7 9 4.1-1.1 7-4.8 7-9V6l-7-3Z"/><path d="M12 10v5M12 7.5v.01"/></svg>
+            {{google_data_title}}
+          </h2>
+          <p>{{google_data_intro}}</p>
+          <ul class="scope-list">
+            <li>
+              <strong>{{scope1_title}}</strong>
+              <span>{{scope1_desc}}</span>
+            </li>
+            <li>
+              <strong>{{scope2_title}}</strong>
+              <span>{{scope2_desc}}</span>
+            </li>
+          </ul>
+          <p>{{google_data_email}}</p>
+          <p>{{google_data_privacy_note}}</p>
+          <p class="more"><a href="{{ROOT}}privacy.html">{{google_data_more_link}}{{EN_ONLY_SUFFIX}}</a></p>
+          <p class="small-print">{{google_data_smallprint_pre}} <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>{{google_data_smallprint_post}}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="faq-title">{{faq_title}}</h2>
+        </div>
+        <div class="faq">
+          <details class="card">
+            <summary>{{faq_q_1}}</summary>
+            <div><p>{{faq_a_1}}</p></div>
+          </details>
+          <details class="card">
+            <summary>{{faq_q_2}}</summary>
+            <div><p>{{faq_a_2}}</p></div>
+          </details>
+          <details class="card">
+            <summary>{{faq_q_3}}</summary>
+            <div><p>{{faq_a_3}}</p></div>
+          </details>
+          <details class="card">
+            <summary>{{faq_q_4}}</summary>
+            <div><p>{{faq_a_4}}</p></div>
+          </details>
+          <details class="card">
+            <summary>{{faq_q_5}}</summary>
+            <div><p>{{faq_a_5}}</p></div>
+          </details>
+          <details class="card">
+            <summary>{{faq_q_6}}</summary>
+            <div><p>{{faq_a_6_pre}} <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>{{faq_a_6_post}}</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© 2026 Arseni</p>
+      <nav aria-label="{{nav_footer_aria}}">
+        <ul>
+          <li><a href="{{ROOT}}privacy.html">{{footer_privacy}}{{EN_ONLY_SUFFIX}}</a></li>
+          <li><a href="{{ROOT}}terms.html">{{footer_terms}}{{EN_ONLY_SUFFIX}}</a></li>
+          <li><a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a></li>
+          <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
+        </ul>
+      </nav>
+      <nav class="lang-switch" aria-label="{{lang_switch_label}}">
+        <ul>
+{{LANG_SWITCH_LINKS}}
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

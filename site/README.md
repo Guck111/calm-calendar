@@ -37,3 +37,14 @@ Google checks the home page during OAuth verification:
 - it explains what the app does and why it asks for Google Calendar access;
 - it links to the privacy policy, which lives on the same domain;
 - the domain is verified in Google Search Console by the account that owns the Google Cloud project. A shared domain such as `github.io` is often rejected, so connect a domain of your own.
+
+## Languages
+
+The home page exists in all 13 app languages: `index.html` (English, also `x-default`) and `<lang>/index.html` (`/ru/`, `/de/`, …). Do not edit these files by hand: they are generated.
+
+- Layout: `templates/index.html`; texts: `i18n/<lang>.json` (same keys in every file).
+- After any change run `node scripts/build-site.mjs`: it writes all pages and `sitemap.xml`, and fails if a key is missing.
+- Each page gets its own title and description, `canonical`, `hreflang` links to every version, `og:locale`, and JSON-LD (`SoftwareApplication` + `FAQPage`) in its language. The sitemap lists every version with its alternates.
+- The English page shows a small link to the visitor's browser language when a translation exists; there is no automatic redirect, so search engines index every version.
+- Privacy Policy and Terms stay in English only; translated pages mark these links as English.
+- A new language: add it to `LANGS` in `scripts/build-site.mjs`, add `i18n/<lang>.json`, and add the folder to the copy loop in `.github/workflows/pages.yml`.

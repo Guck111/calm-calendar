@@ -1,8 +1,238 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://calmcalendar.co.uk/</loc>
     <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/es/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/pt/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/fr/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/de/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/ru/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/uk/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/be/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/zh/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/ja/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/hi/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/bn/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
+  </url>
+  <url>
+    <loc>https://calmcalendar.co.uk/ar/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://calmcalendar.co.uk/es/"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://calmcalendar.co.uk/pt/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://calmcalendar.co.uk/fr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://calmcalendar.co.uk/de/"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://calmcalendar.co.uk/ru/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://calmcalendar.co.uk/uk/"/>
+    <xhtml:link rel="alternate" hreflang="be" href="https://calmcalendar.co.uk/be/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://calmcalendar.co.uk/zh/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://calmcalendar.co.uk/ja/"/>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://calmcalendar.co.uk/hi/"/>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://calmcalendar.co.uk/bn/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://calmcalendar.co.uk/ar/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/"/>
   </url>
   <url>
     <loc>https://calmcalendar.co.uk/privacy.html</loc>
