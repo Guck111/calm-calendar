@@ -5,7 +5,7 @@ import type { CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import { toCalendarEvent } from "../shared/api/calendar";
 import { deleteClicked, deleteFx, eventMoved, eventOpened, moveFx, scopeChosen } from "./editor";
 import { $events, fetchEventsFx } from "./events";
-import { $undo, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
+import { $undo, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
 
 const make = (id: string, summary: string, start: string, end: string, extra: object = {}) =>
   toCalendarEvent("me@example.com\u0000primary", {
@@ -30,19 +30,21 @@ type Deleted = { draft: EventDraft; scope: Scope };
 const setup = (events: CalendarEvent[] = [dentist, lunch]) => {
   const deleted: Deleted[] = [];
   const moved: { start: Date; end: Date }[] = [];
+  const restored: { event: CalendarEvent; start: Date; end: Date }[] = [];
   const timers: number[] = [];
   const scope = fork({
     values: [[$events, events]],
     handlers: [
       [deleteFx, (c: Deleted) => void deleted.push(c)],
       [moveFx, ({ start, end }: { start: Date; end: Date }) => void moved.push({ start, end })],
+      [restoreMoveFx, (r: { event: CalendarEvent; start: Date; end: Date }) => void restored.push(r)],
       // таймер не срабатывает сам: тест решает, когда «Отменить» исчезает
       [undoTimerFx, ({ ms }: { ms: number }) => (timers.push(ms), -1)],
     ],
   });
   const titles = () => scope.getState($events).map((e) => e.title);
   const expire = () => allSettled(undoExpired, { scope, params: scope.getState($undo)?.id ?? -1 });
-  return { scope, deleted, moved, timers, titles, expire };
+  return { scope, deleted, moved, restored, timers, titles, expire };
 };
 
 const remove = async (scope: ReturnType<typeof fork>, e: CalendarEvent) => {
@@ -145,21 +147,56 @@ describe("отмена удаления", () => {
 });
 
 describe("отмена переноса", () => {
+  const start = new Date(2026, 10, 13, 10, 0);
+  const end = new Date(2026, 10, 13, 10, 45);
+
   it("«Отменить» возвращает прежнее время и не предлагает отменить саму отмену", async () => {
-    const { scope, moved } = setup();
-    const start = new Date(2026, 10, 13, 10, 0);
-    const end = new Date(2026, 10, 13, 10, 45);
+    const { scope, moved, restored } = setup();
     await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
     expect(scope.getState($undo)).toMatchObject({ kind: "moved", title: "Dentist" });
     expect(scope.getState($events).find((e) => e.id === "e1")?.start).toEqual(start);
 
     await allSettled(undoClicked, { scope });
-    expect(moved).toEqual([
-      { start, end },
-      { start: dentist.start, end: dentist.end },
-    ]);
+    expect(moved).toEqual([{ start, end }]);
+    expect(restored.map((r) => ({ start: r.start, end: r.end }))).toEqual([{ start: dentist.start, end: dentist.end }]);
     expect(scope.getState($events).find((e) => e.id === "e1")?.start).toEqual(dentist.start);
     expect(scope.getState($undo)).toBeNull();
+  });
+
+  it("отмена меняет только время: правка, сделанная после переноса, остаётся", async () => {
+    const { scope, restored } = setup();
+    await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
+    // пока строка видна, событию поменяли цвет (Ctrl+K)
+    const recolored = scope.getState($events).map((e) => (e.id === "e1" ? { ...e, colorId: "11" } : e));
+    await allSettled($events, { scope, params: recolored });
+    await allSettled(undoClicked, { scope });
+    expect(restored[0].event).toMatchObject({ colorId: "11" });
+    expect(restored[0]).toMatchObject({ start: dentist.start, end: dentist.end });
+  });
+
+  it("строка появляется, только когда Google подтвердил перенос: отмена не обгоняет его", async () => {
+    let done = () => {};
+    const scope = fork({
+      values: [[$events, [dentist]]],
+      handlers: [
+        [moveFx, () => new Promise<void>((r) => (done = r))],
+        [undoTimerFx, () => -1],
+      ],
+    });
+    const moving = allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
+    await Promise.resolve();
+    expect(scope.getState($undo)).toBeNull();
+    done();
+    await moving;
+    expect(scope.getState($undo)).toMatchObject({ kind: "moved" });
+  });
+
+  it("перенос сразу отправляет ожидающее удаление", async () => {
+    const { scope, deleted } = setup();
+    await remove(scope, lunch);
+    await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
+    expect(deleted.map((d) => d.draft.id)).toEqual(["e2"]);
+    expect(scope.getState($undo)).toMatchObject({ kind: "moved" });
   });
 
   it("перенос не удался — отменять нечего", async () => {

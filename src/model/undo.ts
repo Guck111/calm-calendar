@@ -3,10 +3,12 @@
 // пришло следующее действие или окно закрывается — так отмена не создаёт событие заново и не шлёт гостям писем
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
-import type { CalendarEvent, EventDraft, Scope } from "../shared/api/types";
+import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import { signOutFx } from "./auth";
-import { deleteFx, deleteRequested, eventMoved, moveFx } from "./editor";
-import { $events, eventShifted, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
+import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
+import { saveEvent } from "../shared/api/calendar";
+import { logError } from "../shared/lib/log";
+import { $events, actionFailed, eventShifted, reloadRequested, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
 
 /** сколько видна строка «Отменить» */
 export const UNDO_MS = 8000;
@@ -29,6 +31,11 @@ export const undoPaused = createEvent();
 export const undoResumed = createEvent();
 /** закрыть строку без отмены; удаление сразу уходит в Google */
 export const undoDismissed = createEvent();
+
+/** Отмена переноса: прежнее время сохраняется так же, как перенос, но новой строки «Отменить» не даёт */
+export const restoreMoveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
+  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+);
 
 /** ждёт ms и возвращает token своей строки */
 export const undoTimerFx = createEffect<{ ms: number; token: number }, number>(
@@ -79,12 +86,17 @@ const deleteStarted = sample({
   },
 });
 
+// новый перенос: прежнее удаление уходит в Google сразу. Строка «Отменить» появится, когда Google
+// подтвердит перенос: иначе отмена ушла бы одновременно с ним и могла бы его обогнать
+const movedOverDelete = sample({ clock: eventMoved, source: $pending, filter: (p) => p?.kind === "deleted" });
+sample({ clock: movedOverDelete, target: committed });
+$pending.reset(movedOverDelete);
 const moveStarted = sample({
-  clock: eventMoved,
-  source: { prev: $pending, token: $token },
-  fn: ({ prev, token }, { event }): { prev: Pending | null; next: Pending } => ({
-    prev,
-    next: { kind: "moved", token: token + 1, title: titleOf(event), event },
+  clock: moveFx.done,
+  source: $token,
+  fn: (token, { params }): { prev: Pending | null; next: Pending } => ({
+    prev: null,
+    next: { kind: "moved", token: token + 1, title: titleOf(params.event), event: params.event },
   }),
 });
 
@@ -118,13 +130,20 @@ sample({
   fn: (p) => ({ hidden: (p as Deleted).hidden, events: (p as Deleted).removed }),
   target: eventsRestored,
 });
-// отмена переноса: прежнее время сохраняется так же, как перенос, но новой строки «Отменить» не даёт
+// отмена переноса: из нынешнего события меняется только время (и его пояс) — правки, сделанные
+// после переноса (цвет, место), остаются
 const restoredMove = sample({
   clock: undone,
-  filter: (p) => p.kind === "moved",
-  fn: (p) => ({ event: (p as Moved).event, start: (p as Moved).event.start, end: (p as Moved).event.end }),
+  source: $events,
+  filter: (_, p) => p.kind === "moved",
+  fn: (events, p) => {
+    const before = (p as Moved).event;
+    const now = events.find((e) => e.key === before.key) ?? before;
+    const event: CalendarEvent = { ...now, timeZone: before.timeZone, endTimeZone: before.endTimeZone };
+    return { event, start: before.start, end: before.end };
+  },
 });
-sample({ clock: restoredMove, target: moveFx });
+sample({ clock: restoredMove, target: restoreMoveFx });
 sample({ clock: restoredMove, fn: ({ event, start, end }) => ({ key: event.key, start, end }), target: eventShifted });
 $pending.reset(undone);
 
@@ -146,14 +165,10 @@ sample({
   target: undoTimerFx,
 });
 
-// перенос не удался: событие вернётся на место после перечитывания, отменять нечего
-sample({
-  clock: moveFx.fail,
-  source: $pending,
-  filter: (p, { params }) => p?.kind === "moved" && p.event.key === params.event.key,
-  fn: () => null,
-  target: $pending,
-});
+// после отмены переноса список перечитывается: на экране то, что в Google
+sample({ clock: restoreMoveFx.finally, target: reloadRequested });
+restoreMoveFx.failData.watch((e) => e.kind === "other" && logError("undo move failed", e));
+sample({ clock: restoreMoveFx.failData, fn: (e) => t.errors.moveFailed(e.message), target: actionFailed });
 
 // удаление дошло до Google или не дошло: спрятанное больше не прячем, список перечитается
 sample({ clock: deleteFx.finally, fn: ({ params }) => params.draft.id ?? "", target: hidingEnded });
