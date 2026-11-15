@@ -151,3 +151,32 @@ test("Schedule: a call link in the place reads as the service", async ({ page })
   await expect(row).toContainText("Zoom");
   await expect(row).not.toContainText("zoom.us/j/");
 });
+
+// The longest labels: Russian, the Schedule tab is the widest. The title is the main "where am I"
+test.describe("nothing important is cut off", () => {
+  test.use({ lang: "ru" });
+
+  test("the period title fits in a 1280 px window", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    for (const key of ["w", "a"]) {
+      await page.keyboard.press(key);
+      const title = page.locator("main header > h2");
+      expect(await title.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+      // and the toolbar itself does not spill over
+      expect(await page.locator("main header").evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("the widget cuts the title, never the time left", async ({ page }) => {
+    await page.setViewportSize({ width: 300, height: 600 });
+    await page.goto("/?window=widget");
+    await expect(page.locator("ul li").first()).toBeVisible();
+    const time = page.locator('[class*="countdownText"]');
+    await expect(time).toBeVisible();
+    expect(await time.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    const box = await time.boundingBox();
+    const line = await page.locator('[class*="countdownLine"]').boundingBox();
+    expect(box!.x + box!.width).toBeLessThanOrEqual(line!.x + line!.width + 0.5);
+  });
+});

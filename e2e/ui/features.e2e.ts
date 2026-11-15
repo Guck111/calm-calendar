@@ -164,4 +164,20 @@ test.describe("free time", () => {
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     expect(copied.replace(/\r\n/g, "\n")).toBe(await text.inputValue());
   });
+
+  test("nothing free: says why, no Copy, a way to the next days", async ({ page, t }) => {
+    await openApp(page);
+    const title = await page.locator("main header > h2").textContent();
+    await page.getByRole("button", { name: t.toolbar.freeSlots }).click();
+    const free = page.getByRole("dialog", { name: t.free.title });
+    // two hours at least, but only one hour a day to look in
+    await free.getByLabel(t.free.minLength).selectOption("120");
+    await free.locator('input[type="time"]').first().fill("10:00");
+    await free.locator('input[type="time"]').last().fill("11:00");
+    await expect(free).toContainText(t.free.noneReason);
+    await expect(free.getByRole("button", { name: t.free.copy })).toBeDisabled();
+    await free.getByRole("button", { name: t.free.showLater }).click();
+    await expect(page.locator("main header > h2")).not.toHaveText(title ?? "");
+    await expect(free).toBeVisible();
+  });
 });

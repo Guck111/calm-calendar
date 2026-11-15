@@ -333,6 +333,8 @@ export const en: Dict = {
     weekends: "Include weekends",
     copy: "Copy",
     copied: "Copied",
+    noneReason: "No free time left in these hours on the days on screen.",
+    showLater: "Show the next days",
     none: "No free time",
     intro: (zone: string) => `When I'm free (${zone}):`,
     hint: "Days on screen from today on. Events marked free and all-day events don't count.",

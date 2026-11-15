@@ -326,6 +326,8 @@ export const zh: Dict = {
     weekends: "包括周末",
     copy: "复制",
     copied: "已复制",
+    noneReason: "屏幕上的这些天在该时段已没有空闲时间。",
+    showLater: "查看接下来几天",
     none: "没有空闲时间",
     intro: (zone: string) => `我的空闲时间（${zone}）：`,
     hint: "从今天起屏幕上显示的日期。标记为“有空”的活动和全天活动不计入。",

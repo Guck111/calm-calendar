@@ -336,6 +336,8 @@ export const fr: Dict = {
     weekends: "Inclure le week-end",
     copy: "Copier",
     copied: "Copié",
+    noneReason: "Il ne reste plus de temps libre sur ces heures pour les jours affichés.",
+    showLater: "Voir les jours suivants",
     none: "Aucun créneau libre",
     intro: (zone: string) => `Mes disponibilités (${zone}) :`,
     hint: "Jours à l’écran à partir d’aujourd’hui. Les événements marqués « disponible » et ceux sur toute la journée ne comptent pas.",

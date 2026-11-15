@@ -104,7 +104,7 @@ Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
   "When I'm free (Warsaw, GMT+1): Tue, November 10: 11:00–12:00 and 15:00–18:00".
 - Working hours, the shortest gap (15 minutes to 2 hours) and weekends on or off; the weekend follows the region (Friday and Saturday in Saudi Arabia).
 - All-day events and events marked "free" don't block time; travel time does.
-- Copy puts the text on the clipboard. The options are remembered.
+- Copy puts the text on the clipboard. The options are remembered. With nothing free the panel says why ("No free time left in these hours on the days on screen"), Copy is off and "Show the next days" moves the calendar on.
 
 ## Holidays and week numbers
 
@@ -161,7 +161,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 ## Desktop widget
 
-- Clock, countdown to the next or current event, a month with dots on busy days, the next five events (holidays included), Join for calls, and a quick add field.
+- Clock, countdown to the next or current event (a long title is shortened, the time left never), a month with dots on busy days, the next five events (holidays included), Join for calls, and a quick add field.
 - Arrows switch months, a click on the month name goes back to today; a click on a day or an event opens the calendar there.
 - Drag it by any spot; its place is remembered. Glass effect and theme follow the calendar.
 - Shown, hidden and kept on top from the tray menu. When Windows starts the app, only the widget appears.
@@ -179,7 +179,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 - Fonts (Settings → Style): one font for headings and numbers (period title, day numbers, the widget clock), one for text. "Style default" uses the style's pair: Segoe UI (Classic), Cormorant Garamond + Inter (Paper), Manrope (Obsidian), Unbounded + Onest (Showcase), Geist Mono + Geist (Monochrome). Unbounded and Cormorant Garamond are offered for headings only. The fonts are variable WOFF2 files from `@fontsource-variable` packages (SIL Open Font License 1.1), built into the app; letters a font lacks (Arabic, Devanagari, Bengali, Chinese, Japanese) come from the Windows fonts of that script. The choice is kept per computer, like the theme.
 - Glass effect (on by default): the Windows Acrylic backdrop in the main window and the widget; the main window turns opaque when it loses focus, as Windows does.
 - Right-to-left layout for Arabic: all spacing uses logical CSS properties.
-- The toolbar fits the smallest window size (760 px).
+- The period title keeps its full length in a 1280 px window in every language; when space runs short the search field gets narrower first (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`).
 
 ## Languages and regions
 

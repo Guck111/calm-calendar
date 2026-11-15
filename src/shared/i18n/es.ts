@@ -336,6 +336,8 @@ export const es: Dict = {
     weekends: "Incluir fines de semana",
     copy: "Copiar",
     copied: "Copiado",
+    noneReason: "No queda tiempo libre en este horario en los días de la pantalla.",
+    showLater: "Ver los días siguientes",
     none: "No hay tiempo libre",
     intro: (zone: string) => `Cuándo estoy libre (${zone}):`,
     hint: "Días en pantalla a partir de hoy. Los eventos marcados como libres y los de todo el día no cuentan.",

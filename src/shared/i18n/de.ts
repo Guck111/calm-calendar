@@ -336,6 +336,8 @@ export const de: Dict = {
     weekends: "Wochenenden einbeziehen",
     copy: "Kopieren",
     copied: "Kopiert",
+    noneReason: "In diesen Stunden ist an den angezeigten Tagen nichts mehr frei.",
+    showLater: "Nächste Tage zeigen",
     none: "Keine freie Zeit",
     intro: (zone: string) => `Wann ich Zeit habe (${zone}):`,
     hint: "Tage auf dem Bildschirm ab heute. Termine mit „frei“ und ganztägige Termine zählen nicht.",

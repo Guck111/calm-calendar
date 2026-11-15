@@ -328,6 +328,8 @@ export const ja: Dict = {
     weekends: "週末も含める",
     copy: "コピー",
     copied: "コピーしました",
+    noneReason: "表示中の日には、この時間帯の空き時間がありません。",
+    showLater: "次の日を表示",
     none: "空き時間はありません",
     intro: (zone: string) => `空いている時間（${zone}）:`,
     hint: "今日以降、画面に表示中の日。「空き時間」の予定と終日の予定は含みません。",

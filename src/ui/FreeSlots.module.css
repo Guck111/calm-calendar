@@ -47,4 +47,20 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
+}
+
+.empty {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.empty b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text);
 }

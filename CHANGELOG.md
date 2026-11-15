@@ -11,6 +11,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### Changed
 
+- **Free time** with nothing free says why and offers "Show the next days"; Copy is off when there is nothing to copy.
+- **No more cut-off dates and countdowns**: the period title in the toolbar keeps its full length (the search field gets narrower first), and the widget shortens the event title, never "in 11 min".
 - **Past events are paler** in Day, Week, Month and Schedule, so what comes next stands out.
 - **Schedule**: a call link in the place shows as "Zoom", "Microsoft Teams" and so on instead of a long address, and from 15 minutes before a call its row has Join.
 - **The event form is shorter**: time zone, travel time, color and attachments are under "More" (it opens by itself when the event uses one of them). The description moved up, right after the place, with the hint "Agenda, links, notes". Save and Cancel stay at the bottom of the form, also in a low window.

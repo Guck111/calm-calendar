@@ -2,7 +2,7 @@ import { useUnit } from "effector-react";
 import { useEffect, useState } from "react";
 import { locale, t } from "../shared/i18n";
 import { $events } from "../model/events";
-import { $cursor, $now, $view } from "../model/view";
+import { $cursor, $now, $view, nextClicked } from "../model/view";
 import { toTimeKey, viewDays } from "../shared/lib/date";
 import { formatFreeSlots, freeSlots, type FreeOptions } from "../shared/lib/free";
 import { readJson, writeJson } from "../shared/lib/storage";
@@ -52,7 +52,7 @@ const copyText = async (text: string): Promise<boolean> => {
 };
 
 const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
-  const [events, view, cursor, now] = useUnit([$events, $view, $cursor, $now]);
+  const [events, view, cursor, now, next] = useUnit([$events, $view, $cursor, $now, nextClicked]);
   const [options, setOptions] = useState(readOptions);
   const [copied, setCopied] = useState(false);
   const change = (patch: Partial<FreeOptions>) => {
@@ -62,7 +62,9 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
     writeJson(KEY, next);
     setCopied(false);
   };
-  const text = formatFreeSlots(freeSlots(events, viewDays(view, cursor), options, now), now);
+  const found = freeSlots(events, viewDays(view, cursor), options, now);
+  const text = formatFreeSlots(found, now);
+  const nothing = !found.length;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -118,9 +120,17 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
           <input type="checkbox" checked={options.weekends} onChange={(e) => change({ weekends: e.target.checked })} />
           {t.free.weekends}
         </label>
-        <textarea className={f.preview} readOnly value={text} rows={8} aria-label={t.free.title} />
+        {/* пусто — не тупик: почему так и куда дальше */}
+        {nothing ? (
+          <p className={f.empty} role="status">
+            <b>{t.free.none}</b> {t.free.noneReason}
+          </p>
+        ) : (
+          <textarea className={f.preview} readOnly value={text} rows={8} aria-label={t.free.title} />
+        )}
         <div className={f.actions}>
-          <Button variant="primary" onClick={() => void copyText(text).then(setCopied)}>
+          {nothing && <Button onClick={() => next()}>{t.free.showLater}</Button>}
+          <Button variant="primary" disabled={nothing} onClick={() => void copyText(text).then(setCopied)}>
             {copied ? t.free.copied : t.free.copy}
           </Button>
         </div>

@@ -27,6 +27,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* «где я» важнее поля поиска: при нехватке места сначала сужается поиск */
+  flex-shrink: 0;
 }
 
 /* «Неделя 46» после дат */
@@ -83,6 +85,7 @@
   .title {
     min-width: 0;
     font-size: calc(var(--title-size) - 2px);
+    flex-shrink: 1;
   }
 
   .week {
