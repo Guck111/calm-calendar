@@ -83,3 +83,15 @@ describe("меню команд: выбранное событие", () => {
     expect(commandLabel({ kind: "color", colorId: "" })).toBe(t.commands.color(t.editor.calendarColor));
   });
 });
+
+describe("меню команд: тема и свободное время", () => {
+  it("находятся по названию, но не загромождают пустую строку", () => {
+    expect(kinds("")).not.toContain("theme");
+    expect(kinds("")).not.toContain("free");
+    const dark = buildCommands(t.settings.themes.dark, now);
+    expect(dark).toContainEqual({ kind: "theme", theme: "dark" });
+    expect(commandLabel({ kind: "theme", theme: "dark" })).toBe(`${t.settings.theme}: ${t.settings.themes.dark}`);
+    expect(buildCommands(t.free.title.slice(0, 5), now)).toContainEqual({ kind: "free" });
+    expect(commandLabel({ kind: "free" })).toBe(t.free.title);
+  });
+});

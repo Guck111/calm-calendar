@@ -244,9 +244,6 @@ export const hi: Dict = {
   toolbar: {
     views: { day: "दिन", week: "हफ़्ता", month: "महीना", agenda: "शेड्यूल" },
     freeSlots: "खाली समय",
-    theme: "थीम",
-    themeTitle: (current: string, next: string) => `थीम: ${current}। ${next} पर जाने के लिए क्लिक करें`,
-    themeNames: { system: "सिस्टम जैसी", light: "हल्की", dark: "गहरी" },
     todayTitle: "आज (T)",
     back: "पीछे",
     forward: "आगे",

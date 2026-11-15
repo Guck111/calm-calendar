@@ -75,3 +75,18 @@ test.describe("in Russian", () => {
     await expect(page.getByRole("tab", { name: t.toolbar.views.week })).toHaveAttribute("aria-selected", "true");
   });
 });
+
+test("the toolbar has no theme button; Ctrl+K switches the theme and opens Free time", async ({ page, t }) => {
+  await openApp(page);
+  await expect(page.locator("main header").getByRole("button", { name: t.settings.theme })).toHaveCount(0);
+
+  let menu = await open(page, t);
+  await page.keyboard.type(t.settings.themes.dark);
+  await menu.getByRole("option", { name: `${t.settings.theme}: ${t.settings.themes.dark}` }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+  menu = await open(page, t);
+  await page.keyboard.type(t.free.title);
+  await menu.getByRole("option", { name: t.free.title, exact: true }).click();
+  await expect(page.getByRole("dialog", { name: t.free.title })).toBeVisible();
+});

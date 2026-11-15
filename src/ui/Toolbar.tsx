@@ -4,13 +4,11 @@ import { $loading, refreshRequested } from "../model/events";
 import { $cursor, $view, nextClicked, prevClicked, todayClicked, viewChanged } from "../model/view";
 import { formatWeekNumber, startOfWeek, viewTitle, type ViewMode } from "../shared/lib/date";
 import { $weekNumbers } from "../model/display";
-import { useEffect, useState, type JSX } from "react";
 import { Button, cx } from "./Button";
 import { Search } from "./Search";
 import { FreeSlotsButton } from "./FreeSlots";
 import { SettingsButton } from "./SettingsButton";
-import { followTheme, nextTheme, readTheme, saveTheme, type Theme } from "../shared/lib/theme";
-import { Auto, ChevronLeft, ChevronRight, Moon, Refresh, Sun } from "./icons";
+import { ChevronLeft, ChevronRight, Refresh } from "./icons";
 import s from "./Toolbar.module.css";
 
 const VIEWS: { id: ViewMode; key: string }[] = [
@@ -19,29 +17,6 @@ const VIEWS: { id: ViewMode; key: string }[] = [
   { id: "month", key: "M" },
   { id: "agenda", key: "A" },
 ];
-
-const THEME_ICON: Record<Theme, (props: { size?: number }) => JSX.Element> = { system: Auto, light: Sun, dark: Moon };
-
-const ThemeButton = () => {
-  const [theme, setTheme] = useState(readTheme);
-  useEffect(() => followTheme(setTheme), []);
-  const Icon = THEME_ICON[theme];
-  const next = nextTheme(theme);
-  return (
-    <Button
-      variant="ghost"
-      icon
-      onClick={() => {
-        saveTheme(next);
-        setTheme(next);
-      }}
-      title={t.toolbar.themeTitle(t.toolbar.themeNames[theme], t.toolbar.themeNames[next])}
-      aria-label={t.toolbar.theme}
-    >
-      <Icon />
-    </Button>
-  );
-};
 
 export const Toolbar = () => {
   const [view, cursor, loading, weekNumbers] = useUnit([$view, $cursor, $loading, $weekNumbers]);
@@ -76,7 +51,6 @@ export const Toolbar = () => {
       <div className={s.spacer} />
       <Search />
       <FreeSlotsButton />
-      <ThemeButton />
       <Button
         variant="ghost"
         icon

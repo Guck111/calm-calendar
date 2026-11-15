@@ -168,6 +168,21 @@ test.describe("nothing important is cut off", () => {
     }
   });
 
+  test("a narrower window: the search folds into a magnifier, the buttons keep their size", async ({ page, t }) => {
+    await page.setViewportSize({ width: 1000, height: 700 });
+    await openApp(page);
+    const header = page.locator("main header");
+    const search = header.getByRole("combobox").or(header.getByRole("searchbox")).or(header.locator("input")).first();
+    expect((await search.boundingBox())!.width).toBeLessThan(40);
+    for (const name of [t.toolbar.freeSlots, t.toolbar.refresh, t.common.settings]) {
+      expect((await header.getByRole("button", { name }).boundingBox())!.width).toBeGreaterThanOrEqual(30);
+    }
+    await page.keyboard.press("Control+f");
+    await expect(search).toBeFocused();
+    await expect.poll(async () => (await search.boundingBox())!.width).toBeGreaterThan(150);
+    expect(await header.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  });
+
   test("the widget cuts the title, never the time left", async ({ page }) => {
     await page.setViewportSize({ width: 300, height: 600 });
     await page.goto("/?window=widget");

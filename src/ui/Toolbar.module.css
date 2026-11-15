@@ -16,6 +16,12 @@
   display: flex;
 }
 
+/* кнопки-значки не сжимаются: при нехватке места уступают поиск, затем заголовок */
+.nav,
+.bar > button {
+  flex: none;
+}
+
 .title {
   margin: 0;
   margin-inline-start: 6px;

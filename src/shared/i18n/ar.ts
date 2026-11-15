@@ -263,9 +263,6 @@ export const ar: Dict = {
   toolbar: {
     views: { day: "يوم", week: "أسبوع", month: "شهر", agenda: "جدول المواعيد" },
     freeSlots: "وقت الفراغ",
-    theme: "المظهر",
-    themeTitle: (current: string, next: string) => `المظهر: ${current}. انقر للتبديل إلى ${next}`,
-    themeNames: { system: "حسب النظام", light: "فاتح", dark: "داكن" },
     todayTitle: "اليوم (T)",
     back: "السابق",
     forward: "التالي",

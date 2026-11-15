@@ -2,6 +2,7 @@ import { useUnit } from "effector-react";
 import { useEffect, useState } from "react";
 import { locale, t } from "../shared/i18n";
 import { $events } from "../model/events";
+import { freeSlotsRequested } from "../model/free";
 import { $cursor, $now, $view, nextClicked } from "../model/view";
 import { toTimeKey, viewDays } from "../shared/lib/date";
 import { formatFreeSlots, freeSlots, type FreeOptions } from "../shared/lib/free";
@@ -141,6 +142,8 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
 
 export const FreeSlotsButton = () => {
   const [open, setOpen] = useState(false);
+  // Ctrl+K → «Свободное время»
+  useEffect(() => freeSlotsRequested.watch(() => setOpen(true)), []);
   return (
     <>
       <Button

@@ -278,9 +278,6 @@ export const ru = {
   toolbar: {
     views: { day: "День", week: "Неделя", month: "Месяц", agenda: "Расписание" },
     freeSlots: "Свободное время",
-    theme: "Тема",
-    themeTitle: (current: string, next: string) => `Тема: ${current}. Нажми, чтобы сделать ${next}`,
-    themeNames: { system: "как в системе", light: "светлая", dark: "тёмная" },
     todayTitle: "Сегодня (T)",
     back: "Назад",
     forward: "Вперёд",

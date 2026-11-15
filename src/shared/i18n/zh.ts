@@ -242,9 +242,6 @@ export const zh: Dict = {
   toolbar: {
     views: { day: "日", week: "周", month: "月", agenda: "日程" },
     freeSlots: "空闲时间",
-    theme: "主题",
-    themeTitle: (current: string, next: string) => `主题：${current}。点击切换为${next}`,
-    themeNames: { system: "跟随系统", light: "浅色", dark: "深色" },
     todayTitle: "今天 (T)",
     back: "上一页",
     forward: "下一页",

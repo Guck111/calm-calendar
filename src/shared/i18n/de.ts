@@ -252,9 +252,6 @@ export const de: Dict = {
   toolbar: {
     views: { day: "Tag", week: "Woche", month: "Monat", agenda: "Terminliste" },
     freeSlots: "Freie Zeit",
-    theme: "Design",
-    themeTitle: (current: string, next: string) => `Design: ${current}. Klicken für ${next}`,
-    themeNames: { system: "System", light: "hell", dark: "dunkel" },
     todayTitle: "Heute (T)",
     back: "Zurück",
     forward: "Weiter",

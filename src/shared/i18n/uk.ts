@@ -272,9 +272,6 @@ export const uk: Dict = {
   toolbar: {
     views: { day: "День", week: "Тиждень", month: "Місяць", agenda: "Розклад" },
     freeSlots: "Вільний час",
-    theme: "Тема",
-    themeTitle: (current: string, next: string) => `Тема: ${current}. Натисніть, щоб зробити ${next}`,
-    themeNames: { system: "як у системі", light: "світла", dark: "темна" },
     todayTitle: "Сьогодні (T)",
     back: "Назад",
     forward: "Уперед",

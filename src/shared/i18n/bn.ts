@@ -248,9 +248,6 @@ export const bn: Dict = {
   toolbar: {
     views: { day: "দিন", week: "সপ্তাহ", month: "মাস", agenda: "সময়সূচি" },
     freeSlots: "ফাঁকা সময়",
-    theme: "থিম",
-    themeTitle: (current: string, next: string) => `থিম: ${current}। ${next} করতে ক্লিক করুন`,
-    themeNames: { system: "সিস্টেমের মতো", light: "হালকা", dark: "গাঢ়" },
     todayTitle: "আজ (T)",
     back: "পেছনে",
     forward: "সামনে",

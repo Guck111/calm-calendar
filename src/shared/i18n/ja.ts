@@ -244,9 +244,6 @@ export const ja: Dict = {
   toolbar: {
     views: { day: "日", week: "週", month: "月", agenda: "スケジュール" },
     freeSlots: "空き時間",
-    theme: "テーマ",
-    themeTitle: (current: string, next: string) => `テーマ：${current}。クリックで${next}に切り替え`,
-    themeNames: { system: "システム", light: "ライト", dark: "ダーク" },
     todayTitle: "今日 (T)",
     back: "前へ",
     forward: "次へ",
