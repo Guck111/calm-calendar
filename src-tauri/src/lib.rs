@@ -156,6 +156,30 @@ fn get_settings(app: AppHandle) -> config::Settings {
 }
 
 #[tauri::command]
+fn get_desktop(app: AppHandle) -> desktop::DesktopState {
+    desktop::desktop_state(&app)
+}
+
+/// visible, on_top: что поменять; не переданное остаётся как было
+#[tauri::command]
+fn set_widget(app: AppHandle, visible: Option<bool>, on_top: Option<bool>) {
+    let current = config::load_widget(&app);
+    desktop::set_widget(
+        &app,
+        config::WidgetSettings {
+            visible: visible.unwrap_or(current.visible),
+            on_top: on_top.unwrap_or(current.on_top),
+        },
+    );
+}
+
+/// Возвращает, включён ли автозапуск после попытки
+#[tauri::command]
+fn set_autostart(app: AppHandle, enabled: bool) -> bool {
+    desktop::set_launch(&app, enabled)
+}
+
+#[tauri::command]
 fn set_glass(app: AppHandle, enabled: bool) -> Result<()> {
     let settings = config::Settings { glass: enabled, ..config::load_settings(&app) };
     config::save_settings(&app, settings)?;
@@ -323,6 +347,9 @@ pub fn run() {
             google_request,
             open_main,
             get_settings,
+            get_desktop,
+            set_widget,
+            set_autostart,
             set_glass,
             set_notifications,
             set_private_notifications,

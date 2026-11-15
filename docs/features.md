@@ -42,6 +42,7 @@ Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
 - If Google stops accepting an account's sign-in, its group says so with "Sign in again"; the other accounts keep working.
 - Overlaps between accounts: a timed event that overlaps an event of another account gets a red edge, a warning sign and a note in its card ("Overlaps with: …"). All-day events, events marked "free" and the same meeting in both accounts don't count. Travel time counts.
 - Tokens are kept per account by the Rust side; the sign-in of version 0.4 is moved over on the first start.
+- After the first sign-in, a card "What else Calm Calendar can do" in the bottom corner (`src/ui/Welcome.tsx`): switches for the desktop widget, starting with Windows and the hard-to-miss alert for calls (they change the same settings as the tray menu and Settings, and the tray check marks follow, `get_desktop`, `set_widget`, `set_autostart`), a line about quick add from any app with the chosen shortcut and one about the tray agenda. It does not take the focus, Esc closes it only when the focus is in it, and it is shown once (`calm.welcome` in localStorage); Ctrl+K → "What Calm Calendar can do" opens it again.
 
 ## Views
 

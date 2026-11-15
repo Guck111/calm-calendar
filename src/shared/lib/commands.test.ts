@@ -7,8 +7,9 @@ const now = new Date(2026, 10, 11, 9, 50);
 const kinds = (text: string) => buildCommands(text, now).map((c) => (c.kind === "view" ? `view:${c.view}` : c.kind));
 
 describe("меню команд", () => {
-  it("пустая строка: создать, сегодня, четыре вида и сочетания клавиш", () => {
-    expect(kinds("")).toEqual(["new", "today", "view:day", "view:week", "view:month", "view:agenda", "shortcuts"]);
+  it("пустая строка: создать, сегодня, четыре вида, сочетания клавиш и «Что умеет»", () => {
+    expect(kinds("")).toEqual(["new", "today", "view:day", "view:week", "view:month", "view:agenda", "shortcuts", "welcome"]);
+    expect(commandLabel({ kind: "welcome" })).toBe(t.welcome.command);
   });
 
   it("дата словами — сначала переход к ней", () => {
@@ -58,6 +59,7 @@ describe("меню команд: выбранное событие", () => {
       "view:month",
       "view:agenda",
       "shortcuts",
+      "welcome",
     ]);
   });
 

@@ -59,7 +59,7 @@ export const test = base.extend<Options & { t: typeof en }>({
   storage: [{}, { option: true }],
   t: async ({ lang }, use) => use(DICTS[lang]),
   page: async ({ page, lang, storage }, use) => {
-    await page.addInitScript(setup, { now: NOW, storage: { lang, view: "week", ...storage } });
+    await page.addInitScript(setup, { now: NOW, storage: { lang, view: "week", welcome: true, ...storage } });
     await use(page);
   },
 });

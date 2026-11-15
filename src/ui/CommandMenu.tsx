@@ -10,6 +10,7 @@ import { eventElement } from "../app/useEventKeys";
 import type { CalendarEvent } from "../shared/api/types";
 import { queryChanged, searchFocusRequested, searchRequested } from "../model/search";
 import { shortcutsRequested } from "../model/shortcuts";
+import { welcomeRequested } from "../model/welcome";
 import { dateSelected, todayClicked, viewChanged } from "../model/view";
 import { buildCommands, commandLabel, type Command } from "../shared/lib/commands";
 import { addDays, addMinutes, localTimeZone } from "../shared/lib/date";
@@ -29,7 +30,7 @@ const CommandDialog = ({ onClose, subject }: DialogProps) => {
   const [text, setText] = useState("");
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
-  const [move, patch, showShortcuts] = useUnit([eventMoved, eventPatched, shortcutsRequested]);
+  const [move, patch, showShortcuts, showWelcome] = useUnit([eventMoved, eventPatched, shortcutsRequested, welcomeRequested]);
   const [writable, goTo, today, setView, create, openDraft, search, request, focusSearch] = useUnit([
     $writableCalendars,
     dateSelected,
@@ -63,6 +64,8 @@ const CommandDialog = ({ onClose, subject }: DialogProps) => {
         return create();
       case "shortcuts":
         return showShortcuts();
+      case "welcome":
+        return showWelcome();
       case "create": {
         // как Ctrl+Enter в быстром создании: форма с разобранной строкой
         const draft = quickToDraft(parseQuick(c.text, new Date(), writable), writable[0]?.id ?? "");

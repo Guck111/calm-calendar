@@ -293,6 +293,22 @@ export const pt: Dict = {
   schedule: {
     empty: "Nenhum evento nesses dias",
   },
+  welcome: {
+    title: "O que mais o Calm Calendar faz",
+    intro: "Algumas coisas que vale ativar logo.",
+    widget: "Widget na área de trabalho",
+    widgetHint: "Um relógio, suas próximas reuniões e entrar com um clique.",
+    autostart: "Iniciar com o Windows",
+    autostartHint: "Os lembretes chegam mesmo se você não abriu o calendário.",
+    alert: "Alerta bem visível para chamadas",
+    alertHint: "Um minuto antes de uma chamada, uma janela acima de todas as outras.",
+    hotkey: "Criação rápida de qualquer app",
+    hotkeyHint: (keys: string) => `Pressione ${keys} e digite “amanhã 18h chamada”.`,
+    tray: "A agenda de hoje perto do relógio",
+    trayHint: "Clique no ícone do calendário no canto da barra de tarefas.",
+    done: "Pronto",
+    command: "O que o Calm Calendar faz",
+  },
   shortcuts: {
     title: "Atalhos de teclado",
     calendar: "Calendário",

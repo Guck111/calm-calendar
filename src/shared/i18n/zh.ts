@@ -277,6 +277,22 @@ export const zh: Dict = {
   schedule: {
     empty: "这几天没有活动",
   },
+  welcome: {
+    title: "Calm Calendar 还能做什么",
+    intro: "有几项功能值得马上打开。",
+    widget: "桌面小组件",
+    widgetHint: "时钟、接下来的会议，一键加入会议。",
+    autostart: "随 Windows 启动",
+    autostartHint: "即使没有打开日历，也会收到提醒。",
+    alert: "醒目的通话提醒",
+    alertHint: "通话前一分钟，在所有窗口之上弹出窗口。",
+    hotkey: "在任何应用中快速创建",
+    hotkeyHint: (keys: string) => `按 ${keys}，然后输入“明天晚上6点 通话”。`,
+    tray: "时钟旁的今日日程",
+    trayHint: "点击任务栏角落的日历图标。",
+    done: "完成",
+    command: "Calm Calendar 能做什么",
+  },
   shortcuts: {
     title: "键盘快捷键",
     calendar: "日历",

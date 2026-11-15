@@ -27,6 +27,7 @@ import { eventElement, useEventKeys } from "./useEventKeys";
 import { EventEditor } from "../ui/EventEditor";
 import { CommandMenu } from "../ui/CommandMenu";
 import { UndoToast } from "../ui/UndoToast";
+import { Welcome } from "../ui/Welcome";
 import { Shortcuts } from "../ui/Shortcuts";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
@@ -177,6 +178,7 @@ export const App = () => {
       </main>
       <EventEditor />
       <UndoToast />
+      <Welcome />
       <CommandMenu />
       <Shortcuts />
     </div>

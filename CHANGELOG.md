@@ -6,6 +6,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### New
 
+- **What else Calm Calendar can do**: after the first sign-in a small card in the corner turns on the desktop widget, starting with Windows and the hard-to-miss alert for calls right there, and tells about quick add from any app and today's agenda in the tray. It does not take the focus and shows once; Ctrl+K → "What Calm Calendar can do" brings it back.
 - **Undo**: after moving or deleting an event a line at the bottom says "Moved: …" or "Deleted: …" with Undo (or Ctrl+Z). It stays while the mouse is on it. A deleted event leaves the screen at once and is deleted in Google when the line closes, so Undo brings it back untouched and guests get no emails.
 
 ### Changed

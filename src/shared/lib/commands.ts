@@ -15,6 +15,8 @@ export type Command =
   | { kind: "view"; view: ViewMode }
   /** окно со списком сочетаний клавиш */
   | { kind: "shortcuts" }
+  /** карточка «Что умеет Calm Calendar» */
+  | { kind: "welcome" }
   /** действия с выбранным событием */
   | { kind: "tomorrow" }
   | { kind: "later" }
@@ -32,6 +34,7 @@ const STATIC: Command[] = [
   { kind: "today" },
   ...VIEWS.map((view) => ({ kind: "view" as const, view })),
   { kind: "shortcuts" },
+  { kind: "welcome" },
 ];
 
 const COLORS: Command[] = ["", ...COLOR_IDS].map((colorId) => ({ kind: "color" as const, colorId }));
@@ -52,6 +55,8 @@ export const commandLabel = (c: Command): string => {
       return t.toolbar.views[c.view];
     case "shortcuts":
       return t.shortcuts.title;
+    case "welcome":
+      return t.welcome.command;
     case "tomorrow":
       return t.commands.moveTomorrow;
     case "later":

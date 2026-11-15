@@ -52,6 +52,47 @@ pub fn apply_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
+/// Виджет и автозапуск — для карточки «Что ещё умеет» и настроек в окне
+#[derive(Serialize)]
+pub struct DesktopState {
+    pub widget: bool,
+    pub on_top: bool,
+    pub autostart: bool,
+}
+
+pub fn desktop_state(app: &AppHandle) -> DesktopState {
+    let widget = config::load_widget(app);
+    DesktopState {
+        widget: widget.visible,
+        on_top: widget.on_top,
+        autostart: autostart::is_enabled(app),
+    }
+}
+
+fn tray_items(app: &AppHandle) -> Option<CheckItems> {
+    app.state::<TrayItems>().0.lock().ok().and_then(|i| i.clone())
+}
+
+/// Показать или скрыть виджет, держать ли поверх окон: из интерфейса; галочки в меню трея следуют
+pub fn set_widget(app: &AppHandle, settings: WidgetSettings) {
+    config::save_widget(app, settings);
+    apply_widget(app, settings);
+    if let Some(items) = tray_items(app) {
+        let _ = items.widget.set_checked(settings.visible);
+        let _ = items.on_top.set_checked(settings.on_top);
+    }
+}
+
+/// Включает или выключает автозапуск; возвращает, что вышло на деле (его можно запретить
+/// в диспетчере задач). Галочка в меню трея — по факту
+pub fn set_launch(app: &AppHandle, want: bool) -> bool {
+    let actual = autostart::set_enabled(app, want);
+    if let Some(items) = tray_items(app) {
+        let _ = items.launch.set_checked(actual);
+    }
+    actual
+}
+
 /// Стекло: размытие того, что под окном, средствами Windows.
 /// Главное окно — системный Acrylic (гаснет без фокуса, интерфейс подставляет непрозрачный фон).
 /// Виджет почти всегда без фокуса, поэтому ему нужен «старый» Acrylic через accent policy:
@@ -370,12 +411,8 @@ fn on_menu(app: &AppHandle, id: &str) {
             apply_widget(app, settings);
         }
         ("autostart", Some(items)) => {
-            let want = items.launch.is_checked().unwrap_or(false);
             // не получилось (например, автозапуск запрещён в диспетчере задач) — галочка по факту
-            let actual = autostart::set_enabled(app, want);
-            if actual != want {
-                let _ = items.launch.set_checked(actual);
-            }
+            set_launch(app, items.launch.is_checked().unwrap_or(false));
         }
         _ => {}
     }

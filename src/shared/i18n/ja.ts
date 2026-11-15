@@ -279,6 +279,22 @@ export const ja: Dict = {
   schedule: {
     empty: "この期間に予定はありません",
   },
+  welcome: {
+    title: "Calm Calendar のその他の機能",
+    intro: "最初にオンにしておくと便利な機能です。",
+    widget: "デスクトップ ウィジェット",
+    widgetHint: "時計、次の予定、ワンクリックで会議に参加。",
+    autostart: "Windows と一緒に起動",
+    autostartHint: "カレンダーを開いていなくても通知が届きます。",
+    alert: "通話の目立つ通知",
+    alertHint: "通話の 1 分前に、すべてのウィンドウの上に表示します。",
+    hotkey: "どのアプリからでもすばやく作成",
+    hotkeyHint: (keys: string) => `${keys} を押して「明日18時 打ち合わせ」と入力します。`,
+    tray: "時計の横に今日の予定",
+    trayHint: "タスクバーの隅にあるカレンダー アイコンをクリックします。",
+    done: "完了",
+    command: "Calm Calendar でできること",
+  },
   shortcuts: {
     title: "キーボードショートカット",
     calendar: "カレンダー",
