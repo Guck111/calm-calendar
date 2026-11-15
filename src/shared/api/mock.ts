@@ -197,7 +197,8 @@ const enEvents = (): Record<string, Json[]> => ({
           },
         },
       ],
-      [5, "Sprint demo", [15, 0], [16, 0]],
+      // приглашения Zoom кладут в место длинную ссылку
+      [5, "Sprint demo", [15, 0], [16, 0], { location: ZOOM }],
     ]),
   ],
   fitness: timed("f", [

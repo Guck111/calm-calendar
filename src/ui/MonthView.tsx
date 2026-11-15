@@ -4,7 +4,7 @@ import type { MouseEvent } from "react";
 import { $calendarById } from "../model/calendars";
 import { eventOpened, slotClicked } from "../model/editor";
 import { $events } from "../model/events";
-import { $cursor, $today, dayOpened } from "../model/view";
+import { $cursor, $now, $today, dayOpened } from "../model/view";
 import { $weekNumbers } from "../model/display";
 import type { CalendarEvent } from "../shared/api/types";
 import {
@@ -26,9 +26,10 @@ import s from "./MonthView.module.css";
 const MAX_VISIBLE = 4;
 
 export const MonthView = () => {
-  const [cursor, today, events, calendars, weekNumbers] = useUnit([
+  const [cursor, today, now, events, calendars, weekNumbers] = useUnit([
     $cursor,
     $today,
+    $now,
     $events,
     $calendarById,
     $weekNumbers,
@@ -49,7 +50,7 @@ export const MonthView = () => {
     return (
       <button
         key={event.key}
-        className={cx(s.event, block && s.block, continues && s.continues)}
+        className={cx(s.event, block && s.block, continues && s.continues, event.end <= now && s.past)}
         style={eventStyle(calendars.get(event.calendarId), event)}
         onClick={() => openEvent(event)}
         title={event.title}

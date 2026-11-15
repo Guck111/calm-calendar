@@ -48,7 +48,8 @@ Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
 
 - **Day** and **Week**: hours grid with a line for the current time, all-day events in a strip at the top. Opens at 7:00, or near the current hour when today is on screen in the evening.
 - **Month**: six weeks, up to four events per day and "N more".
-- **Schedule**: four weeks from the chosen day as a list by day; days without events are skipped. Each row: time or "all day", title, repeat and overlap marks, location.
+- **Schedule**: four weeks from the chosen day as a list by day; days without events are skipped. Each row: time or "all day", title, repeat and overlap marks, location. A link in the location shows short: the call service ("Zoom", "Microsoft Teams") or the site, the full text on hover (`shortPlace` in `src/shared/lib/meeting.ts`). From 15 minutes before a call until its end the row has Join, as in the widget.
+- Events that have ended are paler (opacity 0.55) in Day, Week, Month and Schedule, as in the tray agenda.
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
 - Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search, free time, theme, refresh, settings, view switch.
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.

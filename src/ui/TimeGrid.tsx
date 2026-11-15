@@ -196,7 +196,7 @@ export const TimeGrid = () => {
               {list.map((e) => (
                 <button
                   key={e.key}
-                  className={s.allDayEvent}
+                  className={cx(s.allDayEvent, e.end <= now && s.past)}
                   style={eventStyle(calendars.get(e.calendarId), e)}
                   onClick={() => openEvent(e)}
                   title={e.title}
@@ -268,6 +268,7 @@ export const TimeGrid = () => {
                         canDrag && s.draggable,
                         isDragged && s.dragged,
                         clash && s.conflict,
+                        event.end <= now && s.past,
                       )}
                       style={{
                         ...eventStyle(calendars.get(event.calendarId), event),

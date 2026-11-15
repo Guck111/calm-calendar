@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findMeeting, isJoinable } from "./meeting";
+import { findMeeting, isJoinable, shortPlace } from "./meeting";
 
 describe("findMeeting", () => {
   it("takes the video entry point of conferenceData first", () => {
@@ -60,5 +60,21 @@ describe("isJoinable", () => {
     expect(isJoinable(start, end, new Date(2026, 10, 4, 9, 45))).toBe(true);
     expect(isJoinable(start, end, new Date(2026, 10, 4, 10, 30))).toBe(true);
     expect(isJoinable(start, end, end)).toBe(false);
+  });
+});
+
+describe("shortPlace", () => {
+  const zoom = { url: "https://us02web.zoom.us/j/81234567890?pwd=calm", provider: "Zoom" };
+
+  it("a call link in the place reads as the service, not the long address", () => {
+    expect(shortPlace(zoom.url, zoom)).toBe("Zoom");
+  });
+
+  it("another link reads as its site", () => {
+    expect(shortPlace("https://maps.example.com/place/123?x=1", undefined)).toBe("maps.example.com");
+  });
+
+  it("an address stays as it is", () => {
+    expect(shortPlace("Main St Clinic", zoom)).toBe("Main St Clinic");
   });
 });

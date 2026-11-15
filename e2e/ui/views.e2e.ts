@@ -125,3 +125,29 @@ test("hiding a calendar hides its events", async ({ page }) => {
   await expect(eventBlock(page, "Dentist")).toBeVisible();
   await expect(eventBlock(page, "Yoga")).toHaveCount(0);
 });
+
+// "Now" is Wednesday 9:50: Monday's events and this morning's stand-up (9:30–9:45) are over
+const opacity = (page: Page, selector: string, title: string) =>
+  page.locator(selector).filter({ hasText: title }).first().evaluate((el) => Number(getComputedStyle(el).opacity));
+
+test("past events are dimmed in Week, Month and Schedule", async ({ page }) => {
+  await openApp(page);
+  expect(await opacity(page, "main button[title]", "Brunch with Anna")).toBeLessThan(1);
+  expect(await opacity(page, "main button[title]", "Design sync")).toBe(1);
+
+  await page.keyboard.press("m");
+  expect(await opacity(page, "main button[title]", "Brunch with Anna")).toBeLessThan(1);
+  expect(await opacity(page, "main button[title]", "Dentist")).toBe(1);
+
+  await page.keyboard.press("a");
+  expect(await opacity(page, "main li button", "Team standup")).toBeLessThan(1);
+  expect(await opacity(page, "main li button", "Design sync")).toBe(1);
+});
+
+test("Schedule: a call link in the place reads as the service", async ({ page }) => {
+  await openApp(page);
+  await page.keyboard.press("a");
+  const row = page.locator("main li").filter({ hasText: "Sprint demo" });
+  await expect(row).toContainText("Zoom");
+  await expect(row).not.toContainText("zoom.us/j/");
+});
