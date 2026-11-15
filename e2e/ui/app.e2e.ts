@@ -56,6 +56,28 @@ test.describe("settings", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", /^de/);
   });
 
+  test("options are grouped; the widget and launch with Windows are here too, not only in the tray", async ({ page, t }) => {
+    await openApp(page);
+    await page.getByRole("button", { name: t.common.settings }).click();
+    const settings = page.getByRole("dialog", { name: t.common.settings });
+    const groups = settings.getByRole("group");
+    await expect(groups).toHaveCount(4);
+    await expect(groups.locator(":scope > h3")).toHaveText([
+      t.settings.groupLook,
+      t.settings.groupCalendar,
+      t.settings.groupReminders,
+      t.settings.groupQuick,
+    ]);
+    const look = settings.getByRole("group", { name: t.settings.groupLook });
+    await expect(look.getByRole("radio", { name: t.settings.themes.dark })).toBeVisible();
+    const quick = settings.getByRole("group", { name: t.settings.groupQuick });
+    await expect(quick.getByLabel(t.settings.quickHotkey)).toBeVisible();
+    // they need the app: in the browser they are there but off
+    for (const name of [t.welcome.widget, t.settings.onTop, t.welcome.autostart]) {
+      await expect(quick.getByRole("switch", { name })).toBeDisabled();
+    }
+  });
+
   test("a low window: the dialog scrolls down to the last option", async ({ page, t }) => {
     await page.setViewportSize({ width: 900, height: 540 });
     await openApp(page);

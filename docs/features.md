@@ -195,16 +195,14 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 Gear button in the toolbar. Settings open in a window of their own without a frame, in the middle of the calendar window and above it; it can be dragged by its header (the cursor shows four arrows there) anywhere on the screen, also outside the calendar. The header stays on top while the settings scroll. × or Esc closes it, hiding the calendar to the tray closes it too; each opening starts in the middle again. Second time zone, week numbers and holidays changed there reach the calendar window at once (bus event `display-changed`). In the browser (`npm run dev`) Settings are a dialog over the page, dragged by the header inside the page (`src-tauri/src/settings.rs`, `src/settings/SettingsWindow.tsx`, `src/ui/useDraggable.ts`).
 
-- Theme, language.
-- Second time zone and its zone.
-- Week numbers.
-- Holidays: a country or "Don't show".
-- Glass effect.
-- Event notifications, hide titles in notifications.
-- Hard-to-miss alert: off, calls only, all events.
-- Log: "Open log folder".
+The options are in five groups with titles (`role="group"`):
+
+- **Look**: theme, style, the two fonts, glass effect.
+- **Calendar**: language, second time zone, week numbers, holidays (a country or "Don't show"), calendar subscriptions.
+- **Reminders**: event notifications, hide titles in notifications, hard-to-miss alert (off, calls only, all events).
+- **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
+- **Help** (in the app only): "Open log folder".
 - The dialog scrolls when the window is low.
-- The widget, keeping it on top and starting with Windows live in the tray menu.
 
 ## Keyboard shortcuts
 

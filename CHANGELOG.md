@@ -11,6 +11,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### Changed
 
+- **Settings in groups**: Look, Calendar, Reminders, Quick access and Help. The desktop widget, keeping it on top and starting with Windows can now be changed in Settings too, not only in the tray menu.
 - **A calmer toolbar**: the theme button is gone (the theme is in Settings and in Ctrl+K: "Theme: Dark"), Ctrl+K also finds "Free time". The search field has a magnifier and in a narrower window folds into it, so the buttons and the date keep their room.
 - **Free time** with nothing free says why and offers "Show the next days"; Copy is off when there is nothing to copy.
 - **No more cut-off dates and countdowns**: the period title in the toolbar keeps its full length (the search field gets narrower first), and the widget shortens the event title, never "in 11 min".
