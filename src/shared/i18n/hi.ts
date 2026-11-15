@@ -95,6 +95,8 @@ export const hi: Dict = {
     travelLine: (span: string) => `रास्ते में: ${span}`,
     guests: "मेहमान",
     addGuest: "ईमेल से मेहमान जोड़ें",
+    more: "और",
+    descriptionHint: "एजेंडा, लिंक, नोट्स",
     removeGuest: (email: string) => `${email} हटाएँ`,
     badEmail: "यह ईमेल जैसा नहीं लगता",
     guestStatus: { accepted: "आएँगे", declined: "नहीं आएँगे", tentative: "शायद", needsAction: "अभी जवाब नहीं" },

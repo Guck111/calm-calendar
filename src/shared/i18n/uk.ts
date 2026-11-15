@@ -123,6 +123,8 @@ export const uk: Dict = {
     travelLine: (span: string) => `У дорозі: ${span}`,
     guests: "Гості",
     addGuest: "Додати гостя за email",
+    more: "Більше",
+    descriptionHint: "Порядок денний, посилання, нотатки",
     removeGuest: (email: string) => `Прибрати ${email}`,
     badEmail: "Це не схоже на email",
     guestStatus: { accepted: "прийде", declined: "не прийде", tentative: "можливо", needsAction: "ще не відповів" },

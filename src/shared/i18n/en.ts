@@ -97,6 +97,8 @@ export const en: Dict = {
     travelLine: (span: string) => `Travel: ${span}`,
     guests: "Guests",
     addGuest: "Add a guest by email",
+    more: "More",
+    descriptionHint: "Agenda, links, notes",
     removeGuest: (email: string) => `Remove ${email}`,
     badEmail: "This doesn't look like an email",
     guestStatus: { accepted: "going", declined: "not going", tentative: "maybe", needsAction: "no reply yet" },

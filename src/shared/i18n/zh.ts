@@ -95,6 +95,8 @@ export const zh: Dict = {
     travelLine: (span: string) => `路上：${span}`,
     guests: "邀请对象",
     addGuest: "通过电子邮件添加邀请对象",
+    more: "更多",
+    descriptionHint: "议程、链接、笔记",
     removeGuest: (email: string) => `移除 ${email}`,
     badEmail: "这看起来不像电子邮件地址",
     guestStatus: { accepted: "参加", declined: "不参加", tentative: "可能参加", needsAction: "尚未回复" },

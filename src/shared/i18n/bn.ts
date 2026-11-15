@@ -96,6 +96,8 @@ export const bn: Dict = {
     travelLine: (span: string) => `পথে: ${span}`,
     guests: "অতিথি",
     addGuest: "ইমেল দিয়ে অতিথি যোগ করুন",
+    more: "আরও",
+    descriptionHint: "আলোচ্যসূচি, লিংক, নোট",
     removeGuest: (email: string) => `${email} সরান`,
     badEmail: "এটি ইমেলের মতো দেখাচ্ছে না",
     guestStatus: { accepted: "আসবেন", declined: "আসবেন না", tentative: "হয়তো", needsAction: "এখনও উত্তর দেননি" },

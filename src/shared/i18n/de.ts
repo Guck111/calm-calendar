@@ -100,6 +100,8 @@ export const de: Dict = {
     travelLine: (span: string) => `Unterwegs: ${span}`,
     guests: "Gäste",
     addGuest: "Gast per E-Mail hinzufügen",
+    more: "Mehr",
+    descriptionHint: "Agenda, Links, Notizen",
     removeGuest: (email: string) => `${email} entfernen`,
     badEmail: "Das sieht nicht wie eine E-Mail-Adresse aus",
     guestStatus: { accepted: "nimmt teil", declined: "nimmt nicht teil", tentative: "vielleicht", needsAction: "noch keine Antwort" },

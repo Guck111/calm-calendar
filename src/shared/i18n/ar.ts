@@ -111,6 +111,8 @@ export const ar: Dict = {
     travelLine: (span: string) => `في الطريق: ${span}`,
     guests: "الضيوف",
     addGuest: "إضافة ضيف عبر البريد الإلكتروني",
+    more: "المزيد",
+    descriptionHint: "جدول الأعمال، روابط، ملاحظات",
     removeGuest: (email: string) => `إزالة ${email}`,
     badEmail: "لا يبدو هذا بريدًا إلكترونيًا",
     guestStatus: { accepted: "سيحضر", declined: "لن يحضر", tentative: "ربما", needsAction: "لم يرد بعد" },

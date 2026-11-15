@@ -123,6 +123,8 @@ export const ru = {
     travelLine: (span: string) => `В пути: ${span}`,
     guests: "Гости",
     addGuest: "Добавить гостя по email",
+    more: "Ещё",
+    descriptionHint: "Повестка, ссылки, заметки",
     removeGuest: (email: string) => `Убрать ${email}`,
     badEmail: "Это не похоже на email",
     guestStatus: { accepted: "придёт", declined: "не придёт", tentative: "может быть", needsAction: "ещё не ответил" },

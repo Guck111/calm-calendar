@@ -95,6 +95,8 @@ export const ja: Dict = {
     travelLine: (span: string) => `移動: ${span}`,
     guests: "ゲスト",
     addGuest: "メールでゲストを追加",
+    more: "その他",
+    descriptionHint: "議題、リンク、メモ",
     removeGuest: (email: string) => `${email} を削除`,
     badEmail: "メールアドレスではないようです",
     guestStatus: { accepted: "参加", declined: "不参加", tentative: "未定", needsAction: "未回答" },

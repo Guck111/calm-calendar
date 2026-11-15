@@ -10,6 +10,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### Changed
 
+- **The event form is shorter**: time zone, travel time, color and attachments are under "More" (it opens by itself when the event uses one of them). The description moved up, right after the place, with the hint "Agenda, links, notes". Save and Cancel stay at the bottom of the form, also in a low window.
 - **Delete** works with one click; there is no "Click again to delete" any more, Undo takes its place. A recurring event still asks "This event" or "This and following".
 - **Signing in**: while the app waits for the browser, "Open the sign-in page again" brings back a lost or closed Google tab, and "Cancel" stops waiting at once instead of after five minutes.
 
