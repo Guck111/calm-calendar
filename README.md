@@ -103,7 +103,7 @@ The real app on Windows, without Google: a debug build where sign-in and Google 
 cargo install tauri-driver --locked                                  # once
 powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1    # Edge WebDriver for the installed WebView2, again after WebView2 updates
 npm run build:app-e2e                                                # debug build with mock data
-npm run test:app                                                     # main window, widget, alert, tray agenda, log
+npm run test:app                                                     # main window, widget, alert, tray agenda, log, first-start card, widget and launch switches, Ctrl+Z
 ```
 
 Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.

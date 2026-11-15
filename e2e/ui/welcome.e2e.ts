@@ -7,7 +7,7 @@ test.describe("first start", () => {
 
   test("the card shows once, does not take the focus, and stays closed after Done", async ({ page, t }) => {
     await openApp(page);
-    const card = page.getByRole("dialog", { name: t.welcome.title });
+    const card = page.getByRole("complementary", { name: t.welcome.title });
     await expect(card).toBeVisible();
     await expect(card).toContainText(t.welcome.widget);
     await expect(card).toContainText(t.welcome.autostart);
@@ -28,7 +28,7 @@ test.describe("first start", () => {
 
   test("the switches need the app: in the browser they are off and disabled", async ({ page, t }) => {
     await openApp(page);
-    const card = page.getByRole("dialog", { name: t.welcome.title });
+    const card = page.getByRole("complementary", { name: t.welcome.title });
     for (const name of [t.welcome.widget, t.welcome.autostart, t.welcome.alert]) {
       await expect(card.getByRole("switch", { name })).toBeDisabled();
     }
@@ -37,7 +37,7 @@ test.describe("first start", () => {
 
 test("Ctrl+K brings the card back", async ({ page, t }) => {
   await openApp(page);
-  const card = page.getByRole("dialog", { name: t.welcome.title });
+  const card = page.getByRole("complementary", { name: t.welcome.title });
   await expect(card).toBeHidden();
   await page.keyboard.press("Control+k");
   await expect(page.getByRole("dialog", { name: t.commands.title }).getByRole("combobox")).toBeFocused();

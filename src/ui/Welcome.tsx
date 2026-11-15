@@ -73,7 +73,8 @@ export const Welcome = () => {
   };
 
   return (
-    <aside ref={card} className={s.card} role="dialog" aria-modal="false" aria-labelledby="welcome-title">
+    // немодальная панель сбоку, а не диалог: календарь рядом работает, фокус она не забирает
+    <aside ref={card} className={s.card} aria-labelledby="welcome-title">
       <div className={s.head}>
         <h2 id="welcome-title" className={s.title}>
           {t.welcome.title}
