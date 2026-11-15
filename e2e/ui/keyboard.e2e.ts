@@ -1,6 +1,6 @@
 // Events without the mouse: arrows between event blocks, Enter, E, Ctrl+D, Delete.
 import type { Page } from "@playwright/test";
-import { test, expect, openApp, eventBlock, dialog, dayOfBlock } from "./fixtures";
+import { test, expect, openApp, eventBlock, dialog, dayOfBlock, undoLine } from "./fixtures";
 
 const focusedTitle = (page: Page) =>
   page.evaluate(() => (document.activeElement as HTMLElement | null)?.closest("[data-event-key]")?.textContent ?? "");
@@ -45,15 +45,19 @@ test("Ctrl+D duplicates the event", async ({ page, t }) => {
   await expect(form.getByPlaceholder(t.editor.titlePlaceholder)).toHaveValue("Dentist");
 });
 
-test("Delete asks in the card, Enter deletes", async ({ page, t }) => {
+test("Delete opens the card with Delete focused, Enter deletes, Ctrl+Z brings it back", async ({ page, t }) => {
   await openApp(page);
   await eventBlock(page, "Dentist").focus();
   await page.keyboard.press("Delete");
-  const confirm = dialog(page).getByRole("button", { name: t.editor.confirmDelete });
-  await expect(confirm).toBeFocused();
+  const del = dialog(page).getByRole("button", { name: t.editor.delete });
+  await expect(del).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(dialog(page)).toBeHidden();
-  await expect(page.locator("main button[title]").filter({ hasText: "Dentist" })).toHaveCount(0);
+  const blocks = page.locator("main button[title]").filter({ hasText: "Dentist" });
+  await expect(blocks).toHaveCount(0);
+  await expect(undoLine(page).getByText(t.editor.undoDeleted("Dentist"))).toBeVisible();
+  await page.keyboard.press("Control+z");
+  await expect(blocks).toHaveCount(1);
 });
 
 test("Schedule: ↓ goes down the list", async ({ page }) => {

@@ -68,28 +68,17 @@ const plainText = (html: string): string =>
 type DeleteProps = {
   busy: boolean;
   onConfirm: () => void;
-  resetKey: string;
-  /** у повторения серии подтверждением служит вопрос «только это или это и следующие» */
-  askFirst?: boolean;
-  /** открыто клавишей Delete: кнопка сразу спрашивает и в фокусе, Enter удаляет */
+  /** открыто клавишей Delete: кнопка в фокусе, Enter удаляет */
   armed?: boolean;
 };
 
-const DeleteButton = ({ busy, onConfirm, resetKey, askFirst = true, armed = false }: DeleteProps) => {
-  const [confirm, setConfirm] = useState(armed && askFirst);
-  useEffect(() => setConfirm(armed && askFirst), [resetKey, armed, askFirst]);
-  return (
-    <Button
-      danger
-      variant="ghost"
-      disabled={busy}
-      autoFocus={armed}
-      onClick={() => (confirm || !askFirst ? onConfirm() : setConfirm(true))}
-    >
-      {confirm ? t.editor.confirmDelete : t.editor.delete}
-    </Button>
-  );
-};
+/** Удаляет одним нажатием: вместо «Точно удалить?» после удаления есть «Отменить» (model/undo.ts).
+ *  У повторения серии сначала вопрос «только это или это и следующие» */
+const DeleteButton = ({ busy, onConfirm, armed = false }: DeleteProps) => (
+  <Button danger variant="ghost" disabled={busy} autoFocus={armed} onClick={onConfirm}>
+    {t.editor.delete}
+  </Button>
+);
 
 const GoogleLink = ({ href }: { href?: string }) =>
   href ? (
@@ -348,13 +337,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             </Button>
           )}
           {editable && (
-            <DeleteButton
-              busy={busy}
-              onConfirm={() => remove()}
-              resetKey={event.key}
-              askFirst={!event.recurring}
-              armed={armed}
-            />
+            <DeleteButton busy={busy} onConfirm={() => remove()} armed={armed} />
           )}
           {editable && (
             <Button
@@ -765,12 +748,7 @@ const EventForm = () => {
       ) : (
         <div className={s.actions}>
           {!isNew && (
-            <DeleteButton
-              busy={busy}
-              onConfirm={() => remove()}
-              resetKey={draft.id ?? ""}
-              askFirst={!draft.recurringEventId}
-            />
+            <DeleteButton busy={busy} onConfirm={() => remove()} />
           )}
           <div className={s.spacer} />
           {!isNew && (

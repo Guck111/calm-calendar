@@ -27,7 +27,7 @@ for (const [lang, { text, title }] of Object.entries(EXAMPLES) as [Lang, (typeof
       await openApp(page);
       const input = page.getByRole("textbox", { name: t.quick.label });
       await input.fill(text);
-      await expect(page.locator('[aria-live="polite"]')).toContainText(title);
+      await expect(page.locator('aside [aria-live="polite"]')).toContainText(title);
       await input.press("Enter");
       await expect(input).toHaveValue("");
 
@@ -77,5 +77,5 @@ test("quick add: N focuses the field, a phrase without a title is refused", asyn
   await expect(input).toBeFocused();
   await input.fill("tomorrow 7pm");
   await input.press("Enter");
-  await expect(page.locator('[aria-live="polite"]')).toContainText(t.errors.titleRequired);
+  await expect(page.locator('aside [aria-live="polite"]')).toContainText(t.errors.titleRequired);
 });

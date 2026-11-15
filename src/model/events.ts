@@ -44,10 +44,39 @@ export const actionFailed = createEvent<string>();
 /** событие уже передвинуто на экране, ещё до ответа Google */
 export const eventShifted = createEvent<{ key: string; start: Date; end: Date }>();
 
+/** События, которые удалены на экране, но ещё не в Google (пока видна «Отменить»):
+ *  одно событие или повторения серии с этого времени («это и следующие») */
+export type Hidden = { draftId: string; calendarId: string } & ({ id: string } | { recurringEventId: string; from: Date });
+
+export const hides = (h: Hidden, e: CalendarEvent): boolean =>
+  e.calendarId === h.calendarId &&
+  ("id" in h ? e.id === h.id : e.recurringEventId === h.recurringEventId && e.start >= h.from);
+
+export const eventsHidden = createEvent<Hidden>();
+/** «Отменить»: события возвращаются на экран, прятать их больше не нужно */
+export const eventsRestored = createEvent<{ hidden: Hidden; events: CalendarEvent[] }>();
+/** удаление дошло до Google (или не дошло): дальше список берём как есть */
+export const hidingEnded = createEvent<string>();
+
+const $hidden = createStore<Hidden[]>([])
+  .on(eventsHidden, (list, h) => [...list, h])
+  .on(eventsRestored, (list, { hidden }) => list.filter((h) => h !== hidden))
+  .on(hidingEnded, (list, draftId) => list.filter((h) => h.draftId !== draftId))
+  .reset(signOutFx.finally);
+
+// ответ на устаревший запрос (уже перелистнули дальше) не применяем; спрятанные не показываем
+const loaded = sample({
+  clock: fetchEventsFx.doneData,
+  source: $hidden,
+  filter: (_, r) => r.id === lastRequestId,
+  fn: (hidden, r) => r.events.filter((e) => !hidden.some((h) => hides(h, e))),
+});
+
 export const $events = createStore<CalendarEvent[]>([])
   .on(eventShifted, (list, { key, start, end }) => list.map((e) => (e.key === key ? { ...e, start, end } : e)))
-  // ответ на устаревший запрос (уже перелистнули дальше) не применяем
-  .on(fetchEventsFx.doneData, (state, r) => (r.id === lastRequestId ? r.events : state))
+  .on(loaded, (_, events) => events)
+  .on(eventsHidden, (list, h) => list.filter((e) => !hides(h, e)))
+  .on(eventsRestored, (list, { events }) => [...list, ...events])
   .reset(signOutFx.finally);
 
 /** пересечения событий разных аккаунтов: ключ события → с чем пересекается */

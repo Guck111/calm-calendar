@@ -1,4 +1,4 @@
-import { allSettled, fork } from "effector";
+import { allSettled, createWatch, fork } from "effector";
 import { describe, expect, it } from "vitest";
 import type { CalendarEvent, EventDraft } from "../shared/api/types";
 import {
@@ -8,7 +8,7 @@ import {
   $recurrenceEdited,
   applyChange,
   deleteClicked,
-  deleteFx,
+  deleteRequested,
   draftChanged,
   editCancelled,
   editClicked,
@@ -120,9 +120,10 @@ describe("повторение серии", () => {
       handlers: [
         [loadSeriesFx, async () => WEEKDAYS],
         [saveFx, async (p: unknown) => void calls.save.push(p)],
-        [deleteFx, async (p: unknown) => void calls.del.push(p)],
       ],
     });
+    // удаление уходит в Google позже (строка «Отменить»), здесь важен сам запрос
+    createWatch({ unit: deleteRequested, scope, fn: (p) => void calls.del.push(p) });
     await allSettled(eventOpened, { scope, params: occurrence });
     return { scope, calls };
   };

@@ -4,8 +4,13 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### New
+
+- **Undo**: after moving or deleting an event a line at the bottom says "Moved: …" or "Deleted: …" with Undo (or Ctrl+Z). It stays while the mouse is on it. A deleted event leaves the screen at once and is deleted in Google when the line closes, so Undo brings it back untouched and guests get no emails.
+
 ### Changed
 
+- **Delete** works with one click; there is no "Click again to delete" any more, Undo takes its place. A recurring event still asks "This event" or "This and following".
 - **Signing in**: while the app waits for the browser, "Open the sign-in page again" brings back a lost or closed Google tab, and "Cancel" stops waiting at once instead of after five minutes.
 
 ## 0.11.0 — 2026-11-13

@@ -85,6 +85,9 @@ export const eventBlock = (page: Page, title: string) =>
 /** The event card or form */
 export const dialog = (page: Page) => page.getByRole("dialog");
 
+/** the "Moved: … / Deleted: … · Undo" line at the bottom of the main window */
+export const undoLine = (page: Page) => page.locator('[aria-live="polite"][aria-atomic="true"]');
+
 type Stamp = [day: number, hour?: number, minute?: number];
 
 /** Time ("19:00", "7:00 pm", "١٩:٠٠") of a November 2026 moment, formatted by the app itself in the page:

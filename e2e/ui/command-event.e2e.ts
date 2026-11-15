@@ -1,6 +1,6 @@
 // Ctrl+K on a chosen event: move to tomorrow, an hour later, add Google Meet, a color.
 import type { Page } from "@playwright/test";
-import { test, expect, openApp, eventBlock, dialog, blockOn } from "./fixtures";
+import { test, expect, openApp, eventBlock, dialog, blockOn, undoLine } from "./fixtures";
 import type { en } from "../../src/shared/i18n/en";
 
 const menuOn = async (page: Page, t: typeof en, title: string) => {
@@ -17,6 +17,11 @@ test("move to tomorrow", async ({ page, t }) => {
   await menu.getByRole("option", { name: t.commands.moveTomorrow }).click();
   await expect(menu).toBeHidden();
   await expect(await blockOn(page, "Dentist", 12)).toHaveAttribute("title", /^16:00–16:45 /);
+  // Undo puts it back on Wednesday
+  const toast = undoLine(page);
+  await expect(toast).toContainText(t.editor.undoMoved("Dentist"));
+  await toast.getByRole("button", { name: t.editor.undo }).click();
+  await expect(await blockOn(page, "Dentist", 11)).toHaveAttribute("title", /^16:00–16:45 /);
 });
 
 test("an hour later", async ({ page, t }) => {

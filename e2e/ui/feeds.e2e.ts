@@ -90,7 +90,7 @@ test.describe("with a subscription already added", () => {
       (window as unknown as { calmMock: { outage: string | null } }).calmMock.outage = "network";
     });
     await page.getByRole("button", { name: t.toolbar.refresh }).click();
-    await expect(page.getByRole("status")).toContainText(t.errors.offline("09:50"));
+    await expect(page.getByRole("status").filter({ hasText: t.errors.offline("09:50") })).toBeVisible();
     await expect(eventBlock(page, "Morning yoga")).toBeVisible();
   });
 

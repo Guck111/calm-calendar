@@ -26,6 +26,7 @@ import { AuthScreen } from "../ui/AuthScreen";
 import { eventElement, useEventKeys } from "./useEventKeys";
 import { EventEditor } from "../ui/EventEditor";
 import { CommandMenu } from "../ui/CommandMenu";
+import { UndoToast } from "../ui/UndoToast";
 import { Shortcuts } from "../ui/Shortcuts";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
@@ -175,6 +176,7 @@ export const App = () => {
         <div className={s.view}>{view === "month" ? <MonthView /> : view === "agenda" ? <ScheduleView /> : <TimeGrid />}</div>
       </main>
       <EventEditor />
+      <UndoToast />
       <CommandMenu />
       <Shortcuts />
     </div>
