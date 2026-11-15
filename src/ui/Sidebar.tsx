@@ -7,6 +7,7 @@ import { $calendarsWithVisibility, $writableCalendars, calendarToggled } from ".
 import { createClicked, draftOpened } from "../model/editor";
 import { quickCreateFx, quickFocusRequested } from "../model/quick";
 import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
+import { SignInActions } from "./SignInActions";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
 import { $weekNumbers } from "../model/display";
 import { $lastSynced, syncedText } from "../model/sync";
@@ -186,6 +187,7 @@ const AddAccount = () => {
       <button type="button" className={s.add} onClick={() => signIn()} disabled={signingIn}>
         <Plus size={12} /> {signingIn ? t.auth.finishInBrowser : t.accounts.add}
       </button>
+      {signingIn && <SignInActions />}
     </div>
   );
 };

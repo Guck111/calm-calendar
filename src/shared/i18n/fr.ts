@@ -68,6 +68,7 @@ export const fr: Dict = {
     tagline: "Un agenda sans publicité. Connectez-vous à Google pour voir vos événements.",
     signIn: "Se connecter avec Google",
     finishInBrowser: "Terminez la connexion dans votre navigateur…",
+    reopen: "Rouvrir la page de connexion",
     tabHint: "Si aucun onglet ne s’est ouvert, vérifiez que le navigateur n’est pas réduit.",
     changeClient: "Changer de client OAuth",
   },

@@ -117,6 +117,31 @@ test.describe("sign out", () => {
   });
 });
 
+test.describe("sign in", () => {
+  // the browser tab was closed or got lost: the wait has a way out
+  test("while waiting for the browser: open the page again or cancel", async ({ page, t }) => {
+    await openApp(page);
+    await page.evaluate(() => {
+      (globalThis as unknown as { calmMock: { signIn: string } }).calmMock.signIn = "hang";
+    });
+    const aside = page.locator("aside");
+    await aside.getByRole("button", { name: t.accounts.add }).click();
+    await expect(aside.getByText(t.auth.finishInBrowser)).toBeVisible();
+
+    await aside.getByRole("button", { name: t.auth.reopen }).click();
+    await expect
+      .poll(() => page.evaluate(() => (globalThis as unknown as { calmMock: { reopened: number } }).calmMock.reopened))
+      .toBe(1);
+
+    await aside.getByRole("button", { name: t.common.cancel }).click();
+    await expect(aside.getByRole("button", { name: t.accounts.add })).toBeEnabled();
+    await expect(aside.getByRole("button", { name: t.auth.reopen })).toHaveCount(0);
+    // cancelling is not an error
+    await expect(aside.getByText(t.errors.timeout)).toHaveCount(0);
+    await expect(eventBlock(page, "Team standup")).toBeVisible();
+  });
+});
+
 test.describe("window error screen", () => {
   test("the main window offers to restart instead of a blank page", async ({ page, t }) => {
     await page.goto("/?crash=1");

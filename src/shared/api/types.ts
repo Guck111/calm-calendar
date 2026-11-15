@@ -147,6 +147,7 @@ export type AppErrorKind =
   | "not_signed_in"
   | "denied"
   | "timeout"
+  | "cancelled"
   | "missing_scope"
   | "google"
   | "network"

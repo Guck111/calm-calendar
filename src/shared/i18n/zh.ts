@@ -63,6 +63,7 @@ export const zh: Dict = {
     tagline: "没有广告的日历。登录 Google 即可查看你的日程。",
     signIn: "使用 Google 登录",
     finishInBrowser: "请在浏览器中完成登录…",
+    reopen: "重新打开登录页面",
     tabHint: "如果没有打开新标签页，请检查浏览器是否已最小化。",
     changeClient: "更换 OAuth 客户端",
   },

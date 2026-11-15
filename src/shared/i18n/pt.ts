@@ -68,6 +68,7 @@ export const pt: Dict = {
     tagline: "Uma agenda sem anúncios. Faça login no Google para ver seus eventos.",
     signIn: "Fazer login com o Google",
     finishInBrowser: "Conclua o login no navegador…",
+    reopen: "Abrir a página de login novamente",
     tabHint: "Se nenhuma aba abriu, veja se o navegador está minimizado.",
     changeClient: "Trocar cliente OAuth",
   },

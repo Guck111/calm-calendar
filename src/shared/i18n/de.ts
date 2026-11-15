@@ -68,6 +68,7 @@ export const de: Dict = {
     tagline: "Ein Kalender ohne Werbung. Melde dich bei Google an, um deine Termine zu sehen.",
     signIn: "Mit Google anmelden",
     finishInBrowser: "Schließe die Anmeldung im Browser ab…",
+    reopen: "Anmeldeseite erneut öffnen",
     tabHint: "Wenn sich kein Tab geöffnet hat, prüfe, ob der Browser minimiert ist.",
     changeClient: "OAuth-Client ändern",
   },

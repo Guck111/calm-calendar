@@ -51,6 +51,16 @@ async fn sign_in(app: AppHandle, auth: State<'_, Auth>) -> Result<String> {
     result
 }
 
+#[tauri::command]
+fn sign_in_reopen(app: AppHandle, auth: State<'_, Auth>) -> Result<()> {
+    auth.reopen_sign_in(&app)
+}
+
+#[tauri::command]
+fn sign_in_cancel(auth: State<'_, Auth>) {
+    auth.cancel_sign_in();
+}
+
 /// account — из какого аккаунта выйти; без него — из всех
 #[tauri::command]
 async fn sign_out(app: AppHandle, auth: State<'_, Auth>, account: Option<String>) -> Result<()> {
@@ -307,6 +317,8 @@ pub fn run() {
             auth_status,
             save_client_config,
             sign_in,
+            sign_in_reopen,
+            sign_in_cancel,
             sign_out,
             google_request,
             open_main,

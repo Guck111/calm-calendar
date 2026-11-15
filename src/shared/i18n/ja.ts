@@ -63,6 +63,7 @@ export const ja: Dict = {
     tagline: "広告のないカレンダー。Google にログインすると予定が表示されます。",
     signIn: "Google でログイン",
     finishInBrowser: "ブラウザーでログインを完了してください…",
+    reopen: "ログインページをもう一度開く",
     tabHint: "タブが開かない場合は、ブラウザーが最小化されていないか確認してください。",
     changeClient: "OAuth クライアントを変更",
   },

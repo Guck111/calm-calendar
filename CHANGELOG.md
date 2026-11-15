@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### Changed
+
+- **Signing in**: while the app waits for the browser, "Open the sign-in page again" brings back a lost or closed Google tab, and "Cancel" stops waiting at once instead of after five minutes.
+
 ## 0.11.0 — 2026-11-13
 
 ### New

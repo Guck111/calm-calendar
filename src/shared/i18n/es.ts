@@ -68,6 +68,7 @@ export const es: Dict = {
     tagline: "Un calendario sin anuncios. Inicia sesión en Google para ver tus eventos.",
     signIn: "Iniciar sesión con Google",
     finishInBrowser: "Termina de iniciar sesión en el navegador…",
+    reopen: "Abrir de nuevo la página de inicio de sesión",
     tabHint: "Si no se abrió ninguna pestaña, mira si el navegador está minimizado.",
     changeClient: "Cambiar cliente OAuth",
   },

@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
+Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
 
 ## Contents
 
@@ -36,6 +36,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 ## Google accounts and sign-in
 
 - Sign-in happens in the system browser with OAuth and PKCE; the app never sees the Google password (`src-tauri/src/oauth.rs`).
+- While the app waits for the browser (up to five minutes), the sign-in screen and "Add account" offer "Open the sign-in page again" (the same Google page, for a lost or closed tab) and "Cancel" (stops waiting; not shown as an error) (`src/ui/SignInActions.tsx`).
 - Several Google accounts in one window: "Add account" at the bottom of the sidebar. Calendars are grouped by account, each group has "Sign out".
 - "Sign out" asks a second time ("Sign out?" in red); it goes back after 5 seconds, on Esc or when focus leaves. Signing out revokes the token at Google.
 - If Google stops accepting an account's sign-in, its group says so with "Sign in again"; the other accounts keep working.

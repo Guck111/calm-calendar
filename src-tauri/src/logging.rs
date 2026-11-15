@@ -93,8 +93,8 @@ pub fn open_folder(app: &AppHandle) -> Result<()> {
 /// Запись об ошибке команды: вид ошибки и текст без личных данных
 pub fn command_failed(what: &str, e: &Error) {
     match e {
-        // вход истёк — обычное дело, интерфейс сам предложит войти снова
-        Error::NotSignedIn => log::info!("{what}: {e}"),
+        // вход истёк — обычное дело, интерфейс сам предложит войти снова; отмену входа нажал человек
+        Error::NotSignedIn | Error::Cancelled => log::info!("{what}: {e}"),
         _ => log::warn!("{what}: {} — {e}", e.kind()),
     }
 }

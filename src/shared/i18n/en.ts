@@ -65,6 +65,7 @@ export const en: Dict = {
     tagline: "An ad-free calendar. Sign in to Google to see your events.",
     signIn: "Sign in with Google",
     finishInBrowser: "Finish signing in in your browser…",
+    reopen: "Open the sign-in page again",
     tabHint: "If no tab opened, check whether the browser is minimized.",
     changeClient: "Change OAuth client",
   },
