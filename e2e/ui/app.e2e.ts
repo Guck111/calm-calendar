@@ -103,6 +103,20 @@ test.describe("settings", () => {
 });
 
 test.describe("sign out", () => {
+  test("shows on hover or focus of its account, not all the time", async ({ page, t }) => {
+    await openApp(page);
+    const group = page.locator("aside").getByRole("group", { name: "work@example.com" });
+    const button = group.getByRole("button", { name: t.sidebar.signOut, exact: true });
+    const opacity = () => button.evaluate((el) => Number(getComputedStyle(el).opacity));
+    await page.mouse.move(600, 400);
+    await expect.poll(opacity).toBe(0);
+    await group.hover();
+    await expect.poll(opacity).toBe(1);
+    await page.mouse.move(600, 400);
+    await button.focus();
+    await expect.poll(opacity).toBe(1);
+  });
+
   test("asks a second time; Esc and leaving the button take it back", async ({ page, t }) => {
     await openApp(page);
     const group = page.locator("aside").getByRole("group", { name: "work@example.com" });

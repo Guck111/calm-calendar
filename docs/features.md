@@ -38,7 +38,7 @@ Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
 - Sign-in happens in the system browser with OAuth and PKCE; the app never sees the Google password (`src-tauri/src/oauth.rs`).
 - While the app waits for the browser (up to five minutes), the sign-in screen and "Add account" offer "Open the sign-in page again" (the same Google page, for a lost or closed tab) and "Cancel" (stops waiting; not shown as an error) (`src/ui/SignInActions.tsx`).
 - Several Google accounts in one window: "Add account" at the bottom of the sidebar. Calendars are grouped by account, each group has "Sign out".
-- "Sign out" asks a second time ("Sign out?" in red); it goes back after 5 seconds, on Esc or when focus leaves. Signing out revokes the token at Google.
+- "Sign out" shows when the mouse or the focus is on its account (Tab reaches it), so a rare action does not catch the eye all the time. It asks a second time ("Sign out?" in red, shown while asking); it goes back after 5 seconds, on Esc or when focus leaves. Signing out revokes the token at Google.
 - If Google stops accepting an account's sign-in, its group says so with "Sign in again"; the other accounts keep working.
 - Overlaps between accounts: a timed event that overlaps an event of another account gets a red edge, a warning sign and a note in its card ("Overlaps with: …"). All-day events, events marked "free" and the same meeting in both accounts don't count. Travel time counts.
 - Tokens are kept per account by the Rust side; the sign-in of version 0.4 is moved over on the first start.
