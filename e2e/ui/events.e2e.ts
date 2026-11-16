@@ -61,6 +61,22 @@ test.describe("event card", () => {
     await expect(eventBlock(page, "Spanish class")).toBeVisible();
   });
 
+  test("the Undo line stays while the focus is on it, even when the mouse leaves", async ({ page, t }) => {
+    await openApp(page);
+    await eventBlock(page, "Spanish class").click();
+    await dialog(page).getByRole("button", { name: t.editor.delete }).click();
+    const toast = undoLine(page);
+    const undo = toast.getByRole("button", { name: t.editor.undo });
+    await undo.focus();
+    await toast.hover();
+    await page.mouse.move(10, 10);
+    // the resume delay is 4 s: well past it, the line is still there because Undo has the focus
+    await page.waitForTimeout(5000);
+    await expect(undo).toBeVisible();
+    await undo.click();
+    await expect(eventBlock(page, "Spanish class")).toBeVisible();
+  });
+
   test("delete goes to Google when the Undo line closes", async ({ page, t }) => {
     await openApp(page);
     await eventBlock(page, "Spanish class").click();

@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { $undo, undoClicked, undoDismissed, undoPaused, undoResumed } from "../model/undo";
 import { t } from "../shared/i18n";
 import { Close } from "./icons";
@@ -30,6 +30,22 @@ export const UndoToast = () => {
     };
   }, [undo, undoIt, dismiss]);
 
+  // мышь и фокус держат строку независимо: таймер снова идёт, только когда ушли оба
+  const inside = useRef({ hover: false, focus: false });
+  const enter = (what: "hover" | "focus") => {
+    const was = inside.current.hover || inside.current.focus;
+    inside.current[what] = true;
+    if (!was) pause();
+  };
+  const leave = (what: "hover" | "focus") => {
+    inside.current[what] = false;
+    if (!inside.current.hover && !inside.current.focus) resume();
+  };
+  // новая строка — с чистого листа
+  useEffect(() => {
+    inside.current = { hover: false, focus: false };
+  }, [undo?.kind, undo?.title]);
+
   // вежливое объявление: экранный диктор прочитает строку, не забирая фокус. Не role="status" —
   // это роль полосы ошибок над календарём
   return (
@@ -38,10 +54,10 @@ export const UndoToast = () => {
         <div
           key={undo.kind + undo.title}
           className={s.toast}
-          onMouseEnter={() => pause()}
-          onMouseLeave={() => resume()}
-          onFocus={() => pause()}
-          onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && resume()}
+          onMouseEnter={() => enter("hover")}
+          onMouseLeave={() => leave("hover")}
+          onFocus={() => enter("focus")}
+          onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && leave("focus")}
         >
           <span className={s.text}>
             {undo.kind === "moved" ? t.editor.undoMoved(undo.title) : t.editor.undoDeleted(undo.title)}
