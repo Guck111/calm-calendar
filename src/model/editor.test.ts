@@ -6,6 +6,7 @@ import {
   $askScope,
   $draft,
   $editorError,
+  $editorOpen,
   $mode,
   $recurrenceEdited,
   applyChange,
@@ -234,5 +235,17 @@ describe("same series in two accounts", () => {
     rules.work.resolve(WEEKDAYS);
     await Promise.all(steps);
     expect(scope.getState($draft)).toMatchObject({ calendarId: "work", recurrence: WEEKDAYS, originalRecurrence: WEEKDAYS });
+  });
+});
+
+describe("what typing in the form updates", () => {
+  it("the 'form is open' flag doesn't change with every letter: the calendar under the form isn't redrawn", async () => {
+    const scope = fork();
+    const updates: boolean[] = [];
+    createWatch({ unit: $editorOpen.updates, scope, fn: (v) => void updates.push(v) });
+    await allSettled(draftOpened, { scope, params: base });
+    for (const title of ["L", "Lu", "Lunch"]) await allSettled(draftChanged, { scope, params: { title } });
+    await allSettled(editorClosed, { scope });
+    expect(updates).toEqual([true, false]);
   });
 });

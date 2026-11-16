@@ -292,6 +292,10 @@ export const $draft = createStore<EventDraft | null>(null)
   )
   .reset([editorClosed, saved, deleteRequested]);
 
+/** The card or form is open. Components that only need this subscribe to it, not to the whole draft:
+ *  every typed letter changes the draft */
+export const $editorOpen = $draft.map(Boolean);
+
 /** card opened with the Delete key: the delete button is already focused, Enter deletes */
 export const $deleteArmed = createStore(false)
   .on(deleteArmed, () => true)

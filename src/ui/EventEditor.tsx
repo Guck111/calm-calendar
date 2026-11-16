@@ -821,8 +821,10 @@ export const EventEditor = () => {
     scopeCancelled,
   ]);
 
+  // the listener depends on whether the form is open, not on the draft: typing doesn't re-subscribe it
+  const open = Boolean(draft);
   useEffect(() => {
-    if (!draft) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       // the occurrences question closes first
@@ -833,7 +835,7 @@ export const EventEditor = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [draft, mode, opened, ask, close, cancel, cancelScope]);
+  }, [open, mode, opened, ask, close, cancel, cancelScope]);
 
   if (!draft) return null;
 

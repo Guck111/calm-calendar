@@ -4,7 +4,7 @@ import { subscribe } from "../shared/api/bus";
 import { isRtl, t } from "../shared/i18n";
 import { fromDateKey } from "../shared/lib/date";
 import { $signedIn, $status, $statusError, appStarted, statusRetryClicked } from "../model/auth";
-import { $draft, draftOpened } from "../model/editor";
+import { $editorOpen, draftOpened } from "../model/editor";
 import { quickFocusRequested } from "../model/quick";
 import "../model/reminders";
 import type { EventDraft } from "../shared/api/types";
@@ -177,16 +177,16 @@ const StatusFailed = ({ message }: { message: string }) => {
 };
 
 export const App = () => {
-  const [status, statusError, signedIn, view, draft, loadError, offline] = useUnit([
+  const [status, statusError, signedIn, view, editorOpen, loadError, offline] = useUnit([
     $status,
     $statusError,
     $signedIn,
     $view,
-    $draft,
+    $editorOpen,
     $loadError,
     $offlineText,
   ]);
-  useAppEffects(signedIn, Boolean(draft));
+  useAppEffects(signedIn, editorOpen);
   useEventKeys(signedIn);
 
   if (!status) return statusError ? <StatusFailed message={statusError} /> : <div className={s.splash} />;
