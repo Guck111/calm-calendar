@@ -527,6 +527,26 @@ const saveFollowing = async (draft: EventDraft): Promise<void> => {
   }
 };
 
+/** Body of a single event save */
+const eventBody = (draft: EventDraft): Record<string, unknown> => ({
+  ...draftToBody(draft),
+  // a series occurrence has no rule of its own; for a regular event the rule turns it into a series
+  ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
+});
+
+/** Body fields as they were when the form opened (JSON): on save only the changed ones go to Google */
+export const bodyBaseline = (draft: EventDraft): Record<string, string> =>
+  Object.fromEntries(Object.entries(eventBody(draft)).map(([k, v]) => [k, JSON.stringify(v)]));
+
+/** Only fields changed in the form: a change made in Google meanwhile (another field) isn't overwritten
+ *  with the old value. Start and end go together, Google checks them as a pair */
+export const changedFields = (body: Record<string, unknown>, baseline?: Record<string, string>): Record<string, unknown> => {
+  if (!baseline) return body;
+  const out = Object.fromEntries(Object.entries(body).filter(([k, v]) => baseline[k] !== JSON.stringify(v)));
+  if ("start" in out || "end" in out) Object.assign(out, { start: body.start, end: body.end });
+  return out;
+};
+
 /** Fields of the request body that a form field writes */
 const BODY_FIELDS: Partial<Record<keyof EventDraft, string[]>> = {
   title: ["summary"],
@@ -561,11 +581,7 @@ export const moveEvent = (draft: EventDraft & { id: string }): Promise<void> => 
 
 export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promise<void> => {
   if (draft.recurringEventId && scope === "following") return saveFollowing(draft);
-  const body = {
-    ...draftToBody(draft),
-    // a series occurrence has no rule of its own; for a regular event the rule turns it into a series
-    ...(!draft.recurringEventId && draft.recurrence.length ? { recurrence: draft.recurrence } : {}),
-  };
+  const body = eventBody(draft);
   if (!draft.id) {
     await api(draft.calendarId, "POST", "", saveQuery(draft), body);
     return;
@@ -579,7 +595,10 @@ export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promi
     await api(calendarId, "POST", `${one(draft.id)}/move`, { destination: to.googleId });
     calendarId = draft.calendarId;
   }
-  await api(calendarId, "PATCH", one(draft.id), saveQuery(draft), body);
+  const patch = changedFields(body, draft.baseline);
+  // nothing changed: no request, so guests don't get an empty update
+  if (!Object.keys(patch).length) return;
+  await api(calendarId, "PATCH", one(draft.id), saveQuery(draft), patch);
 };
 
 export type ResponseStatus = NonNullable<Attendee["responseStatus"]>;

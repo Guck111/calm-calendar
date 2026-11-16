@@ -126,8 +126,8 @@ describe("event time zone from Google", () => {
       start: { dateTime: "2026-11-04T09:00:00-05:00", timeZone: NY },
       end: { dateTime: "2026-11-04T10:00:00-05:00", timeZone: NY },
     }) as CalendarEvent;
-    await saveEvent(applyChange(fromEvent(e, []), { title: "Новое" }), "this");
-    expect(patches()[0].start).toMatchObject({ dateTime: "2026-11-04T14:00:00.000Z", timeZone: NY });
+    await saveEvent(applyChange(fromEvent(e, []), { startTime: "10:00" }), "this");
+    expect(patches()[0].start).toMatchObject({ dateTime: "2026-11-04T15:00:00.000Z", timeZone: NY });
   });
 });
 

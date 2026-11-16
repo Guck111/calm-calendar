@@ -54,7 +54,7 @@ describe("travel time", () => {
     expect(call("PATCH")?.[4].extendedProperties).toEqual({ private: { [TRAVEL_KEY]: "45" } });
 
     googleRequest.mockClear();
-    await saveEvent(fromEvent(meeting({ extendedProperties: undefined, attendees: undefined })));
+    await saveEvent({ ...fromEvent(meeting({ extendedProperties: undefined, attendees: undefined })), title: "Новое" });
     expect(call("PATCH")?.[4]).not.toHaveProperty("extendedProperties");
 
     googleRequest.mockClear();
@@ -114,7 +114,7 @@ describe("guests", () => {
     expect(theirs.organizerSelf).toBe(false);
     const draft = fromEvent(theirs);
     expect(draft.guests).toBeUndefined();
-    await saveEvent(draft);
+    await saveEvent({ ...draft, title: "Новое" });
     expect(call("PATCH")?.[4]).not.toHaveProperty("attendees");
     expect(call("PATCH")?.[3]).toBeUndefined();
   });

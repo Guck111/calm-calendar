@@ -2,6 +2,7 @@ import { createEffect, createEvent, createStore, sample } from "effector";
 import { logError } from "../shared/lib/log";
 import { t } from "../shared/i18n";
 import {
+  bodyBaseline,
   deleteOccurrence,
   draftInstant,
   draftZone,
@@ -96,6 +97,11 @@ export const $series = createStore<{ calendarId: string; id: string; lines: stri
 /** Draft from an event. Time in the form follows the event's time zone clock, so that on save
  *  and drag the time zone from Google isn't replaced with the system one */
 export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraft => {
+  const draft = eventDraft(e, series);
+  return { ...draft, baseline: bodyBaseline(draft) };
+};
+
+const eventDraft = (e: CalendarEvent, series?: string[] | null): EventDraft => {
   const zone = e.timeZone ?? localTimeZone();
   // all-day event — just dates, it needs no time zone
   const start = e.allDay ? e.start : wallClock(e.start, zone);
@@ -144,6 +150,7 @@ export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft
   delete draft.originalStart;
   delete draft.originalRecurrence;
   delete draft.htmlLink;
+  delete draft.baseline;
   return {
     ...draft,
     calendarId: writable.includes(e.calendarId) ? e.calendarId : (writable[0] ?? e.calendarId),
@@ -214,19 +221,46 @@ export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): Even
   if (!startChanged) return "allDay" in patch ? followRule(draft, next) : next;
 
   if (next.allDay) {
+    if (!validDate(next.startDate)) return next;
     const span = daysBetween(fromDateKey(draft.startDate), fromDateKey(draft.endDate));
     const start = fromDateKey(next.startDate);
     return followRule(draft, { ...next, endDate: toDateKey(addDays(start, Math.max(0, span))) });
   }
+  // the start is being typed or was cleared: the end stays as is, validate() will show the error
+  if (!validDate(next.startDate) || (!next.allDay && !validTime(next.startTime))) return next;
   const oldStart = combineDateTime(draft.startDate, draft.startTime);
   const oldEnd = combineDateTime(draft.endDate, draft.endTime);
-  const duration = Math.max(15, (oldEnd.getTime() - oldStart.getTime()) / 60_000);
+  const span = (oldEnd.getTime() - oldStart.getTime()) / 60_000;
+  const duration = Number.isFinite(span) ? Math.max(15, span) : 60;
   const end = addMinutes(combineDateTime(next.startDate, next.startTime), duration);
   return followRule(draft, { ...next, endDate: toDateKey(end), endTime: toTimeKey(end) });
 };
 
+/** "2026-02-30" is not a date: Date would quietly turn it into March 2 */
+const validDate = (key: string): boolean => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!m) return false;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+};
+
+const validTime = (key: string): boolean => {
+  const m = /^(\d{2}):(\d{2})$/.exec(key);
+  return Boolean(m && +m[1] <= 23 && +m[2] <= 59);
+};
+
+/** the time zone clock never shows this time (the hour skipped when switching to summer time) */
+const skippedTime = (d: EventDraft, bound: "start" | "end"): boolean => {
+  // the form shows both start and end by the clock of the draft time zone
+  const wall = wallClock(draftInstant(d, bound), draftZone(d));
+  return toDateKey(wall) !== d[`${bound}Date`] || toTimeKey(wall) !== d[`${bound}Time`];
+};
+
 export const validate = (d: EventDraft): string | null => {
   if (!d.calendarId) return t.errors.noWritableCalendar;
+  if (!validDate(d.startDate) || !validDate(d.endDate)) return t.errors.checkDateTime;
+  if (!d.allDay && (!validTime(d.startTime) || !validTime(d.endTime))) return t.errors.checkDateTime;
+  if (!d.allDay && (skippedTime(d, "start") || skippedTime(d, "end"))) return t.errors.checkDateTime;
   const start = d.allDay ? fromDateKey(d.startDate) : draftInstant(d, "start");
   const end = d.allDay ? fromDateKey(d.endDate) : draftInstant(d, "end");
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return t.errors.checkDateTime;
@@ -361,8 +395,9 @@ sample({
 
 /** the question of which series occurrences to apply save or delete to is open */
 export const $askScope = createStore<"save" | "delete" | null>(null)
-  // not via scopeChosen: the answer is still needed to pick save or delete
-  .reset([saveFx, deleteRequested, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
+  // not via scopeChosen: the answer is still needed to pick save or delete.
+  // A change in the form withdraws the question: Save checks the form again
+  .reset([saveFx, deleteRequested, scopeCancelled, draftChanged, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
 
 /** the rule in the form was changed: then editing is possible only for "this and following" */
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
@@ -424,10 +459,11 @@ sample({
   target: deleteRequested,
 });
 
+// the draft is checked again: the question doesn't let an invalid form through
 sample({
   clock: scopeChosen,
-  source: { ask: $askScope, draft: $draft },
-  filter: ({ ask, draft }) => ask === "save" && Boolean(draft),
+  source: { ask: $askScope, draft: $draft, ok: $canSave },
+  filter: ({ ask, draft, ok }) => ask === "save" && Boolean(draft) && ok,
   fn: ({ draft }, scope) => ({ draft: draft as EventDraft, scope }),
   target: saveFx,
 });
