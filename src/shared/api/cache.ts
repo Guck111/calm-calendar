@@ -50,8 +50,15 @@ const save = (data: Stored): void => {
 export const cacheKey = (path: string, query?: Record<string, string>): string =>
   query ? `${path}?${new URLSearchParams(query).toString()}` : path;
 
+/** Storage as it is now. Every window keeps its own copy in memory, and another window may have written fresh
+ *  responses or cleared the cache since: a write on top of an old copy would erase them or bring data back */
+const current = (): Stored => {
+  if (storage()) memory = null;
+  return load();
+};
+
 export const remember = (key: string, body: unknown, now = Date.now()): void => {
-  const data = { ...load(), [key]: { at: now, body } };
+  const data = { ...current(), [key]: { at: now, body } };
   const keys = Object.keys(data);
   if (keys.length > MAX_ENTRIES) {
     keys
@@ -62,11 +69,7 @@ export const remember = (key: string, body: unknown, now = Date.now()): void => 
   save(data);
 };
 
-export const recall = (key: string): CacheEntry | undefined => {
-  // another window could have written fresh responses: reread the storage if it exists
-  if (storage()) memory = null;
-  return load()[key];
-};
+export const recall = (key: string): CacheEntry | undefined => current()[key];
 
 export const clearCache = (): void => {
   memory = {};

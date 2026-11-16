@@ -23,6 +23,7 @@ import {
   editorClosed,
   saveClicked,
   scopeCancelled,
+  sameSeries,
   scopeChosen,
 } from "../model/editor";
 import { openExternal } from "../shared/api/open";
@@ -131,7 +132,8 @@ const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
 /** "Every week, on Mon and Wed" for a series occurrence; while the rule is loading — just "recurring" */
 const SeriesNote = ({ event }: { event: CalendarEvent }) => {
   const series = useUnit($series);
-  const lines = series?.id === event.recurringEventId ? series?.lines : null;
+  const own = series && event.recurringEventId && sameSeries(series, { calendarId: event.calendarId, id: event.recurringEventId });
+  const lines = own ? series.lines : null;
   // weekdays in the rule follow the event's time zone clock
   const zone = event.allDay ? undefined : event.timeZone;
   const start = zone ? wallClock(event.start, zone) : event.start;
@@ -631,7 +633,11 @@ const EventForm = () => {
   // Google doesn't allow moving a single occurrence to another calendar
   const calendarLocked = !isNew && Boolean(draft.recurringEventId);
   // the series rule is still loading; if it didn't load, the field isn't shown: editing one occurrence works without it
-  const seriesFailed = Boolean(series?.failed && series.id === draft.recurringEventId);
+  const seriesFailed = Boolean(
+    series?.failed &&
+      draft.recurringEventId &&
+      sameSeries(series, { calendarId: draft.originalCalendarId ?? draft.calendarId, id: draft.recurringEventId }),
+  );
   const seriesLoading = Boolean(draft.recurringEventId) && draft.originalRecurrence === undefined && !seriesFailed;
   const formKey = draft.id ?? "new";
   const more = toggled?.key === formKey ? toggled.open : usesMore(draft);
@@ -815,8 +821,10 @@ export const EventEditor = () => {
     scopeCancelled,
   ]);
 
+  // the listener depends on whether the form is open, not on the draft: typing doesn't re-subscribe it
+  const open = Boolean(draft);
   useEffect(() => {
-    if (!draft) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       // the occurrences question closes first
@@ -827,7 +835,7 @@ export const EventEditor = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [draft, mode, opened, ask, close, cancel, cancelScope]);
+  }, [open, mode, opened, ask, close, cancel, cancelScope]);
 
   if (!draft) return null;
 

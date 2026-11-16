@@ -29,6 +29,14 @@ export const saveClientFx = createEffect<{ clientId: string; clientSecret: strin
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
 
+/** Sign-in status couldn't be read: before the first answer the window would stay on the blank splash.
+ *  Message of the last failure; null — read fine or reading again */
+export const $statusError = createStore<string | null>(null)
+  .on(fetchStatusFx.failData, (_, e) => bridge.toAppError(e).message)
+  .reset([fetchStatusFx, fetchStatusFx.done]);
+/** "Retry" on the splash */
+export const statusRetryClicked = createEvent();
+
 /** all added accounts, including those whose sign-in expired */
 export const $accounts = $status.map((s): Account[] => (s?.clientSource === "none" ? [] : (s?.accounts ?? [])));
 
@@ -55,7 +63,7 @@ export const $authError = createStore<string | null>(null)
 
 export const $signingIn = signInFx.pending;
 
-sample({ clock: [appStarted, sessionLost], target: fetchStatusFx });
+sample({ clock: [appStarted, sessionLost, statusRetryClicked], target: fetchStatusFx });
 sample({ clock: signInClicked, filter: signInFx.pending.map((p) => !p), target: signInFx });
 sample({ clock: signInReopenClicked, target: reopenSignInFx });
 sample({ clock: signInCancelClicked, target: cancelSignInFx });

@@ -1,4 +1,5 @@
 // Color of a single event (Google colorId): reading, form, saving, on-screen color
+import { allSettled, fork } from "effector";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Calendar, CalendarEvent } from "../shared/api/types";
 
@@ -9,7 +10,7 @@ vi.mock(import("../shared/api/bridge"), async (importOriginal) => ({
 }));
 
 const { draftToBody, saveEvent, toCalendarEvent } = await import("../shared/api/calendar");
-const { applyChange, fromEvent } = await import("./editor");
+const { applyChange, eventPatched, fromEvent, moveFx } = await import("./editor");
 const { EVENT_COLORS, eventColor } = await import("../shared/lib/colors");
 
 beforeEach(() => {
@@ -64,5 +65,26 @@ describe("event color", () => {
     const { id: _, ...draft } = fromEvent(event());
     await saveEvent(draft);
     expect(call("POST")?.[4]).not.toHaveProperty("colorId");
+  });
+});
+
+describe("quick changes in a row", () => {
+  const bodies = () => googleRequest.mock.calls.filter((c) => c[1] === "PATCH").map((c) => c[4] as Record<string, unknown>);
+
+  it("a new color and a drag right after: each sends only its own fields", async () => {
+    const yoga = event({ colorId: "5" });
+    const scope = fork();
+    const hour = 3_600_000;
+    // both start from the same copy of the event, before Google answered the first one
+    await Promise.all([
+      allSettled(eventPatched, { scope, params: { event: yoga, patch: { colorId: "11" } } }),
+      allSettled(moveFx, {
+        scope,
+        params: { event: yoga, start: new Date(yoga.start.getTime() + hour), end: new Date(yoga.end.getTime() + hour) },
+      }),
+    ]);
+    const [color, move] = bodies();
+    expect(color).toEqual({ colorId: "11" });
+    expect(Object.keys(move).sort()).toEqual(["end", "start"]);
   });
 });

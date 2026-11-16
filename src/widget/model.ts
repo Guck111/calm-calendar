@@ -85,8 +85,29 @@ export const $calendarsTried = createStore(false).on(fetchCalendarsFx.finally, (
 
 export const $colors = $calendars.map((list) => Object.fromEntries(list.map((c) => [c.id, c.color])));
 
+// Responses are applied only for the latest request: two refreshes may finish in either order, and the month may
+// return to one shown before (A → B → A), so neither the order nor the month tells a stale response apart.
+// Effector hands the same params object to .done, so the latest one is kept and compared by reference.
+type UpcomingRequest = Parameters<typeof fetchUpcomingFx>[0];
+type MonthRequest = Parameters<typeof fetchMonthFx>[0];
+const $upcomingRequest = createStore<UpcomingRequest | null>(null, { serialize: "ignore" }).on(fetchUpcomingFx, (_, p) => p);
+const $monthRequest = createStore<MonthRequest | null>(null, { serialize: "ignore" }).on(fetchMonthFx, (_, p) => p);
+
+const upcomingLoaded = sample({
+  clock: fetchUpcomingFx.done,
+  source: $upcomingRequest,
+  filter: (latest, { params }) => latest === params,
+  fn: (_, { result }) => result,
+});
+const upcomingFailed = sample({
+  clock: fetchUpcomingFx.fail,
+  source: $upcomingRequest,
+  filter: (latest, { params }) => latest === params,
+  fn: (_, { error }) => error,
+});
+
 export const $upcoming = createStore<CalendarEvent[]>([])
-  .on(fetchUpcomingFx.doneData, (_, e) => e)
+  .on(upcomingLoaded, (_, e) => e)
   .reset(signedOut);
 
 export const $monthEvents = createStore<CalendarEvent[]>([]).reset(signedOut);
@@ -95,8 +116,8 @@ export const $monthEvents = createStore<CalendarEvent[]>([]).reset(signedOut);
 sample({ clock: $month.updates, fn: () => [], target: $monthEvents });
 
 export const $error = createStore<string | null>(null)
-  .on(fetchUpcomingFx.doneData, () => null)
-  .on([fetchCalendarsFx.failData, fetchUpcomingFx.failData], (_, e) => e.message);
+  .on(upcomingLoaded, () => null)
+  .on([fetchCalendarsFx.failData, upcomingFailed], (_, e) => e.message);
 
 export const $loading = fetchUpcomingFx.pending;
 
@@ -124,12 +145,12 @@ sample({
   target: fetchMonthFx,
 });
 
-// a response for a month already paged past is not applied
+// a response for a month already paged past, or for an older load of the same month, is not applied
 sample({
-  clock: fetchMonthFx.doneData,
-  source: $month,
-  filter: (month, r) => month.getTime() === r.month.getTime(),
-  fn: (_, r) => r.events,
+  clock: fetchMonthFx.done,
+  source: { month: $month, latest: $monthRequest },
+  filter: ({ month, latest }, { params, result }) => latest === params && month.getTime() === result.month.getTime(),
+  fn: (_, { result }) => result.events,
   target: $monthEvents,
 });
 
@@ -143,7 +164,7 @@ sample({
 });
 
 sample({
-  clock: [fetchCalendarsFx.failData, fetchUpcomingFx.failData],
+  clock: [fetchCalendarsFx.failData, upcomingFailed],
   filter: (e) => e.kind === "not_signed_in",
   target: authChanged,
 });

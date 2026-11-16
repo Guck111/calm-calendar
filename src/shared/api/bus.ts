@@ -12,8 +12,14 @@ export const broadcast = (name: BusEvent, payload?: unknown): void => {
 
 export const subscribe = <T>(name: BusEvent, handler: (payload: T) => void): (() => void) => {
   if (!inTauri) return () => {};
-  const unlisten = listen<T>(name, (e) => handler(e.payload));
-  return () => void unlisten.then((off) => off());
+  // Registration in Tauri is asynchronous: if the component unmounts before it ends, the listener is removed
+  // only later, and events in between must not reach the handler of an unmounted component
+  let active = true;
+  const unlisten = listen<T>(name, (e) => active && handler(e.payload));
+  return () => {
+    active = false;
+    unlisten.then((off) => off()).catch(() => {});
+  };
 };
 
 /** show the main window; date in the "2026-11-04" format opens that day */

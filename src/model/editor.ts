@@ -6,6 +6,8 @@ import {
   draftInstant,
   draftZone,
   loadRecurrence,
+  moveEvent,
+  patchEvent,
   recurrenceEdited,
   respondToEvent,
   saveEvent,
@@ -61,7 +63,7 @@ export const saveFx = createEffect<Change, void, AppError>(({ draft, scope }) =>
 /** dragging in the grid: save the new time right away, without the form; for a series — only this occurrence */
 export const eventMoved = createEvent<{ event: CalendarEvent; start: Date; end: Date }>();
 export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
-  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+  ({ event, start, end }) => moveEvent({ ...fromEvent({ ...event, start, end }), id: event.id }),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
 /** Deletion chosen: the card closes, the event disappears from the screen, and goes to Google
@@ -70,20 +72,26 @@ export const deleteRequested = createEvent<Change & { event: CalendarEvent }>();
 
 /** a single field without the form (Ctrl+K menu: Google Meet, color); for a series — only this occurrence */
 export const eventPatched = createEvent<{ event: CalendarEvent; patch: Partial<EventDraft> }>();
-export const patchFx = createEffect<EventDraft, void, AppError>((draft) => saveEvent(draft));
+export const patchFx = createEffect<{ draft: EventDraft & { id: string }; patch: Partial<EventDraft> }, void, AppError>(
+  ({ draft, patch }) => patchEvent(draft, Object.keys(patch) as (keyof EventDraft)[]),
+);
 
 /** the series rule is stored on the master event: load it when an occurrence is opened */
 export const loadSeriesFx = createEffect<{ calendarId: string; id: string }, string[], AppError>(({ calendarId, id }) =>
   loadRecurrence(calendarId, id),
 );
 
+/** Series id alone doesn't tell series apart: copies of one invitation in calendars of different accounts share it */
+export const sameSeries = (a: { calendarId: string; id: string }, b: { calendarId: string; id: string }): boolean =>
+  a.calendarId === b.calendarId && a.id === b.id;
+
 /** rule of the currently open series: lines — null while loading and on error */
-export const $series = createStore<{ id: string; lines: string[] | null; failed: boolean } | null>(null)
-  .on(loadSeriesFx, (_, { id }) => ({ id, lines: null, failed: false }))
+export const $series = createStore<{ calendarId: string; id: string; lines: string[] | null; failed: boolean } | null>(null)
+  .on(loadSeriesFx, (_, { calendarId, id }) => ({ calendarId, id, lines: null, failed: false }))
   .on(loadSeriesFx.done, (state, { params, result }) =>
-    state?.id === params.id ? { ...state, lines: result } : state,
+    state && sameSeries(state, params) ? { ...state, lines: result } : state,
   )
-  .on(loadSeriesFx.fail, (state, { params }) => (state?.id === params.id ? { ...state, failed: true } : state));
+  .on(loadSeriesFx.fail, (state, { params }) => (state && sameSeries(state, params) ? { ...state, failed: true } : state));
 
 /** Draft from an event. Time in the form follows the event's time zone clock, so that on save
  *  and drag the time zone from Google isn't replaced with the system one */
@@ -226,10 +234,42 @@ export const validate = (d: EventDraft): string | null => {
   return null;
 };
 
+/** Number of the card or form on screen: grows each time one opens or closes. The form can be closed while a save is
+ *  on the way and another event opened: the end of that save must not close or mark the new form */
+const $editorSession = createStore(0).on(
+  [eventOpened, slotClicked, createClicked, draftOpened, editorClosed, deleteRequested],
+  (n) => n + 1,
+);
+/** form whose save is on the way (one at a time: $busy blocks the next) */
+const $savingSession = createStore(0);
+sample({ clock: saveFx, source: $editorSession, target: $savingSession });
+
+const sameForm = ({ session, saving }: { session: number; saving: number }) => session === saving;
+/** the save finished while its form is still open */
+const saved = sample({
+  clock: saveFx.done,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: sameForm,
+});
+const saveFailedHere = sample({
+  clock: saveFx.failData,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: sameForm,
+  fn: (_, e) => e,
+});
+// the form is already closed: the error goes to the bar above the calendar
+sample({
+  clock: saveFx.failData,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: (s) => !sameForm(s),
+  fn: (_, e) => t.errors.changeFailed(e.message),
+  target: actionFailed,
+});
+
 /** event opened for viewing (before switching to edit) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
-  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteRequested]);
+  .reset([slotClicked, createClicked, draftOpened, editorClosed, saved, deleteRequested]);
 
 /** viewing an existing event or the edit/create form */
 export const $mode = createStore<"view" | "edit">("view")
@@ -243,11 +283,18 @@ export const $draft = createStore<EventDraft | null>(null)
   .on(draftChanged, (d, patch) => (d ? applyChange(d, patch) : d))
   // series rule arrived: fill it in if the user hasn't started changing it yet
   .on(loadSeriesFx.done, (d, { params, result }) =>
-    d && d.recurringEventId === params.id && d.originalRecurrence === undefined
+    d &&
+    d.recurringEventId &&
+    sameSeries({ calendarId: d.originalCalendarId ?? d.calendarId, id: d.recurringEventId }, params) &&
+    d.originalRecurrence === undefined
       ? { ...d, recurrence: result, originalRecurrence: result }
       : d,
   )
-  .reset([editorClosed, saveFx.done, deleteRequested]);
+  .reset([editorClosed, saved, deleteRequested]);
+
+/** The card or form is open. Components that only need this subscribe to it, not to the whole draft:
+ *  every typed letter changes the draft */
+export const $editorOpen = $draft.map(Boolean);
 
 /** card opened with the Delete key: the delete button is already focused, Enter deletes */
 export const $deleteArmed = createStore(false)
@@ -262,6 +309,7 @@ const duplicated = sample({
   fn: ({ opened, writable }) => duplicateDraft(opened as CalendarEvent, writable.map((c) => c.id)),
 });
 $draft.on(duplicated, (_, d) => d);
+$editorSession.on(duplicated, (n) => n + 1);
 
 sample({
   clock: rsvpClicked,
@@ -289,7 +337,8 @@ sample({
   filter: ({ opened }) => Boolean(opened),
   fn: ({ opened, series }) => {
     const e = opened as CalendarEvent;
-    return fromEvent(e, series?.id === e.recurringEventId ? series?.lines : null);
+    const own = series && e.recurringEventId && sameSeries(series, { calendarId: e.calendarId, id: e.recurringEventId });
+    return fromEvent(e, own ? series.lines : null);
   },
   target: $draft,
 });
@@ -319,7 +368,7 @@ export const $askScope = createStore<"save" | "delete" | null>(null)
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
-  .on([saveFx.failData, rsvpFx.failData], (_, e) => e.message)
+  .on([saveFailedHere, rsvpFx.failData], (_, e) => e.message)
   .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteRequested, duplicated]);
 
 // deletion goes to Google when the card is already closed: its error goes to the bar above the calendar
@@ -404,7 +453,11 @@ sample({
   target: actionFailed,
 });
 
-sample({ clock: eventPatched, fn: ({ event, patch }) => ({ ...fromEvent(event), ...patch }), target: patchFx });
+sample({
+  clock: eventPatched,
+  fn: ({ event, patch }) => ({ draft: { ...fromEvent(event), ...patch, id: event.id }, patch }),
+  target: patchFx,
+});
 sample({ clock: patchFx.failData, fn: (e) => t.errors.changeFailed(e.message), target: actionFailed });
 // on delete error the event returns to the screen after reloading
 sample({ clock: deleteFx.failData, fn: (e) => t.errors.deleteFailed(e.message), target: actionFailed });

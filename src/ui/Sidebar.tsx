@@ -38,7 +38,8 @@ const MiniMonth = () => {
   ]);
   // the mini calendar pages by itself, but catches up with the main view when it changes
   const [month, setMonth] = useState(() => startOfMonth(cursor));
-  useEffect(() => setMonth(startOfMonth(cursor)), [cursor]);
+  // the same month is kept as is: a new object would redraw the mini calendar once more on every date pick
+  useEffect(() => setMonth((m) => (isSameMonth(m, cursor) ? m : startOfMonth(cursor))), [cursor]);
 
   return (
     <section className={s.mini}>

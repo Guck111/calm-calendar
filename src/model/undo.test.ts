@@ -1,12 +1,13 @@
 // "Undo" after move and delete: deletion goes to Google not immediately, but when the "Undo" bar has disappeared
 import { allSettled, createWatch, fork, scopeBind } from "effector";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 
 type Change = { draft: EventDraft; scope: Scope };
 import { toCalendarEvent } from "../shared/api/calendar";
 import { deleteClicked, deleteFx, eventMoved, eventOpened, moveFx, scopeChosen } from "./editor";
-import { $events, fetchEventsFx, reloadRequested } from "./events";
+import { $events, $loadError, fetchEventsFx, reloadRequested } from "./events";
+import { t } from "../shared/i18n";
 import { $visibility } from "./calendars";
 import { fetchStatusFx, signOutClicked, signOutFx } from "./auth";
 import { $deleteJournal, $leftoverDeletes, $undo, persistDeleteFx, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
@@ -477,5 +478,39 @@ describe("deletion log: each deletion on its own", () => {
     accounts = [{ email: "me@example.com", signedIn: true }];
     await allSettled(fetchStatusFx, { scope });
     expect(deleted).toHaveLength(1);
+  });
+});
+
+describe("deletion log that doesn't fit on disk", () => {
+  const change = { draft: { id: "e1", calendarId: "c" } as EventDraft, scope: "this" as Scope };
+  /** storage that has room only after the old log is removed, or none at all */
+  const stubStorage = (room: "after-remove" | "none") => {
+    const data = new Map<string, string>([["calm.pendingDeletes", "[old]"]]);
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => data.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        if (room === "none" || data.has(k)) throw new Error("QuotaExceededError");
+        data.set(k, v);
+      },
+      removeItem: (k: string) => void data.delete(k),
+    });
+    return data;
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("the old copy is dropped and the log written again", async () => {
+    const data = stubStorage("after-remove");
+    const scope = fork();
+    await allSettled(persistDeleteFx, { scope, params: [change] });
+    expect(JSON.parse(data.get("calm.pendingDeletes") ?? "null")).toEqual([change]);
+    expect(scope.getState($loadError)).toBeNull();
+  });
+
+  it("no room at all: the person is told, and an undone deletion doesn't stay on disk", async () => {
+    const data = stubStorage("none");
+    const scope = fork();
+    await allSettled(persistDeleteFx, { scope, params: [change] });
+    expect(scope.getState($loadError)).toBe(t.errors.deleteNotSaved);
+    expect(data.has("calm.pendingDeletes")).toBe(false);
   });
 });

@@ -55,3 +55,20 @@
   height: 100%;
   background: var(--bg);
 }
+
+.statusFailed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-inline: 24px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+.statusFailed strong {
+  color: var(--text);
+  font-size: 15px;
+}

@@ -53,6 +53,7 @@ export const ja: Dict = {
     glassFailed: "ガラス効果を切り替えられませんでした",
     offline: (when: string) => `オフラインです。${when} 時点のデータを表示しています`,
     otherAccount: "予定を別の Google アカウントのカレンダーに移動することはできません",
+    deleteNotSaved: "削除をディスクに保存できませんでした。Google に届くまでアプリを閉じないでください",
     accountsFailed: (emails: string) => `次のアカウントのカレンダーを読み込めませんでした: ${emails}`,
   },
   auth: {
@@ -189,6 +190,8 @@ export const ja: Dict = {
     label: "予定を検索",
     searching: "検索中…",
     nothing: "見つかりませんでした",
+    failed: (message: string) => `検索できませんでした: ${message}`,
+    partial: (names: string) => `応答しなかったカレンダー: ${names}`,
   },
   settings: {
     theme: "テーマ",

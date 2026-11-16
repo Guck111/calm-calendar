@@ -53,6 +53,7 @@ export const hi: Dict = {
     glassFailed: "ग्लास इफ़ेक्ट बदला नहीं जा सका",
     offline: (when: string) => `ऑफ़लाइन। ${when} का डेटा दिख रहा है`,
     otherAccount: "इवेंट को दूसरे Google खाते के कैलेंडर में नहीं ले जाया जा सकता",
+    deleteNotSaved: "हटाना डिस्क पर सहेजा नहीं जा सका। Google तक पहुँचने तक ऐप खुला रखें",
     accountsFailed: (emails: string) => `इस खाते के कैलेंडर लोड नहीं हुए: ${emails}`,
   },
   auth: {
@@ -189,6 +190,8 @@ export const hi: Dict = {
     label: "इवेंट खोजें",
     searching: "खोज रहे हैं…",
     nothing: "कुछ नहीं मिला",
+    failed: (message: string) => `खोज नहीं हो सकी: ${message}`,
+    partial: (names: string) => `कुछ कैलेंडर ने जवाब नहीं दिया: ${names}`,
   },
   settings: {
     theme: "थीम",

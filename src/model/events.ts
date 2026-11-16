@@ -9,7 +9,7 @@ import { findConflicts, type Conflicts } from "../shared/lib/conflicts";
 import { mergeSharedMeetings } from "../shared/lib/shared-meetings";
 import { logError } from "../shared/lib/log";
 import { $signedIn, sessionLost, signOutFx } from "./auth";
-import { $failedAccounts, $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
+import { $failedAccounts, $visibleCalendars, calendarsFailed, calendarsRequested, fetchCalendarsFx } from "./calendars";
 import { $range } from "./view";
 
 /** reload calendars and events ("refresh" button, returning to the window) */
@@ -20,8 +20,6 @@ export const reloadRequested = createEvent();
 type Request = { calendars: Calendar[]; range: DateRange; id: number };
 /** lost — sign-in expired in some account, the others loaded */
 type Result = { events: CalendarEvent[]; failed: string[]; lost: boolean; id: number };
-
-let lastRequestId = 0;
 
 export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ calendars, range, id }) => {
   const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
@@ -68,11 +66,32 @@ const $hidden = createStore<Hidden[]>([])
   .on(hidingEnded, (list, key) => list.filter((h) => h.key !== key))
   .reset(signOutFx.finally);
 
-// a response to a stale request (already paged further) is not applied; hidden ones are not shown
-const loaded = sample({
+/** Number of the latest event request. A response to an older one is not applied: the week was already paged
+ *  further, or the person signed out while it was on the way */
+export const $eventsRequestId = createStore(0)
+  .on(fetchEventsFx, (_, r) => r.id)
+  .on(signOutFx, (id) => id + 1);
+
+/** response to the latest request */
+export const eventsLoaded = sample({
   clock: fetchEventsFx.doneData,
+  source: $eventsRequestId,
+  filter: (id, r) => r.id === id,
+  fn: (_, r) => r,
+});
+
+/** failure of the latest request; a late failure of an older one must not cover a week that already loaded */
+export const eventsFailed = sample({
+  clock: fetchEventsFx.fail,
+  source: $eventsRequestId,
+  filter: (id, { params }) => params.id === id,
+  fn: (_, { error }) => error,
+});
+
+// hidden ones are not shown
+const loaded = sample({
+  clock: eventsLoaded,
   source: $hidden,
-  filter: (_, r) => r.id === lastRequestId,
   fn: (hidden, r) => r.events.filter((e) => !hidden.some((h) => hides(h, e))),
 });
 
@@ -89,12 +108,9 @@ export const $conflicts = $events.map((list): Conflicts => findConflicts(list));
 export const $loading = combine(fetchEventsFx.pending, fetchCalendarsFx.pending, (a, b) => a || b);
 
 const $eventsError = createStore<string | null>(null)
-  .on(fetchEventsFx.doneData, (state, r) => {
-    if (r.id !== lastRequestId) return state;
-    return r.failed.length ? t.errors.calendarsFailed(r.failed.join(", ")) : null;
-  })
-  .on(fetchEventsFx.failData, (_, e) => e.message)
-  .on(fetchCalendarsFx.failData, (_, e) => e.message)
+  .on(eventsLoaded, (_, r) => (r.failed.length ? t.errors.calendarsFailed(r.failed.join(", ")) : null))
+  .on(eventsFailed, (_, e) => e.message)
+  .on(calendarsFailed, (_, e) => e.message)
   .on(actionFailed, (_, m) => m)
   .reset(signOutFx.finally);
 
@@ -105,9 +121,9 @@ export const $loadError = combine($eventsError, $failedAccounts, (error, account
 
 sample({
   clock: [$range.updates, $visibleCalendars.updates, reloadRequested],
-  source: { signedIn: $signedIn, calendars: $visibleCalendars, range: $range },
+  source: { signedIn: $signedIn, calendars: $visibleCalendars, range: $range, id: $eventsRequestId },
   filter: ({ signedIn }) => signedIn,
-  fn: ({ calendars, range }) => ({ calendars, range, id: ++lastRequestId }),
+  fn: ({ calendars, range, id }) => ({ calendars, range, id: id + 1 }),
   target: fetchEventsFx,
 });
 
@@ -117,12 +133,12 @@ sample({ clock: refreshRequested, target: calendarsRequested });
 refreshRequested.watch(forgetFeeds);
 
 sample({
-  clock: [fetchEventsFx.failData, fetchCalendarsFx.failData],
+  clock: [eventsFailed, calendarsFailed],
   filter: (e) => e.kind === "not_signed_in" || e.kind === "not_configured",
   target: sessionLost,
 });
 
-sample({ clock: fetchEventsFx.doneData, filter: (r) => r.lost, target: sessionLost });
+sample({ clock: eventsLoaded, filter: (r) => r.lost, target: sessionLost });
 
 // failures of the UI itself (not Google responses — Rust logs those) go to the log
 fetchEventsFx.failData.watch((e) => e.kind === "other" && logError("loading events failed", e));

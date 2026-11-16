@@ -55,6 +55,7 @@ export const en: Dict = {
     glassFailed: "Couldn't change the glass effect",
     offline: (when: string) => `Offline. Showing data from ${when}`,
     otherAccount: "An event can't be moved to a calendar of another Google account",
+    deleteNotSaved: "Couldn't save the pending deletion on disk. Keep the app open until it reaches Google",
     accountsFailed: (emails: string) => `Couldn't load the calendars of: ${emails}`,
   },
   auth: {
@@ -194,6 +195,8 @@ export const en: Dict = {
     label: "Search events",
     searching: "Searching…",
     nothing: "Nothing found",
+    failed: (message: string) => `Couldn't search: ${message}`,
+    partial: (names: string) => `Some calendars didn't respond: ${names}`,
   },
   settings: {
     theme: "Theme",

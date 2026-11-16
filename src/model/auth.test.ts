@@ -6,12 +6,15 @@ import {
   $authError,
   $needsClient,
   $signedIn,
+  $status,
+  $statusError,
   cancelSignInFx,
   fetchStatusFx,
   reopenSignInFx,
   signInCancelClicked,
   signInFx,
   signInReopenClicked,
+  statusRetryClicked,
 } from "./auth";
 
 const run = async (clientSource: AuthStatus["clientSource"], accounts: Account[]) => {
@@ -68,5 +71,27 @@ describe("sign-in state", () => {
 
   it("if sign-in expired everywhere, show the sign-in screen", async () => {
     expect(await run("build", [{ ...me, signedIn: false }])).toMatchObject({ signedIn: false, active: [] });
+  });
+});
+
+describe("sign-in status can't be read", () => {
+  it("the failure is shown, and Retry reads the status again", async () => {
+    let fail = true;
+    const scope = fork({
+      handlers: [
+        [fetchStatusFx, async () => {
+          if (fail) throw { kind: "other", message: "storage locked" };
+          return { clientSource: "file", accounts: [me] };
+        }],
+      ],
+    });
+    await allSettled(fetchStatusFx, { scope });
+    expect(scope.getState($status)).toBeNull();
+    expect(scope.getState($statusError)).toBe("storage locked");
+
+    fail = false;
+    await allSettled(statusRetryClicked, { scope });
+    expect(scope.getState($statusError)).toBeNull();
+    expect(scope.getState($signedIn)).toBe(true);
   });
 });
