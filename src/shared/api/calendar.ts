@@ -309,10 +309,11 @@ export const sortByRelevance = (events: CalendarEvent[], now: Date): CalendarEve
 export const draftToBody = (draft: EventDraft) => {
   // дата и время в форме — по часам пояса события; у существующего события это его пояс из Google
   const zone = draftZone(draft);
-  const time = (date: string, timeKey: string, label = zone): RawTime | Record<string, string | null> =>
+  const original = draft.originalTimes?.zone === zone ? draft.originalTimes : undefined;
+  const time = (date: string, timeKey: string, label: string, at?: Date): RawTime | Record<string, string | null> =>
     draft.allDay
       ? { date, dateTime: null, timeZone: null }
-      : { dateTime: fromZoned(date, timeKey, zone).toISOString(), timeZone: label, date: null };
+      : { dateTime: fromZoned(date, timeKey, zone, at).toISOString(), timeZone: label, date: null };
 
   // в Google конец события на весь день не включительно
   const endDate = draft.allDay ? toDateKey(addDays(fromDateKey(draft.endDate), 1)) : draft.endDate;
@@ -321,8 +322,8 @@ export const draftToBody = (draft: EventDraft) => {
     summary: draft.title.trim(),
     location: draft.location.trim(),
     description: draft.description.trim(),
-    start: time(draft.startDate, draft.startTime),
-    end: time(endDate, draft.endTime, draft.endTimeZone ?? zone),
+    start: time(draft.startDate, draft.startTime, zone, original?.start),
+    end: time(endDate, draft.endTime, draft.endTimeZone ?? zone, original?.end),
     // patch сливает объекты: другие скрытые поля события остаются
     ...(draft.travelMinutes !== undefined
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }

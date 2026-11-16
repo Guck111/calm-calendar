@@ -1,7 +1,7 @@
 // Часовые пояса на Intl, без библиотек: перевод между моментом времени и часами в поясе,
 // смещение от UTC и подписи для списков.
 import { locale } from "../i18n";
-import { localTimeZone } from "./date";
+import { localTimeZone, WallClockDate } from "./date";
 
 const DAY = 86_400_000;
 
@@ -47,30 +47,34 @@ export const zoneOffset = (zone: string, instant: Date): number => {
 };
 
 /** Момент времени, когда в поясе на часах эта дата и время. Несуществующее время (переход на летнее)
- *  сдвигается вперёд, а двойное (переход на зимнее) берётся первым, как в Google */
-export const fromZonedParts = (y: number, mo: number, d: number, h: number, mi: number, s: number, zone: string): Date => {
+ *  сдвигается вперёд, а двойное берётся первым, если исходный момент не уточняет выбор. */
+export const fromZonedParts = (
+  y: number, mo: number, d: number, h: number, mi: number, s: number, zone: string, original?: number,
+): Date => {
   const guess = Date.UTC(y, mo - 1, d, h, mi, s);
   // смещение за сутки до и после: переходов чаще одного в сутки не бывает
   const before = zoneOffset(zone, new Date(guess - DAY));
   const after = zoneOffset(zone, new Date(guess + DAY));
   const fits = (t: number) => zoneOffset(zone, new Date(t)) * 60_000 === guess - t;
   const found = [guess - before * 60_000, guess - after * 60_000].filter(fits);
+  if (original !== undefined && found.includes(original)) return new Date(original);
   // времени нет на часах — считаем по смещению до перехода, это и есть сдвиг вперёд
   return new Date(found.length ? Math.min(...found) : guess - before * 60_000);
 };
 
 /** "2026-11-04" и "09:30" по часам пояса → момент времени */
-export const fromZoned = (dateKey: string, timeKey: string, zone: string): Date => {
+export const fromZoned = (dateKey: string, timeKey: string, zone: string, original?: Date): Date => {
   const [y, mo, d] = dateKey.split("-").map(Number);
   const [h, mi] = timeKey.split(":").map(Number);
-  return fromZonedParts(y, mo, d, h || 0, mi || 0, 0, zone);
+  // Форма хранит целые минуты. Исходный момент выбирается только среди совпавших вариантов.
+  const originalMinute = original && Math.floor(original.getTime() / 60_000) * 60_000;
+  return fromZonedParts(y, mo, d, h || 0, mi || 0, 0, zone, originalMinute);
 };
 
-/** Часы пояса в виде местной даты: её год, месяц, число и время равны тому, что видно в поясе.
- *  Так с ней работают обычные функции дат (день недели, ключ даты) */
+/** Те же год, месяц, день и время на циферблате, что и в зоне (для формы и правил повтора). */
 export const wallClock = (instant: Date, zone: string): Date => {
   const w = wallParts(instant, zone);
-  return new Date(w.y, w.mo - 1, w.d, w.h, w.mi, w.s);
+  return new WallClockDate(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.mi, w.s));
 };
 
 /** Обратно: местная дата как часы пояса → момент времени */

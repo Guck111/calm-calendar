@@ -2,11 +2,11 @@
 // пересекающиеся события в сетке времени без наложения.
 import type { CalendarEvent } from "../api/types";
 import { locale } from "../i18n";
-import { addDays, MINUTES_IN_DAY, startOfDay } from "./date";
+import { addCalendarDays, MINUTES_IN_DAY, startOfDay } from "./date";
 
 export const overlapsDay = (e: CalendarEvent, day: Date): boolean => {
   const dayStart = startOfDay(day);
-  const dayEnd = addDays(dayStart, 1);
+  const dayEnd = addCalendarDays(dayStart, 1);
   return e.start < dayEnd && e.end > dayStart;
 };
 

@@ -102,6 +102,7 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     endDate: toDateKey(end),
     endTime: toTimeKey(end),
     timeZone: zone,
+    ...(e.allDay ? {} : { originalTimes: { zone, start: e.start, end: e.end } }),
     ...(e.endTimeZone ? { endTimeZone: e.endTimeZone } : {}),
     location: e.location ?? "",
     description: e.description ?? "",

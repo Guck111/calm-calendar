@@ -2,7 +2,7 @@
 // каждый день, неделю, месяц или год с шагом, дни недели, «2-й вторник месяца»,
 // конец по дате или по числу повторов. Правило сложнее остаётся как есть и не правится.
 import { locale, t, weekStart } from "../i18n";
-import { addDays, daysBetween, fromDateKey, startOfDay, startOfWeek, toDateKey } from "./date";
+import { addCalendarDays, addDays, daysBetween, fromDateKey, minutesOfDay, startOfDay, startOfWeek, toDateKey } from "./date";
 import { fromZonedParts, wallClock } from "./tz";
 
 export type Freq = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -52,8 +52,8 @@ export const parseUntil = (value: string, start: Date, zone?: string): string | 
   if (h === undefined) return `${y}-${mo}-${d}`;
   const utc = new Date(Date.UTC(+y, +mo - 1, +d, +h, +mi, +s));
   const until = z ? (zone ? wallClock(utc, zone) : utc) : new Date(+y, +mo - 1, +d, +h, +mi, +s);
-  const sameDay = new Date(until.getFullYear(), until.getMonth(), until.getDate(), start.getHours(), start.getMinutes());
-  return toDateKey(sameDay > until ? addDays(sameDay, -1) : sameDay);
+  const day = toDateKey(until);
+  return minutesOfDay(start) > minutesOfDay(until) ? toDateKey(addCalendarDays(fromDateKey(day), -1)) : day;
 };
 
 /** UTC в виде 20261104T090000Z */
