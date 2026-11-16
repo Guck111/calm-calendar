@@ -411,3 +411,71 @@ describe("удаление серии и отмена: точнее", () => {
     expect(reloads.length).toBeGreaterThan(0);
   });
 });
+
+describe("журнал удалений: каждое удаление само по себе", () => {
+  // приглашение на встречу: копии в календарях двух аккаунтов с одним и тем же id события
+  const copyIn = (calendarId: string) =>
+    toCalendarEvent(calendarId, {
+      id: "m1",
+      summary: "Sync",
+      start: { dateTime: "2026-11-12T10:00:00+01:00" },
+      end: { dateTime: "2026-11-12T11:00:00+01:00" },
+    }) as CalendarEvent;
+  const mine = copyIn("me@example.com\u0000primary");
+  const work = copyIn("work@example.com\u0000primary");
+
+  it("ответ на удаление одной копии не трогает удаление другой", async () => {
+    const answers: (() => void)[] = [];
+    const scope = fork({
+      values: [[$events, [mine, work]]],
+      handlers: [
+        [deleteFx, () => new Promise<void>((r) => answers.push(r))],
+        [persistDeleteFx, () => undefined],
+        [undoTimerFx, () => -1],
+        [fetchEventsFx, async () => ({ events: [mine, work], failed: [], lost: false, id: 0 })],
+      ],
+    });
+    removeNow(scope, mine);
+    const first = allSettled(undoDismissed, { scope });
+    removeNow(scope, work);
+    answers[0]();
+    await first;
+    expect(scope.getState($deleteJournal).map((c) => c.draft.originalCalendarId)).toEqual([work.calendarId]);
+    // вторая копия всё ещё спрятана: её удаление ждёт своего ответа
+    scopeBind(fetchEventsFx, { scope })({ calendars: [], range: { start: new Date(2026, 10, 9), end: new Date(2026, 10, 16) }, id: 0 });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(scope.getState($events).map((e) => e.calendarId)).not.toContain(work.calendarId);
+    answers[1]?.();
+  });
+
+  it("неудачная попытка не удалит событие, если его потом удалили снова и отменили", async () => {
+    const deleted: Deleted[] = [];
+    let fail: AppError | null = { kind: "network", message: "нет сети" };
+    let accounts = [{ email: "me@example.com", signedIn: true }];
+    const scope = fork({
+      values: [[$events, [dentist, lunch]]],
+      handlers: [
+        [deleteFx, (c: Deleted) => (deleted.push(c), fail ? Promise.reject(fail) : undefined)],
+        [persistDeleteFx, () => undefined],
+        [undoTimerFx, () => -1],
+        [fetchStatusFx, () => ({ clientSource: "file", accounts })],
+      ],
+    });
+    await remove(scope, dentist);
+    await allSettled(undoDismissed, { scope });
+    expect(scope.getState($leftoverDeletes)).toHaveLength(1);
+    // событие вернулось на экран (удаление не дошло), его удалили снова и передумали
+    await allSettled($events, { scope, params: [dentist, lunch] });
+    await remove(scope, dentist);
+    await allSettled(undoClicked, { scope });
+    expect(scope.getState($leftoverDeletes)).toEqual([]);
+    // сеть вернулась, вход заработал — повторять нечего
+    fail = null;
+    accounts = [{ email: "work@example.com", signedIn: true }];
+    await allSettled(fetchStatusFx, { scope });
+    accounts = [{ email: "me@example.com", signedIn: true }];
+    await allSettled(fetchStatusFx, { scope });
+    expect(deleted).toHaveLength(1);
+  });
+});

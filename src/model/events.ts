@@ -46,7 +46,11 @@ export const eventShifted = createEvent<{ key: string; start: Date; end: Date }>
 
 /** События, которые удалены на экране, но ещё не в Google (пока видна «Отменить»):
  *  одно событие или повторения серии с этого времени («это и следующие») */
-export type Hidden = { draftId: string; calendarId: string } & ({ id: string } | { recurringEventId: string; from: Date });
+export type Hidden = { key: string; calendarId: string } & ({ id: string } | { recurringEventId: string; from: Date });
+
+/** Ключ удаления: календарь и id события. Только id мало: у приглашения копии в календарях разных
+ *  аккаунтов — с одним и тем же id */
+export const deleteKey = (calendarId: string, id: string): string => `${calendarId}\u0000${id}`;
 
 export const hides = (h: Hidden, e: CalendarEvent): boolean =>
   e.calendarId === h.calendarId &&
@@ -61,7 +65,7 @@ export const hidingEnded = createEvent<string>();
 const $hidden = createStore<Hidden[]>([])
   .on(eventsHidden, (list, h) => [...list, h])
   .on(eventsRestored, (list, { hidden }) => list.filter((h) => h !== hidden))
-  .on(hidingEnded, (list, draftId) => list.filter((h) => h.draftId !== draftId))
+  .on(hidingEnded, (list, key) => list.filter((h) => h.key !== key))
   .reset(signOutFx.finally);
 
 // ответ на устаревший запрос (уже перелистнули дальше) не применяем; спрятанные не показываем

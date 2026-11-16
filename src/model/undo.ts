@@ -12,7 +12,7 @@ import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./edit
 import { occurrenceStart, saveEvent, splitRef } from "../shared/api/calendar";
 import { $visibility } from "./calendars";
 import { logError } from "../shared/lib/log";
-import { $events, actionFailed, eventShifted, reloadRequested, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
+import { $events, actionFailed, eventShifted, reloadRequested, deleteKey, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
 
 /** сколько видна строка «Отменить» */
 export const UNDO_MS = 8000;
@@ -54,9 +54,12 @@ export const $undo = $pending.map((p) => (p ? { id: p.token, kind: p.kind, title
 
 const titleOf = (e: CalendarEvent) => e.title || t.common.untitled;
 
+/** удаление одного события в одном календаре: ключ журнала, повтора и спрятанного на экране */
+const keyOf = (c: Change) => deleteKey(c.draft.originalCalendarId ?? c.draft.calendarId, c.draft.id ?? "");
+
 /** что спрятать на экране: одно событие или повторения серии с этого времени */
 const hiddenFor = ({ draft, scope, event }: Change & { event: CalendarEvent }): Hidden => {
-  const base = { draftId: draft.id ?? event.id, calendarId: event.calendarId };
+  const base = { key: deleteKey(event.calendarId, draft.id ?? event.id), calendarId: event.calendarId };
   return scope === "following" && event.recurringEventId
     ? { ...base, recurringEventId: event.recurringEventId, from: occurrenceStart(event) }
     : { ...base, id: event.id };
@@ -186,7 +189,7 @@ restoreMoveFx.failData.watch((e) => e.kind === "other" && logError("undo move fa
 sample({ clock: restoreMoveFx.failData, fn: (e) => t.errors.moveFailed(e.message), target: actionFailed });
 
 // удаление дошло до Google или не дошло: спрятанное больше не прячем, список перечитается
-sample({ clock: deleteFx.finally, fn: ({ params }) => params.draft.id ?? "", target: hidingEnded });
+sample({ clock: deleteFx.finally, fn: ({ params }) => keyOf(params), target: hidingEnded });
 
 // --- удаление не теряется ---
 
@@ -202,7 +205,6 @@ export const $deleteJournal = createStore<Change[]>(journalOnDisk);
 /** удаления с прошлого запуска, которые ещё надо отправить: ждут входа в свой аккаунт */
 export const $leftoverDeletes = createStore<Change[]>(journalOnDisk);
 
-const idOf = (c: Change) => c.draft.id ?? "";
 const accountOf = (c: Change) => splitRef(c.draft.originalCalendarId ?? c.draft.calendarId).account;
 
 /** Google ответил окончательно: удалено, или удалять нечего (событие уже удалено, нет доступа) */
@@ -220,19 +222,26 @@ const retryLater = deleteFx.fail.filter({
 });
 
 $deleteJournal
-  .on(deleteStarted, (list, { next }) => [...list.filter((c) => idOf(c) !== idOf((next as Deleted).change)), (next as Deleted).change])
-  .on(undone, (list, p) => (p.kind === "deleted" ? list.filter((c) => idOf(c) !== idOf((p as Deleted).change)) : list))
+  .on(deleteStarted, (list, { next }) => [...list.filter((c) => keyOf(c) !== keyOf((next as Deleted).change)), (next as Deleted).change])
+  .on(undone, (list, p) => (p.kind === "deleted" ? list.filter((c) => keyOf(c) !== keyOf((p as Deleted).change)) : list))
   // ответ на старое удаление стирает только его, не более новое
-  .on(settled, (list, change) => list.filter((c) => idOf(c) !== idOf(change)));
+  .on(settled, (list, change) => list.filter((c) => keyOf(c) !== keyOf(change)));
 sample({ clock: $deleteJournal.updates, target: persistDeleteFx });
+
+// повтор только того, что ещё в журнале: удаление, которое потом отменили, заменили новым или на которое
+// Google уже ответил, из очереди повтора уходит
+$leftoverDeletes
+  .on(deleteStarted, (left, { next }) => left.filter((c) => keyOf(c) !== keyOf((next as Deleted).change)))
+  .on(undone, (left, p) => (p.kind === "deleted" ? left.filter((c) => keyOf(c) !== keyOf((p as Deleted).change)) : left))
+  .on(settled, (left, change) => left.filter((c) => keyOf(c) !== keyOf(change)));
 
 // досылка: когда действует вход в аккаунт удаления (а не любой аккаунт)
 const leftoverDue = sample({
   clock: $activeAccounts.updates,
-  source: $leftoverDeletes,
-  fn: (left, active) => left.filter((c) => active.includes(accountOf(c))),
-  filter: (due) => due.length > 0,
-});
+  source: { left: $leftoverDeletes, journal: $deleteJournal },
+  fn: ({ left, journal }, active) =>
+    left.filter((c) => active.includes(accountOf(c)) && journal.some((j) => keyOf(j) === keyOf(c))),
+}).filter({ fn: (due) => due.length > 0 });
 $leftoverDeletes.on(leftoverDue, (left, due) => left.filter((c) => !due.includes(c)));
 const replayFx = createEffect<Change[], void>(async (due) => {
   await Promise.allSettled(due.map((c) => deleteFx(c)));
@@ -243,28 +252,28 @@ sample({
   clock: retryLater,
   source: { left: $leftoverDeletes, journal: $deleteJournal },
   filter: ({ left, journal }, { params }) =>
-    journal.some((c) => idOf(c) === idOf(params)) && !left.some((c) => idOf(c) === idOf(params)),
+    journal.some((c) => keyOf(c) === keyOf(params)) && !left.some((c) => keyOf(c) === keyOf(params)),
   fn: ({ left }, { params }) => [...left, params],
   target: $leftoverDeletes,
 });
 
 // Выход из аккаунта, пока видна строка «Удалено»: сначала удаление уходит в Google, потом выход
 $signOutHeld.on($pending, (_, p) => p?.kind === "deleted");
-const $heldAccount = createStore<{ account: string | void; draftId: string } | null>(null);
+const $heldAccount = createStore<{ account: string | void; key: string } | null>(null);
 const signOutWithDelete = sample({
   clock: signOutClicked,
   source: $pending,
   filter: (p) => p?.kind === "deleted",
-  fn: (p, account) => ({ account, draftId: (p as Deleted).change.draft.id ?? "", pending: p }),
+  fn: (p, account) => ({ account, key: keyOf((p as Deleted).change), pending: p }),
 });
 sample({ clock: signOutWithDelete, fn: ({ pending }) => pending, target: committed });
-$heldAccount.on(signOutWithDelete, (_, { account, draftId }) => ({ account, draftId }));
+$heldAccount.on(signOutWithDelete, (_, { account, key }) => ({ account, key }));
 $pending.reset(signOutWithDelete);
 const resumed = sample({
   clock: deleteFx.finally,
   source: $heldAccount,
-  filter: (held, { params }): held is { account: string | void; draftId: string } =>
-    held !== null && held.draftId === (params.draft.id ?? ""),
+  filter: (held, { params }): held is { account: string | void; key: string } =>
+    held !== null && held.key === keyOf(params),
   fn: (held) => held?.account,
 });
 sample({ clock: resumed, target: signOutResumed });
