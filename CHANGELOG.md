@@ -4,6 +4,15 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+## 0.12.1 — 2026-11-16
+
+### Fixed
+
+- **Clock changes and time zones**: events keep their dates and times around the switch to and from summer time — on the day of the change they stand in the right rows, moving or editing one keeps its length, and all-day events no longer lose a day. After Windows changes its time zone the calendar shows the right day and time format without a restart.
+- **Recurring Google events**: "This and following" splits a series in the right place when the series uses another time zone, extra dates or a week starting on Sunday, and a biweekly series keeps its rhythm after the split.
+- **Calendar subscriptions (.ics)**: repeating events follow the calendar's own time zone, yearly events on a fixed day of the month show in every year, and long series show their later dates instead of stopping early.
+- **Quick add** picks the next real date for "29 February" and no longer accepts a date that does not exist.
+
 ## 0.12.0 — 2026-11-16
 
 ### New
