@@ -81,13 +81,17 @@ export const loadSeriesFx = createEffect<{ calendarId: string; id: string }, str
   loadRecurrence(calendarId, id),
 );
 
+/** Series id alone doesn't tell series apart: copies of one invitation in calendars of different accounts share it */
+export const sameSeries = (a: { calendarId: string; id: string }, b: { calendarId: string; id: string }): boolean =>
+  a.calendarId === b.calendarId && a.id === b.id;
+
 /** rule of the currently open series: lines — null while loading and on error */
-export const $series = createStore<{ id: string; lines: string[] | null; failed: boolean } | null>(null)
-  .on(loadSeriesFx, (_, { id }) => ({ id, lines: null, failed: false }))
+export const $series = createStore<{ calendarId: string; id: string; lines: string[] | null; failed: boolean } | null>(null)
+  .on(loadSeriesFx, (_, { calendarId, id }) => ({ calendarId, id, lines: null, failed: false }))
   .on(loadSeriesFx.done, (state, { params, result }) =>
-    state?.id === params.id ? { ...state, lines: result } : state,
+    state && sameSeries(state, params) ? { ...state, lines: result } : state,
   )
-  .on(loadSeriesFx.fail, (state, { params }) => (state?.id === params.id ? { ...state, failed: true } : state));
+  .on(loadSeriesFx.fail, (state, { params }) => (state && sameSeries(state, params) ? { ...state, failed: true } : state));
 
 /** Draft from an event. Time in the form follows the event's time zone clock, so that on save
  *  and drag the time zone from Google isn't replaced with the system one */
@@ -279,7 +283,10 @@ export const $draft = createStore<EventDraft | null>(null)
   .on(draftChanged, (d, patch) => (d ? applyChange(d, patch) : d))
   // series rule arrived: fill it in if the user hasn't started changing it yet
   .on(loadSeriesFx.done, (d, { params, result }) =>
-    d && d.recurringEventId === params.id && d.originalRecurrence === undefined
+    d &&
+    d.recurringEventId &&
+    sameSeries({ calendarId: d.originalCalendarId ?? d.calendarId, id: d.recurringEventId }, params) &&
+    d.originalRecurrence === undefined
       ? { ...d, recurrence: result, originalRecurrence: result }
       : d,
   )
@@ -326,7 +333,8 @@ sample({
   filter: ({ opened }) => Boolean(opened),
   fn: ({ opened, series }) => {
     const e = opened as CalendarEvent;
-    return fromEvent(e, series?.id === e.recurringEventId ? series?.lines : null);
+    const own = series && e.recurringEventId && sameSeries(series, { calendarId: e.calendarId, id: e.recurringEventId });
+    return fromEvent(e, own ? series.lines : null);
   },
   target: $draft,
 });

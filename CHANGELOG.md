@@ -11,6 +11,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - **Widget and tray agenda**: the list of upcoming events and the dots on the month no longer fall back to older data when two refreshes finish out of order.
 - **Event form**: closing the form while it saves and opening another event no longer closes the new form; an error of the earlier save shows in the bar above the calendar.
 - **Quick changes**: changing an event's color or video meeting and then dragging it right away no longer puts the old color back; dragging and Ctrl+K changes now send only the fields they change.
+- **Recurring meetings in two accounts**: opening the same invitation in one account and then in another no longer fills the form with the repeat rule of the first copy.
 
 ## 0.12.1 — 2026-11-16
 

@@ -214,3 +214,25 @@ describe("closing the form while it saves", () => {
     expect(scope.getState($loadError)).toContain("offline");
   });
 });
+
+describe("same series in two accounts", () => {
+  it("the rule of the copy in another calendar does not fill the open one", async () => {
+    const rules: Record<string, { promise: Promise<string[]>; resolve: (v: string[]) => void }> = {};
+    for (const calendarId of ["home", "work"]) {
+      let resolve!: (v: string[]) => void;
+      rules[calendarId] = { promise: new Promise<string[]>((ok) => (resolve = ok)), resolve };
+    }
+    const scope = fork({
+      handlers: [[loadSeriesFx, ({ calendarId }: { calendarId: string }) => rules[calendarId].promise]],
+    });
+    const steps = [
+      allSettled(eventOpened, { scope, params: { ...occurrence, calendarId: "home", key: "home w_20261111" } }),
+      allSettled(eventOpened, { scope, params: { ...occurrence, calendarId: "work", key: "work w_20261111" } }),
+    ];
+    rules.home.resolve(["RRULE:FREQ=DAILY"]);
+    await Promise.resolve();
+    rules.work.resolve(WEEKDAYS);
+    await Promise.all(steps);
+    expect(scope.getState($draft)).toMatchObject({ calendarId: "work", recurrence: WEEKDAYS, originalRecurrence: WEEKDAYS });
+  });
+});
