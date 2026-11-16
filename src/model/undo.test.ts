@@ -5,7 +5,8 @@ import type { CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import { toCalendarEvent } from "../shared/api/calendar";
 import { deleteClicked, deleteFx, eventMoved, eventOpened, moveFx, scopeChosen } from "./editor";
 import { $events, fetchEventsFx } from "./events";
-import { $undo, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
+import { fetchStatusFx, signOutClicked, signOutFx } from "./auth";
+import { $leftoverDelete, $undo, persistDeleteFx, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
 
 const make = (id: string, summary: string, start: string, end: string, extra: object = {}) =>
   toCalendarEvent("me@example.com\u0000primary", {
@@ -40,6 +41,7 @@ const setup = (events: CalendarEvent[] = [dentist, lunch]) => {
       [restoreMoveFx, (r: { event: CalendarEvent; start: Date; end: Date }) => void restored.push(r)],
       // таймер не срабатывает сам: тест решает, когда «Отменить» исчезает
       [undoTimerFx, ({ ms }: { ms: number }) => (timers.push(ms), -1)],
+      [persistDeleteFx, () => undefined],
     ],
   });
   const titles = () => scope.getState($events).map((e) => e.title);
@@ -209,5 +211,72 @@ describe("отмена переноса", () => {
     });
     await allSettled(eventMoved, { scope, params: { event: dentist, start: new Date(2026, 10, 13, 10), end: new Date(2026, 10, 13, 11) } });
     expect(scope.getState($undo)).toBeNull();
+  });
+});
+
+describe("удаление не теряется", () => {
+  it("выход из аккаунта ждёт, пока ожидающее удаление дойдёт до Google", async () => {
+    const order: string[] = [];
+    const scope = fork({
+      values: [[$events, [dentist, lunch]]],
+      handlers: [
+        [deleteFx, async () => void order.push("delete")],
+        [signOutFx, async (account: string) => void order.push(`sign out ${account}`)],
+        [persistDeleteFx, () => undefined],
+        [undoTimerFx, () => -1],
+      ],
+    });
+    await remove(scope, dentist);
+    await allSettled(signOutClicked, { scope, params: "work@example.com" });
+    expect(order).toEqual(["delete", "sign out work@example.com"]);
+    expect(scope.getState($undo)).toBeNull();
+  });
+
+  it("без ожидающего удаления выход идёт сразу", async () => {
+    const order: string[] = [];
+    const scope = fork({
+      handlers: [[signOutFx, async () => void order.push("sign out")]],
+    });
+    await allSettled(signOutClicked, { scope, params: "work@example.com" });
+    expect(order).toEqual(["sign out"]);
+  });
+
+  it("ожидающее удаление записано на диск, пока видна строка; отмена и отправка его стирают", async () => {
+    const saved: unknown[] = [];
+    const scope = fork({
+      values: [[$events, [dentist, lunch]]],
+      handlers: [
+        [deleteFx, () => undefined],
+        [persistDeleteFx, (c: unknown) => void saved.push(c)],
+        [undoTimerFx, () => -1],
+      ],
+    });
+    await remove(scope, dentist);
+    expect(saved).toMatchObject([{ draft: { id: "e1" }, scope: "this" }]);
+    await allSettled(undoClicked, { scope });
+    expect(saved.at(-1)).toBeNull();
+    await remove(scope, lunch);
+    await allSettled(undoDismissed, { scope });
+    expect(saved.at(-1)).toBeNull();
+  });
+
+  it("приложение закрыли, пока видна строка: при следующем входе удаление досылается", async () => {
+    const deleted: Deleted[] = [];
+    const saved: unknown[] = [];
+    const leftover = { draft: { id: "e1" } as EventDraft, scope: "this" as Scope };
+    const scope = fork({
+      values: [[$leftoverDelete, leftover]],
+      handlers: [
+        [deleteFx, (c: Deleted) => void deleted.push(c)],
+        [persistDeleteFx, (c: unknown) => void saved.push(c)],
+        [fetchStatusFx, () => ({ clientSource: "file", accounts: [{ email: "me@example.com", signedIn: true }] })],
+      ],
+    });
+    await allSettled(fetchStatusFx, { scope });
+    expect(deleted).toMatchObject([{ draft: { id: "e1" } }]);
+    expect(saved.at(-1)).toBeNull();
+    // второй раз не шлём
+    await allSettled(fetchStatusFx, { scope });
+    expect(deleted).toHaveLength(1);
   });
 });

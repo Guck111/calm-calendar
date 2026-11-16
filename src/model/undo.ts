@@ -4,7 +4,8 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
-import { signOutFx } from "./auth";
+import { $signOutHeld, $signedIn, signOutClicked, signOutFx, signOutResumed } from "./auth";
+import { readJson, writeJson } from "../shared/lib/storage";
 import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
 import { saveEvent } from "../shared/api/calendar";
 import { logError } from "../shared/lib/log";
@@ -172,5 +173,49 @@ sample({ clock: restoreMoveFx.failData, fn: (e) => t.errors.moveFailed(e.message
 
 // удаление дошло до Google или не дошло: спрятанное больше не прячем, список перечитается
 sample({ clock: deleteFx.finally, fn: ({ params }) => params.draft.id ?? "", target: hidingEnded });
+
+// --- удаление не теряется ---
+
+// Ожидающее удаление записано на диск: если приложение закроют (Выход в трее закрывает сразу, а страница
+// не успевает ничего отправить), удаление уйдёт в Google при следующем входе
+const STORAGE_KEY = "calm.pendingDelete";
+export const persistDeleteFx = createEffect<Change | null, void>((change) => writeJson(STORAGE_KEY, change));
+/** удаление, оставшееся с прошлого запуска */
+export const $leftoverDelete = createStore<Change | null>(readJson<Change | null>(STORAGE_KEY, null));
+
+sample({ clock: deleteStarted, fn: ({ next }) => (next as Deleted).change, target: persistDeleteFx });
+sample({ clock: [undone, finished, movedOverDelete], fn: () => null, target: persistDeleteFx });
+
+const leftoverSent = sample({
+  clock: $signedIn.updates,
+  source: $leftoverDelete,
+  filter: (left, signedIn): left is Change => signedIn && left !== null,
+});
+sample({ clock: leftoverSent, target: deleteFx });
+sample({ clock: leftoverSent, fn: () => null, target: persistDeleteFx });
+$leftoverDelete.reset(leftoverSent);
+
+// Выход из аккаунта, пока видна строка «Удалено»: сначала удаление уходит в Google, потом выход
+$signOutHeld.on($pending, (_, p) => p?.kind === "deleted");
+const $heldAccount = createStore<{ account: string | void; draftId: string } | null>(null);
+const signOutWithDelete = sample({
+  clock: signOutClicked,
+  source: $pending,
+  filter: (p) => p?.kind === "deleted",
+  fn: (p, account) => ({ account, draftId: (p as Deleted).change.draft.id ?? "", pending: p }),
+});
+sample({ clock: signOutWithDelete, fn: ({ pending }) => pending, target: committed });
+sample({ clock: signOutWithDelete, fn: () => null, target: persistDeleteFx });
+$heldAccount.on(signOutWithDelete, (_, { account, draftId }) => ({ account, draftId }));
+$pending.reset(signOutWithDelete);
+const resumed = sample({
+  clock: deleteFx.finally,
+  source: $heldAccount,
+  filter: (held, { params }): held is { account: string | void; draftId: string } =>
+    held !== null && held.draftId === (params.draft.id ?? ""),
+  fn: (held) => held?.account,
+});
+sample({ clock: resumed, target: signOutResumed });
+$heldAccount.reset(resumed);
 
 $pending.reset(signOutFx.finally);

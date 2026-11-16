@@ -59,7 +59,13 @@ sample({ clock: [appStarted, sessionLost], target: fetchStatusFx });
 sample({ clock: signInClicked, filter: signInFx.pending.map((p) => !p), target: signInFx });
 sample({ clock: signInReopenClicked, target: reopenSignInFx });
 sample({ clock: signInCancelClicked, target: cancelSignInFx });
-sample({ clock: signOutClicked, target: signOutFx });
+/** выход придержан: сначала в Google должно уйти ожидающее удаление (model/undo.ts), иначе оно
+ *  потеряется вместе с входом аккаунта */
+export const $signOutHeld = createStore(false);
+/** удаление ушло — придержанный выход продолжается */
+export const signOutResumed = createEvent<string | void>();
+sample({ clock: signOutClicked, filter: $signOutHeld.map((held) => !held), target: signOutFx });
+sample({ clock: signOutResumed, target: signOutFx });
 sample({ clock: clientSubmitted, target: saveClientFx });
 sample({
   clock: [signInFx.finally, signOutFx.finally, saveClientFx.done],
