@@ -226,10 +226,42 @@ export const validate = (d: EventDraft): string | null => {
   return null;
 };
 
+/** Number of the card or form on screen: grows each time one opens or closes. The form can be closed while a save is
+ *  on the way and another event opened: the end of that save must not close or mark the new form */
+const $editorSession = createStore(0).on(
+  [eventOpened, slotClicked, createClicked, draftOpened, editorClosed, deleteRequested],
+  (n) => n + 1,
+);
+/** form whose save is on the way (one at a time: $busy blocks the next) */
+const $savingSession = createStore(0);
+sample({ clock: saveFx, source: $editorSession, target: $savingSession });
+
+const sameForm = ({ session, saving }: { session: number; saving: number }) => session === saving;
+/** the save finished while its form is still open */
+const saved = sample({
+  clock: saveFx.done,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: sameForm,
+});
+const saveFailedHere = sample({
+  clock: saveFx.failData,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: sameForm,
+  fn: (_, e) => e,
+});
+// the form is already closed: the error goes to the bar above the calendar
+sample({
+  clock: saveFx.failData,
+  source: { session: $editorSession, saving: $savingSession },
+  filter: (s) => !sameForm(s),
+  fn: (_, e) => t.errors.changeFailed(e.message),
+  target: actionFailed,
+});
+
 /** event opened for viewing (before switching to edit) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
-  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteRequested]);
+  .reset([slotClicked, createClicked, draftOpened, editorClosed, saved, deleteRequested]);
 
 /** viewing an existing event or the edit/create form */
 export const $mode = createStore<"view" | "edit">("view")
@@ -247,7 +279,7 @@ export const $draft = createStore<EventDraft | null>(null)
       ? { ...d, recurrence: result, originalRecurrence: result }
       : d,
   )
-  .reset([editorClosed, saveFx.done, deleteRequested]);
+  .reset([editorClosed, saved, deleteRequested]);
 
 /** card opened with the Delete key: the delete button is already focused, Enter deletes */
 export const $deleteArmed = createStore(false)
@@ -262,6 +294,7 @@ const duplicated = sample({
   fn: ({ opened, writable }) => duplicateDraft(opened as CalendarEvent, writable.map((c) => c.id)),
 });
 $draft.on(duplicated, (_, d) => d);
+$editorSession.on(duplicated, (n) => n + 1);
 
 sample({
   clock: rsvpClicked,
@@ -319,7 +352,7 @@ export const $askScope = createStore<"save" | "delete" | null>(null)
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
-  .on([saveFx.failData, rsvpFx.failData], (_, e) => e.message)
+  .on([saveFailedHere, rsvpFx.failData], (_, e) => e.message)
   .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteRequested, duplicated]);
 
 // deletion goes to Google when the card is already closed: its error goes to the bar above the calendar

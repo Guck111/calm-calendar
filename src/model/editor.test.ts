@@ -1,15 +1,19 @@
 import { allSettled, createWatch, fork } from "effector";
 import { describe, expect, it } from "vitest";
 import type { CalendarEvent, EventDraft } from "../shared/api/types";
+import { $loadError } from "./events";
 import {
   $askScope,
   $draft,
+  $editorError,
   $mode,
   $recurrenceEdited,
   applyChange,
   deleteClicked,
   deleteRequested,
   draftChanged,
+  draftOpened,
+  editorClosed,
   editCancelled,
   editClicked,
   eventOpened,
@@ -172,5 +176,41 @@ describe("series occurrence", () => {
     await allSettled(saveClicked, { scope });
     expect(scope.getState($askScope)).toBeNull();
     expect(calls.save).toMatchObject([{ scope: "this", draft: { id: "e1" } }]);
+  });
+});
+
+describe("closing the form while it saves", () => {
+  const deferred = () => {
+    let resolve!: () => void;
+    let reject!: (e: unknown) => void;
+    const promise = new Promise<void>((ok, fail) => ((resolve = ok), (reject = fail)));
+    return { promise, resolve, reject };
+  };
+
+  const saveThenOpenAnother = async (finish: (save: ReturnType<typeof deferred>) => void) => {
+    const save = deferred();
+    const scope = fork({ handlers: [[saveFx, () => save.promise]] });
+    await allSettled(draftOpened, { scope, params: { ...base, title: "First" } });
+    // allSettled waits for the open save too, so the next steps start without waiting
+    const steps = [
+      allSettled(saveClicked, { scope }),
+      allSettled(editorClosed, { scope }),
+      allSettled(draftOpened, { scope, params: { ...base, title: "Second" } }),
+    ];
+    finish(save);
+    await Promise.all(steps);
+    return scope;
+  };
+
+  it("the end of the first save keeps the second draft open", async () => {
+    const scope = await saveThenOpenAnother((save) => save.resolve());
+    expect(scope.getState($draft)?.title).toBe("Second");
+  });
+
+  it("an error of the first save goes to the bar, not into the second form", async () => {
+    const scope = await saveThenOpenAnother((save) => save.reject({ kind: "network", message: "offline" }));
+    expect(scope.getState($draft)?.title).toBe("Second");
+    expect(scope.getState($editorError)).toBeNull();
+    expect(scope.getState($loadError)).toContain("offline");
   });
 });
