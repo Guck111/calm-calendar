@@ -374,6 +374,10 @@ export const loadRecurrence = async (calendarId: string, recurringEventId: strin
 const instant = (time: EventTime | undefined): Date | null =>
   time?.dateTime ? new Date(time.dateTime) : time?.date ? fromDateKey(time.date) : null;
 
+/** Когда повторение серии стоит по правилу (originalStart), даже если его перенесли на другое время;
+ *  у обычного события — его начало. По нему считается «это и следующие», как при удалении в Google */
+export const occurrenceStart = (e: Pick<CalendarEvent, "start" | "originalStart">): Date => instant(e.originalStart) ?? e.start;
+
 /** то же время по часам пояса события: правило повтора считает дни недели и числа по ним */
 const wallInstant = (time: EventTime | undefined, zone: string): Date | null =>
   time?.dateTime ? wallClock(new Date(time.dateTime), zone) : instant(time);

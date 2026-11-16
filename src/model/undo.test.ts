@@ -1,10 +1,11 @@
 // «Отменить» после переноса и удаления: удаление уходит в Google не сразу, а когда строка «Отменить» исчезла
-import { allSettled, fork } from "effector";
+import { allSettled, createWatch, fork } from "effector";
 import { describe, expect, it } from "vitest";
 import type { CalendarEvent, EventDraft, Scope } from "../shared/api/types";
 import { toCalendarEvent } from "../shared/api/calendar";
 import { deleteClicked, deleteFx, eventMoved, eventOpened, moveFx, scopeChosen } from "./editor";
-import { $events, fetchEventsFx } from "./events";
+import { $events, fetchEventsFx, reloadRequested } from "./events";
+import { $visibility } from "./calendars";
 import { fetchStatusFx, signOutClicked, signOutFx } from "./auth";
 import { $leftoverDelete, $undo, persistDeleteFx, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
 
@@ -278,5 +279,34 @@ describe("удаление не теряется", () => {
     // второй раз не шлём
     await allSettled(fetchStatusFx, { scope });
     expect(deleted).toHaveLength(1);
+  });
+});
+
+describe("удаление серии и отмена: точнее", () => {
+  // повторение серии, перенесённое с одного дня на другой: originalStart — его день по правилу
+  const moved = (origDay: number, day: number) =>
+    make(`y_2026111${origDay}`, "Yoga", `2026-11-1${day}T07:00:00+01:00`, `2026-11-1${day}T08:00:00+01:00`, {
+      recurringEventId: "y",
+      originalStartTime: { dateTime: `2026-11-1${origDay}T07:00:00+01:00` },
+    });
+
+  it("«это и следующие» считает от дня повторения по правилу, а не от перенесённого времени", async () => {
+    // повторение 11-го перенесено на 14-е, повторение 14-го — на 10-е; удаляем с 12-го
+    const { scope } = setup([moved(1, 4), yoga(2), yoga(3), moved(4, 0)]);
+    await allSettled(eventOpened, { scope, params: yoga(2) });
+    await allSettled(deleteClicked, { scope });
+    await allSettled(scopeChosen, { scope, params: "following" });
+    expect(scope.getState($events).map((e) => e.id)).toEqual(["y_20261111"]);
+  });
+
+  it("«Отменить» не возвращает события календаря, который за это время скрыли, и перечитывает список", async () => {
+    const { scope } = setup();
+    const reloads: number[] = [];
+    createWatch({ unit: reloadRequested, scope, fn: () => void reloads.push(1) });
+    await remove(scope, dentist);
+    await allSettled($visibility, { scope, params: { [dentist.calendarId]: false } });
+    await allSettled(undoClicked, { scope });
+    expect(scope.getState($events).map((e) => e.title)).toEqual(["Lunch"]);
+    expect(reloads.length).toBeGreaterThan(0);
   });
 });

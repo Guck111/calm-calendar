@@ -7,7 +7,8 @@ import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/t
 import { $signOutHeld, $signedIn, signOutClicked, signOutFx, signOutResumed } from "./auth";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
-import { saveEvent } from "../shared/api/calendar";
+import { occurrenceStart, saveEvent } from "../shared/api/calendar";
+import { $visibility } from "./calendars";
 import { logError } from "../shared/lib/log";
 import { $events, actionFailed, eventShifted, reloadRequested, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
 
@@ -55,7 +56,7 @@ const titleOf = (e: CalendarEvent) => e.title || t.common.untitled;
 const hiddenFor = ({ draft, scope, event }: Change & { event: CalendarEvent }): Hidden => {
   const base = { draftId: draft.id ?? event.id, calendarId: event.calendarId };
   return scope === "following" && event.recurringEventId
-    ? { ...base, recurringEventId: event.recurringEventId, from: event.start }
+    ? { ...base, recurringEventId: event.recurringEventId, from: occurrenceStart(event) }
     : { ...base, id: event.id };
 };
 
@@ -125,12 +126,19 @@ $pending.reset(finished);
 
 // отмена удаления: событие возвращается на экран, в Google ничего не уходит
 const undone = sample({ clock: undoClicked, source: $pending, filter: Boolean });
+// календарь, который за это время скрыли, не показываем; список перечитывается — так вернутся и повторения,
+// загруженные уже после удаления (другая неделя)
 sample({
   clock: undone,
-  filter: (p) => p.kind === "deleted",
-  fn: (p) => ({ hidden: (p as Deleted).hidden, events: (p as Deleted).removed }),
+  source: $visibility,
+  filter: (_, p) => p.kind === "deleted",
+  fn: (visibility, p) => ({
+    hidden: (p as Deleted).hidden,
+    events: (p as Deleted).removed.filter((e) => visibility[e.calendarId] !== false),
+  }),
   target: eventsRestored,
 });
+sample({ clock: undone, filter: (p) => p.kind === "deleted", target: reloadRequested });
 // отмена переноса: из нынешнего события меняется только время (и его пояс) — правки, сделанные
 // после переноса (цвет, место), остаются
 const restoredMove = sample({

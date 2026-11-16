@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
-import { listEvents } from "../shared/api/calendar";
+import { listEvents, occurrenceStart } from "../shared/api/calendar";
 import { forgetFeeds } from "../shared/api/feeds";
 import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
@@ -50,7 +50,7 @@ export type Hidden = { draftId: string; calendarId: string } & ({ id: string } |
 
 export const hides = (h: Hidden, e: CalendarEvent): boolean =>
   e.calendarId === h.calendarId &&
-  ("id" in h ? e.id === h.id : e.recurringEventId === h.recurringEventId && e.start >= h.from);
+  ("id" in h ? e.id === h.id : e.recurringEventId === h.recurringEventId && occurrenceStart(e) >= h.from);
 
 export const eventsHidden = createEvent<Hidden>();
 /** «Отменить»: события возвращаются на экран, прятать их больше не нужно */
