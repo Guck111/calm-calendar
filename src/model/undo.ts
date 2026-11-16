@@ -4,10 +4,12 @@
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
-import { $signOutHeld, $signedIn, signOutClicked, signOutFx, signOutResumed } from "./auth";
+import { $activeAccounts, $signOutHeld, signOutClicked, signOutFx, signOutResumed } from "./auth";
+import { broadcast } from "../shared/api/bus";
+import { isTransient } from "./sync";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
-import { occurrenceStart, saveEvent } from "../shared/api/calendar";
+import { occurrenceStart, saveEvent, splitRef } from "../shared/api/calendar";
 import { $visibility } from "./calendars";
 import { logError } from "../shared/lib/log";
 import { $events, actionFailed, eventShifted, reloadRequested, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
@@ -93,10 +95,13 @@ const deleteStarted = sample({
 const movedOverDelete = sample({ clock: eventMoved, source: $pending, filter: (p) => p?.kind === "deleted" });
 sample({ clock: movedOverDelete, target: committed });
 $pending.reset(movedOverDelete);
+// пока перенос сохранялся, могли удалить другое событие: более новое действие важнее, строка «Удалено»
+// остаётся (иначе удаление не ушло бы в Google, а событие осталось бы спрятанным)
 const moveStarted = sample({
   clock: moveFx.done,
-  source: $token,
-  fn: (token, { params }): { prev: Pending | null; next: Pending } => ({
+  source: { token: $token, pending: $pending },
+  filter: ({ pending }) => pending?.kind !== "deleted",
+  fn: ({ token }, { params }): { prev: Pending | null; next: Pending } => ({
     prev: null,
     next: { kind: "moved", token: token + 1, title: titleOf(params.event), event: params.event },
   }),
@@ -174,8 +179,9 @@ sample({
   target: undoTimerFx,
 });
 
-// после отмены переноса список перечитывается: на экране то, что в Google
+// после отмены переноса список перечитывается: на экране то, что в Google; виджет и список у трея тоже
 sample({ clock: restoreMoveFx.finally, target: reloadRequested });
+restoreMoveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 restoreMoveFx.failData.watch((e) => e.kind === "other" && logError("undo move failed", e));
 sample({ clock: restoreMoveFx.failData, fn: (e) => t.errors.moveFailed(e.message), target: actionFailed });
 
@@ -184,24 +190,63 @@ sample({ clock: deleteFx.finally, fn: ({ params }) => params.draft.id ?? "", tar
 
 // --- удаление не теряется ---
 
-// Ожидающее удаление записано на диск: если приложение закроют (Выход в трее закрывает сразу, а страница
-// не успевает ничего отправить), удаление уйдёт в Google при следующем входе
-const STORAGE_KEY = "calm.pendingDelete";
-export const persistDeleteFx = createEffect<Change | null, void>((change) => writeJson(STORAGE_KEY, change));
-/** удаление, оставшееся с прошлого запуска */
-export const $leftoverDelete = createStore<Change | null>(readJson<Change | null>(STORAGE_KEY, null));
+// Журнал удалений на диске: удаление попадает в него, как только выбрано, и уходит из него, только когда
+// Google ответил. Если приложение закроют раньше (Выход в трее закрывает сразу, а запрос «это и следующие»
+// идёт в два шага), удаление уйдёт в Google после следующего входа в его аккаунт
+const STORAGE_KEY = "calm.pendingDeletes";
+export const persistDeleteFx = createEffect<Change[], void>((list) => writeJson(STORAGE_KEY, list));
+const saved = readJson<Change[]>(STORAGE_KEY, []);
+const journalOnDisk = Array.isArray(saved) ? saved : [];
+/** удаления, которые ещё не подтвердил Google */
+export const $deleteJournal = createStore<Change[]>(journalOnDisk);
+/** удаления с прошлого запуска, которые ещё надо отправить: ждут входа в свой аккаунт */
+export const $leftoverDeletes = createStore<Change[]>(journalOnDisk);
 
-sample({ clock: deleteStarted, fn: ({ next }) => (next as Deleted).change, target: persistDeleteFx });
-sample({ clock: [undone, finished, movedOverDelete], fn: () => null, target: persistDeleteFx });
+const idOf = (c: Change) => c.draft.id ?? "";
+const accountOf = (c: Change) => splitRef(c.draft.originalCalendarId ?? c.draft.calendarId).account;
 
-const leftoverSent = sample({
-  clock: $signedIn.updates,
-  source: $leftoverDelete,
-  filter: (left, signedIn): left is Change => signedIn && left !== null,
+/** Google ответил окончательно: удалено, или удалять нечего (событие уже удалено, нет доступа) */
+const settled = sample({
+  clock: [
+    deleteFx.done.map(({ params }) => params),
+    deleteFx.fail.filter({
+      fn: ({ error }) => !isTransient(error) && error.kind !== "not_signed_in" && error.kind !== "not_configured",
+    }).map(({ params }) => params),
+  ],
 });
-sample({ clock: leftoverSent, target: deleteFx });
-sample({ clock: leftoverSent, fn: () => null, target: persistDeleteFx });
-$leftoverDelete.reset(leftoverSent);
+// не дошло (нет сети, вход истёк): удаление остаётся в журнале и попробует снова при следующем входе
+const retryLater = deleteFx.fail.filter({
+  fn: ({ error }) => isTransient(error) || error.kind === "not_signed_in" || error.kind === "not_configured",
+});
+
+$deleteJournal
+  .on(deleteStarted, (list, { next }) => [...list.filter((c) => idOf(c) !== idOf((next as Deleted).change)), (next as Deleted).change])
+  .on(undone, (list, p) => (p.kind === "deleted" ? list.filter((c) => idOf(c) !== idOf((p as Deleted).change)) : list))
+  // ответ на старое удаление стирает только его, не более новое
+  .on(settled, (list, change) => list.filter((c) => idOf(c) !== idOf(change)));
+sample({ clock: $deleteJournal.updates, target: persistDeleteFx });
+
+// досылка: когда действует вход в аккаунт удаления (а не любой аккаунт)
+const leftoverDue = sample({
+  clock: $activeAccounts.updates,
+  source: $leftoverDeletes,
+  fn: (left, active) => left.filter((c) => active.includes(accountOf(c))),
+  filter: (due) => due.length > 0,
+});
+$leftoverDeletes.on(leftoverDue, (left, due) => left.filter((c) => !due.includes(c)));
+const replayFx = createEffect<Change[], void>(async (due) => {
+  await Promise.allSettled(due.map((c) => deleteFx(c)));
+});
+sample({ clock: leftoverDue, target: replayFx });
+// не дошло — ждёт следующего входа в свой аккаунт
+sample({
+  clock: retryLater,
+  source: { left: $leftoverDeletes, journal: $deleteJournal },
+  filter: ({ left, journal }, { params }) =>
+    journal.some((c) => idOf(c) === idOf(params)) && !left.some((c) => idOf(c) === idOf(params)),
+  fn: ({ left }, { params }) => [...left, params],
+  target: $leftoverDeletes,
+});
 
 // Выход из аккаунта, пока видна строка «Удалено»: сначала удаление уходит в Google, потом выход
 $signOutHeld.on($pending, (_, p) => p?.kind === "deleted");
@@ -213,7 +258,6 @@ const signOutWithDelete = sample({
   fn: (p, account) => ({ account, draftId: (p as Deleted).change.draft.id ?? "", pending: p }),
 });
 sample({ clock: signOutWithDelete, fn: ({ pending }) => pending, target: committed });
-sample({ clock: signOutWithDelete, fn: () => null, target: persistDeleteFx });
 $heldAccount.on(signOutWithDelete, (_, { account, draftId }) => ({ account, draftId }));
 $pending.reset(signOutWithDelete);
 const resumed = sample({

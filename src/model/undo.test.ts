@@ -1,13 +1,15 @@
 // «Отменить» после переноса и удаления: удаление уходит в Google не сразу, а когда строка «Отменить» исчезла
-import { allSettled, createWatch, fork } from "effector";
+import { allSettled, createWatch, fork, scopeBind } from "effector";
 import { describe, expect, it } from "vitest";
-import type { CalendarEvent, EventDraft, Scope } from "../shared/api/types";
+import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
+
+type Change = { draft: EventDraft; scope: Scope };
 import { toCalendarEvent } from "../shared/api/calendar";
 import { deleteClicked, deleteFx, eventMoved, eventOpened, moveFx, scopeChosen } from "./editor";
 import { $events, fetchEventsFx, reloadRequested } from "./events";
 import { $visibility } from "./calendars";
 import { fetchStatusFx, signOutClicked, signOutFx } from "./auth";
-import { $leftoverDelete, $undo, persistDeleteFx, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
+import { $deleteJournal, $leftoverDeletes, $undo, persistDeleteFx, restoreMoveFx, undoClicked, undoDismissed, undoExpired, undoPaused, undoResumed, undoTimerFx } from "./undo";
 
 const make = (id: string, summary: string, start: string, end: string, extra: object = {}) =>
   toCalendarEvent("me@example.com\u0000primary", {
@@ -48,6 +50,12 @@ const setup = (events: CalendarEvent[] = [dentist, lunch]) => {
   const titles = () => scope.getState($events).map((e) => e.title);
   const expire = () => allSettled(undoExpired, { scope, params: scope.getState($undo)?.id ?? -1 });
   return { scope, deleted, moved, restored, timers, titles, expire };
+};
+
+/** удалить сразу, не дожидаясь запросов, которые уже идут */
+const removeNow = (scope: ReturnType<typeof fork>, e: CalendarEvent) => {
+  scopeBind(eventOpened, { scope })(e);
+  scopeBind(deleteClicked, { scope })();
 };
 
 const remove = async (scope: ReturnType<typeof fork>, e: CalendarEvent) => {
@@ -242,43 +250,136 @@ describe("удаление не теряется", () => {
     expect(order).toEqual(["sign out"]);
   });
 
-  it("ожидающее удаление записано на диск, пока видна строка; отмена и отправка его стирают", async () => {
+  // журнал удалений на диске: удаление стирается из него, только когда Google ответил
+  const journal = (saved: unknown[]) => (saved.at(-1) as Change[] | undefined)?.map((c) => c.draft.id) ?? [];
+
+  it("удаление в журнале, пока Google не ответил; отмена его стирает", async () => {
     const saved: unknown[] = [];
+    let answer = () => {};
     const scope = fork({
       values: [[$events, [dentist, lunch]]],
       handlers: [
-        [deleteFx, () => undefined],
+        [deleteFx, () => new Promise<void>((r) => (answer = r))],
         [persistDeleteFx, (c: unknown) => void saved.push(c)],
         [undoTimerFx, () => -1],
       ],
     });
     await remove(scope, dentist);
-    expect(saved).toMatchObject([{ draft: { id: "e1" }, scope: "this" }]);
+    expect(journal(saved)).toEqual(["e1"]);
     await allSettled(undoClicked, { scope });
-    expect(saved.at(-1)).toBeNull();
+    expect(journal(saved)).toEqual([]);
+
     await remove(scope, lunch);
-    await allSettled(undoDismissed, { scope });
-    expect(saved.at(-1)).toBeNull();
+    const sending = allSettled(undoDismissed, { scope });
+    await Promise.resolve();
+    // запрос ещё идёт: закрой приложение сейчас — удаление уйдёт при следующем входе
+    expect(journal(saved)).toEqual(["e2"]);
+    answer();
+    await sending;
+    expect(journal(saved)).toEqual([]);
   });
 
-  it("приложение закрыли, пока видна строка: при следующем входе удаление досылается", async () => {
-    const deleted: Deleted[] = [];
+  it("ответ на старое удаление не стирает из журнала новое", async () => {
     const saved: unknown[] = [];
-    const leftover = { draft: { id: "e1" } as EventDraft, scope: "this" as Scope };
+    const answers: (() => void)[] = [];
     const scope = fork({
-      values: [[$leftoverDelete, leftover]],
+      values: [[$events, [dentist, lunch]]],
       handlers: [
-        [deleteFx, (c: Deleted) => void deleted.push(c)],
+        [deleteFx, () => new Promise<void>((r) => answers.push(r))],
         [persistDeleteFx, (c: unknown) => void saved.push(c)],
-        [fetchStatusFx, () => ({ clientSource: "file", accounts: [{ email: "me@example.com", signedIn: true }] })],
+        [undoTimerFx, () => -1],
       ],
     });
+    await remove(scope, dentist);
+    const first = allSettled(undoDismissed, { scope });
+    // пока первое удаление идёт, удаляем второе (без ожидания: allSettled ждал бы и первый запрос)
+    removeNow(scope, lunch);
+    answers[0]();
+    await first;
+    expect(journal(saved)).toEqual(["e2"]);
+  });
+
+  it("сбой сети оставляет удаление в журнале, отказ Google (событие уже удалено) — убирает", async () => {
+    const saved: unknown[] = [];
+    let error: AppError = { kind: "network", message: "нет сети" };
+    const scope = fork({
+      values: [[$events, [dentist, lunch]]],
+      handlers: [
+        [deleteFx, () => Promise.reject(error)],
+        [persistDeleteFx, (c: unknown) => void saved.push(c)],
+        [undoTimerFx, () => -1],
+      ],
+    });
+    await remove(scope, dentist);
+    await allSettled(undoDismissed, { scope });
+    expect(journal(saved)).toEqual(["e1"]);
+    error = { kind: "google", message: "410: Resource has been deleted", status: 410 };
+    await remove(scope, lunch);
+    await allSettled(undoDismissed, { scope });
+    expect(journal(saved)).toEqual(["e1"]);
+  });
+
+  it("после перезапуска удаление досылается, когда вошли именно в его аккаунт", async () => {
+    const deleted: Deleted[] = [];
+    let fail: AppError | null = { kind: "not_signed_in", message: "" };
+    const leftover: Change = {
+      draft: { id: "e1", originalCalendarId: "me@example.com\u0000primary" } as EventDraft,
+      scope: "this",
+    };
+    let accounts = [{ email: "work@example.com", signedIn: true }];
+    const scope = fork({
+      values: [
+        [$leftoverDeletes, [leftover]],
+        [$deleteJournal, [leftover]],
+      ],
+      handlers: [
+        [deleteFx, (c: Deleted) => (deleted.push(c), fail ? Promise.reject(fail) : undefined)],
+        [persistDeleteFx, () => undefined],
+        [fetchStatusFx, () => ({ clientSource: "file", accounts })],
+      ],
+    });
+    // вошли только в рабочий аккаунт: ждём
     await allSettled(fetchStatusFx, { scope });
-    expect(deleted).toMatchObject([{ draft: { id: "e1" } }]);
-    expect(saved.at(-1)).toBeNull();
-    // второй раз не шлём
+    expect(deleted).toHaveLength(0);
+    // вошли в свой, но вход ещё не действует: удаление не пропадает
+    accounts = [...accounts, { email: "me@example.com", signedIn: true }];
     await allSettled(fetchStatusFx, { scope });
     expect(deleted).toHaveLength(1);
+    expect(scope.getState($deleteJournal)).toHaveLength(1);
+    // вход снова потерян и восстановлен — пробуем ещё раз, теперь удачно
+    fail = null;
+    accounts = [{ email: "work@example.com", signedIn: true }];
+    await allSettled(fetchStatusFx, { scope });
+    accounts = [...accounts, { email: "me@example.com", signedIn: true }];
+    await allSettled(fetchStatusFx, { scope });
+    expect(deleted).toHaveLength(2);
+    expect(scope.getState($deleteJournal)).toEqual([]);
+  });
+});
+
+describe("перенос и удаление вперемешку", () => {
+  it("медленный перенос не затирает более новое удаление", async () => {
+    let saved = () => {};
+    const deleted: Deleted[] = [];
+    const scope = fork({
+      values: [[$events, [dentist, lunch]]],
+      handlers: [
+        [moveFx, () => new Promise<void>((r) => (saved = r))],
+        [deleteFx, (c: Deleted) => void deleted.push(c)],
+        [persistDeleteFx, () => undefined],
+        [undoTimerFx, () => -1],
+      ],
+    });
+    const moving = allSettled(eventMoved, {
+      scope,
+      params: { event: dentist, start: new Date(2026, 10, 13, 10), end: new Date(2026, 10, 13, 11) },
+    });
+    removeNow(scope, lunch);
+    saved();
+    await moving;
+    expect(scope.getState($undo)).toMatchObject({ kind: "deleted", title: "Lunch" });
+    await allSettled(undoExpired, { scope, params: scope.getState($undo)?.id ?? -1 });
+    expect(deleted.map((d) => d.draft.id)).toEqual(["e2"]);
   });
 });
 
