@@ -4,6 +4,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+## 0.12.2 — 2026-11-16
+
 ### Fixed
 
 - **Editing an event** sends Google only the fields you changed, so a new title saved from an open form no longer brings back an old time that was changed in Google meanwhile.
