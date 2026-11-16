@@ -1,12 +1,12 @@
 // Reminder schedule: events two days ahead → show times → Rust.
 import { invoke } from "@tauri-apps/api/core";
 import { t } from "../shared/i18n";
-import { createEffect, sample } from "effector";
+import { createEffect, createStore, sample } from "effector";
 import { inTauri } from "../shared/api/bus";
 import { listEvents } from "../shared/api/calendar";
 import type { Calendar, CalendarEvent } from "../shared/api/types";
 import { formatTime } from "../shared/lib/date";
-import { $signedIn } from "./auth";
+import { $signedIn, signOutFx } from "./auth";
 import { $visibleCalendars } from "./calendars";
 import { reloadRequested } from "./events";
 
@@ -86,11 +86,23 @@ export const buildAlerts = (events: CalendarEvent[], now: Date): Alert[] =>
     ];
   });
 
-export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) => {
-  const now = new Date();
-  const range = { start: new Date(now.getTime() - 60_000), end: new Date(now.getTime() + WINDOW_MS) };
+type ReminderRequest = { calendars: Calendar[]; id: number };
+/** events of each calendar that answered; failed — calendars that didn't */
+type ReminderLoad = { byCalendar: Record<string, CalendarEvent[]>; failed: string[] };
+
+export const loadReminderEventsFx = createEffect<ReminderRequest, ReminderLoad>(async ({ calendars }) => {
+  const now = Date.now();
+  const range = { start: new Date(now - 60_000), end: new Date(now + WINDOW_MS) };
   const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
-  const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const byCalendar: Record<string, CalendarEvent[]> = {};
+  const failed: string[] = [];
+  results.forEach((r, i) => (r.status === "fulfilled" ? (byCalendar[calendars[i].id] = r.value) : failed.push(calendars[i].id)));
+  return { byCalendar, failed };
+});
+
+/** the schedule goes to Rust as a whole and replaces the previous one */
+export const sendRemindersFx = createEffect(async ({ events, calendars }: { events: CalendarEvent[]; calendars: Calendar[] }) => {
+  const now = new Date();
   const items = buildReminders(events, calendars, now);
   // in Rust the fields are named differently (snake_case)
   const payload = items.map(({ privateTitle, privateBody, joinLabel, ...r }) => ({
@@ -104,11 +116,41 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   return items.length;
 });
 
+/** number of the latest load: a late answer of an older one doesn't replace a newer schedule */
+const $requestId = createStore(0).on(loadReminderEventsFx, (_, r) => r.id);
+
+/** Events of each calendar from its last successful load. A calendar that failed now (no network, Google busy)
+ *  keeps its earlier events, so its reminders are not dropped from the schedule */
+export const $reminderEvents = createStore<Record<string, CalendarEvent[]>>({}).reset(signOutFx.finally);
+
+const loaded = sample({
+  clock: loadReminderEventsFx.done,
+  source: { latest: $requestId, known: $reminderEvents },
+  filter: ({ latest }, { params }) => params.id === latest,
+  fn: ({ known }, { params, result }) => {
+    // calendars no longer shown are dropped; failed ones keep what was known
+    const next = Object.fromEntries(
+      params.calendars.flatMap((c) => {
+        const events = result.byCalendar[c.id] ?? known[c.id];
+        return events ? [[c.id, events] as const] : [];
+      }),
+    );
+    return { calendars: params.calendars, known: next };
+  },
+});
+$reminderEvents.on(loaded, (_, r) => r.known);
+
+sample({
+  clock: loaded,
+  fn: ({ calendars, known }) => ({ calendars, events: Object.values(known).flat() }),
+  target: sendRemindersFx,
+});
+
 // calendars are reloaded on start, by the "refresh" button and every 5 minutes
 sample({
   clock: [$visibleCalendars.updates, reloadRequested],
-  source: { signedIn: $signedIn, calendars: $visibleCalendars },
+  source: { signedIn: $signedIn, calendars: $visibleCalendars, id: $requestId },
   filter: ({ signedIn }) => signedIn,
-  fn: ({ calendars }) => calendars,
-  target: scheduleRemindersFx,
+  fn: ({ calendars, id }) => ({ calendars, id: id + 1 }),
+  target: loadReminderEventsFx,
 });
