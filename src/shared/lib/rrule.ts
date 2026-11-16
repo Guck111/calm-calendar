@@ -3,6 +3,7 @@
 // конец по дате или по числу повторов. Правило сложнее остаётся как есть и не правится.
 import { locale, t, weekStart } from "../i18n";
 import { addCalendarDays, addDays, daysBetween, fromDateKey, minutesOfDay, startOfDay, startOfWeek, toDateKey } from "./date";
+import { parseTime as parseIcsTime, toInstant } from "./ics";
 import { fromZonedParts, wallClock } from "./tz";
 
 export type Freq = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
@@ -19,6 +20,7 @@ export type Rule = {
   interval: number;
   /** WEEKLY: дни недели (без BYDAY в правиле — день начала) */
   days: Weekday[];
+  weekStartsOn?: Weekday;
   /** MONTHLY: n-й день недели месяца, 1…4 или −1 — последний; без него — то же число, что у начала */
   nth?: number;
   end: RuleEnd;
@@ -113,7 +115,9 @@ const parseRule = (line: string, start: Date, zone?: string): Rule | null => {
   const byDay = tokens.map((tok) => /^([+-]?\d)?(SU|MO|TU|WE|TH|FR|SA)$/.exec(tok));
   if (byDay.some((m) => !m)) return null;
 
-  const rule: Rule = { freq, interval, days: [], end };
+  const wkst = parts.get("WKST") as Weekday | undefined;
+  if (wkst !== undefined && !WEEKDAYS.includes(wkst)) return null;
+  const rule: Rule = { freq, interval, days: [], end, ...(wkst === undefined ? {} : { weekStartsOn: wkst }) };
   if (freq === "WEEKLY") {
     if (byDay.some((m) => m?.[1])) return null;
     const days = new Set(byDay.map((m) => m?.[2] as Weekday));
@@ -152,6 +156,7 @@ export const formatRule = (rule: Rule, start: Date, allDay: boolean, zone?: stri
   if (rule.freq === "MONTHLY" && rule.nth) parts.push(`BYDAY=${rule.nth}${weekdayOf(start)}`);
   if (rule.end.kind === "count") parts.push(`COUNT=${rule.end.count}`);
   if (rule.end.kind === "until") parts.push(`UNTIL=${formatUntil(rule.end.date, allDay, zone)}`);
+  if (rule.weekStartsOn) parts.push(`WKST=${rule.weekStartsOn}`);
   return `RRULE:${parts.join(";")}`;
 };
 
@@ -202,29 +207,50 @@ export const followStart = (rule: Rule, from: Date, to: Date): Rule => {
   return rule;
 };
 
+/** Строки RDATE могут содержать несколько дат по обе стороны границы серии. */
+export const filterRDates = (
+  lines: string[], split: Date, part: "before" | "following", zone?: string,
+): string[] =>
+  lines.flatMap((line) => {
+    const property = /^(RDATE(?:;[^:]*)?):(.*)$/i.exec(line);
+    if (!property) return [line];
+    const [, header, values] = property;
+    const tzid = /(?:^|;)TZID=(?:"([^"]+)"|([^;]+))/i.exec(header);
+    const params = { TZID: tzid?.[1] ?? tzid?.[2] ?? zone ?? "" };
+    const kept = values.split(",").filter((value) => {
+      const time = parseIcsTime(value.split("/")[0].toUpperCase(), params);
+      // Нераспознанное значение сохраняем у исходной серии.
+      if (!time) return part === "before";
+      const before = toInstant(time) < split;
+      return part === "before" ? before : !before;
+    });
+    return kept.length ? [`${header}:${kept.join(",")}`] : [];
+  });
+
 /** Правило с концом прямо перед повторением split: так серия обрезается при «это и следующие» */
-export const truncateBefore = (lines: string[], split: Date, allDay: boolean): string[] =>
-  lines.map((line) => {
+export const truncateBefore = (lines: string[], split: Date, allDay: boolean, zone?: string): string[] =>
+  filterRDates(lines, split, "before", zone).map((line) => {
     if (!isRRule(line)) return line;
     const kept = line
       .slice(6)
       .split(";")
       .filter((p) => !/^(COUNT|UNTIL)=/i.test(p));
-    const until = allDay ? dateStamp(toDateKey(addDays(startOfDay(split), -1))) : utcStamp(new Date(split.getTime() - 1000));
+    const until = allDay ? dateStamp(toDateKey(addCalendarDays(split, -1))) : utcStamp(new Date(split.getTime() - 1000));
     return `RRULE:${[...kept, `UNTIL=${until}`].join(";")}`;
   });
 
 const monthsBetween = (a: Date, b: Date) => (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth();
 
-/** Попадает ли день в правило (без учёта конца). Неделя для шага считается с понедельника, как в Google */
+/** Попадает ли день в правило (без учёта конца). */
 const matches = (rule: Rule, start: Date, day: Date): boolean => {
   const sameMonthDay = day.getDate() === start.getDate();
   switch (rule.freq) {
     case "DAILY":
       return daysBetween(start, day) % rule.interval === 0;
     case "WEEKLY": {
-      const monday = (d: Date) => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
-      const weeks = Math.round(daysBetween(monday(start), monday(day)) / 7);
+      const firstDay = WEEKDAYS.indexOf(rule.weekStartsOn ?? "MO");
+      const week = (d: Date) => addCalendarDays(d, -((d.getDay() - firstDay + 7) % 7));
+      const weeks = Math.round(daysBetween(week(start), week(day)) / 7);
       return weeks % rule.interval === 0 && rule.days.includes(weekdayOf(day));
     }
     case "MONTHLY": {
