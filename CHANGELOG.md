@@ -8,6 +8,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 - **Signing out**: calendars and events of a signed-out account no longer come back when a slow response arrives after sign-out.
 - **Paging through weeks**: a late error from a week you already left no longer covers the week on screen or starts a needless retry.
+- **Widget and tray agenda**: the list of upcoming events and the dots on the month no longer fall back to older data when two refreshes finish out of order.
 
 ## 0.12.1 — 2026-11-16
 
