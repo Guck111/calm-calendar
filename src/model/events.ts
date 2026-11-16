@@ -80,6 +80,14 @@ export const eventsLoaded = sample({
   fn: (_, r) => r,
 });
 
+/** failure of the latest request; a late failure of an older one must not cover a week that already loaded */
+export const eventsFailed = sample({
+  clock: fetchEventsFx.fail,
+  source: $eventsRequestId,
+  filter: (id, { params }) => params.id === id,
+  fn: (_, { error }) => error,
+});
+
 // hidden ones are not shown
 const loaded = sample({
   clock: eventsLoaded,
@@ -101,7 +109,7 @@ export const $loading = combine(fetchEventsFx.pending, fetchCalendarsFx.pending,
 
 const $eventsError = createStore<string | null>(null)
   .on(eventsLoaded, (_, r) => (r.failed.length ? t.errors.calendarsFailed(r.failed.join(", ")) : null))
-  .on(fetchEventsFx.failData, (_, e) => e.message)
+  .on(eventsFailed, (_, e) => e.message)
   .on(calendarsFailed, (_, e) => e.message)
   .on(actionFailed, (_, m) => m)
   .reset(signOutFx.finally);
@@ -125,7 +133,7 @@ sample({ clock: refreshRequested, target: calendarsRequested });
 refreshRequested.watch(forgetFeeds);
 
 sample({
-  clock: [fetchEventsFx.failData, calendarsFailed],
+  clock: [eventsFailed, calendarsFailed],
   filter: (e) => e.kind === "not_signed_in" || e.kind === "not_configured",
   target: sessionLost,
 });

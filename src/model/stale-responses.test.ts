@@ -1,11 +1,12 @@
 // Responses that arrive after the person moved on (signed out, paged further) must not change the screen
 import { allSettled, fork } from "effector";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AllCalendars } from "../shared/api/calendar";
 import type { Calendar, CalendarEvent } from "../shared/api/types";
 import { fetchStatusFx, signOutFx } from "./auth";
 import { $calendars, fetchCalendarsFx } from "./calendars";
-import { $events, fetchEventsFx } from "./events";
+import { $events, $loadError, fetchEventsFx } from "./events";
+import { retryFx } from "./sync";
 
 /** a promise the test resolves by hand, to choose the order of responses */
 const deferred = <T>() => {
@@ -52,5 +53,26 @@ describe("sign-out drops requests already on the way", () => {
     pending.resolve({ events: [meeting], failed: [], lost: false, id: 0 });
     await Promise.all([request, signOut]);
     expect(scope.getState($events)).toEqual([]);
+  });
+});
+
+describe("paging quickly through weeks", () => {
+  it("a late failure of the previous week does not cover the loaded one and starts no retry", async () => {
+    const previous = deferred<never>();
+    const retry = vi.fn(async () => undefined);
+    const scope = fork({
+      handlers: [
+        [fetchEventsFx, ({ id }: { id: number }) =>
+          id === 1 ? previous.promise : Promise.resolve({ events: [meeting], failed: [], lost: false, id })],
+        [retryFx, retry],
+      ],
+    });
+    const first = allSettled(fetchEventsFx, { scope, params: { calendars: [work], range, id: 1 } });
+    const second = allSettled(fetchEventsFx, { scope, params: { calendars: [work], range, id: 2 } });
+    previous.reject({ kind: "network", message: "offline" });
+    await Promise.all([first, second]);
+    expect(scope.getState($events)).toEqual([meeting]);
+    expect(scope.getState($loadError)).toBeNull();
+    expect(retry).not.toHaveBeenCalled();
   });
 });
