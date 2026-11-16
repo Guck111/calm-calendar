@@ -1,4 +1,4 @@
-// События между окнами (главное окно и виджет). В браузере без Tauri — тихо ничего не делаем.
+// Events between windows (main window and widget). In a browser without Tauri — quietly do nothing.
 import { emit, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -16,12 +16,12 @@ export const subscribe = <T>(name: BusEvent, handler: (payload: T) => void): (()
   return () => void unlisten.then((off) => off());
 };
 
-/** показать главное окно; date в формате "2026-11-04" открывает этот день */
+/** show the main window; date in the "2026-11-04" format opens that day */
 export const openMain = (date?: string): void => {
   if (inTauri) {
     void invoke("open_main", { date: date ?? null });
   } else {
-    // в браузере виджет открыт по ?window=widget — просто переходим в календарь
+    // in the browser the widget is opened via ?window=widget — just go to the calendar
     window.location.href = date ? `/?date=${date}` : "/";
   }
 };

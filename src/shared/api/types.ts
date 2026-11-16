@@ -3,97 +3,97 @@ import type { Meeting } from "../lib/meeting";
 export type AccessRole = "owner" | "writer" | "reader" | "freeBusyReader";
 
 export type Calendar = {
-  /** id внутри приложения: аккаунт и id календаря в Google вместе, см. calendarRef */
+  /** id inside the app: account and Google calendar id together, see calendarRef */
   id: string;
-  /** id календаря в Google; у разных аккаунтов может совпадать (общие календари, праздники) */
+  /** calendar id in Google; may match across accounts (shared calendars, holidays) */
   googleId: string;
-  /** email аккаунта Google, через который календарь виден */
+  /** email of the Google account through which the calendar is visible */
   account: string;
   name: string;
   color: string;
   textColor: string;
   accessRole: AccessRole;
   primary: boolean;
-  /** включён ли календарь в самом Google */
+  /** whether the calendar is enabled in Google itself */
   selected: boolean;
-  /** напоминания по умолчанию, минуты до начала */
+  /** default reminders, minutes before start */
   defaultReminders: number[];
-  /** пояс календаря в Google: в нём живут события, у которых свой пояс не указан */
+  /** calendar time zone in Google: events without their own time zone live in it */
   timeZone?: string;
-  /** праздники страны, выбранной в настройках приложения: в списке календарей Google их нет */
+  /** holidays of the country chosen in app settings: they are not in the Google calendar list */
   holiday?: boolean;
-  /** подписка на календарь .ics по ссылке из настроек: только для чтения, Google о ней не знает */
+  /** subscription to an .ics calendar by link from settings: read-only, Google doesn't know about it */
   feed?: boolean;
 };
 
-/** время события в Google: date для событий на весь день, dateTime для остальных */
+/** event time in Google: date for all-day events, dateTime for the rest */
 export type EventTime = { date?: string; dateTime?: string; timeZone?: string };
 
 export type CalendarEvent = {
-  /** уникален среди всех календарей */
+  /** unique across all calendars */
   key: string;
   id: string;
-  /** календарь внутри приложения (Calendar.id) */
+  /** calendar inside the app (Calendar.id) */
   calendarId: string;
-  /** email аккаунта Google */
+  /** Google account email */
   account: string;
-  /** общий id встречи во всех календарях: одна встреча в двух аккаунтах — не пересечение */
+  /** shared meeting id across all calendars: one meeting in two accounts is not an overlap */
   iCalUID?: string;
-  /** та же встреча (общий iCalUID) в календарях других аккаунтов: на экране она одна, тут id остальных */
+  /** the same meeting (shared iCalUID) in calendars of other accounts: it's one on screen, here are the other ids */
   alsoIn?: string[];
-  /** в Google отмечено «свободен»: такое событие ни с чем не пересекается */
+  /** marked "free" in Google: such an event overlaps nothing */
   free?: boolean;
   title: string;
   start: Date;
-  /** не включительно: для события на весь день это полночь следующего дня */
+  /** exclusive: for an all-day event it's midnight of the next day */
   end: Date;
   allDay: boolean;
-  /** пояс события в Google (start.timeZone), без него — пояс календаря; у событий на весь день нет */
+  /** event time zone in Google (start.timeZone), without it — the calendar's time zone; all-day events have none */
   timeZone?: string;
-  /** пояс конца, только если в Google он другой, чем у начала */
+  /** end time zone, only if in Google it differs from the start's */
   endTimeZone?: string;
   location?: string;
   description?: string;
   htmlLink?: string;
-  /** видеовстреча: Meet, Zoom, Teams… */
+  /** video meeting: Meet, Zoom, Teams… */
   meeting?: Meeting;
   recurring: boolean;
-  /** у повторения серии: id главного события и исходное время этого повторения */
+  /** for a series occurrence: master event id and the original time of this occurrence */
   recurringEventId?: string;
   originalStart?: EventTime;
-  /** минуты до начала; "default" — как задано у календаря */
+  /** minutes before start; "default" — as set on the calendar */
   reminders?: number[] | "default";
-  /** время в пути до события, минуты; хранится в скрытых полях события в Google */
+  /** travel time to the event, minutes; stored in the event's hidden fields in Google */
   travelMinutes?: number;
-  /** участники встречи; нет — встреча без гостей */
+  /** meeting attendees; none — a meeting without guests */
   attendees?: Attendee[];
-  /** организатор — этот аккаунт: только он может менять список гостей */
+  /** the organizer is this account: only it can change the guest list */
   organizerSelf?: boolean;
-  /** свой цвет события в Google (1–11); нет — цвет календаря */
+  /** the event's own color in Google (1–11); none — the calendar color */
   colorId?: string;
-  /** прикреплённые файлы Google Диска */
+  /** attached Google Drive files */
   attachments?: Attachment[];
 };
 
-/** вложение события: файл Google Диска */
+/** event attachment: a Google Drive file */
 export type Attachment = { fileUrl: string; title: string; mimeType?: string; fileId?: string };
 
-/** участник встречи, как его отдаёт Google */
+/** meeting attendee as Google returns it */
 export type Attendee = {
   email: string;
   displayName?: string;
   responseStatus?: "needsAction" | "declined" | "tentative" | "accepted";
-  /** это сам аккаунт */
+  /** this is the account itself */
   self?: boolean;
   organizer?: boolean;
   optional?: boolean;
 };
 
-/** Черновик для формы создания и правки события */
+/** Draft for the event create and edit form */
 export type EventDraft = {
-  /** нет при создании */
+  /** absent on create */
   id?: string;
-  /** календарь, в котором событие лежит сейчас */
+  /** the calendar the event is in now */
   originalCalendarId?: string;
   calendarId: string;
   title: string;
@@ -102,45 +102,45 @@ export type EventDraft = {
   startTime: string;
   endDate: string;
   endTime: string;
-  /** пояс, по часам которого заданы дата и время в форме; нет — пояс системы */
+  /** time zone whose clock defines the date and time in the form; none — the system time zone */
   timeZone?: string;
-  /** у конца в Google свой пояс: сохраняем его, пока пояс в форме не меняли */
+  /** the end has its own time zone in Google: keep it as long as the time zone in the form wasn't changed */
   endTimeZone?: string;
-  /** Исходные моменты для выбора нужного смещения в повторяющийся осенний час. */
+  /** Original instants for picking the right offset in a repeated autumn hour. */
   originalTimes?: { zone: string; start: Date; end: Date };
   location: string;
   description: string;
-  /** правило повтора (строки RRULE, EXDATE…); пусто — не повторяется */
+  /** recurrence rule (RRULE, EXDATE… lines); empty — doesn't repeat */
   recurrence: string[];
-  /** правило до правки; undefined — правило серии ещё не загружено */
+  /** rule before editing; undefined — the series rule isn't loaded yet */
   originalRecurrence?: string[];
-  /** повторение серии: id главного события и исходное время повторения */
+  /** series occurrence: master event id and the original time of the occurrence */
   recurringEventId?: string;
   originalStart?: EventTime;
   htmlLink?: string;
-  /** время в пути, минуты; 0 — нет; undefined — поле не трогаем */
+  /** travel time, minutes; 0 — none; undefined — leave the field alone */
   travelMinutes?: number;
-  /** гости; undefined — список не трогаем (событие чужое, менять его может только организатор) */
+  /** guests; undefined — leave the list alone (someone else's event, only the organizer can change it) */
   guests?: Attendee[];
-  /** создать видеовстречу Google Meet при сохранении; undefined — у события она уже есть */
+  /** create a Google Meet video meeting on save; undefined — the event already has one */
   addMeet?: boolean;
-  /** свой цвет события; "" — цвет календаря; undefined — не трогаем */
+  /** the event's own color; "" — calendar color; undefined — leave alone */
   colorId?: string;
-  /** вложения; undefined — не трогаем (у чужой встречи их меняет организатор) */
+  /** attachments; undefined — leave alone (for someone else's meeting the organizer changes them) */
   attachments?: Attachment[];
-  /** список вложений меняли: только тогда он уходит в Google */
+  /** the attachment list was changed: only then it goes to Google */
   attachmentsChanged?: boolean;
 };
 
-/** какие повторения серии затронуть */
+/** which series occurrences to affect */
 export type Scope = "this" | "following";
 
-/** аккаунт Google; signedIn false — Google отозвал доступ, нужно войти снова */
+/** Google account; signedIn false — Google revoked access, need to sign in again */
 export type Account = { email: string; signedIn: boolean };
 
 export type AuthStatus = {
   clientSource: "build" | "file" | "none";
-  /** в порядке входа */
+  /** in sign-in order */
   accounts: Account[];
 };
 
@@ -155,5 +155,5 @@ export type AppErrorKind =
   | "network"
   | "other";
 
-/** status — код ответа Google у ошибок kind "google" */
+/** status — Google response code for errors of kind "google" */
 export type AppError = { kind: AppErrorKind; message: string; status?: number };

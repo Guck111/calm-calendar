@@ -1,4 +1,4 @@
-// Время в пути и гости: чтение из Google, сохранение, письма гостям, занятое время
+// Travel time and guests: reading from Google, saving, emails to guests, busy time
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEvent } from "../shared/api/types";
 
@@ -21,7 +21,7 @@ beforeEach(() => {
 const ME = "me@example.com";
 const CAL = `${ME}\u0000primary`;
 
-/** встреча 10:00–11:00 с дорогой 30 минут и одним гостем */
+/** a meeting 10:00–11:00 with 30 minutes of travel and one guest */
 const meeting = (over: Record<string, unknown> = {}): CalendarEvent =>
   toCalendarEvent(CAL, {
     id: "m1",
@@ -39,8 +39,8 @@ const meeting = (over: Record<string, unknown> = {}): CalendarEvent =>
 
 const call = (method: string) => googleRequest.mock.calls.find((c) => c[1] === method);
 
-describe("время в пути", () => {
-  it("читается из скрытых полей события; мусор и ноль не считаются", () => {
+describe("travel time", () => {
+  it("read from hidden event fields; garbage and zero are ignored", () => {
     expect(meeting().travelMinutes).toBe(30);
     const none = (v: string) =>
       meeting({ extendedProperties: { private: { [TRAVEL_KEY]: v } } }).travelMinutes;
@@ -49,7 +49,7 @@ describe("время в пути", () => {
     expect(meeting({ extendedProperties: undefined }).travelMinutes).toBeUndefined();
   });
 
-  it("сохраняется в скрытое поле; у события без дороги поле не появляется", async () => {
+  it("saved to a hidden field; an event without travel doesn't get the field", async () => {
     await saveEvent(applyChange(fromEvent(meeting()), { travelMinutes: 45 }));
     expect(call("PATCH")?.[4].extendedProperties).toEqual({ private: { [TRAVEL_KEY]: "45" } });
 
@@ -62,7 +62,7 @@ describe("время в пути", () => {
     expect(call("PATCH")?.[4].extendedProperties).toEqual({ private: { [TRAVEL_KEY]: "0" } });
   });
 
-  it("новая серия «с этого и дальше» сохраняет чужие скрытые поля главного события", () => {
+  it("new 'this and following' series keeps the master event's foreign hidden fields", () => {
     const draft = { ...fromEvent(meeting()), travelMinutes: 15, recurringEventId: "s", originalStart: { dateTime: "2026-11-11T09:00:00Z" } };
     const master = {
       id: "s",
@@ -76,9 +76,9 @@ describe("время в пути", () => {
       expect(plan.create.extendedProperties).toEqual({ private: { other: "x", [TRAVEL_KEY]: "15" }, shared: { s: "1" } });
   });
 
-  it("дорога занята: в свободном времени и в пересечениях между аккаунтами", () => {
+  it("travel is busy: in free time and in overlaps between accounts", () => {
     const at = (h: number, mi = 0) => new Date(2026, 10, 11, h, mi);
-    // встреча 10:00–11:00 по местному времени с дорогой 30 минут
+    // a meeting 10:00–11:00 local time with 30 minutes of travel
     const m = meeting({ start: { dateTime: at(10).toISOString() }, end: { dateTime: at(11).toISOString() } });
     const opts = { from: 9 * 60, to: 12 * 60, minLength: 15, weekends: true };
     const [day] = freeSlots([m], [at(0)], opts, at(8));
@@ -86,7 +86,7 @@ describe("время в пути", () => {
       { start: at(9), end: at(9, 30) },
       { start: at(11), end: at(12) },
     ]);
-    // событие другого аккаунта 9:10–9:40 попадает на дорогу, но не на саму встречу
+    // an event from another account 9:10–9:40 falls on the travel time, but not on the meeting itself
     const other: CalendarEvent = {
       ...m,
       key: "w",
@@ -101,15 +101,15 @@ describe("время в пути", () => {
   });
 });
 
-describe("гости", () => {
-  it("читаются из Google вместе с организатором", () => {
+describe("guests", () => {
+  it("read from Google together with the organizer", () => {
     const m = meeting();
     expect(m.attendees?.map((a) => a.email)).toEqual([ME, "anna@example.com"]);
     expect(m.organizerSelf).toBe(true);
     expect(fromEvent(m).guests).toHaveLength(2);
   });
 
-  it("у чужой встречи список гостей в черновик не попадает и не отправляется", async () => {
+  it("for someone else's meeting the guest list doesn't go into the draft and isn't sent", async () => {
     const theirs = meeting({ organizer: { email: "boss@example.com" } });
     expect(theirs.organizerSelf).toBe(false);
     const draft = fromEvent(theirs);
@@ -119,7 +119,7 @@ describe("гости", () => {
     expect(call("PATCH")?.[3]).toBeUndefined();
   });
 
-  it("новый гость: attendees без служебных полей и письма всем гостям", async () => {
+  it("new guest: attendees without service fields and emails to all guests", async () => {
     const draft = applyChange(fromEvent(meeting()), {
       guests: [...(fromEvent(meeting()).guests ?? []), { email: "bob@example.com" }],
     });
@@ -133,7 +133,7 @@ describe("гости", () => {
     ]);
   });
 
-  it("новая встреча с гостем и удаление встречи с гостями — с письмами", async () => {
+  it("new meeting with a guest and deleting a meeting with guests — with emails", async () => {
     await saveEvent({ ...fromEvent(meeting()), id: undefined, guests: [{ email: "anna@example.com" }] });
     expect(call("POST")?.[3]).toEqual({ sendUpdates: "all" });
     googleRequest.mockClear();
@@ -141,7 +141,7 @@ describe("гости", () => {
     expect(call("DELETE")?.[3]).toEqual({ sendUpdates: "all" });
   });
 
-  it("встреча без гостей сохраняется без писем", async () => {
+  it("a meeting without guests is saved without emails", async () => {
     await saveEvent(fromEvent(meeting({ attendees: undefined })));
     expect(call("PATCH")?.[3]).toBeUndefined();
   });

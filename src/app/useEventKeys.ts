@@ -1,6 +1,6 @@
-// События без мыши. Блоки событий во всех видах — кнопки с data-event-key: Tab и Enter работают сами.
-// Здесь: стрелки между блоками (ближайший на экране), ↓/↑ — войти в события, E — правка,
-// Ctrl+D — копия, Delete — карточка с вопросом об удалении. После карточки фокус возвращается на событие.
+// Events without a mouse. Event blocks in all views are buttons with data-event-key: Tab and Enter work by themselves.
+// Here: arrows between blocks (nearest on screen), ↓/↑ — enter events, E — edit,
+// Ctrl+D — duplicate, Delete — card asking to confirm deletion. After the card, focus returns to the event.
 import { useUnit } from "effector-react";
 import { useEffect, useRef } from "react";
 import { $draft, $opened } from "../model/editor";
@@ -9,11 +9,11 @@ import { nearest, type Direction } from "../shared/lib/spatial";
 
 const ARROWS: Record<string, Direction> = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
 
-/** Блок события под фокусом (или внутри него) */
+/** Focused event block (or one containing focus) */
 export const eventElement = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>("[data-event-key]") : null;
 
-/** Видимые блоки событий текущего вида, в порядке документа */
+/** Visible event blocks of the current view, in document order */
 const blocks = (): HTMLElement[] =>
   [...document.querySelectorAll<HTMLElement>("main [data-event-key]")].filter((b) => {
     const r = b.getBoundingClientRect();
@@ -25,20 +25,20 @@ const isTyping = (target: EventTarget | null) =>
 
 export const useEventKeys = (signedIn: boolean) => {
   const [press, opened, draft] = useUnit([eventKeyPressed, $opened, $draft]);
-  // событие, с которого открыли карточку с клавиатуры: на него вернём фокус
+  // event from which the card was opened via keyboard: focus returns to it
   const back = useRef<string | null>(null);
 
   useEffect(() => {
     if (!signedIn) return;
     const onKey = (e: KeyboardEvent) => {
-      // открыта карточка, форма, меню команд или настройки — клавиши их
+      // a card, form, command menu or settings are open — keys belong to them
       if (document.querySelector('[role="dialog"]')) return;
       const mods = e.ctrlKey || e.metaKey || e.altKey || e.shiftKey;
       const el = eventElement(e.target);
       const key = el?.dataset.eventKey;
 
       if (!el || !key) {
-        // ни одно событие не выбрано: ↓ — первое, ↑ — последнее
+        // no event selected: ↓ — first, ↑ — last
         if (mods || isTyping(e.target) || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
         const list = blocks();
         const target = e.key === "ArrowDown" ? list[0] : list[list.length - 1];
@@ -63,7 +63,7 @@ export const useEventKeys = (signedIn: boolean) => {
         const to = nearest(from, boxes, direction);
         if (to) list[boxes.indexOf(to)]?.focus();
       } else if ((e.key === "Enter" || e.key === " ") && !mods) {
-        // карточку откроет сама кнопка; запоминаем, куда вернуть фокус
+        // the button itself opens the card; remember where to return focus
         back.current = key;
       } else if (e.code === "KeyE" && !mods) act("edit");
       else if (e.code === "KeyD" && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) act("duplicate");
@@ -73,7 +73,7 @@ export const useEventKeys = (signedIn: boolean) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [signedIn, press]);
 
-  // карточка и форма закрылись — фокус на то же событие, если оно ещё на экране
+  // card and form closed — focus the same event if it is still on screen
   useEffect(() => {
     if (opened || draft || !back.current) return;
     const key = back.current;

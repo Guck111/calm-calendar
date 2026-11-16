@@ -41,7 +41,7 @@ const AUTO_REFRESH_MS = 5 * 60_000;
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 
-/** Таймеры, обновление при возврате в окно и горячие клавиши */
+/** Timers, refresh on returning to the window, and hotkeys */
 const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   const [start, tick, refresh] = useUnit([appStarted, minuteTicked, refreshRequested]);
   const [prev, next, today, setView, create] = useUnit([
@@ -56,19 +56,19 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
 
   useEffect(() => start(), [start]);
 
-  // виджет просит открыть конкретный день
+  // widget asks to open a specific day
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get("date");
     if (fromQuery) openDay(fromDateKey(fromQuery));
     const offDate = subscribe<{ date: string }>("open-date", ({ date }) => openDay(fromDateKey(date)));
-    // Ctrl+Enter в строке виджета: открыть форму с заполненными полями
+    // Ctrl+Enter in the widget input: open the form with filled fields
     const offDraft = subscribe<EventDraft>("open-draft", (draft) => {
       openDay(fromDateKey(draft.startDate));
       openDraft(draft);
     });
-    // событие создали из виджета
+    // event was created from the widget
     const offChanged = subscribe<{ from?: string }>("events-changed", (p) => p?.from !== "main" && reload());
-    // второй пояс, номера недель, праздники сменили в окне настроек
+    // second time zone, week numbers, holidays changed in the settings window
     const offDisplay = subscribe("display-changed", () => {
       secondZoneReloaded();
       displayReloaded();
@@ -82,7 +82,7 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   }, [openDay, openDraft, reload]);
 
   useEffect(() => {
-    // тикаем ровно на границе минуты, чтобы линия «сейчас» не отставала
+    // tick exactly at the minute boundary so the "now" line doesn't lag
     let interval: number | undefined;
     const timeout = window.setTimeout(() => {
       tick(new Date());
@@ -119,7 +119,7 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   useEffect(() => {
     if (!signedIn || editorOpen) return;
     const actions: Record<string, () => void> = {
-      // справа налево стрелка влево ведёт вперёд, как и кнопки
+      // in right-to-left, the left arrow goes forward, like the buttons
       ArrowLeft: () => (isRtl() ? next() : prev()),
       ArrowRight: () => (isRtl() ? prev() : next()),
       t: () => today(),
@@ -131,9 +131,9 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
-      // на выбранном событии стрелки ходят между событиями (useEventKeys), а не по неделям
+      // on a selected event, arrows move between events (useEventKeys), not between weeks
       if (e.key.startsWith("Arrow") && eventElement(e.target)) return;
-      // e.code не зависит от раскладки: работает и на русской
+      // e.code doesn't depend on the keyboard layout: works with Russian too
       const key = e.key.startsWith("Arrow") ? e.key : e.code.replace(/^Key/, "").toLowerCase();
       const action = actions[key];
       if (action) {
@@ -146,8 +146,8 @@ const useAppEffects = (signedIn: boolean, editorOpen: boolean) => {
   }, [signedIn, editorOpen, prev, next, today, setView, create]);
 };
 
-/** Полоса над календарём: ошибка загрузки или «нет сети», с кнопкой «Повторить».
- *  Повтор и так идёт сам через 5 секунд, 15 секунд и минуту (model/sync) */
+/** Bar above the calendar: load error or "offline", with a "Retry" button.
+ *  Retry happens on its own anyway after 5 seconds, 15 seconds and a minute (model/sync) */
 const Banner = ({ text }: { text: string }) => {
   const [loading, retry] = useUnit([$loading, retryClicked]);
   return (

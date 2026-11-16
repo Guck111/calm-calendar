@@ -1,5 +1,5 @@
-// Язык фразы быстрого создания по её буквам: русская фраза при английском интерфейсе
-// читается русским разбором. Язык интерфейса — первый: латиница при испанском остаётся испанской.
+// Quick add phrase language by its letters: a Russian phrase with an English UI
+// is read by the Russian parser. The UI language comes first: Latin script with a Spanish UI stays Spanish.
 import type { Lang } from "../i18n";
 
 const LATIN = /\p{Script=Latin}/u;
@@ -7,7 +7,7 @@ const CYRILLIC = /\p{Script=Cyrillic}/u;
 const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
 const HAN = /\p{Script=Han}/u;
 
-/** письмо каждого языка интерфейса */
+/** script of each UI language */
 const SCRIPT: Record<Lang, RegExp> = {
   en: LATIN,
   es: LATIN,
@@ -24,7 +24,7 @@ const SCRIPT: Record<Lang, RegExp> = {
   zh: HAN,
 };
 
-/** чужое письмо — язык этого письма; латиница — английский */
+/** a foreign script — the language of that script; Latin — English */
 const OTHERS: [RegExp, Lang][] = [
   [CYRILLIC, "ru"],
   [SCRIPT.ar, "ar"],
@@ -37,9 +37,9 @@ const OTHERS: [RegExp, Lang][] = [
 
 const CYRILLIC_LANGS: Lang[] = ["ru", "uk", "be"];
 
-/** Кириллица: язык по буквам, которые есть только в нём. «ў» — белорусская, «ї є ґ» — украинские,
- *  «і» — в обоих, «ы э ъ» — в русском и белорусском, «и щ» — в русском и украинском.
- *  Если букв не хватает, остаётся язык интерфейса, а не кириллический — русский. */
+/** Cyrillic: the language by letters found only in it. «ў» is Belarusian, «ї є ґ» are Ukrainian,
+ *  «і» — in both, «ы э ъ» — in Russian and Belarusian, «и щ» — in Russian and Ukrainian.
+ *  If there aren't enough letters, the UI language stays, rather than Cyrillic meaning Russian. */
 const cyrillicLang = (input: string, ui: Lang): Lang => {
   const fits = (l: Lang): boolean => {
     if (l === "ru") return !/[ўіїєґ]/iu.test(input);
@@ -51,7 +51,7 @@ const cyrillicLang = (input: string, ui: Lang): Lang => {
 };
 
 export const phraseLang = (input: string, ui: Lang): Lang => {
-  // кана бывает только в японском: иероглифы рядом с ней — тоже японские
+  // kana exists only in Japanese: ideographs next to it are Japanese too
   if (KANA.test(input)) return "ja";
   if (SCRIPT[ui].test(input)) return CYRILLIC_LANGS.includes(ui) ? cyrillicLang(input, ui) : ui;
   const other = OTHERS.find(([script]) => script.test(input))?.[1] ?? ui;

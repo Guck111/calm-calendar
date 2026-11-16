@@ -10,7 +10,7 @@ export const prevClicked = createEvent();
 export const nextClicked = createEvent();
 export const todayClicked = createEvent();
 export const dateSelected = createEvent<Date>();
-/** открыть конкретный день в виде «день» */
+/** open a specific day in the "day" view */
 export const dayOpened = createEvent<Date>();
 export const minuteTicked = createEvent<Date>();
 
@@ -47,6 +47,6 @@ $view.watch((v) => writeJson(VIEW_KEY, v));
 
 export const $range = combine($view, $cursor, viewRange);
 
-/** текущее время с точностью до минуты: для линии «сейчас» и подсветки сегодняшнего дня */
+/** current time to the minute: for the "now" line and highlighting today */
 export const $now = createStore(new Date()).on(minuteTicked, (_, d) => d);
 export const $today = $now.map(startOfDay);

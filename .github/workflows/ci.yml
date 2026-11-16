@@ -32,7 +32,7 @@ jobs:
       - run: npx tsc --noEmit
       - run: npx tsc -p e2e
 
-      # тесты интерфейса: Playwright против npm run dev на подставных данных, в установленном Chrome
+      # UI tests: Playwright against npm run dev on mock data, in the installed Chrome
       - name: Interface tests
         run: npm run test:ui
 

@@ -1,13 +1,13 @@
-// Одна встреча, на которую позвали оба аккаунта: у копий в разных аккаунтах общий iCalUID.
-// Показываем её один раз; у оставшейся копии в alsoIn — календари остальных.
+// One meeting both accounts were invited to: copies in different accounts share an iCalUID.
+// Show it once; the remaining copy has the other calendars in alsoIn.
 import type { CalendarEvent } from "../api/types";
 
-/** у повторений серии iCalUID общий, поэтому различаем их ещё и по началу */
+/** series occurrences share an iCalUID, so they are also told apart by start */
 const meetingKey = (e: CalendarEvent) => `${e.iCalUID}|${e.start.getTime()}`;
 
 /**
- * @param events события всех календарей в порядке аккаунтов
- * @param writable календари, где событие можно править: такую копию оставляем, если она есть
+ * @param events events of all calendars in account order
+ * @param writable calendars where the event can be edited: keep such a copy if there is one
  */
 export const mergeSharedMeetings = (events: CalendarEvent[], writable: Set<string>): CalendarEvent[] => {
   const groups = new Map<string, CalendarEvent[]>();
@@ -18,7 +18,7 @@ export const mergeSharedMeetings = (events: CalendarEvent[], writable: Set<strin
   }
   const keep = new Map<string, CalendarEvent>();
   for (const [key, copies] of groups) {
-    // копии в одном аккаунте (два его календаря) не объединяем: так же показывает и Google
+    // copies in one account (two of its calendars) are not merged: Google shows them the same way
     if (new Set(copies.map((c) => c.account)).size < 2) continue;
     const main = copies.find((c) => writable.has(c.calendarId)) ?? copies[0];
     const others = copies.filter((c) => c !== main && c.account !== main.account);
@@ -29,7 +29,7 @@ export const mergeSharedMeetings = (events: CalendarEvent[], writable: Set<strin
     const merged = e.iCalUID ? keep.get(meetingKey(e)) : undefined;
     if (!merged) return [e];
     if (merged.key === e.key) return [merged];
-    // копия того же аккаунта, что и оставшаяся, остаётся как есть
+    // a copy from the same account as the remaining one stays as is
     return e.account === merged.account ? [e] : [];
   });
 };

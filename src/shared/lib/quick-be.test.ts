@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseQuick } from "./quick";
 
-// серада, 4 лістапада 2026, 18:00
+// Wednesday, November 4, 2026, 18:00
 const now = new Date(2026, 10, 4, 18, 0);
 const calendars = [
   { id: "me", name: "Асабістае" },
@@ -10,8 +10,8 @@ const calendars = [
 const at = (d: number, h: number, m = 0, month = 10) => new Date(2026, month, d, h, m);
 const be = (text: string) => parseQuick(text, now, calendars, "be");
 
-describe("хуткае стварэнне па-беларуску", () => {
-  it("заўтра, час і працягласць", () => {
+describe("quick add in Belarusian", () => {
+  it("tomorrow, time and duration", () => {
     expect(be("заўтра 19:00 англійская 50 хв")).toMatchObject({
       title: "англійская",
       allDay: false,
@@ -27,13 +27,13 @@ describe("хуткае стварэнне па-беларуску", () => {
     });
   });
 
-  it("часткі сутак і прамежкі", () => {
+  it("parts of the day and ranges", () => {
     expect(be("у пятніцу а 7 вечара вячэра")).toMatchObject({ title: "вячэра", start: at(6, 19) });
     expect(be("званок з 14 да 15:30")).toMatchObject({ title: "званок", start: at(5, 14), end: at(5, 15, 30) });
     expect(be("сёння 19-21 кіно")).toMatchObject({ title: "кіно", start: at(4, 19), end: at(4, 21) });
   });
 
-  it("дні тыдня, даты і лічбы", () => {
+  it("weekdays, dates and numbers", () => {
     expect(be("ср у 20 трэніроўка").start).toEqual(at(4, 20));
     expect(be("нд дзень нараджэння Алеся")).toMatchObject({ title: "дзень нараджэння Алеся", allDay: true, start: at(8, 0) });
     expect(be("5 снежня 10:00 доктар").start).toEqual(at(5, 10, 0, 11));

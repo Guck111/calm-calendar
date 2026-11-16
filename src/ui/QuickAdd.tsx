@@ -6,12 +6,12 @@ import { cx } from "./Button";
 import s from "./QuickAdd.module.css";
 
 type Props = {
-  /** календари, куда можно записывать; первый — по умолчанию */
+  /** writable calendars; the first is the default */
   calendars: QuickCalendar[];
   onCreate: (draft: EventDraft) => Promise<void>;
-  /** Ctrl+Enter: открыть полную форму с заполненными полями */
+  /** Ctrl+Enter: open the full form with filled fields */
   onExpand: (draft: EventDraft) => void;
-  /** popup — окно быстрого создания по сочетанию клавиш: строка крупнее */
+  /** popup — the quick add window opened by hotkey: a larger input */
   variant?: "main" | "widget" | "popup";
 };
 
@@ -97,7 +97,7 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
               <span className={s.error}>{error}</span>
             </div>
           ) : (
-            // клик по подсказке — то же, что Enter; фокус остаётся в строке
+            // click on the hint is the same as Enter; focus stays in the input
             <button
               type="button"
               className={cx(s.preview, s.action)}

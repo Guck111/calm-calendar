@@ -1,4 +1,4 @@
-// «Свободное время»: окна между событиями в рабочие часы, текстом для мессенджера.
+// "Free time": gaps between events during working hours, as text for a messenger.
 import type { CalendarEvent } from "../api/types";
 import { locale, t } from "../i18n";
 import { formatTime, formatWeekdayDayMonth, localTimeZone, startOfDay } from "./date";
@@ -7,10 +7,10 @@ import { isAllDayLike } from "./layout";
 import { zoneCity, zoneShort } from "./tz";
 
 export type FreeOptions = {
-  /** начало и конец рабочего дня, минуты от полуночи */
+  /** start and end of the working day, minutes from midnight */
   from: number;
   to: number;
-  /** окна короче не показываем, минуты */
+  /** shorter gaps are not shown, minutes */
   minLength: number;
   weekends: boolean;
 };
@@ -18,11 +18,11 @@ export type FreeOptions = {
 export type Slot = { start: Date; end: Date };
 export type FreeDay = { day: Date; slots: Slot[] };
 
-/** окна начинаются с ровных четверти часа: «с 10:15», а не «с 10:07» */
+/** gaps start on round quarter hours: "from 10:15", not "from 10:07" */
 const STEP_MS = 15 * 60_000;
 const ceilToStep = (d: Date): Date => new Date(Math.ceil(d.getTime() / STEP_MS) * STEP_MS);
 
-/** выходные региона: суббота и воскресенье, а, например, в Саудовской Аравии — пятница и суббота */
+/** region's weekend: Saturday and Sunday, but e.g. in Saudi Arabia — Friday and Saturday */
 export const isWeekend = (d: Date): boolean => {
   try {
     const l = new Intl.Locale(locale) as Intl.Locale & {
@@ -30,15 +30,15 @@ export const isWeekend = (d: Date): boolean => {
       weekInfo?: { weekend: number[] };
     };
     const weekend = (l.getWeekInfo?.() ?? l.weekInfo)?.weekend;
-    // в weekInfo понедельник — 1, воскресенье — 7
+    // in weekInfo Monday is 1, Sunday is 7
     if (weekend?.length) return weekend.includes(d.getDay() || 7);
   } catch {
-    // старый движок без weekInfo
+    // old engine without weekInfo
   }
   return d.getDay() === 0 || d.getDay() === 6;
 };
 
-/** Занятым считаем всё, кроме событий на весь день и отмеченных «свободен»; дорога до события тоже занята */
+/** Everything counts as busy except all-day events and those marked "free"; travel to an event is busy too */
 const busy = (e: CalendarEvent) => !isAllDayLike(e) && !e.free;
 
 export const freeSlots = (events: CalendarEvent[], days: Date[], o: FreeOptions, now = new Date()): FreeDay[] => {
@@ -67,7 +67,7 @@ export const freeSlots = (events: CalendarEvent[], days: Date[], o: FreeOptions,
     .filter((d) => d.slots.length);
 };
 
-/** «Когда я свободен (Warsaw, GMT+1):» и по строке на день: «Пн, 9 ноября: 09:00–11:00 и 15:00–18:00» */
+/** "When I'm free (Warsaw, GMT+1):" and a line per day: "Mon, November 9: 09:00–11:00 and 15:00–18:00" */
 export const formatFreeSlots = (days: FreeDay[], now = new Date(), zone = localTimeZone()): string => {
   if (!days.length) return t.free.none;
   const list = new Intl.ListFormat(locale, { type: "conjunction" });

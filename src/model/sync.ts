@@ -1,5 +1,5 @@
-// Связь с Google: время последней удачной загрузки и повтор, когда Google не ответил.
-// Повторы — через 5 секунд, 15 секунд и минуту; дальше событие перечитается обычным обновлением раз в 5 минут.
+// Connection to Google: time of the last successful load and retry when Google didn't respond.
+// Retries — after 5 seconds, 15 seconds and a minute; after that the event is reloaded by the regular refresh every 5 minutes.
 import { createEffect, createEvent, createStore, merge, sample } from "effector";
 import type { AppError } from "../shared/api/types";
 import { t } from "../shared/i18n";
@@ -10,19 +10,19 @@ import { fetchEventsFx, refreshRequested } from "./events";
 
 const DELAYS = [5_000, 15_000, 60_000];
 
-/** пауза перед повтором номер attempt (с нуля); null — повторов больше не будет */
+/** delay before retry number attempt (zero-based); null — no more retries */
 export const retryDelay = (attempt: number): number | null => DELAYS[attempt] ?? null;
 
-/** сбой, который проходит сам: нет сети, Google перегружен или временно недоступен */
+/** a failure that passes by itself: offline, Google overloaded or temporarily unavailable */
 export const isTransient = (e: AppError): boolean =>
   e.kind === "network" || (e.kind === "google" && [429, 500, 502, 503, 504].includes(e.status ?? 0));
 
-/** «Повторить» в полосе ошибки */
+/** "Retry" in the error bar */
 export const retryClicked = createEvent();
 
 export const retryFx = createEffect<number, void>((ms) => new Promise<void>((done) => setTimeout(done, ms)));
 
-/** загрузка прошла: из Google, все календари */
+/** load succeeded: from Google, all calendars */
 const loaded = sample({
   clock: fetchEventsFx.doneData,
   source: $offlineSince,
@@ -30,7 +30,7 @@ const loaded = sample({
   fn: () => Date.now(),
 });
 
-/** что-то не загрузилось или показаны сохранённые данные без сети */
+/** something failed to load or saved data is shown without network */
 const trouble = merge([
   sample({ clock: [fetchEventsFx.failData, fetchCalendarsFx.failData], filter: isTransient }),
   sample({
@@ -40,7 +40,7 @@ const trouble = merge([
   }),
 ]);
 
-/** сколько повторов подряд уже было */
+/** how many retries in a row there have been */
 const $attempt = createStore(0)
   .on(retryFx.done, (n) => n + 1)
   .reset([loaded, retryClicked]);
@@ -55,13 +55,13 @@ sample({
 
 sample({ clock: [retryFx.done, retryClicked], target: refreshRequested });
 
-/** повтор ждёт своей очереди */
+/** a retry is waiting for its turn */
 export const $retrying = retryFx.pending;
 
-/** время последней удачной загрузки из Google, мс; null — ещё не было */
+/** time of the last successful load from Google, ms; null — none yet */
 export const $lastSynced = createStore<number | null>(null).on(loaded, (_, at) => at);
 
-/** «Обновлено 10:42», для вчерашнего и раньше — с датой */
+/** "Updated 10:42", for yesterday and earlier — with the date */
 export const syncedText = (at: number, now = new Date()): string => {
   const d = new Date(at);
   return t.sync.updated(isSameDay(d, now) ? formatTime(d) : `${formatShortDate(d, now)}, ${formatTime(d)}`);

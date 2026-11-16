@@ -1,4 +1,4 @@
-/* Список дел у значка в трее: как системные всплывающие окна Windows — спокойный, плотный */
+/* Agenda at the tray icon: like Windows system flyouts — calm, dense */
 :global(html[data-window="agenda"]),
 :global(html[data-window="agenda"] body) {
   margin: 0;

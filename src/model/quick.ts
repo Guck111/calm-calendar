@@ -5,7 +5,7 @@ import type { AppError, EventDraft } from "../shared/api/types";
 import { sessionLost } from "./auth";
 import { reloadRequested } from "./events";
 
-/** клавиша N: перевести курсор в строку быстрого создания */
+/** N key: move the cursor to the quick add input */
 export const quickFocusRequested = createEvent();
 
 export const quickCreateFx = createEffect<EventDraft, void, AppError>(saveEvent);

@@ -1,4 +1,4 @@
-// Вложения события: чтение из Google, ссылка на файл Google Drive, сохранение при правке и разбиении серии
+// Event attachments: reading from Google, Google Drive file link, preserving on edit and series split
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEvent } from "../shared/api/types";
 
@@ -40,8 +40,8 @@ const event = (over: Record<string, unknown> = {}): CalendarEvent =>
 
 const call = (method: string) => googleRequest.mock.calls.find((c) => c[1] === method);
 
-describe("ссылка на файл Google Drive", () => {
-  it("документы, таблицы, презентации, формы и файлы Диска", () => {
+describe("Google Drive file link", () => {
+  it("documents, spreadsheets, presentations, forms and Drive files", () => {
     expect(parseDriveLink("https://docs.google.com/document/d/1AbC_dEf/edit?usp=sharing")).toEqual({
       fileUrl: "https://docs.google.com/document/d/1AbC_dEf/edit",
       title: "Google Docs",
@@ -58,25 +58,25 @@ describe("ссылка на файл Google Drive", () => {
     expect(parseDriveLink("https://drive.google.com/open?id=f3")?.fileId).toBe("f3");
   });
 
-  it("другие ссылки Google не примет", () => {
+  it("other Google links are not accepted", () => {
     expect(parseDriveLink("https://example.com/report.pdf")).toBeNull();
     expect(parseDriveLink("http://docs.google.com/document/d/1/edit")).toBeNull();
     expect(parseDriveLink("https://drive.google.com/drive/folders/abc")).toBeNull();
     expect(parseDriveLink("not a link")).toBeNull();
   });
 
-  it("у Google не больше 25 вложений", () => {
+  it("Google allows at most 25 attachments", () => {
     expect(MAX_ATTACHMENTS).toBe(25);
   });
 });
 
-describe("вложения события", () => {
-  it("читаются из Google", () => {
+describe("event attachments", () => {
+  it("are read from Google", () => {
     expect(event().attachments).toEqual([{ fileUrl: DOC.fileUrl, title: "Повестка", mimeType: DOC.mimeType, fileId: DOC.fileId }]);
     expect(event({ attachments: undefined }).attachments).toBeUndefined();
   });
 
-  it("новое вложение уходит в Google с supportsAttachments=true", async () => {
+  it("new attachment goes to Google with supportsAttachments=true", async () => {
     const link = parseDriveLink("https://drive.google.com/file/d/f2/view")!;
     const draft = applyChange(fromEvent(event()), { attachments: [...(fromEvent(event()).attachments ?? []), link] });
     await saveEvent(draft);
@@ -85,18 +85,18 @@ describe("вложения события", () => {
     expect(body.attachments.map((a: { fileUrl: string }) => a.fileUrl)).toEqual([DOC.fileUrl, link.fileUrl]);
   });
 
-  it("убранное вложение исчезает из Google", () => {
+  it("removed attachment disappears from Google", () => {
     expect(draftToBody(applyChange(fromEvent(event()), { attachments: [] }))).toHaveProperty("attachments", []);
   });
 
-  it("у чужой встречи вложения не трогаем", async () => {
+  it("attachments of someone else's meeting are left alone", async () => {
     const theirs = event({ organizer: { email: "boss@example.com" } });
     expect(fromEvent(theirs).attachments).toBeUndefined();
     await saveEvent(fromEvent(theirs));
     expect(call("PATCH")?.[4]).not.toHaveProperty("attachments");
   });
 
-  it("копия события уходит в Google вместе с вложениями, даже копия чужой встречи", async () => {
+  it("event copy goes to Google with attachments, even a copy of someone else's meeting", async () => {
     const theirs = event({ organizer: { email: "boss@example.com" } });
     await saveEvent(duplicateDraft(theirs, [CAL]));
     const [, , , query, body] = call("POST") ?? [];
@@ -104,7 +104,7 @@ describe("вложения события", () => {
     expect(body.attachments).toHaveLength(1);
   });
 
-  it("новая серия «с этого и дальше» сохраняет вложения главного события", () => {
+  it("new 'this and following' series keeps the master event's attachments", () => {
     const master = {
       id: "s",
       summary: "Планёрка",

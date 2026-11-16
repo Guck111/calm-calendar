@@ -3,7 +3,7 @@ import { makeEuParser } from "./quick-eu";
 
 export const parseQuickDe = makeEuParser({
   today: "heute",
-  // «heute Morgen» — это утро сегодня, а не «завтра»
+  // «heute Morgen» is this morning, not "tomorrow"
   tomorrow: "(?<!heute\\s+)morgen",
   dayAfterTomorrow: "[üu]e?bermorgen",
   tonight: "heute\\s+abend",
@@ -19,7 +19,7 @@ export const parseQuickDe = makeEuParser({
     "do(?:nnerstag)?\\.?",
     "fr(?:eitag)?\\.?",
     "sa(?:mstag)?\\.?|sonnabend",
-    // «so» без точки — обычное слово
+    // «so» without a period is a regular word
     "sonntag|so\\.",
   ],
   on: "am|diesen|kommenden",

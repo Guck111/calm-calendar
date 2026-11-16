@@ -1,12 +1,12 @@
-//! Настройки клиента Google OAuth и список аккаунтов Google.
+//! Google OAuth client settings and the list of Google accounts.
 //!
-//! Клиент берётся в таком порядке:
-//! 1. переменные окружения при сборке CALM_GOOGLE_CLIENT_ID / CALM_GOOGLE_CLIENT_SECRET
-//!    (для версии в Microsoft Store);
-//! 2. файл google-client.json в папке настроек приложения (для личной сборки).
+//! The client is taken in this order:
+//! 1. build-time environment variables CALM_GOOGLE_CLIENT_ID / CALM_GOOGLE_CLIENT_SECRET
+//!    (for the Microsoft Store version);
+//! 2. google-client.json file in the app settings folder (for a personal build).
 //!
-//! Секрет клиента типа «Desktop app» по документации Google не считается секретным,
-//! защиту обмена кодом даёт PKCE.
+//! A "Desktop app" client secret is not considered secret per Google's documentation;
+//! the code exchange is protected by PKCE.
 
 use crate::error::{Error, Result};
 use serde::{Deserialize, Serialize};
@@ -33,19 +33,19 @@ pub enum ClientSource {
     None,
 }
 
-/// Вход до версии с несколькими аккаунтами: один email в account.json
+/// Sign-in before the multi-account version: one email in account.json
 #[derive(Default, Deserialize)]
 struct LegacyAccount {
     email: Option<String>,
 }
 
-/// Аккаунт Google; email служит и ключом токена в хранилище паролей
+/// Google account; the email is also the token key in the password store
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Account {
     pub email: String,
 }
 
-/// Добавить аккаунт или оставить на месте, если такой уже есть (email без учёта регистра)
+/// Add an account or keep it in place if it already exists (email, case-insensitive)
 pub fn with_account(mut list: Vec<Account>, email: &str) -> Vec<Account> {
     if !list.iter().any(|a| a.email.eq_ignore_ascii_case(email)) {
         list.push(Account { email: email.to_owned() });
@@ -79,8 +79,8 @@ fn build_client() -> Option<ClientConfig> {
     }
 }
 
-/// Принимает и плоский формат { client_id, client_secret },
-/// и файл, скачанный из Google Cloud: { "installed": { ... } }.
+/// Accepts both the flat format { client_id, client_secret },
+/// and the file downloaded from Google Cloud: { "installed": { ... } }.
 fn parse_client(text: &str) -> Option<ClientConfig> {
     #[derive(Deserialize)]
     struct Downloaded {
@@ -113,7 +113,7 @@ pub fn client(app: &AppHandle) -> Result<ClientConfig> {
         .ok_or(Error::NotConfigured)
 }
 
-/// Сохраняет клиент. На вход либо JSON из Google Cloud, либо пара id/секрет.
+/// Saves the client. Input is either JSON from Google Cloud or an id/secret pair.
 pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Result<()> {
     let id = client_id.trim();
     let parsed = if id.starts_with('{') {
@@ -134,7 +134,7 @@ pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Res
     Ok(())
 }
 
-/// Аккаунты в порядке входа; None — файла ещё нет (первый запуск или старая версия)
+/// Accounts in sign-in order; None — no file yet (first run or an old version)
 pub fn load_accounts(app: &AppHandle) -> Option<Vec<Account>> {
     let text = std::fs::read_to_string(config_dir(app).ok()?.join(ACCOUNTS_FILE)).ok()?;
     serde_json::from_str(&text).ok()
@@ -146,13 +146,13 @@ pub fn save_accounts(app: &AppHandle, accounts: &[Account]) -> Result<()> {
     Ok(())
 }
 
-/// email из account.json старой версии. Файл не удаляем: он нужен версии 0.4, если её запустят снова
+/// email from the old version's account.json. The file is not deleted: version 0.4 needs it if it is run again
 pub fn legacy_email(app: &AppHandle) -> Option<String> {
     let text = std::fs::read_to_string(config_dir(app).ok()?.join(LEGACY_ACCOUNT_FILE)).ok()?;
     serde_json::from_str::<LegacyAccount>(&text).ok()?.email
 }
 
-/// Настройки окна-виджета: показан ли он и держится ли поверх окон
+/// Widget window settings: whether it's shown and whether it stays on top
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct WidgetSettings {
     pub visible: bool,
@@ -181,42 +181,42 @@ pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
-/// Заметное напоминание: окно поверх всех окон за минуту до начала события
+/// Prominent reminder: a window on top of all windows a minute before the event starts
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AlertMode {
     #[default]
     Off,
-    /// только события с видеовстречей
+    /// only events with a video meeting
     Calls,
-    /// все события со временем
+    /// all timed events
     All,
 }
 
-/// Общие настройки оформления
+/// Shared appearance settings
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     pub glass: bool,
     pub notifications: bool,
-    /// не показывать название и место события в уведомлении (оно бывает видно на экране блокировки)
+    /// don't show the event title and location in the notification (it may be visible on the lock screen)
     pub private_notifications: bool,
-    /// язык интерфейса ("ru", "en", "es"…); нет — язык Windows
+    /// UI language ("ru", "en", "es"…); none — the Windows language
     pub language: Option<String>,
     pub alerts: AlertMode,
-    /// сочетание клавиш на всю Windows для быстрого создания ("ctrl+alt+space"); None — выключено
+    /// system-wide Windows hotkey for quick add ("ctrl+alt+space"); None — off
     pub quick_hotkey: Option<String>,
 }
 
-/// Сочетания на выбор в настройках; список тот же, что в src/shared/lib/hotkeys.ts
+/// Hotkeys to choose from in settings; the list is the same as in src/shared/lib/hotkeys.ts
 pub const QUICK_HOTKEYS: [&str; 3] = ["ctrl+alt+space", "ctrl+shift+space", "alt+shift+space"];
 
 pub fn valid_hotkey(hotkey: &str) -> bool {
     QUICK_HOTKEYS.contains(&hotkey)
 }
 
-/// В каком порядке пробовать сочетания при запуске: сначала выбранное, потом остальные из списка.
-/// Сочетание по умолчанию бывает занято другой программой — тогда берём первое свободное
+/// In which order to try hotkeys at startup: the chosen one first, then the rest of the list.
+/// The default hotkey may be taken by another program — then take the first free one
 pub fn hotkey_candidates(chosen: &str) -> Vec<&'static str> {
     let first = QUICK_HOTKEYS.iter().copied().filter(|h| *h == chosen);
     first.chain(QUICK_HOTKEYS.iter().copied().filter(|h| *h != chosen)).collect()
@@ -284,7 +284,7 @@ mod tests {
     fn hotkey_candidates_start_with_the_chosen_one() {
         assert_eq!(hotkey_candidates("ctrl+shift+space"), ["ctrl+shift+space", "ctrl+alt+space", "alt+shift+space"]);
         assert_eq!(hotkey_candidates("ctrl+alt+space"), QUICK_HOTKEYS);
-        // неизвестное сочетание из старого файла — просто список по порядку
+        // an unknown hotkey from an old file — just the list in order
         assert_eq!(hotkey_candidates("f13"), QUICK_HOTKEYS);
     }
 

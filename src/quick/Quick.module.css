@@ -1,4 +1,4 @@
-/* Окно быстрого создания поверх всех окон: одна строка и подсказка под ней */
+/* Quick add window on top of all windows: one input and a hint below it */
 :global(html[data-window="quick"]),
 :global(html[data-window="quick"] body) {
   margin: 0;

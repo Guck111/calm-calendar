@@ -18,17 +18,17 @@ const ev = (key: string, account: string, from: number, to: number, over: Partia
 const keys = (m: Map<string, CalendarEvent[]>) =>
   Object.fromEntries([...m].map(([k, list]) => [k, list.map((e) => e.key)]));
 
-describe("пересечения между аккаунтами", () => {
-  it("находит встречу по работе в то же время, что личная", () => {
+describe("overlaps between accounts", () => {
+  it("finds a work meeting at the same time as a personal one", () => {
     const found = findConflicts([ev("gym", "me", 9, 11), ev("standup", "work", 10, 12), ev("lunch", "me", 13, 14)]);
     expect(keys(found)).toEqual({ gym: ["standup"], standup: ["gym"] });
   });
 
-  it("события одного аккаунта и соседние по времени — не пересечение", () => {
+  it("events of one account and adjacent in time are not an overlap", () => {
     expect(findConflicts([ev("a", "me", 9, 10), ev("b", "me", 9, 10), ev("c", "work", 10, 11)]).size).toBe(0);
   });
 
-  it("одна встреча в двух аккаунтах, весь день и «свободен» не считаются", () => {
+  it("one meeting in two accounts, all-day and 'free' are not counted", () => {
     const found = findConflicts([
       ev("invite-me", "me", 9, 10, { iCalUID: "x@google.com" }),
       ev("invite-work", "work", 9, 10, { iCalUID: "x@google.com" }),
@@ -38,7 +38,7 @@ describe("пересечения между аккаунтами", () => {
     expect(found.size).toBe(0);
   });
 
-  it("длинное событие пересекается с несколькими", () => {
+  it("a long event overlaps several", () => {
     const found = findConflicts([ev("trip", "me", 8, 18), ev("a", "work", 9, 10), ev("b", "work", 15, 16)]);
     expect(keys(found).trip).toEqual(["a", "b"]);
   });

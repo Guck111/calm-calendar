@@ -1,4 +1,4 @@
-// Мелкие настройки интерфейса (вид, скрытые календари). Хранилище может быть недоступно — не падаем.
+// Small UI settings (view, hidden calendars). Storage may be unavailable — don't crash.
 
 export const readJson = <T>(key: string, fallback: T): T => {
   try {
@@ -13,6 +13,6 @@ export const writeJson = (key: string, value: unknown): void => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // нет места или хранилище отключено — настройка просто не запомнится
+    // no space or storage disabled — the setting just won't be remembered
   }
 };

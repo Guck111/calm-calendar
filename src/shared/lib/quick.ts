@@ -1,6 +1,6 @@
-// Разбор события из одной строки: «завтра 19:00 английский 50 мин #личное @Гдыня»
-// или по-английски «tomorrow 7pm English class 50 min #personal». Язык — как у интерфейса.
-// У каждого языка свой разбор в quick-xx.ts; общая часть — в quick-core.ts.
+// Parsing an event from one line: «завтра 19:00 английский 50 мин #личное @Гдыня»
+// or in English "tomorrow 7pm English class 50 min #personal". The language is the UI one.
+// Each language has its own parser in quick-xx.ts; the shared part is in quick-core.ts.
 import { lang as uiLang, t, type Lang } from "../i18n";
 import { addDays, formatTime, formatWeekdayDayMonth, startOfDay, toDateKey, toTimeKey } from "./date";
 import { normalizeInput, type QuickCalendar, type QuickResult } from "./quick-core";
@@ -23,7 +23,7 @@ export type { QuickCalendar, QuickResult } from "./quick-core";
 
 type Parser = (input: string, now: Date, calendars: QuickCalendar[]) => QuickResult;
 
-/** Новый язык интерфейса не соберётся без своего разбора */
+/** A new UI language won't build without its own parser */
 const PARSERS: Record<Lang, Parser> = {
   en: parseQuickEn,
   ru: parseQuickRu,
@@ -52,7 +52,7 @@ export const parseQuick = (
 
 export const hasValidQuickDate = (r: QuickResult): boolean => !Number.isNaN(r.start.getTime());
 
-/** Черновик формы из разобранной строки */
+/** Form draft from a parsed line */
 export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => {
   const validDate = hasValidQuickDate(r);
   return {
@@ -61,7 +61,7 @@ export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => {
     allDay: r.allDay,
     startDate: validDate ? toDateKey(r.start) : "",
     startTime: validDate ? toTimeKey(r.start) : "",
-    // в форме последний день события на весь день включительно
+    // in the form the last day of an all-day event is inclusive
     endDate: validDate ? toDateKey(r.allDay ? addDays(r.end, -1) : r.end) : "",
     endTime: validDate ? toTimeKey(r.end) : "",
     location: r.location ?? "",
@@ -70,7 +70,7 @@ export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => {
   };
 };
 
-/** «Чт, 5 ноября · 19:00–19:50» для подсказки под строкой */
+/** «Чт, 5 ноября · 19:00–19:50» for the hint under the input */
 export const quickWhen = (r: QuickResult): string => {
   if (!hasValidQuickDate(r)) return t.errors.checkDateTime;
   const day = formatWeekdayDayMonth(r.start);

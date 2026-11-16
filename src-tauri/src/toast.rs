@@ -1,14 +1,14 @@
-//! Уведомление Windows с кнопкой «Подключиться». Плагин уведомлений Tauri не умеет кнопки,
-//! которые открывают ссылку, поэтому такое уведомление собираем сами. Кнопка с
-//! activationType="protocol" открывает ссылку силами Windows: работает и из Центра уведомлений,
-//! и когда приложение уже закрыто.
+//! Windows notification with a "Join" button. The Tauri notification plugin can't do buttons
+//! that open a link, so we build such a notification ourselves. A button with
+//! activationType="protocol" opens the link via Windows: it works from the Notification Center too,
+//! and when the app is already closed.
 
 use windows::core::HSTRING;
 use windows::Data::Xml::Dom::XmlDocument;
 use windows::UI::Notifications::{ToastNotification, ToastNotificationManager};
 
-/// Чужой AppUserModelID для запуска из target\debug и target\release: у неустановленной сборки своего нет.
-/// Плагин уведомлений поступает так же.
+/// A borrowed AppUserModelID for running from target\debug and target\release: an uninstalled build has none of its own.
+/// The notification plugin does the same.
 const POWERSHELL_APP_ID: &str = r"{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe";
 
 fn escape(s: &str) -> String {
@@ -19,7 +19,7 @@ fn escape(s: &str) -> String {
         .replace('\'', "&apos;")
 }
 
-/// XML уведомления: название, текст и кнопка, которая открывает ссылку
+/// Notification XML: title, text and a button that opens the link
 pub fn xml(title: &str, body: &str, button: &str, url: &str) -> String {
     format!(
         "<toast><visual><binding template=\"ToastGeneric\"><text>{}</text><text>{}</text></binding></visual>\
@@ -31,7 +31,7 @@ pub fn xml(title: &str, body: &str, button: &str, url: &str) -> String {
     )
 }
 
-/// Тот же AppUserModelID, что у плагина уведомлений: в установленном приложении — identifier
+/// The same AppUserModelID as the notification plugin: in the installed app — identifier
 fn app_id(identifier: &str) -> String {
     let dev = tauri::utils::platform::current_exe()
         .ok()
@@ -59,7 +59,7 @@ mod tests {
         assert!(x.contains("activationType=\"protocol\""));
     }
 
-    /// Показывает настоящее уведомление: `cargo test toast::tests::shows -- --ignored`
+    /// Shows a real notification: `cargo test toast::tests::shows -- --ignored`
     #[test]
     #[ignore]
     fn shows() {

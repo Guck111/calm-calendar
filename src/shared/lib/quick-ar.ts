@@ -2,7 +2,7 @@
 import type { QuickCalendar, QuickResult } from "./quick-core";
 import { makeEuParser } from "./quick-eu";
 
-/** «مساءً» пишут и «مساءً», и «مساءا», и «مساء»; танвин — отдельный знак */
+/** «مساءً» is written as «مساءً», «مساءا» and «مساء»; tanween is a separate mark */
 const TANWEEN = "(?:اً|ًا|ا|ً)?";
 const GHADAN = `غد${TANWEEN}|بكر[ةه]`;
 
@@ -48,7 +48,7 @@ const parse = makeEuParser({
   prepositions: "في|يوم|الساعة|من|إلى|الى|على|عند|لمدة",
 });
 
-// двойственное число без цифры: «ساعتين» — 2 часа, «يومين» — 2 дня
+// dual number without a digit: «ساعتين» — 2 hours, «يومين» — 2 days
 const DUALS: [RegExp, string][] = [
   [/(?<![\p{L}\p{M}])ساعت(?:ين|ان)(?![\p{L}\p{M}])/gu, "2 ساعة"],
   [/(?<![\p{L}\p{M}])دقيقت(?:ين|ان)(?![\p{L}\p{M}])/gu, "2 دقيقة"],

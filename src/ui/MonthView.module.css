@@ -38,7 +38,7 @@
   cursor: default;
 }
 
-/* номер недели в углу первой ячейки строки */
+/* week number in the corner of the row's first cell */
 .cell {
   position: relative;
 }
@@ -113,7 +113,7 @@
   background: var(--surface-2);
 }
 
-/* заливка и цвет текста — как у событий в сетке недели (TimeGrid.module.css) */
+/* fill and text color as for events in the week grid (TimeGrid.module.css) */
 .block {
   --tone: var(--c);
   --ink: color-mix(
@@ -175,7 +175,7 @@
   text-decoration: underline;
 }
 
-/* прошедшее — бледнее: взгляд сразу находит, что дальше */
+/* past is paler: the eye finds what's next right away */
 .past {
   opacity: 0.55;
 }

@@ -140,8 +140,8 @@
   color: var(--danger);
 }
 
-/* Низ формы прилипает к краю окна формы: поля прокручиваются под ним. Отрицательные отступы
-   доходят до краёв диалога (у него padding 20px по бокам и 16px снизу) */
+/* The bottom of the form sticks to the edge of the form window: fields scroll under it. Negative margins
+   reach the dialog edges (it has 20px padding on the sides and 16px at the bottom) */
 .footer {
   position: sticky;
   inset-block-end: -16px;
@@ -160,7 +160,7 @@
   padding-top: 0;
 }
 
-/* «Ещё»: тихая строка-раскрывашка, а в свёрнутом виде — что под ней */
+/* "More": a quiet disclosure row, and when collapsed — what is under it */
 .more {
   display: flex;
   align-items: baseline;
@@ -185,7 +185,7 @@
   transition: transform 0.12s ease-out;
 }
 
-/* стрелка смотрит по ходу текста; справа налево — зеркально */
+/* the arrow points along the text direction; right-to-left — mirrored */
 :global([dir="rtl"]) .moreArrow {
   transform: scaleX(-1);
 }
@@ -304,7 +304,7 @@
   align-items: flex-start !important;
 }
 
-/* своё правило повтора */
+/* custom recurrence rule */
 .custom {
   display: flex;
   flex-direction: column;
@@ -396,7 +396,7 @@
   margin: 0;
 }
 
-/* вопрос «только это событие или это и следующие» */
+/* question "only this event or this and following" */
 .scope {
   display: flex;
   flex-direction: column;
@@ -417,7 +417,7 @@
   text-overflow: ellipsis;
 }
 
-/* событие из другого аккаунта в то же время */
+/* an event from another account at the same time */
 .conflict {
   display: flex;
   align-items: flex-start;
@@ -432,14 +432,14 @@
   margin-block-start: 2px;
 }
 
-/* та же встреча есть и в другом аккаунте: показываем её один раз */
+/* the same meeting is in another account too: show it once */
 .alsoIn {
   grid-column: 2;
   font-size: 12px;
   color: var(--text-3);
 }
 
-/* гости: в форме и в карточке */
+/* guests: in the form and in the card */
 .guests {
   list-style: none;
   margin: 0;
@@ -497,7 +497,7 @@
   font-size: 12px;
 }
 
-/* подсказка последней в поле: правило .field > :last-child её не должно увеличивать */
+/* hint is last in the field: the .field > :last-child rule must not enlarge it */
 .field > .hintText,
 .field > .error {
   font-size: 12px;
@@ -507,7 +507,7 @@
   color: var(--text-3);
 }
 
-/* цвет события: кружки цвета календаря и 11 цветов Google */
+/* event color: calendar color circles and 11 Google colors */
 .colors {
   display: flex;
   flex-wrap: wrap;
@@ -524,7 +524,7 @@
   cursor: pointer;
 }
 
-/* цвет календаря — кольцом, чтобы отличался от своих цветов */
+/* calendar color as a ring, to differ from the own colors */
 .calendarColor {
   background: transparent;
   box-shadow: inset 0 0 0 5px var(--swatch);
@@ -540,7 +540,7 @@
   outline-offset: 2px;
 }
 
-/* ответ на приглашение: «Пойдёте? Да · Нет · Может быть» */
+/* invitation response: "Going? Yes · No · Maybe" */
 .rsvp {
   display: flex;
   flex-wrap: wrap;
@@ -579,7 +579,7 @@
   opacity: 0.7;
 }
 
-/* вложения: файлы Google Диска */
+/* attachments: Google Drive files */
 .files {
   display: flex;
   flex-direction: column;

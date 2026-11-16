@@ -1,4 +1,4 @@
-/* Окно заметного напоминания: спокойное, но крупное — его должно быть видно краем глаза */
+/* Prominent reminder window: calm but large — it should be visible out of the corner of your eye */
 :global(html[data-window="alert"]),
 :global(html[data-window="alert"] body) {
   margin: 0;
@@ -82,7 +82,7 @@
   font-weight: 600;
 }
 
-/* «Закрыть» — тише остальных и прижата к краю */
+/* "Close" is quieter than the rest and pressed to the edge */
 .actions .quiet {
   margin-inline-start: auto;
   border-color: transparent;

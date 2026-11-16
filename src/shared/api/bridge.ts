@@ -11,7 +11,7 @@ export const isAppError = (e: unknown): e is AppError =>
 export const toAppError = (e: unknown): AppError =>
   isAppError(e) ? e : { kind: "other", message: e instanceof Error ? e.message : String(e) };
 
-/** Текст ошибки на языке интерфейса. Rust присылает вид ошибки и технические подробности по-английски */
+/** Error text in the UI language. Rust sends the error kind and technical details in English */
 const localize = (e: AppError): AppError => {
   const text: Partial<Record<AppError["kind"], string>> = {
     not_configured: t.errors.notConfigured,
@@ -21,19 +21,19 @@ const localize = (e: AppError): AppError => {
     missing_scope: t.errors.missingScope,
     network: t.errors.network,
   };
-  // ошибка Google приходит как «403: Rate limit exceeded»
+  // a Google error arrives as "403: Rate limit exceeded"
   const google = e.kind === "google" ? /^(\d{3}): (.*)$/s.exec(e.message) : null;
   return {
     ...e,
     message: text[e.kind] ?? (google ? `${t.errors.google(Number(google[1]))}. ${google[2]}` : e.message),
-    // код ответа нужен, чтобы отличить временный сбой Google (503) от отказа (403)
+    // the response code is needed to tell a temporary Google failure (503) from a refusal (403)
     ...(google ? { status: Number(google[1]) } : {}),
   };
 };
 
 
-// Сборка для автотестов приложения (VITE_CALM_MOCK=1, npm run build:e2e): вход и запросы к Google идут
-// в подставные данные, всё остальное (окна, трей, напоминания) — в настоящий Rust. В обычную сборку не попадает
+// Build for app autotests (VITE_CALM_MOCK=1, npm run build:e2e): sign-in and Google requests go
+// to mock data, everything else (windows, tray, reminders) to the real Rust. Not included in the regular build
 const MOCK_IN_APP = import.meta.env.VITE_CALM_MOCK === "1";
 const MOCKED = new Set([
   "auth_status",
@@ -46,15 +46,15 @@ const MOCKED = new Set([
   "fetch_feed",
 ]);
 
-// в браузере без Tauri (npm run dev) работаем на подставных данных
+// in a browser without Tauri (npm run dev) we work on mock data
 const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
   if (MOCK_IN_APP ? !MOCKED.has(cmd) : inTauri || !import.meta.env.DEV) return invoke<T>(cmd, args);
   const { mockInvoke } = await import("./mock");
   return (await mockInvoke(cmd, args)) as T;
 };
 
-// invoke отклоняется объектом { kind, message } из Rust; приводим всё к AppError
-/** запросы к Google и вход Rust записывает в журнал сам */
+// invoke rejects with a { kind, message } object from Rust; convert everything to AppError
+/** Rust logs Google requests and sign-in itself */
 const LOGGED_IN_RUST = new Set(["google_request", "sign_in"]);
 
 const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
@@ -62,7 +62,7 @@ const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
     return await run<T>(cmd, args);
   } catch (e) {
     const error = toAppError(e);
-    // истёкший вход — не сбой: интерфейс сам предложит войти снова
+    // an expired sign-in is not a failure: the UI will offer to sign in again
     if (!LOGGED_IN_RUST.has(cmd) && error.kind !== "not_signed_in" && error.kind !== "cancelled") logWarn(`command ${cmd} failed`, error);
     throw localize(error);
   }
@@ -81,18 +81,18 @@ export const getAuthStatus = async (): Promise<AuthStatus> => {
   };
 };
 
-/** Текст календаря .ics по ссылке подписки; webcal:// Rust сам заменит на https:// */
+/** Text of an .ics calendar from a subscription link; Rust replaces webcal:// with https:// itself */
 export const fetchFeed = (url: string): Promise<string> => call<string>("fetch_feed", { url });
 
 export const saveClientConfig = (clientId: string, clientSecret: string): Promise<void> =>
   call("save_client_config", { clientId, clientSecret });
 
-/** Вход в ещё один аккаунт: Google даёт выбрать какой. Возвращает его email */
+/** Sign in to one more account: Google lets you choose which. Returns its email */
 export const signIn = (): Promise<string> => call<string>("sign_in");
 export const reopenSignIn = (): Promise<void> => call("sign_in_reopen");
 export const cancelSignIn = (): Promise<void> => call("sign_in_cancel");
 
-/** Выход из одного аккаунта, без account — из всех. Сохранённые ответы при этом стираем */
+/** Sign out of one account, without account — of all. Saved responses are erased too */
 export const signOut = (account?: string): Promise<void> =>
   call<void>("sign_out", account ? { account } : {}).finally(clearCache);
 

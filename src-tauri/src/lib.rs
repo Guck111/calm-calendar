@@ -61,7 +61,7 @@ fn sign_in_cancel(auth: State<'_, Auth>) {
     auth.cancel_sign_in();
 }
 
-/// account — из какого аккаунта выйти; без него — из всех
+/// account — which account to sign out of; without it — of all
 #[tauri::command]
 async fn sign_out(app: AppHandle, auth: State<'_, Auth>, account: Option<String>) -> Result<()> {
     auth.sign_out(&app, account.as_deref()).await;
@@ -87,57 +87,57 @@ async fn google_request(
     result
 }
 
-/// Ошибки и важные события окон пишутся в общий журнал
+/// Errors and important window events are written to the shared log
 #[tauri::command]
 fn log_message(window: tauri::Window, level: String, message: String) {
     logging::from_ui(&level, window.label(), &message);
 }
 
-/// Папка с журналом — для письма в поддержку
+/// Log folder — for an email to support
 #[tauri::command]
 fn open_logs(app: AppHandle) -> Result<()> {
     logging::open_folder(&app)
 }
 
-/// Открыть главное окно из виджета или списка у трея, при необходимости сразу на нужном дне ("2026-11-04")
+/// Open the main window from the widget or the tray agenda, on the needed day if necessary ("2026-11-04")
 #[tauri::command]
 fn open_main(app: AppHandle, date: Option<String>) {
     desktop::show_main(&app, date);
 }
 
-/// Спрятать список дел у значка в трее (кнопка в нём или Esc)
+/// Hide the agenda at the tray icon (a button in it or Esc)
 #[tauri::command]
 fn hide_agenda(app: AppHandle) {
     desktop::hide_agenda(&app);
 }
 
-/// Скачать календарь .ics по ссылке подписки (из настроек); разбирает его интерфейс
+/// Download an .ics calendar by subscription link (from settings); the UI parses it
 #[tauri::command]
 async fn fetch_feed(url: String) -> error::Result<String> {
     feeds::fetch(&url).await
 }
 
-/// Открыть окно настроек (шестерёнка в главном окне) или поднять уже открытое.
-/// Асинхронная: окно, созданное в синхронной команде, в Windows намертво вешает приложение
+/// Open the settings window (gear in the main window) or raise the already open one.
+/// Async: a window created in a sync command hangs the app for good on Windows
 #[tauri::command]
 async fn open_settings(app: AppHandle) {
     settings::show(&app);
 }
 
-/// Закрыть окно настроек (крестик или Esc в нём)
+/// Close the settings window (cross or Esc in it)
 #[tauri::command]
 fn close_settings(app: AppHandle) {
     settings::close(&app);
 }
 
-/// Спрятать окно быстрого создания (после создания или по Esc)
+/// Hide the quick add window (after creating or on Esc)
 #[tauri::command]
 fn hide_quick(app: AppHandle) {
     quick::hide(&app);
 }
 
-/// Сочетание для быстрого создания из любого места; None — выключить.
-/// Занято другой программой — ошибка, настройка не меняется, прежнее сочетание возвращается
+/// Hotkey for quick add from anywhere; None — turn off.
+/// Taken by another program — an error, the setting doesn't change, the previous hotkey is restored
 #[tauri::command]
 fn set_quick_hotkey(app: AppHandle, hotkey: Option<String>) -> Result<()> {
     let previous = config::load_settings(&app).quick_hotkey;
@@ -160,7 +160,7 @@ fn get_desktop(app: AppHandle) -> desktop::DesktopState {
     desktop::desktop_state(&app)
 }
 
-/// visible, on_top: что поменять; не переданное остаётся как было
+/// visible, on_top: what to change; whatever isn't passed stays as it was
 #[tauri::command]
 fn set_widget(app: AppHandle, visible: Option<bool>, on_top: Option<bool>) {
     let current = config::load_widget(&app);
@@ -173,7 +173,7 @@ fn set_widget(app: AppHandle, visible: Option<bool>, on_top: Option<bool>) {
     );
 }
 
-/// Возвращает, включён ли автозапуск после попытки
+/// Returns whether autostart is on after the attempt
 #[tauri::command]
 fn set_autostart(app: AppHandle, enabled: bool) -> bool {
     desktop::set_launch(&app, enabled)
@@ -201,14 +201,14 @@ async fn set_notifications(
     Ok(())
 }
 
-/// Заметное напоминание: выключено, только видеовстречи или все события со временем
+/// Prominent reminder: off, video meetings only or all timed events
 #[tauri::command]
 fn set_alerts(app: AppHandle, mode: config::AlertMode) -> Result<()> {
     let settings = config::Settings { alerts: mode, ..config::load_settings(&app) };
     config::save_settings(&app, settings)
 }
 
-/// Напоминания, которые сейчас в окне поверх всех окон
+/// Reminders currently in the window on top of all windows
 #[tauri::command]
 async fn get_alerts(reminders: State<'_, reminders::Reminders>) -> Result<Vec<reminders::Reminder>> {
     Ok(reminders.open_alerts().await)
@@ -221,7 +221,7 @@ async fn dismiss_alert(app: AppHandle, reminders: State<'_, reminders::Reminders
     Ok(())
 }
 
-/// Отложить напоминание; окно покажется снова через minutes минут (от 1 до 60)
+/// Snooze a reminder; the window shows again in minutes minutes (1 to 60)
 #[tauri::command]
 async fn snooze_alert(
     app: AppHandle,
@@ -234,7 +234,7 @@ async fn snooze_alert(
     Ok(())
 }
 
-/// Язык интерфейса ("ru" или "en"): меню трея и страница входа в браузере
+/// UI language ("ru" or "en"): tray menu and the sign-in page in the browser
 #[tauri::command]
 fn set_language(app: AppHandle, language: String) -> Result<()> {
     let Some(lang) = i18n::Lang::parse(&language) else {
@@ -252,8 +252,8 @@ fn set_private_notifications(app: AppHandle, enabled: bool) -> Result<()> {
     config::save_settings(&app, settings)
 }
 
-/// Новое расписание напоминаний целиком. При выключенных уведомлениях остаются только
-/// заметные напоминания: у них своя настройка, её проверяют в момент показа
+/// The whole new reminder schedule. With notifications off only
+/// prominent reminders remain: they have their own setting, checked at show time
 #[tauri::command]
 async fn schedule_reminders(
     app: AppHandle,
@@ -269,9 +269,9 @@ async fn schedule_reminders(
 pub fn run() {
     logging::install_panic_hook();
     tauri::Builder::default()
-        // журнал подключаем первым, чтобы в него попали и ошибки других плагинов
+        // the log plugin goes first so that errors of other plugins get into it too
         .plugin(logging::plugin())
-        // повторный запуск (например, ярлыком) не создаёт вторую копию, а показывает окно
+        // a second launch (e.g. from a shortcut) doesn't create a second instance, but shows the window
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             desktop::show_main(app, None);
         }))
@@ -280,9 +280,9 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
-                // видимость окон решаем сами: главное скрыто при автозапуске, виджет — по настройке
+                // we decide window visibility ourselves: the main one is hidden on autostart, the widget follows the setting
                 .with_state_flags(StateFlags::POSITION | StateFlags::SIZE | StateFlags::MAXIMIZED)
-                // окно напоминания всегда открывается по центру экрана
+                // the reminder window always opens in the center of the screen
                 .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK, settings::SETTINGS])
                 .build(),
         )
@@ -301,7 +301,7 @@ pub fn run() {
                 std::env::consts::OS,
                 std::env::consts::ARCH
             );
-            // вход старой версии (один аккаунт) переезжает в список аккаунтов
+            // the old version's sign-in (single account) moves into the account list
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
             quick::setup(app.handle());
@@ -309,16 +309,16 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            // крестик главного окна прячет его в трей, выход — через меню трея
+            // the main window's cross hides it to the tray, quitting is via the tray menu
             if let WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == desktop::MAIN {
                     api.prevent_close();
                     let _ = window.hide();
-                    // настройки принадлежат главному окну: без него им незачем висеть на экране
+                    // settings belong to the main window: without it they have no reason to stay on screen
                     settings::close(window.app_handle());
                 }
             }
-            // список дел у значка в трее прячется, как только уходит фокус
+            // the agenda at the tray icon hides as soon as focus leaves
             if let WindowEvent::Focused(false) = event {
                 if window.label() == desktop::AGENDA {
                     desktop::agenda_lost_focus(window.app_handle());
@@ -327,7 +327,7 @@ pub fn run() {
                     quick::lost_focus(window.app_handle());
                 }
             }
-            // окно напоминания закрыли не кнопкой, а Alt+F4: забываем все открытые напоминания
+            // the reminder window was closed with Alt+F4, not a button: forget all open reminders
             if let WindowEvent::Destroyed = event {
                 if window.label() == desktop::ALERT {
                     let app = window.app_handle().clone();

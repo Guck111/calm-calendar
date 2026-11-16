@@ -1,6 +1,6 @@
-// «Отменить» после переноса и удаления. Перенос уже сохранён в Google: отмена сохраняет прежнее время.
-// Удаление сначала только прячет событие на экране и уходит в Google, когда строка «Отменить» исчезла,
-// пришло следующее действие или окно закрывается — так отмена не создаёт событие заново и не шлёт гостям писем
+// "Undo" after move and delete. A move is already saved in Google: undo saves the previous time.
+// A deletion first only hides the event on screen and goes to Google when the "Undo" bar has disappeared,
+// the next action came or the window is closing — so undo doesn't recreate the event and doesn't email guests
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
@@ -14,9 +14,9 @@ import { $visibility } from "./calendars";
 import { logError } from "../shared/lib/log";
 import { $events, actionFailed, eventShifted, reloadRequested, deleteKey, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
 
-/** сколько видна строка «Отменить» */
+/** how long the "Undo" bar is visible */
 export const UNDO_MS = 8000;
-/** после того как мышь ушла со строки или фокус покинул её */
+/** after the mouse left the bar or focus left it */
 export const UNDO_RESUME_MS = 4000;
 
 type Change = { draft: EventDraft; scope: Scope };
@@ -28,20 +28,20 @@ type Deleted = Extract<Pending, { kind: "deleted" }>;
 type Moved = Extract<Pending, { kind: "moved" }>;
 
 export const undoClicked = createEvent();
-/** таймер строки истёк; token отличает таймер нынешней строки от прежних */
+/** the bar's timer expired; token tells the current bar's timer from previous ones */
 export const undoExpired = createEvent<number>();
-/** мышь или фокус на строке: она не исчезает, пока человек с ней работает */
+/** mouse or focus on the bar: it doesn't disappear while the person works with it */
 export const undoPaused = createEvent();
 export const undoResumed = createEvent();
-/** закрыть строку без отмены; удаление сразу уходит в Google */
+/** close the bar without undoing; the deletion goes to Google right away */
 export const undoDismissed = createEvent();
 
-/** Отмена переноса: прежнее время сохраняется так же, как перенос, но новой строки «Отменить» не даёт */
+/** Undo move: the previous time is saved the same way as a move, but gives no new "Undo" bar */
 export const restoreMoveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
   ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
 );
 
-/** ждёт ms и возвращает token своей строки */
+/** waits ms and returns its bar's token */
 export const undoTimerFx = createEffect<{ ms: number; token: number }, number>(
   ({ ms, token }) => new Promise<number>((done) => setTimeout(() => done(token), ms)),
 );
@@ -49,15 +49,15 @@ export const undoTimerFx = createEffect<{ ms: number; token: number }, number>(
 const $token = createStore(0);
 const $pending = createStore<Pending | null>(null);
 
-/** строка «Отменить»: id меняется с каждым новым таймером */
+/** "Undo" bar: id changes with each new timer */
 export const $undo = $pending.map((p) => (p ? { id: p.token, kind: p.kind, title: p.title } : null));
 
 const titleOf = (e: CalendarEvent) => e.title || t.common.untitled;
 
-/** удаление одного события в одном календаре: ключ журнала, повтора и спрятанного на экране */
+/** deletion of one event in one calendar: key for the log, retry and hidden-on-screen */
 const keyOf = (c: Change) => deleteKey(c.draft.originalCalendarId ?? c.draft.calendarId, c.draft.id ?? "");
 
-/** что спрятать на экране: одно событие или повторения серии с этого времени */
+/** what to hide on screen: a single event or series occurrences from this time on */
 const hiddenFor = ({ draft, scope, event }: Change & { event: CalendarEvent }): Hidden => {
   const base = { key: deleteKey(event.calendarId, draft.id ?? event.id), calendarId: event.calendarId };
   return scope === "following" && event.recurringEventId
@@ -65,7 +65,7 @@ const hiddenFor = ({ draft, scope, event }: Change & { event: CalendarEvent }): 
     : { ...base, id: event.id };
 };
 
-// новое действие: прежнее удаление больше не отменить — отправляем его в Google сейчас
+// new action: the previous deletion can no longer be undone — send it to Google now
 const committed = createEvent<Pending | null>();
 sample({
   clock: committed,
@@ -93,13 +93,13 @@ const deleteStarted = sample({
   },
 });
 
-// новый перенос: прежнее удаление уходит в Google сразу. Строка «Отменить» появится, когда Google
-// подтвердит перенос: иначе отмена ушла бы одновременно с ним и могла бы его обогнать
+// new move: the previous deletion goes to Google right away. The "Undo" bar appears when Google
+// confirms the move: otherwise the undo would go out together with it and could overtake it
 const movedOverDelete = sample({ clock: eventMoved, source: $pending, filter: (p) => p?.kind === "deleted" });
 sample({ clock: movedOverDelete, target: committed });
 $pending.reset(movedOverDelete);
-// пока перенос сохранялся, могли удалить другое событие: более новое действие важнее, строка «Удалено»
-// остаётся (иначе удаление не ушло бы в Google, а событие осталось бы спрятанным)
+// while the move was being saved, another event could have been deleted: the newer action wins, the "Deleted" bar
+// stays (otherwise the deletion wouldn't reach Google and the event would stay hidden)
 const moveStarted = sample({
   clock: moveFx.done,
   source: { token: $token, pending: $pending },
@@ -121,7 +121,7 @@ sample({
 });
 sample({ clock: started, fn: ({ next }) => ({ ms: UNDO_MS, token: next.token }), target: undoTimerFx });
 
-// время вышло или строку закрыли: удаление уходит в Google
+// time ran out or the bar was closed: the deletion goes to Google
 const finished = sample({
   clock: [
     sample({ clock: undoTimerFx.doneData, source: $pending, filter: (p, token) => p?.token === token }),
@@ -132,10 +132,10 @@ const finished = sample({
 sample({ clock: finished, target: committed });
 $pending.reset(finished);
 
-// отмена удаления: событие возвращается на экран, в Google ничего не уходит
+// undo delete: the event returns to the screen, nothing goes to Google
 const undone = sample({ clock: undoClicked, source: $pending, filter: Boolean });
-// календарь, который за это время скрыли, не показываем; список перечитывается — так вернутся и повторения,
-// загруженные уже после удаления (другая неделя)
+// a calendar hidden meanwhile is not shown; the list is reloaded — that also brings back occurrences
+// loaded after the deletion (another week)
 sample({
   clock: undone,
   source: $visibility,
@@ -147,8 +147,8 @@ sample({
   target: eventsRestored,
 });
 sample({ clock: undone, filter: (p) => p.kind === "deleted", target: reloadRequested });
-// отмена переноса: из нынешнего события меняется только время (и его пояс) — правки, сделанные
-// после переноса (цвет, место), остаются
+// undo move: of the current event only the time (and its time zone) changes — edits made
+// after the move (color, place) stay
 const restoredMove = sample({
   clock: undone,
   source: $events,
@@ -164,8 +164,8 @@ sample({ clock: restoredMove, target: restoreMoveFx });
 sample({ clock: restoredMove, fn: ({ event, start, end }) => ({ key: event.key, start, end }), target: eventShifted });
 $pending.reset(undone);
 
-// пока с ней работают, строка не исчезает (новый token делает прежний таймер недействительным);
-// потом ещё немного времени
+// while it is being used, the bar doesn't disappear (a new token invalidates the previous timer);
+// then a little more time
 sample({
   clock: undoPaused,
   source: { p: $pending, token: $token },
@@ -182,32 +182,32 @@ sample({
   target: undoTimerFx,
 });
 
-// после отмены переноса список перечитывается: на экране то, что в Google; виджет и список у трея тоже
+// after undoing a move the list is reloaded: the screen shows what is in Google; the widget and tray agenda too
 sample({ clock: restoreMoveFx.finally, target: reloadRequested });
 restoreMoveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 restoreMoveFx.failData.watch((e) => e.kind === "other" && logError("undo move failed", e));
 sample({ clock: restoreMoveFx.failData, fn: (e) => t.errors.moveFailed(e.message), target: actionFailed });
 
-// удаление дошло до Google или не дошло: спрятанное больше не прячем, список перечитается
+// the deletion reached Google or didn't: stop hiding the hidden ones, the list will be reloaded
 sample({ clock: deleteFx.finally, fn: ({ params }) => keyOf(params), target: hidingEnded });
 
-// --- удаление не теряется ---
+// --- deletion is not lost ---
 
-// Журнал удалений на диске: удаление попадает в него, как только выбрано, и уходит из него, только когда
-// Google ответил. Если приложение закроют раньше (Выход в трее закрывает сразу, а запрос «это и следующие»
-// идёт в два шага), удаление уйдёт в Google после следующего входа в его аккаунт
+// Deletion log on disk: a deletion goes into it as soon as it is chosen and leaves it only when
+// Google has responded. If the app is closed earlier (Quit in the tray closes immediately, and the "this and following" request
+// takes two steps), the deletion goes to Google after the next sign-in to its account
 const STORAGE_KEY = "calm.pendingDeletes";
 export const persistDeleteFx = createEffect<Change[], void>((list) => writeJson(STORAGE_KEY, list));
 const saved = readJson<Change[]>(STORAGE_KEY, []);
 const journalOnDisk = Array.isArray(saved) ? saved : [];
-/** удаления, которые ещё не подтвердил Google */
+/** deletions not yet confirmed by Google */
 export const $deleteJournal = createStore<Change[]>(journalOnDisk);
-/** удаления с прошлого запуска, которые ещё надо отправить: ждут входа в свой аккаунт */
+/** deletions from the previous run that still need to be sent: they wait for a sign-in to their account */
 export const $leftoverDeletes = createStore<Change[]>(journalOnDisk);
 
 const accountOf = (c: Change) => splitRef(c.draft.originalCalendarId ?? c.draft.calendarId).account;
 
-/** Google ответил окончательно: удалено, или удалять нечего (событие уже удалено, нет доступа) */
+/** Google gave a final answer: deleted, or nothing to delete (event already deleted, no access) */
 const settled = sample({
   clock: [
     deleteFx.done.map(({ params }) => params),
@@ -216,7 +216,7 @@ const settled = sample({
     }).map(({ params }) => params),
   ],
 });
-// не дошло (нет сети, вход истёк): удаление остаётся в журнале и попробует снова при следующем входе
+// didn't go through (offline, sign-in expired): the deletion stays in the log and tries again on the next sign-in
 const retryLater = deleteFx.fail.filter({
   fn: ({ error }) => isTransient(error) || error.kind === "not_signed_in" || error.kind === "not_configured",
 });
@@ -224,18 +224,18 @@ const retryLater = deleteFx.fail.filter({
 $deleteJournal
   .on(deleteStarted, (list, { next }) => [...list.filter((c) => keyOf(c) !== keyOf((next as Deleted).change)), (next as Deleted).change])
   .on(undone, (list, p) => (p.kind === "deleted" ? list.filter((c) => keyOf(c) !== keyOf((p as Deleted).change)) : list))
-  // ответ на старое удаление стирает только его, не более новое
+  // a response to an old deletion erases only that one, not a newer one
   .on(settled, (list, change) => list.filter((c) => keyOf(c) !== keyOf(change)));
 sample({ clock: $deleteJournal.updates, target: persistDeleteFx });
 
-// повтор только того, что ещё в журнале: удаление, которое потом отменили, заменили новым или на которое
-// Google уже ответил, из очереди повтора уходит
+// retry only what is still in the log: a deletion that was later undone, replaced by a new one, or that
+// Google has already answered leaves the retry queue
 $leftoverDeletes
   .on(deleteStarted, (left, { next }) => left.filter((c) => keyOf(c) !== keyOf((next as Deleted).change)))
   .on(undone, (left, p) => (p.kind === "deleted" ? left.filter((c) => keyOf(c) !== keyOf((p as Deleted).change)) : left))
   .on(settled, (left, change) => left.filter((c) => keyOf(c) !== keyOf(change)));
 
-// досылка: когда действует вход в аккаунт удаления (а не любой аккаунт)
+// resend: when the sign-in to the deletion's account is valid (not just any account)
 const leftoverDue = sample({
   clock: $activeAccounts.updates,
   source: { left: $leftoverDeletes, journal: $deleteJournal },
@@ -247,7 +247,7 @@ const replayFx = createEffect<Change[], void>(async (due) => {
   await Promise.allSettled(due.map((c) => deleteFx(c)));
 });
 sample({ clock: leftoverDue, target: replayFx });
-// не дошло — ждёт следующего входа в свой аккаунт
+// didn't go through — waits for the next sign-in to its account
 sample({
   clock: retryLater,
   source: { left: $leftoverDeletes, journal: $deleteJournal },
@@ -257,7 +257,7 @@ sample({
   target: $leftoverDeletes,
 });
 
-// Выход из аккаунта, пока видна строка «Удалено»: сначала удаление уходит в Google, потом выход
+// Signing out of an account while the "Deleted" bar is visible: first the deletion goes to Google, then the sign-out
 $signOutHeld.on($pending, (_, p) => p?.kind === "deleted");
 const $heldAccount = createStore<{ account: string | void; key: string } | null>(null);
 const signOutWithDelete = sample({

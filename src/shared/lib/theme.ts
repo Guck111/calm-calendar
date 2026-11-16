@@ -1,4 +1,4 @@
-// Тема оформления: общая для главного окна и виджета
+// Color theme: shared by the main window and the widget
 import { broadcast, inTauri, subscribe } from "../api/bus";
 import { readJson, writeJson } from "./storage";
 
@@ -14,7 +14,7 @@ export const readTheme = (): Theme => {
 
 export const nextTheme = (t: Theme): Theme => (t === "system" ? "light" : t === "light" ? "dark" : "system");
 
-/** атрибут на <html> для CSS и тема заголовка окна Windows */
+/** attribute on <html> for CSS and the Windows title bar theme */
 export const applyTheme = (t: Theme): void => {
   if (t === "system") delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t;
@@ -33,7 +33,7 @@ export const saveTheme = (t: Theme): void => {
   broadcast("theme-changed", t);
 };
 
-/** тема, выбранная в другом окне */
+/** theme chosen in another window */
 export const followTheme = (onChange?: (t: Theme) => void): (() => void) => {
   const apply = (t: unknown) => {
     if (!isTheme(t)) return;

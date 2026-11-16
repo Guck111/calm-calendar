@@ -1,9 +1,9 @@
-// Ссылка на видеовстречу в событии: Google Meet из conferenceData или hangoutLink,
-// а Zoom, Teams и остальные — ссылкой в месте или описании (так их добавляют дополнения и приглашения).
+// Video meeting link in an event: Google Meet from conferenceData or hangoutLink,
+// and Zoom, Teams and the rest — as a link in the location or description (that's how add-ons and invitations add them).
 
 export type Meeting = { url: string; provider: string };
 
-/** Названия сервисов — торговые марки, не переводятся */
+/** Service names are trademarks, not translated */
 const PROVIDERS: [RegExp, string][] = [
   [/^https:\/\/meet\.google\.com\/[a-z]{3,}-[a-z]{3,}-[a-z]{3,}/i, "Google Meet"],
   [/^https:\/\/([\w-]+\.)?zoom\.(us|com)\/(j|my|w|s)\//i, "Zoom"],
@@ -20,12 +20,12 @@ const PROVIDERS: [RegExp, string][] = [
 
 const providerOf = (url: string): string | undefined => PROVIDERS.find(([re]) => re.test(url))?.[1];
 
-// в описании ссылка бывает внутри HTML: href="…", с &amp; вместо &, с точкой или скобкой после
+// in the description a link may be inside HTML: href="…", with &amp; instead of &, with a period or bracket after it
 const URL_IN_TEXT = /https:\/\/[^\s"'<>()]+/gi;
 
 const cleanUrl = (raw: string): string => raw.replace(/&amp;/g, "&").replace(/[.,;:!?)\]]+$/, "");
 
-/** Первая ссылка известного сервиса в тексте */
+/** First link of a known service in the text */
 export const findMeetingInText = (text: string | undefined): Meeting | undefined => {
   if (!text) return undefined;
   for (const m of text.matchAll(URL_IN_TEXT)) {
@@ -45,7 +45,7 @@ export type MeetingSource = {
 };
 
 export const findMeeting = (e: MeetingSource): Meeting | undefined => {
-  // conferenceData — то, что календарь сам считает видеовстречей (Meet и дополнения Zoom, Teams)
+  // conferenceData is what the calendar itself considers a video meeting (Meet and Zoom, Teams add-ons)
   const video = e.conferenceData?.entryPoints?.find((p) => p.entryPointType === "video" && p.uri?.startsWith("https://"));
   if (video?.uri) {
     return { url: video.uri, provider: providerOf(video.uri) ?? e.conferenceData?.conferenceSolution?.name ?? "Video call" };
@@ -54,13 +54,13 @@ export const findMeeting = (e: MeetingSource): Meeting | undefined => {
   return findMeetingInText(e.location) ?? findMeetingInText(e.description);
 };
 
-/** Кнопку «Подключиться» показываем заранее: за 15 минут до начала и до конца встречи */
+/** The "Join" button is shown in advance: 15 minutes before the start and until the meeting ends */
 export const JOIN_EARLY_MS = 15 * 60_000;
 export const isJoinable = (start: Date, end: Date, now: Date): boolean =>
   now.getTime() >= start.getTime() - JOIN_EARLY_MS && now < end;
 
-/** Место коротко, для строки в списке: ссылка на созвон — название сервиса, другая ссылка — сайт,
- *  адрес — как есть. Приглашения Zoom и Teams часто кладут в место длинную ссылку с паролем */
+/** Short location for a list row: a call link — the service name, another link — the site,
+ *  an address — as is. Zoom and Teams invitations often put a long link with a password into the location */
 export const shortPlace = (location: string, meeting: Meeting | undefined): string => {
   const text = location.trim();
   if (!/^https?:\/\//i.test(text)) return text;

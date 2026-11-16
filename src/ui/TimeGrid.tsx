@@ -30,17 +30,17 @@ import s from "./TimeGrid.module.css";
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const SNAP_MINUTES = 30;
-/** ширина колонки с часами */
+/** width of the hours column */
 const GUTTER = 56;
 
-/** короткое название пояса над колонкой его часов, полное — в подсказке */
+/** short time zone name above its hours column, full name in the tooltip */
 const ZoneHead = ({ zone, at }: { zone: string; at: Date }) => (
   <div className={s.zoneHead} title={zoneLabel(zone, at)}>
     {zoneShort(zone, at)}
   </div>
 );
 
-/** сдвиг мыши, после которого клик считается перетаскиванием */
+/** mouse movement after which a click counts as a drag */
 const DRAG_THRESHOLD = 4;
 
 type Drag = {
@@ -78,7 +78,7 @@ export const TimeGrid = () => {
   const secondZone = useUnit($secondZone);
   const gutters = secondZone ? 2 : 1;
 
-  // пока тянем, показываем событие на новом месте
+  // while dragging, show the event in its new place
   const shown = drag?.moved
     ? events.map((e) =>
         e.key === drag.event.key ? { ...e, ...shiftEvent(drag.event, drag.mode, drag.minutes, drag.days) } : e,
@@ -92,7 +92,7 @@ export const TimeGrid = () => {
     setDrag({ event, mode, x0: e.clientX, y0: e.clientY, minutes: 0, days: 0, moved: false });
   };
 
-  // слушаем всё окно: при переносе в другой день блок события пересоздаётся в другой колонке
+  // listen to the whole window: when moving to another day the event block is recreated in another column
   const dragRef = useRef(drag);
   dragRef.current = drag;
   const dragging = drag !== null;
@@ -107,7 +107,7 @@ export const TimeGrid = () => {
       const moved = d.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
       const columnWidth = (rect.width - GUTTER * gutters) / days.length;
       const minutes = snap((dy / rect.height) * MINUTES_IN_DAY);
-      // справа налево дни идут в другую сторону
+      // in right-to-left the days go the other way
       const dayShift = d.mode === "move" ? Math.round((isRtl() ? -dx : dx) / columnWidth) : 0;
       if (moved !== d.moved || minutes !== d.minutes || dayShift !== d.days) {
         setDrag({ ...d, moved, minutes, days: dayShift });
@@ -135,7 +135,7 @@ export const TimeGrid = () => {
     };
   }, [dragging, days.length, gutters, move, openEvent]);
 
-  // при открытии прокручиваем к 7 утра, а если на экране сегодня и уже вечер — ближе к текущему часу
+  // on open scroll to 7 am, and if today is on screen and it's already evening — closer to the current hour
   const showsToday = days.some((d) => isSameDay(d, today));
   useLayoutEffect(() => {
     const el = scrollRef.current;
@@ -158,7 +158,7 @@ export const TimeGrid = () => {
   const allDayRows = days.map((d) => eventsForDay(shown, d).filter(isAllDayLike));
   const hasAllDay = allDayRows.some((r) => r.length);
   const columns = { gridTemplateColumns: `repeat(${gutters}, ${GUTTER}px) repeat(${days.length}, minmax(0, 1fr))` };
-  // смещение второго пояса берём на сегодня, если он на экране, иначе на первый день
+  // the second time zone offset is taken for today if it's on screen, otherwise for the first day
   const refDay = days.find((d) => isSameDay(d, today)) ?? days[0];
   const systemZone = localTimeZone();
 
@@ -240,7 +240,7 @@ export const TimeGrid = () => {
                   const clashText = clash ? t.accounts.conflict(clash.map((c) => c.title).join(", ")) : "";
                   const left = `calc(${(column / count) * 100}% + 1px)`;
                   const width = `calc(${100 / count}% - 3px)`;
-                  // дорога до события: заштрихованная полоса над ним, в пределах этого дня
+                  // travel to the event: a hatched stripe above it, within this day
                   const travelStart = event.travelMinutes && !isAllDayLike(event) ? Math.max(0, startMin - event.travelMinutes) : startMin;
                   const travelText = event.travelMinutes ? t.editor.travelLine(travelSpan(event.travelMinutes)) : "";
                   return [
@@ -278,7 +278,7 @@ export const TimeGrid = () => {
                         width,
                       }}
                       onPointerDown={startDrag(event, "move")}
-                      // клик мышью по своему событию обрабатывает перетаскивание; здесь — клавиатура и чужие календари
+                      // a mouse click on our own event is handled by dragging; here — keyboard and other people's calendars
                       onClick={(e) => (e.detail === 0 || !canDrag) && openEvent(event)}
                       data-event-key={event.key}
                       title={`${formatTime(event.start)}–${formatTime(event.end)} ${event.title}${clash ? `\n${clashText}` : ""}`}

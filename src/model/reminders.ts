@@ -1,4 +1,4 @@
-// Расписание напоминаний: события на двое суток вперёд → моменты показа → Rust.
+// Reminder schedule: events two days ahead → show times → Rust.
 import { invoke } from "@tauri-apps/api/core";
 import { t } from "../shared/i18n";
 import { createEffect, sample } from "effector";
@@ -19,7 +19,7 @@ export type Reminder = {
   privateTitle: string;
   privateBody: string;
   at: number;
-  /** ссылка на видеовстречу: в уведомлении появится кнопка «Подключиться» */
+  /** video meeting link: the notification gets a "Join" button */
   url?: string;
   joinLabel?: string;
 };
@@ -30,7 +30,7 @@ const before = (minutes: number): string => {
   return t.reminders.inDays(Math.round(minutes / 1440));
 };
 
-/** Чистая функция: из событий и настроек календарей — список напоминаний */
+/** Pure function: from events and calendar settings to a list of reminders */
 export const buildReminders = (
   events: CalendarEvent[],
   calendars: Pick<Calendar, "id" | "defaultReminders">[],
@@ -38,7 +38,7 @@ export const buildReminders = (
 ): Reminder[] => {
   const defaults = new Map(calendars.map((c) => [c.id, c.defaultReminders]));
   return events.flatMap((e) => {
-    // у событий на весь день свои настройки по умолчанию, API их не отдаёт — берём только явные
+    // all-day events have their own defaults that the API doesn't return — take only explicit ones
     const minutes =
       e.reminders === "default" || e.reminders === undefined
         ? e.allDay
@@ -64,8 +64,8 @@ export const buildReminders = (
   });
 };
 
-/** Заметные напоминания: окно поверх всех окон за минуту до начала. Показывать ли — решает
- *  Rust по настройке (выключено, только видеовстречи, все события), поэтому строим для всех */
+/** Prominent reminders: a window on top of all windows a minute before the start. Whether to show it is decided
+ *  by Rust from a setting (off, video meetings only, all events), so build them for all */
 export const ALERT_BEFORE_MS = 60_000;
 
 export type Alert = Pick<Reminder, "key" | "title" | "at" | "url"> & { start: number; end: number; provider?: string };
@@ -92,7 +92,7 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
   const events = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   const items = buildReminders(events, calendars, now);
-  // в Rust поля называются по-другому (snake_case)
+  // in Rust the fields are named differently (snake_case)
   const payload = items.map(({ privateTitle, privateBody, joinLabel, ...r }) => ({
     ...r,
     private_title: privateTitle,
@@ -104,7 +104,7 @@ export const scheduleRemindersFx = createEffect(async (calendars: Calendar[]) =>
   return items.length;
 });
 
-// календари перечитываются при запуске, по кнопке «обновить» и раз в 5 минут
+// calendars are reloaded on start, by the "refresh" button and every 5 minutes
 sample({
   clock: [$visibleCalendars.updates, reloadRequested],
   source: { signedIn: $signedIn, calendars: $visibleCalendars },

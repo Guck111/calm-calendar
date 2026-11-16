@@ -16,25 +16,25 @@
   --radius: 10px;
   --radius-sm: 6px;
   --hour: 52px;
-  /* фоны панелей и сетки; при включённом стекле становятся полупрозрачными */
+  /* panel and grid backgrounds; become translucent when glass is on */
   --app-bg: var(--bg);
   --chrome: var(--surface);
   --canvas: var(--surface);
   --canvas-dim: var(--bg);
 
-  /* Ниже — ручки стилей оформления (styles/styles.css) со значениями «Классического» */
+  /* Below are the visual style knobs (styles/styles.css) with the "Classic" values */
 
-  /* шрифты: стиль задаёт свои, выбранные в настройках пишутся прямо на <html> (lib/appearance.ts);
-     --font-fallback — шрифты Windows для письменностей, которых нет в выбранном шрифте */
+  /* fonts: a style sets its own, those chosen in settings are written directly on <html> (lib/appearance.ts);
+     --font-fallback — Windows fonts for scripts missing from the chosen font */
   --font-fallback: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-text: var(--font-fallback);
   --font-display: var(--font-fallback);
-  /* крупные часы виджета: в «Классическом» — шрифт текста, в остальных стилях
-     и при выбранном шрифте заголовков — шрифт заголовков */
+  /* the widget's big clock: in "Classic" — the text font, in other styles
+     and when a heading font is chosen — the heading font */
   --font-clock: var(--font-text);
-  /* время событий и подписи часов; «Монохром» ставит моноширинный */
+  /* event times and hour labels; "Monochrome" sets a monospace one */
   --font-time: var(--font-text);
-  /* заголовок периода, числа дней, месяц в боковой панели */
+  /* period title, day numbers, month in the sidebar */
   --display-weight: 600;
   --display-tracking: normal;
   --title-size: 18px;
@@ -43,7 +43,7 @@
   --date-weight: 400;
   --date-radius: 17px;
 
-  /* сегодня: число в шапке дня, вся шапка дня, колонка дня в сетке */
+  /* today: the number in the day header, the whole day header, the day column in the grid */
   --today-date-bg: var(--accent);
   --today-date-fg: var(--accent-text);
   --today-weekday: var(--accent);
@@ -55,8 +55,8 @@
   --mini-today-radius: 50%;
   --now-glow: none;
 
-  /* события: доля цвета календаря в заливке, полоса по краю, рамка, метка перед названием.
-     Цвет события (--c) есть только на самом событии, поэтому здесь — проценты и ширины */
+  /* events: share of the calendar color in the fill, edge stripe, border, mark before the title.
+     The event color (--c) exists only on the event itself, so here — percentages and widths */
   --event-radius: 4px;
   --event-fill: 22%;
   --event-fill-hover: 34%;
@@ -66,7 +66,7 @@
   --event-edge-width: 0px;
   --event-edge-mix: 0%;
   --event-edge-base: transparent;
-  /* 100% — белый или тёмный текст по яркости цвета события (сплошная заливка) */
+  /* 100% — white or dark text by the event color's brightness (solid fill) */
   --event-ink-auto: 0%;
   --event-sub-tint: 0%;
   --event-sub-base: var(--text-2);
@@ -76,20 +76,20 @@
   --event-marker-radius: 50%;
   --event-shadow: none;
 
-  /* окно: отступы вокруг панелей, скругления и тени панелей («Витрина») */
+  /* window: padding around panels, panel corner radii and shadows ("Showcase") */
   --shell-gap: 0px;
   --panel-radius: 0px;
   --panel-shadow: none;
   --panel-divider: 1px;
 
-  /* кнопки и переключатели */
+  /* buttons and toggles */
   --control-radius: var(--radius-sm);
   --seg-radius: 8px;
   --seg-item-radius: 6px;
   --seg-active-bg: var(--surface);
   --seg-active-fg: var(--text);
   --create-radius: 20px;
-  /* кружок переключателя в настройках; в «Витрине» акцент тёмной темы светлый */
+  /* the toggle knob in settings; in "Showcase" the dark theme accent is light */
   --switch-knob: #fff;
   --switch-knob-on: #fff;
   --widget-radius: 18px;
@@ -104,12 +104,12 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* справа налево стрелки «назад» и «вперёд» смотрят в другую сторону */
+/* in right-to-left the "back" and "forward" arrows point the other way */
 :root[dir="rtl"] [data-rtl-flip] {
   transform: scaleX(-1);
 }
 
-/* шрифты интерфейса Windows для письменностей, которых нет в Segoe UI и шрифтах стилей */
+/* Windows UI fonts for scripts missing from Segoe UI and the style fonts */
 :root:lang(ja) {
   --font-fallback: "Segoe UI Variable Text", "Yu Gothic UI", "Meiryo UI", system-ui, sans-serif;
 }
@@ -121,7 +121,7 @@
   --font-fallback: "Segoe UI Variable Text", "Nirmala UI", system-ui, sans-serif;
 }
 
-/* тема: data-theme="light" | "dark" на <html>, без атрибута — как в системе */
+/* theme: data-theme="light" | "dark" on <html>, without the attribute — as in the system */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #161618;
@@ -215,7 +215,7 @@ textarea,
   background: transparent;
 }
 
-/* окно виджета прозрачное: видна только карточка */
+/* the widget window is transparent: only the card is visible */
 html[data-window="widget"],
 html[data-window="widget"] body,
 html[data-window="widget"] #root {
@@ -223,7 +223,7 @@ html[data-window="widget"] #root {
   height: auto;
 }
 
-/* стекло в главном окне: только пока окно в фокусе, иначе Windows гасит размытие */
+/* glass in the main window: only while the window is focused, otherwise Windows fades the blur */
 html[data-window="main"][data-glass][data-focused] {
   --app-bg: transparent;
   --chrome: color-mix(in srgb, var(--surface) 45%, transparent);

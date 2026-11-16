@@ -1,4 +1,4 @@
-// Цвет отдельного события (colorId Google): чтение, форма, сохранение, цвет на экране
+// Color of a single event (Google colorId): reading, form, saving, on-screen color
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Calendar, CalendarEvent } from "../shared/api/types";
 
@@ -31,36 +31,36 @@ const event = (over: Record<string, unknown> = {}): CalendarEvent =>
 
 const call = (method: string) => googleRequest.mock.calls.find((c) => c[1] === method);
 
-describe("цвет события", () => {
-  it("11 цветов Google, как в его веб-версии", () => {
+describe("event color", () => {
+  it("11 Google colors, as in its web version", () => {
     expect(Object.keys(EVENT_COLORS)).toEqual(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]);
     expect(EVENT_COLORS["11"]).toBe("#d50000");
   });
 
-  it("читается из Google; неизвестный id не считается", () => {
+  it("read from Google; unknown id is ignored", () => {
     expect(event({ colorId: "4" }).colorId).toBe("4");
     expect(event({ colorId: "99" }).colorId).toBeUndefined();
     expect(event().colorId).toBeUndefined();
   });
 
-  it("на экране — цвет события, без него — цвет календаря", () => {
+  it("on screen — the event color, without it — the calendar color", () => {
     expect(eventColor(event({ colorId: "2" }), calendar)).toBe(EVENT_COLORS["2"]);
     expect(eventColor(event(), calendar)).toBe("#4f8ef7");
     expect(eventColor(event(), undefined)).toBe("#8ab4f8");
   });
 
-  it("в форме: свой цвет или пустая строка — цвет календаря", () => {
+  it("in the form: own color or empty string — calendar color", () => {
     expect(fromEvent(event({ colorId: "6" })).colorId).toBe("6");
     expect(fromEvent(event()).colorId).toBe("");
   });
 
-  it("сохраняется в colorId; «цвет календаря» сбрасывает его", async () => {
+  it("saved in colorId; 'calendar color' resets it", async () => {
     expect(draftToBody(applyChange(fromEvent(event()), { colorId: "5" }))).toHaveProperty("colorId", "5");
     await saveEvent(applyChange(fromEvent(event({ colorId: "5" })), { colorId: "" }));
     expect(call("PATCH")?.[4]).toHaveProperty("colorId", null);
   });
 
-  it("новое событие без цвета не шлёт colorId", async () => {
+  it("new event without a color doesn't send colorId", async () => {
     const { id: _, ...draft } = fromEvent(event());
     await saveEvent(draft);
     expect(call("POST")?.[4]).not.toHaveProperty("colorId");

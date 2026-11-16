@@ -14,8 +14,8 @@ beforeEach(() => {
   invoke.mockResolvedValue(undefined);
 });
 
-describe("журнал окон", () => {
-  it("текст ошибки: стек Error, вид и текст ошибки из Rust, что угодно другое", () => {
+describe("window log", () => {
+  it("error text: Error stack, error kind and text from Rust, anything else", () => {
     const e = new Error("boom");
     expect(describeError(e)).toContain("boom");
     expect(describeError(e)).toContain("log.test");
@@ -23,7 +23,7 @@ describe("журнал окон", () => {
     expect(describeError("plain")).toBe("plain");
   });
 
-  it("уходит в Rust с уровнем; одинаковое сообщение подряд пишется один раз", () => {
+  it("goes to Rust with a level; the same message in a row is written once", () => {
     logError("save failed", { kind: "other", message: "x" });
     logError("save failed", { kind: "other", message: "x" });
     log("info", "started");
@@ -33,7 +33,7 @@ describe("журнал окон", () => {
     ]);
   });
 
-  it("сбой записи в журнал не роняет окно", async () => {
+  it("a log write failure doesn't crash the window", async () => {
     invoke.mockRejectedValue(new Error("no backend"));
     expect(() => logError("another failure")).not.toThrow();
     await Promise.resolve();

@@ -9,7 +9,7 @@
 .head {
   display: grid;
   border-bottom: 1px solid var(--border);
-  /* ширина полосы прокрутки, чтобы колонки совпадали с телом */
+  /* scrollbar width, so the columns line up with the body */
   padding-inline-end: 10px;
 }
 
@@ -52,7 +52,7 @@
   color: var(--text);
 }
 
-/* шапка сегодняшнего дня: в «Витрине» — плашка целиком, в «Монохроме» — черта сверху */
+/* today's header: in "Showcase" — a whole badge, in "Monochrome" — a line on top */
 .today {
   margin-inline: 3px;
   border-radius: var(--date-radius);
@@ -103,8 +103,8 @@
   min-width: 0;
 }
 
-/* цвет текста на событии: обычный или, при сплошной заливке («Витрина»), белый либо тёмный
-   по яркости цвета события; без поддержки относительных цветов остаётся обычный */
+/* text color on an event: regular or, with a solid fill ("Showcase"), white or dark
+   by the event color's brightness; without relative color support the regular one stays */
 .allDayEvent,
 .event {
   --tone: var(--c);
@@ -116,7 +116,7 @@
   color: var(--ink);
 }
 
-/* «Витрина»: сплошная заливка темнее светлых цветов Google, чтобы текст на ней был белым */
+/* "Showcase": the solid fill is darker than Google's light colors so white text works on it */
 :global(:root[data-style="showcase"]) .allDayEvent,
 :global(:root[data-style="showcase"]) .event {
   --tone: oklch(from var(--c) min(l, 0.56) c h);
@@ -167,7 +167,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* название пояса над колонкой его часов */
+/* time zone name above its hours column */
 .zoneHead {
   align-self: end;
   padding-block-end: 6px;
@@ -176,11 +176,11 @@
   color: var(--text-3);
   text-align: end;
   line-height: 1.2;
-  /* «غرينتش+٥:٣٠» и подобные не влезают в одну строку: переносим, а не обрезаем */
+  /* «غرينتش+٥:٣٠» and the like don't fit on one line: wrap instead of truncating */
   overflow-wrap: anywhere;
 }
 
-/* часы второго пояса — бледнее основных */
+/* second time zone hours are paler than the main ones */
 .secondHours .hour {
   color: var(--text-3);
   opacity: 0.75;
@@ -204,7 +204,7 @@
 }
 
 .event {
-  /* рамка («Обсидиан», «Монохром») и полоса цвета календаря по краю («Классический») */
+  /* border ("Obsidian", "Monochrome") and calendar color stripe along the edge ("Classic") */
   --edge: color-mix(in srgb, var(--c) var(--event-edge-mix), var(--event-edge-base));
   position: absolute;
   display: flex;
@@ -264,7 +264,7 @@
   opacity: 0.7;
 }
 
-/* метка цвета календаря перед названием: точка в «Бумаге», квадрат в «Монохроме» */
+/* calendar color mark before the title: a dot in "Paper", a square in "Monochrome" */
 .eventTitle::before {
   content: "";
   display: var(--event-marker);
@@ -326,7 +326,7 @@
   opacity: 0.95;
 }
 
-/* нижний край: растянуть событие */
+/* bottom edge: resize the event */
 .resize {
   position: absolute;
   inset-inline-start: 0;
@@ -336,7 +336,7 @@
   cursor: ns-resize;
 }
 
-/* пересечение с событием другого аккаунта: красная полоса по краю и значок */
+/* overlap with an event from another account: a red stripe along the edge and an icon */
 .conflict::after {
   content: "";
   position: absolute;
@@ -352,7 +352,7 @@
   color: var(--danger);
 }
 
-/* время в пути: заштрихованная полоса цвета календаря над событием */
+/* travel time: a hatched stripe of the calendar color above the event */
 .travel {
   position: absolute;
   display: flex;
@@ -372,7 +372,7 @@
   z-index: 1;
 }
 
-/* прошедшее — бледнее: взгляд сразу находит, что дальше */
+/* past is paler: the eye finds what's next right away */
 .past {
   opacity: 0.55;
 }

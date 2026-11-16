@@ -2,12 +2,12 @@
 import { makeIndicParser } from "./quick-indic";
 
 const HOUR = "ঘণ্টা|ঘন্টা";
-/** «-এ» пишется слитно: «শুক্রবারে», «রাতে», «সকালে» */
+/** «-এ» is written joined: «শুক্রবারে», «রাতে», «সকালে» */
 const LOC = "(?:ে|য়)?";
 
 export const parseQuickBn = makeIndicParser({
   today: "আজ",
-  // «কাল» — и вчера, и завтра; в календаре это завтра. «সকাল» и «বিকাল» не задеваются: перед «কাল» буква
+  // «কাল» means both yesterday and tomorrow; in a calendar it's tomorrow. «সকাল» and «বিকাল» are not affected: there is a letter before «কাল»
   tomorrow: "আগামীকাল|কালকে|কাল",
   dayAfterTomorrow: "পরশু",
   tonight: "আজ\\s+(?:রাতে|রাত|সন্ধ্যায়|সন্ধ্যা)",

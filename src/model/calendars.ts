@@ -13,7 +13,7 @@ const VISIBILITY_KEY = "calm.calendarVisibility";
 export const calendarToggled = createEvent<string>();
 export const calendarsRequested = createEvent();
 
-/** календари всех аккаунтов с действующим входом */
+/** calendars of all accounts with valid sign-in */
 export const fetchCalendarsFx = createEffect<string[], AllCalendars, AppError>(listAllCalendars);
 
 const $googleCalendars = createStore<Calendar[]>([])
@@ -28,12 +28,12 @@ export const $calendars = combine($googleCalendars, $holidayCalendar, $feeds, (l
   ...feeds.map(feedCalendar),
 ]);
 
-/** аккаунты, чьи календари сейчас не загрузились */
+/** accounts whose calendars failed to load right now */
 export const $failedAccounts = createStore<string[]>([])
   .on(fetchCalendarsFx.doneData, (_, r) => r.failed)
   .reset(signOutFx.finally);
 
-/** ручные включения и выключения поверх настроек Google */
+/** manual on/off toggles on top of Google settings */
 export const $visibility = createStore<Record<string, boolean>>(readJson(VISIBILITY_KEY, {}));
 
 sample({
@@ -55,7 +55,7 @@ export const $calendarsWithVisibility = combine($calendars, $visibility, (calend
 
 export const $visibleCalendars = $calendarsWithVisibility.map((list) => list.filter((c) => c.visible));
 
-/** календари, куда можно записывать события */
+/** calendars where events can be written */
 export const $writableCalendars = $calendars.map((list) =>
   list.filter((c) => c.accessRole === "owner" || c.accessRole === "writer"),
 );
@@ -64,7 +64,7 @@ export const $calendarById = $calendars.map(
   (list) => new Map(list.map((c) => [c.id, c] as const)),
 );
 
-// новый аккаунт, выход из аккаунта или истёкший вход меняют список аккаунтов — перечитываем календари
+// a new account, sign-out or expired sign-in changes the account list — reload calendars
 sample({
   clock: [$activeAccounts.updates, calendarsRequested],
   source: $activeAccounts,
@@ -72,7 +72,7 @@ sample({
   target: fetchCalendarsFx,
 });
 
-// Google перестал принимать вход в один из аккаунтов: узнаём у Rust, какой это, и показываем
+// Google stopped accepting sign-in for one of the accounts: ask Rust which one and show it
 sample({
   clock: fetchCalendarsFx.doneData,
   filter: (r) => r.lost.length > 0,

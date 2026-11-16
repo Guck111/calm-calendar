@@ -1,13 +1,13 @@
-// Список сочетаний клавиш для окна «?»: группы, подписи на языке интерфейса и сами клавиши.
-// Клавиши — как на клавиатуре; одно действие может иметь несколько вариантов (Ctrl+F или /).
+// Keyboard shortcut list for the "?" window: groups, labels in the UI language and the keys themselves.
+// Keys as on the keyboard; one action may have several variants (Ctrl+F or /).
 import { t } from "../i18n";
 import { hotkeyLabel } from "./hotkeys";
 
-/** keys — варианты, каждый вариант — клавиши, нажимаемые вместе */
+/** keys — variants, each variant is keys pressed together */
 export type ShortcutItem = { label: string; keys: string[][] };
 export type ShortcutGroup = { title: string; items: ShortcutItem[] };
 
-/** quickHotkey — сочетание быстрого создания из настроек («ctrl+alt+space»); null — выключено */
+/** quickHotkey — the quick add hotkey from settings ("ctrl+alt+space"); null — off */
 export const shortcutGroups = (quickHotkey: string | null): ShortcutGroup[] => {
   const s = t.shortcuts;
   return [

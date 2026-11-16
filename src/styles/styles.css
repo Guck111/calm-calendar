@@ -1,11 +1,11 @@
-/* Стили оформления: атрибут data-style на <html> (lib/appearance.ts). Без атрибута — «Классический»,
-   его значения — в global.css. Каждый стиль задаёт цвета для светлой и тёмной темы через light-dark():
-   какую половину брать, решает color-scheme, а его выставляет тема в global.css.
-   Здесь только переменные; компоненты читают их в своих .module.css.
-   Подключается после global.css: те же селекторы, побеждает позднее правило */
+/* Visual styles: data-style attribute on <html> (lib/appearance.ts). Without the attribute — "Classic",
+   its values are in global.css. Each style sets colors for the light and dark theme via light-dark():
+   which half to take is decided by color-scheme, which is set by the theme in global.css.
+   Only variables here; components read them in their .module.css.
+   Loaded after global.css: same selectors, the later rule wins */
 
-/* Образцы стилей в настройках (data-style-preview): сначала значения «Классического»,
-   ниже каждый стиль переопределяет свои. Цвета классики — те же, что в global.css */
+/* Style samples in settings (data-style-preview): first the "Classic" values,
+   below each style overrides its own. Classic colors are the same as in global.css */
 [data-style-preview] {
   --bg: light-dark(#f7f7f5, #161618);
   --surface: light-dark(#ffffff, #1e1e21);
@@ -26,7 +26,7 @@
   --event-edge-base: transparent;
 }
 
-/* ── Бумага: тёплая бумага, заголовки с засечками, терракота ───────────────────────── */
+/* ── Paper: warm paper, serif headings, terracotta ──────────────────────────────────── */
 :root[data-style="paper"],
 [data-style-preview="paper"] {
   --bg: light-dark(#f6f3ee, #1a1816);
@@ -79,7 +79,7 @@
   --clock-weight: 500;
 }
 
-/* ── Обсидиан: стекло, шампань, мягкие цветные пятна под панелями ──────────────────── */
+/* ── Obsidian: glass, champagne, soft colored blobs under the panels ───────────────── */
 :root[data-style="obsidian"],
 [data-style-preview="obsidian"] {
   --bg: light-dark(#f3f1ee, #0c0d10);
@@ -134,7 +134,7 @@
   --widget-radius: 24px;
 }
 
-/* ── Витрина: плавающие панели, сплошные события, крупный широкий шрифт ────────────── */
+/* ── Showcase: floating panels, solid events, large wide font ──────────────────────── */
 :root[data-style="showcase"],
 [data-style-preview="showcase"] {
   --bg: light-dark(#e9ecf2, #07080b);
@@ -198,7 +198,7 @@
   --clock-weight: 600;
 }
 
-/* ── Монохром: чёрно-белый, моноширинные цифры, один сигнальный цвет ───────────────── */
+/* ── Monochrome: black and white, monospace digits, one signal color ───────────────── */
 :root[data-style="mono"],
 [data-style-preview="mono"] {
   --bg: light-dark(#ffffff, #0a0a0a);

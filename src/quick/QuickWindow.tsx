@@ -1,5 +1,5 @@
-// Окно быстрого создания: открывается сочетанием клавиш на всю Windows (Ctrl+Alt+Space)
-// поверх любых окон. Строка та же, что в боковой панели и виджете; данные — модель виджета.
+// Quick add window: opens with a system-wide Windows hotkey (Ctrl+Alt+Space)
+// on top of any windows. The input is the same as in the sidebar and the widget; data is the widget's model.
 import { useUnit } from "effector-react";
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
@@ -22,7 +22,7 @@ export const QuickWindow = () => {
 
   useEffect(() => {
     start();
-    // при каждом показе — свежий список календарей и курсор в строке
+    // on every show — a fresh calendar list and the cursor in the input
     const off = subscribe("quick-shown", () => {
       refresh();
       quick.current?.focus();
@@ -35,10 +35,10 @@ export const QuickWindow = () => {
     };
   }, [start, refresh]);
 
-  // при первом открытии календари ещё грузятся: без них строка ответила бы «нет календаря»
+  // on first open calendars are still loading: without them the input would answer "no calendar"
   const ready = signedIn && (calendars.length > 0 || calendarsTried);
 
-  // строка появляется, когда календари загружены: тогда и ставим в неё курсор
+  // the input appears when calendars are loaded: that's when we put the cursor in it
   useEffect(() => {
     if (ready) quick.current?.focus();
   }, [ready]);

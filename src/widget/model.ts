@@ -1,5 +1,5 @@
-// Модель виджета. Окно виджета — отдельная страница со своим состоянием,
-// поэтому здесь своя лёгкая модель поверх тех же запросов к Google.
+// Widget model. The widget window is a separate page with its own state,
+// so it has its own lightweight model on top of the same Google requests.
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { getAuthStatus } from "../shared/api/bridge";
 import { calendarVisible, listAllCalendars, listEvents } from "../shared/api/calendar";
@@ -20,12 +20,12 @@ export const minuteTicked = createEvent<Date>();
 export const monthShifted = createEvent<1 | -1>();
 export const monthReset = createEvent();
 
-// обновление виджета скачивает и подписки .ics заново
+// widget refresh re-downloads .ics subscriptions too
 refreshRequested.watch(forgetFeeds);
 
 export const fetchStatusFx = createEffect<void, AuthStatus, AppError>(getAuthStatus);
 
-/** календари всех аккаунтов, праздники и подписки из настроек, но только включённые в главном окне */
+/** calendars of all accounts, holidays and subscriptions from settings, but only those enabled in the main window */
 export const fetchCalendarsFx = createEffect<string[], Calendar[], AppError>(async (accounts) => {
   const { calendars } = await listAllCalendars(accounts);
   const holidays = holidayCalendar(readJson<string | null>(HOLIDAYS_KEY, null), accounts, calendars);
@@ -42,12 +42,12 @@ const loadRange = async (calendars: Calendar[], range: DateRange): Promise<Calen
   return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 };
 
-/** ближайшие события для списка внизу */
+/** nearest events for the list at the bottom */
 export const fetchUpcomingFx = createEffect<{ calendars: Calendar[]; today: Date }, CalendarEvent[], AppError>(
   ({ calendars, today }) => loadRange(calendars, { start: today, end: addDays(today, LOOK_AHEAD_DAYS) }),
 );
 
-/** события сетки показанного месяца — для точек */
+/** events of the shown month's grid — for the dots */
 export const fetchMonthFx = createEffect<
   { calendars: Calendar[]; month: Date },
   { month: Date; events: CalendarEvent[] },
@@ -70,7 +70,7 @@ export const $month = createStore(startOfMonth(new Date()))
 export const $isCurrentMonth = combine($month, $today, isSameMonth);
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
-/** аккаунты с действующим входом */
+/** accounts with valid sign-in */
 const activeAccounts = (s: AuthStatus | null): string[] =>
   s && s.clientSource !== "none" ? s.accounts.filter((a) => a.signedIn).map((a) => a.email) : [];
 
@@ -80,7 +80,7 @@ export const $signedIn = $accounts.map((list) => list.length > 0);
 const signedOut = fetchStatusFx.doneData.filter({ fn: (s) => activeAccounts(s).length === 0 });
 
 export const $calendars = createStore<Calendar[]>([]).on(fetchCalendarsFx.doneData, (_, c) => c).reset(signedOut);
-/** список календарей уже запрашивали (удачно или нет): до этого «нет календарей» ещё ничего не значит */
+/** the calendar list has already been requested (successfully or not): before that "no calendars" means nothing yet */
 export const $calendarsTried = createStore(false).on(fetchCalendarsFx.finally, () => true).reset(signedOut);
 
 export const $colors = $calendars.map((list) => Object.fromEntries(list.map((c) => [c.id, c.color])));
@@ -91,7 +91,7 @@ export const $upcoming = createStore<CalendarEvent[]>([])
 
 export const $monthEvents = createStore<CalendarEvent[]>([]).reset(signedOut);
 
-// пока грузится новый месяц, точки старого не показываем
+// while a new month is loading, the old month's dots are not shown
 sample({ clock: $month.updates, fn: () => [], target: $monthEvents });
 
 export const $error = createStore<string | null>(null)
@@ -124,7 +124,7 @@ sample({
   target: fetchMonthFx,
 });
 
-// ответ по месяцу, который уже перелистнули, не применяем
+// a response for a month already paged past is not applied
 sample({
   clock: fetchMonthFx.doneData,
   source: $month,
@@ -133,7 +133,7 @@ sample({
   target: $monthEvents,
 });
 
-// с наступлением нового дня возвращаемся к текущему месяцу и перечитываем
+// when a new day starts, go back to the current month and reload
 sample({ clock: $today.updates, target: monthReset });
 sample({
   clock: $today.updates,

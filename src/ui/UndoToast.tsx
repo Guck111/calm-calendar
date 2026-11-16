@@ -8,8 +8,8 @@ import s from "./UndoToast.module.css";
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 
-/** Строка «Перенесено: … · Отменить» внизу окна. Ctrl+Z тоже отменяет; пока мышь или фокус на строке,
- *  она не исчезает. Окно закрывают — удаление уходит в Google сразу */
+/** The "Moved: … · Undo" bar at the bottom of the window. Ctrl+Z undoes too; while the mouse or focus is on the bar,
+ *  it doesn't disappear. When the window is closed, the deletion goes to Google right away */
 export const UndoToast = () => {
   const [undo, undoIt, dismiss, pause, resume] = useUnit([$undo, undoClicked, undoDismissed, undoPaused, undoResumed]);
 
@@ -30,7 +30,7 @@ export const UndoToast = () => {
     };
   }, [undo, undoIt, dismiss]);
 
-  // мышь и фокус держат строку независимо: таймер снова идёт, только когда ушли оба
+  // mouse and focus hold the bar independently: the timer runs again only when both have left
   const inside = useRef({ hover: false, focus: false });
   const enter = (what: "hover" | "focus") => {
     const was = inside.current.hover || inside.current.focus;
@@ -41,13 +41,13 @@ export const UndoToast = () => {
     inside.current[what] = false;
     if (!inside.current.hover && !inside.current.focus) resume();
   };
-  // новая строка — с чистого листа
+  // a new bar starts from a clean slate
   useEffect(() => {
     inside.current = { hover: false, focus: false };
   }, [undo?.kind, undo?.title]);
 
-  // вежливое объявление: экранный диктор прочитает строку, не забирая фокус. Не role="status" —
-  // это роль полосы ошибок над календарём
+  // polite announcement: a screen reader reads the bar without taking focus. Not role="status" —
+  // that's the role of the error bar above the calendar
   return (
     <div className={s.region} aria-live="polite" aria-atomic="true">
       {undo && (

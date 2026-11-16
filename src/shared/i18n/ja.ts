@@ -149,14 +149,14 @@ export const ja: Dict = {
     ruleChanged: "繰り返しを変更したため、この予定とそれ以降の予定に反映されます。",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "アカウントを追加",
     signOutTitle: (email: string) => `${email} からログアウト`,
     expired: "ログインの有効期限が切れました。",
     signInAgain: "再ログイン",
     confirmSignOut: "ログアウトしますか？",
     alsoIn: (list: string) => `他のカレンダー: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `重複: ${list}`,
   },
   meeting: {

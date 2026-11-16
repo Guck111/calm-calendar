@@ -1,6 +1,6 @@
-//! Строки, которые показывает Rust-часть: меню трея и страница в браузере после входа.
-//! Язык выбирает интерфейс (команда set_language); до первого выбора — язык Windows.
-//! Новый язык: вариант в Lang, строка в ALL и его тексты в texts().
+//! Strings shown by the Rust side: tray menu and the browser page after sign-in.
+//! The UI picks the language (set_language command); before the first choice — the Windows language.
+//! New language: a variant in Lang, a line in ALL and its texts in texts().
 
 use crate::config;
 use tauri::AppHandle;
@@ -22,7 +22,7 @@ pub enum Lang {
     Bn,
 }
 
-/// Порядок не важен: по нему только ищут код и язык Windows
+/// Order doesn't matter: it's only used to look up the code and the Windows language
 const ALL: &[Lang] = &[Lang::En, Lang::Ru, Lang::Uk, Lang::Be, Lang::Es, Lang::Fr, Lang::Pt, Lang::De, Lang::Ja, Lang::Zh, Lang::Hi, Lang::Ar, Lang::Bn];
 
 pub struct TrayText {
@@ -34,11 +34,11 @@ pub struct TrayText {
 }
 
 pub struct Texts {
-    /// код в интерфейсе и в настройках
+    /// code in the UI and in settings
     code: &'static str,
-    /// язык экрана согласия Google (параметр hl)
+    /// Google consent screen language (hl parameter)
     hl: &'static str,
-    /// основной язык в LANGID Windows (младшие 10 бит)
+    /// primary language in the Windows LANGID (low 10 bits)
     langid: u16,
     rtl: bool,
     tray: TrayText,
@@ -255,12 +255,12 @@ impl Lang {
         self.texts().code
     }
 
-    /// Язык экрана входа Google
+    /// Google sign-in screen language
     pub fn hl(self) -> &'static str {
         self.texts().hl
     }
 
-    /// Направление письма для страницы в браузере
+    /// Text direction for the browser page
     pub fn dir(self) -> &'static str {
         if self.texts().rtl { "rtl" } else { "ltr" }
     }
@@ -270,7 +270,7 @@ impl Lang {
     }
 }
 
-/// Язык интерфейса Windows, если на него есть перевод, иначе английский
+/// Windows UI language if there is a translation for it, otherwise English
 #[cfg(windows)]
 fn system_lang() -> Lang {
     let id = unsafe { windows_sys::Win32::Globalization::GetUserDefaultUILanguage() };
@@ -295,7 +295,7 @@ pub fn tray(lang: Lang) -> TrayText {
     lang.texts().tray
 }
 
-/// Текст страницы, которую браузер показывает после входа
+/// Text of the page the browser shows after sign-in
 pub fn sign_in_page(lang: Lang, ok: bool) -> &'static str {
     let texts = lang.texts();
     if ok { texts.signed_in } else { texts.sign_in_failed }
@@ -323,10 +323,10 @@ mod tests {
 
     #[test]
     fn maps_windows_language_ids() {
-        // 0x0419 — русский (Россия), 0x0809 — английский (Великобритания)
+        // 0x0419 — Russian (Russia), 0x0809 — English (United Kingdom)
         assert_eq!(Lang::from_langid(0x0419), Some(Lang::Ru));
         assert_eq!(Lang::from_langid(0x0809), Some(Lang::En));
-        // 0x0422 — украинский, 0x0423 — белорусский
+        // 0x0422 — Ukrainian, 0x0423 — Belarusian
         assert_eq!(Lang::from_langid(0x0422), Some(Lang::Uk));
         assert_eq!(Lang::from_langid(0x0423), Some(Lang::Be));
         assert_eq!(Lang::from_langid(0x0415), None);

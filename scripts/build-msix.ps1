@@ -1,11 +1,11 @@
-﻿# Упаковывает собранный calm-calendar.exe в MSIX.
+﻿# Packs the built calm-calendar.exe into MSIX.
 #
 #   npx tauri build --no-bundle
-#   .\scripts\build-msix.ps1                 # пакет .msix для загрузки в Partner Center
-#   .\scripts\build-msix.ps1 -Register       # установить из папки без подписи (нужен режим разработчика)
+#   .\scripts\build-msix.ps1                 # package .msix for upload to Partner Center
+#   .\scripts\build-msix.ps1 -Register       # install from the folder without signing (needs Developer Mode)
 #
-# Для Store значения Identity берутся из Partner Center → Product identity.
-# Подпись пакета для Store не нужна: Microsoft подписывает его сама.
+# For the Store, Identity values come from Partner Center → Product identity.
+# The Store package needs no signature: Microsoft signs it itself.
 
 param(
     [string]$IdentityName = 'CalmCalendar.Dev',
@@ -18,15 +18,15 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $tauri = Join-Path $root 'src-tauri'
 $exe = Join-Path $tauri 'target\release\calm-calendar.exe'
-if (-not (Test-Path $exe)) { throw "Нет $exe. Сначала: npx tauri build --no-bundle" }
+if (-not (Test-Path $exe)) { throw "No $exe. First run: npx tauri build --no-bundle" }
 
-# в MSIX версия из четырёх чисел, последнее для Store должно быть 0
+# MSIX version has four numbers; for the Store the last one must be 0
 $semver = (Get-Content (Join-Path $tauri 'tauri.conf.json') -Raw | ConvertFrom-Json).version
 $version = "$semver.0"
 
 $out = Join-Path $tauri 'target\msix'
 $layout = Join-Path $out 'layout'
-# установленный из папки пакет держит exe открытым: снимаем его до очистки папки
+# a package installed from the folder keeps the exe open: remove it before cleaning the folder
 if ($Register) { Get-AppxPackage -Name $IdentityName | Remove-AppxPackage }
 if (Test-Path $layout) { Remove-Item $layout -Recurse -Force }
 New-Item -ItemType Directory -Force (Join-Path $layout 'Assets') | Out-Null
@@ -51,9 +51,9 @@ if ($Register) {
 
 $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" |
     Sort-Object FullName -Descending | Select-Object -First 1
-if (-not $makeappx) { throw 'Нет makeappx.exe: поставь Windows SDK' }
+if (-not $makeappx) { throw 'No makeappx.exe: install the Windows SDK' }
 
 $package = Join-Path $out "CalmCalendar_${version}_x64.msix"
 & $makeappx.FullName pack /o /d $layout /p $package
-if ($LASTEXITCODE) { throw "makeappx завершился с кодом $LASTEXITCODE" }
+if ($LASTEXITCODE) { throw "makeappx exited with code $LASTEXITCODE" }
 Get-Item $package | Select-Object FullName, Length

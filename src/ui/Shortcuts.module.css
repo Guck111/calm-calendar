@@ -37,7 +37,7 @@
   margin: 0;
 }
 
-/* клавиши сочетания читаются слева направо и в арабском интерфейсе: Ctrl, потом K */
+/* hotkey keys read left to right in the Arabic UI too: Ctrl, then K */
 .combo {
   display: inline-flex;
   gap: 3px;

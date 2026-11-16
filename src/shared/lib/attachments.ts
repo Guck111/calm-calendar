@@ -1,8 +1,8 @@
-// Вложения события в Google Календаре — это файлы Google Диска. С правом calendar.events можно прикрепить
-// файл по ссылке на него; загрузить файл с компьютера — только с правом Диска (этап 3б).
+// Event attachments in Google Calendar are Google Drive files. With the calendar.events scope you can attach
+// a file by its link; uploading a file from the computer needs the Drive scope (stage 3b).
 import type { Attachment } from "../api/types";
 
-/** больше Google не принимает */
+/** Google doesn't accept more */
 export const MAX_ATTACHMENTS = 25;
 
 const DOCS: Record<string, { title: string; mimeType: string }> = {
@@ -17,8 +17,8 @@ const DOC_LINK = new RegExp(`^https://docs\\.google\\.com/(document|spreadsheets
 const FILE_LINK = new RegExp(`^https://drive\\.google\\.com/file/d/(${ID})`);
 const OPEN_LINK = new RegExp(`^https://drive\\.google\\.com/open\\?(?:.*&)?id=(${ID})`);
 
-/** Ссылка на файл Google Диска → вложение. Название пока условное («Google Docs»): настоящее имя файла
- *  знает только Диск. Не ссылка на файл Диска — null */
+/** Google Drive file link → attachment. The title is a placeholder for now ("Google Docs"): the real file name
+ *  is known only to Drive. Not a Drive file link — null */
 export const parseDriveLink = (text: string): Attachment | null => {
   const url = text.trim();
   const doc = DOC_LINK.exec(url);

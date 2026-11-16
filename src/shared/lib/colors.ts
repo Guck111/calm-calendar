@@ -1,19 +1,19 @@
-// Цвета отдельных событий в Google Календаре (colorId 1–11). Оттенки — как в веб-версии Google:
-// API отдаёт старую бледную палитру, а пользователь видит эти цвета.
+// Colors of individual events in Google Calendar (colorId 1–11). Shades as in Google's web version:
+// the API returns the old pale palette, while the user sees these colors.
 import type { Calendar, CalendarEvent } from "../api/types";
 
 export const EVENT_COLORS: Record<string, string> = {
-  "1": "#7986cb", // лаванда
-  "2": "#33b679", // шалфей
-  "3": "#8e24aa", // виноград
-  "4": "#e67c73", // фламинго
-  "5": "#f6bf26", // банан
-  "6": "#f4511e", // мандарин
-  "7": "#039be5", // павлин
-  "8": "#616161", // графит
-  "9": "#3f51b5", // черника
-  "10": "#0b8043", // базилик
-  "11": "#d50000", // томат
+  "1": "#7986cb", // lavender
+  "2": "#33b679", // sage
+  "3": "#8e24aa", // grape
+  "4": "#e67c73", // flamingo
+  "5": "#f6bf26", // banana
+  "6": "#f4511e", // tangerine
+  "7": "#039be5", // peacock
+  "8": "#616161", // graphite
+  "9": "#3f51b5", // blueberry
+  "10": "#0b8043", // basil
+  "11": "#d50000", // tomato
 };
 
 export const COLOR_IDS = Object.keys(EVENT_COLORS);
@@ -22,6 +22,6 @@ export const isColorId = (v: unknown): v is string => typeof v === "string" && O
 
 const FALLBACK = "#8ab4f8";
 
-/** Цвет события на экране: свой цвет события, иначе цвет календаря */
+/** Event color on screen: the event's own color, otherwise the calendar color */
 export const eventColor = (event: Pick<CalendarEvent, "colorId"> | undefined, calendar: Calendar | undefined): string =>
   (event?.colorId && EVENT_COLORS[event.colorId]) || calendar?.color || FALLBACK;

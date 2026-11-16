@@ -1,5 +1,5 @@
-// Раскладка событий: какие события попадают в день и как разместить
-// пересекающиеся события в сетке времени без наложения.
+// Event layout: which events fall into a day and how to place
+// overlapping events in the time grid without overlap.
 import type { CalendarEvent } from "../api/types";
 import { locale } from "../i18n";
 import { addCalendarDays, MINUTES_IN_DAY, minutesOfDay, startOfDay } from "./date";
@@ -11,7 +11,7 @@ export const overlapsDay = (e: CalendarEvent, day: Date): boolean => {
   return e.start < dayEnd && e.end > dayStart;
 };
 
-/** На весь день, а также события на 24 часа и дольше: их показываем в верхней полосе */
+/** All-day, as well as events of 24 hours and longer: shown in the top strip */
 export const isAllDayLike = (e: CalendarEvent): boolean =>
   e.allDay || e.end.getTime() - e.start.getTime() >= MINUTES_IN_DAY * 60_000;
 
@@ -26,14 +26,14 @@ export const eventsForDay = (events: CalendarEvent[], day: Date): CalendarEvent[
 
 export type PlacedEvent = {
   event: CalendarEvent;
-  /** минуты от начала дня, обрезанные границами дня */
+  /** minutes from the start of the day, clipped by the day boundaries */
   startMin: number;
   endMin: number;
   column: number;
   columns: number;
 };
 
-/** Короткие события растягиваем, чтобы по ним можно было попасть мышью */
+/** Short events are stretched so they can be hit with the mouse */
 const MIN_DURATION = 20;
 
 export const layoutDay = (events: CalendarEvent[], day: Date): PlacedEvent[] => {
@@ -55,7 +55,7 @@ export const layoutDay = (events: CalendarEvent[], day: Date): PlacedEvent[] => 
     .sort((a, b) => a.startMin - b.startMin || b.endMin - a.endMin);
 
   const placed: PlacedEvent[] = [];
-  // группа — цепочка событий, которые пересекаются между собой хотя бы попарно
+  // a group is a chain of events that overlap each other at least pairwise
   let group: PlacedEvent[] = [];
   let columnEnds: number[] = [];
   let groupEnd = -1;

@@ -1,15 +1,15 @@
-// Подписки на календари .ics по ссылке. Список хранится только в приложении (localStorage — общий для
-// главного окна, настроек и виджета): в Google такой календарь не добавить без нового права.
+// Subscriptions to .ics calendars by link. The list is stored only in the app (localStorage shared by
+// the main window, settings and widget): such a calendar can't be added to Google without a new scope.
 import { calendarRef } from "../api/calendar";
 import type { Calendar } from "../api/types";
 
 export const FEEDS_KEY = "calm.feeds";
-/** вместо email аккаунта у календарей подписок */
+/** instead of the account email for subscription calendars */
 export const FEED_ACCOUNT = "ics";
 
 export type Feed = { id: string; url: string; name: string; color: string };
 
-/** цвета подписок по кругу: спокойные, не похожие на цвета календарей Google по умолчанию */
+/** subscription colors in rotation: calm, unlike Google's default calendar colors */
 export const FEED_COLORS = ["#8e63ce", "#e6804d", "#3d9a8b", "#c2537a", "#6d7f99", "#b8913a"];
 
 const isFeed = (v: unknown): v is Feed => {
@@ -17,16 +17,16 @@ const isFeed = (v: unknown): v is Feed => {
   return Boolean(f && typeof f.id === "string" && typeof f.url === "string" && typeof f.name === "string" && typeof f.color === "string");
 };
 
-/** список из хранилища; испорченные записи пропускаем */
+/** the list from storage; corrupted entries are skipped */
 export const parseFeeds = (v: unknown): Feed[] => (Array.isArray(v) ? v.filter(isFeed) : []);
 
-/** webcal:// и https:// с тем же адресом — одна подписка */
+/** webcal:// and https:// with the same address are one subscription */
 export const sameFeedUrl = (a: string, b: string): boolean => {
   const norm = (u: string) => u.trim().replace(/^webcal:\/\//i, "https://").replace(/\/+$/, "").toLowerCase();
   return norm(a) === norm(b);
 };
 
-/** название по умолчанию — адрес сайта: «calendar.example.com» */
+/** default name is the site address: "calendar.example.com" */
 export const feedNameFromUrl = (url: string): string => {
   try {
     return new URL(url.trim().replace(/^webcal:\/\//i, "https://")).hostname || url;
@@ -35,7 +35,7 @@ export const feedNameFromUrl = (url: string): string => {
   }
 };
 
-/** ссылка похожа на ссылку: проверяем до скачивания, чтобы сразу сказать об опечатке */
+/** the link looks like a link: check before downloading to report a typo right away */
 export const looksLikeUrl = (url: string): boolean => /^(https?|webcal):\/\/[^\s/]+\.[^\s]+$/i.test(url.trim());
 
 export const newFeed = (url: string, name: string, existing: Feed[], id = crypto.randomUUID()): Feed => ({

@@ -47,10 +47,10 @@ import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
 const ALERT_MODES: AlertMode[] = ["off", "calls", "all"];
-/** значение списка для выключенного сочетания */
+/** list value for a disabled hotkey */
 const OFF = "off";
 
-/** список шрифтов: первым — шрифт стиля, каждый шрифт показан им самим */
+/** font list: the style font first, each font shown in itself */
 const FontSelect = ({
   label,
   value,
@@ -86,16 +86,16 @@ const FontSelect = ({
 
 type Props = {
   onClose: () => void;
-  /** включили напоминания — перечитать события и запланировать их заново */
+  /** reminders turned on — reload events and reschedule them */
   onReschedule: () => void;
-  /** в отдельном окне: без затемнения, окно тянут за шапку средствами Windows */
+  /** in a separate window: no dimming, the window is dragged by the header using Windows */
   onHeadDrag?: (e: ReactPointerEvent<HTMLElement>) => void;
 };
 
-/** второй пояс, номера недель, праздники хранятся в окне календаря: сообщаем ему о смене */
+/** second time zone, week numbers, holidays are stored in the calendar window: tell it about the change */
 const displayChanged = () => broadcast("display-changed");
 
-/** Подписки на календари .ics: ссылка проверяется скачиванием, название берётся из самого календаря */
+/** .ics calendar subscriptions: the link is checked by downloading, the name comes from the calendar itself */
 const FeedsSection = () => {
   const [feeds, setFeeds] = useUnit([$feeds, feedsChanged]);
   const [url, setUrl] = useState("");
@@ -183,7 +183,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   const [alerts, setAlertsState] = useState<AlertMode>("off");
   const [hotkey, setHotkeyState] = useState<string>(DEFAULT_QUICK_HOTKEY);
   const [hotkeyError, setHotkeyError] = useState<string | null>(null);
-  // виджет, поверх окон и автозапуск — те же, что в меню трея; галочки там следуют
+  // widget, always on top and autostart — the same as in the tray menu; the checkboxes there follow
   const [desktop, setDesktop] = useState<DesktopState>({ widget: false, on_top: false, autostart: false });
   const [error, setError] = useState<string | null>(null);
   const reschedule = onReschedule;
@@ -206,7 +206,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
     setHolidays(v);
     displayChanged();
   };
-  // страны по алфавиту языка приложения
+  // countries in the app language's alphabetical order
   const [regions] = useState(sortedRegions);
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
       setError(t.errors.settingFailed);
     }
   };
-  // автозапуск можно запретить в диспетчере задач: переключатель показывает, что вышло на деле
+  // autostart can be disabled in Task Manager: the toggle shows what actually happened
   const toggleAutostart = async (enabled: boolean) => {
     setDesktop((d) => ({ ...d, autostart: enabled }));
     try {
@@ -383,7 +383,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
                   className={cx(s.styleCard, appearance.style === id && s.styleActive)}
                   onClick={() => changeAppearance({ style: id })}
                 >
-                  {/* образец стиля: те же переменные, что у окна в этом стиле (styles.css) */}
+                  {/* style sample: the same variables as a window in this style (styles.css) */}
                   <span className={s.preview} data-style-preview={id} aria-hidden>
                     <span className={s.previewAa}>Aa</span>
                     <span className={s.previewToday} />

@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { $isCurrentMonth, $month, monthReset, monthShifted } from "./model";
 import { addMonths, startOfMonth } from "../shared/lib/date";
 
-describe("месяцы в виджете", () => {
-  it("стрелки листают месяц, сброс возвращает к текущему", async () => {
+describe("months in the widget", () => {
+  it("arrows page the month, reset returns to the current one", async () => {
     const scope = fork();
     const current = startOfMonth(new Date());
     await allSettled(monthShifted, { scope, params: 1 });

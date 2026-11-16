@@ -17,8 +17,8 @@ const draft = (over: Partial<EventDraft> = {}): EventDraft => ({
   ...over,
 });
 
-describe("события Google", () => {
-  it("событие на весь день из Google: конец не включительно", () => {
+describe("Google events", () => {
+  it("all-day event from Google: end is exclusive", () => {
     const e = toCalendarEvent("c", {
       id: "1",
       summary: "Отпуск",
@@ -30,7 +30,7 @@ describe("события Google", () => {
     expect(e?.end).toEqual(new Date(2026, 10, 9));
   });
 
-  it("отменённые и пустые события отбрасываются, у безымянного есть заглушка", () => {
+  it("cancelled and empty events are dropped, an untitled one gets a placeholder", () => {
     expect(toCalendarEvent("c", { id: "1", status: "cancelled", start: { date: "2026-11-07" } })).toBeNull();
     expect(toCalendarEvent("c", { id: "2" })).toBeNull();
     expect(toCalendarEvent("c", { id: "3", start: { dateTime: "2026-11-04T09:00:00Z" } })?.title).toBe(
@@ -38,21 +38,21 @@ describe("события Google", () => {
     );
   });
 
-  it("черновик со временем превращается в dateTime и обнуляет date", () => {
+  it("a timed draft becomes dateTime and clears date", () => {
     const body = draftToBody(draft());
     expect(body.summary).toBe("Встреча");
     expect(body.start).toMatchObject({ date: null, dateTime: new Date(2026, 10, 4, 9).toISOString() });
     expect(body.end).toMatchObject({ dateTime: new Date(2026, 10, 4, 10, 30).toISOString() });
   });
 
-  it("черновик на весь день: последний день в форме включительно, в Google — нет", () => {
+  it("all-day draft: last day inclusive in the form, exclusive in Google", () => {
     const body = draftToBody(draft({ allDay: true, endDate: "2026-11-05" }));
     expect(body.start).toEqual({ date: "2026-11-04", dateTime: null, timeZone: null });
     expect(body.end).toEqual({ date: "2026-11-06", dateTime: null, timeZone: null });
   });
 });
 
-// серия «Работа» по будням с 2 ноября 2026, 12:00–18:00; правим повторение 11 ноября
+// series "Work" on weekdays from November 2, 2026, 12:00–18:00; edit the occurrence of November 11
 const at = (d: number, h: number) => new Date(2026, 10, d, h).toISOString();
 const master = {
   id: "w",
@@ -80,8 +80,8 @@ const occurrence = (over: Partial<EventDraft> = {}): EventDraft =>
     ...over,
   });
 
-describe("«это и следующие»", () => {
-  it("с середины серии: новая серия с теми же участниками и обрезка старой", () => {
+describe("'this and following'", () => {
+  it("from the middle of a series: a new series with the same attendees and the old one trimmed", () => {
     const plan = planFollowing(occurrence(), master, 7);
     expect(plan.kind).toBe("split");
     if (plan.kind !== "split") return;
@@ -90,7 +90,7 @@ describe("«это и следующие»", () => {
       attendees: master.attendees,
       conferenceData: master.conferenceData,
       start: { dateTime: at(11, 13) },
-      // прошло 7 повторений из 20 — осталось 13; EXDATE сохраняется
+      // 7 of 20 occurrences have passed — 13 remain; EXDATE is kept
       recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;COUNT=13", "EXDATE:20261104T110000Z"],
     });
     expect(plan.create).not.toHaveProperty("etag");
@@ -101,23 +101,23 @@ describe("«это и следующие»", () => {
     ]);
   });
 
-  it("с первого повторения — правка всей серии", () => {
+  it("from the first occurrence — editing the whole series", () => {
     const plan = planFollowing(occurrence({ startDate: "2026-11-02", originalStart: { dateTime: at(2, 12) } }), master, 0);
     expect(plan).toMatchObject({ kind: "series", patch: { start: { dateTime: at(2, 13) } } });
   });
 
-  it("новое правило из формы берётся как есть", () => {
+  it("a new rule from the form is taken as is", () => {
     const edited = occurrence({ recurrence: ["RRULE:FREQ=DAILY"] });
     expect(followingRecurrence(edited, master, 7)).toEqual(["RRULE:FREQ=DAILY"]);
   });
 
-  it("недельное правило с одним днём следует за переносом", () => {
+  it("a weekly rule with one day follows the move", () => {
     const weekly = { ...master, recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=WE"] };
     const moved = occurrence({ startDate: "2026-11-12", recurrence: weekly.recurrence, originalRecurrence: weekly.recurrence });
     expect(followingRecurrence(moved, weekly, 0)).toEqual(["RRULE:FREQ=WEEKLY;BYDAY=TH"]);
   });
 
-  it("если правило не загрузилось, берётся правило серии", () => {
+  it("if the rule didn't load, the series rule is used", () => {
     expect(followingRecurrence(occurrence({ recurrence: [], originalRecurrence: undefined }), master, 0)[0]).toBe(
       "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;COUNT=20",
     );

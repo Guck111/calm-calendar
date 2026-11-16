@@ -30,14 +30,14 @@ const draft = (over: Partial<EventDraft>): EventDraft => ({
   ...over,
 });
 
-describe("несколько аккаунтов", () => {
-  it("один и тот же календарь Google в двух аккаунтах — разные календари приложения", () => {
+describe("multiple accounts", () => {
+  it("the same Google calendar in two accounts — different app calendars", () => {
     const holidays = "ru.russian#holiday@group.v.calendar.google.com";
     expect(calendarRef(ME, holidays)).not.toBe(calendarRef(WORK, holidays));
     expect(splitRef(calendarRef(WORK, holidays))).toEqual({ account: WORK, googleId: holidays });
   });
 
-  it("событие знает свой аккаунт, ключ различает аккаунты", () => {
+  it("an event knows its account, the key tells accounts apart", () => {
     const raw = { id: "e1", start: { dateTime: "2026-11-04T09:00:00Z" }, iCalUID: "x@google.com" };
     const mine = toCalendarEvent(calendarRef(ME, "primary"), raw);
     const work = toCalendarEvent(calendarRef(WORK, "primary"), raw);
@@ -45,7 +45,7 @@ describe("несколько аккаунтов", () => {
     expect(mine?.key).not.toBe(work?.key);
   });
 
-  it("запрос уходит от аккаунта календаря и с id календаря в Google", async () => {
+  it("the request goes from the calendar's account and with the calendar id in Google", async () => {
     googleRequest.mockResolvedValue({});
     await saveEvent(draft({ calendarId: calendarRef(WORK, "team@company.com") }));
     expect(googleRequest).toHaveBeenCalledWith(
@@ -57,7 +57,7 @@ describe("несколько аккаунтов", () => {
     );
   });
 
-  it("перенос между календарями одного аккаунта — через move, между аккаунтами — ошибка без запросов", async () => {
+  it("moving between calendars of one account — via move, between accounts — an error without requests", async () => {
     googleRequest.mockResolvedValue({});
     await saveEvent(draft({ id: "e1", originalCalendarId: calendarRef(ME, "primary"), calendarId: calendarRef(ME, "sport") }));
     expect(googleRequest.mock.calls[0]).toEqual([ME, "POST", "/calendar/v3/calendars/primary/events/e1/move", { destination: "sport" }, undefined]);
@@ -69,7 +69,7 @@ describe("несколько аккаунтов", () => {
     expect(googleRequest).not.toHaveBeenCalled();
   });
 
-  it("если не ответил один аккаунт, календари остальных всё равно приходят", async () => {
+  it("if one account didn't respond, the other accounts' calendars still arrive", async () => {
     googleRequest.mockImplementation((account: string) =>
       account === WORK
         ? Promise.reject({ kind: "not_signed_in", message: "" })
@@ -80,7 +80,7 @@ describe("несколько аккаунтов", () => {
     expect(result).toMatchObject({ failed: [WORK], lost: [WORK] });
   });
 
-  it("включённость календаря из версии с одним аккаунтом сохраняется", () => {
+  it("calendar enabled state from the single-account version is kept", () => {
     const c = { id: calendarRef(ME, "sport"), googleId: "sport", selected: true } as Calendar;
     expect(calendarVisible(c, { sport: false })).toBe(false);
     expect(calendarVisible(c, { sport: false, [c.id]: true })).toBe(true);

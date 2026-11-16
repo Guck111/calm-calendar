@@ -157,14 +157,14 @@ export const de: Dict = {
     ruleChanged: "Die Wiederholung wurde geändert, daher gilt die Änderung für diesen und alle folgenden Termine.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "Konto hinzufügen",
     signOutTitle: (email: string) => `Von ${email} abmelden`,
     expired: "Anmeldung abgelaufen.",
     signInAgain: "Erneut anmelden",
     confirmSignOut: "Wirklich abmelden?",
     alsoIn: (list: string) => `Auch in: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `Überschneidet sich mit: ${list}`,
   },
   meeting: {

@@ -1,17 +1,17 @@
-// Стрелки между блоками событий: ближайший блок в эту сторону на экране.
-// Работает одинаково в сетке недели, месяце и списке, и справа налево тоже: смотрим на экран, а не на даты.
+// Arrows between event blocks: the nearest block in that direction on screen.
+// Works the same in the week grid, month and list, and right-to-left too: we look at the screen, not at dates.
 
 export type Box = { x: number; y: number; width: number; height: number };
 export type Direction = "up" | "down" | "left" | "right";
 
 const center = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
 
-/** Зазор между отрезками [a1, a2] и [b1, b2]; 0 — перекрываются */
+/** Gap between segments [a1, a2] and [b1, b2]; 0 — they overlap */
 const gap = (a1: number, a2: number, b1: number, b2: number) => Math.max(0, b1 - a2, a1 - b2);
 
-/** Ближайший блок в сторону direction; null — дальше в эту сторону ничего нет.
- *  Вверх и вниз — сначала блоки в том же столбце (перекрываются по горизонтали), потом ближайший.
- *  Влево и вправо — сначала ближайший столбец, в нём — блок ближе всего по высоте (по времени) */
+/** Nearest block in direction; null — nothing further that way.
+ *  Up and down — first blocks in the same column (overlapping horizontally), then the nearest.
+ *  Left and right — first the nearest column, in it the block closest in height (by time) */
 export const nearest = <T extends Box>(from: Box, boxes: T[], direction: Direction): T | null => {
   const c = center(from);
   const vertical = direction === "up" || direction === "down";
@@ -29,7 +29,7 @@ export const nearest = <T extends Box>(from: Box, boxes: T[], direction: Directi
       const side = gap(from.x, from.x + from.width, box.x, box.x + box.width);
       score = (side > 0 ? 1e6 + side : 0) + along;
     } else {
-      // соседний столбец, а не тот же: центр сдвинут хотя бы на полширины
+      // an adjacent column, not the same one: the center is shifted by at least half a width
       if (Math.abs(dx) < from.width / 2) continue;
       score = along * 1000 + gap(from.y, from.y + from.height, box.y, box.y + box.height);
     }

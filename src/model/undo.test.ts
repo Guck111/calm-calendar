@@ -1,4 +1,4 @@
-// «Отменить» после переноса и удаления: удаление уходит в Google не сразу, а когда строка «Отменить» исчезла
+// "Undo" after move and delete: deletion goes to Google not immediately, but when the "Undo" bar has disappeared
 import { allSettled, createWatch, fork, scopeBind } from "effector";
 import { describe, expect, it } from "vitest";
 import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/types";
@@ -42,7 +42,7 @@ const setup = (events: CalendarEvent[] = [dentist, lunch]) => {
       [deleteFx, (c: Deleted) => void deleted.push(c)],
       [moveFx, ({ start, end }: { start: Date; end: Date }) => void moved.push({ start, end })],
       [restoreMoveFx, (r: { event: CalendarEvent; start: Date; end: Date }) => void restored.push(r)],
-      // таймер не срабатывает сам: тест решает, когда «Отменить» исчезает
+      // the timer doesn't fire by itself: the test decides when "Undo" disappears
       [undoTimerFx, ({ ms }: { ms: number }) => (timers.push(ms), -1)],
       [persistDeleteFx, () => undefined],
     ],
@@ -52,7 +52,7 @@ const setup = (events: CalendarEvent[] = [dentist, lunch]) => {
   return { scope, deleted, moved, restored, timers, titles, expire };
 };
 
-/** удалить сразу, не дожидаясь запросов, которые уже идут */
+/** delete right away, without waiting for requests already in flight */
 const removeNow = (scope: ReturnType<typeof fork>, e: CalendarEvent) => {
   scopeBind(eventOpened, { scope })(e);
   scopeBind(deleteClicked, { scope })();
@@ -63,8 +63,8 @@ const remove = async (scope: ReturnType<typeof fork>, e: CalendarEvent) => {
   await allSettled(deleteClicked, { scope });
 };
 
-describe("отмена удаления", () => {
-  it("событие сразу пропадает с экрана, а в Google удаляется, когда «Отменить» исчезла", async () => {
+describe("undo delete", () => {
+  it("the event disappears from the screen right away and is deleted in Google when 'Undo' has disappeared", async () => {
     const { scope, deleted, timers, titles, expire } = setup();
     await remove(scope, dentist);
     expect(titles()).toEqual(["Lunch"]);
@@ -78,20 +78,20 @@ describe("отмена удаления", () => {
     expect(scope.getState($undo)).toBeNull();
   });
 
-  it("«Отменить» возвращает событие, и в Google ничего не уходит", async () => {
+  it("'Undo' brings the event back, and nothing goes to Google", async () => {
     const { scope, deleted, titles, expire } = setup();
     await remove(scope, dentist);
     const id = scope.getState($undo)?.id;
     await allSettled(undoClicked, { scope });
     expect(titles()).toEqual(["Lunch", "Dentist"]);
     expect(scope.getState($undo)).toBeNull();
-    // таймер старой строки сработал позже — ничего не удаляет
+    // the old bar's timer fired later — deletes nothing
     await allSettled(undoExpired, { scope, params: id ?? -1 });
     await expire();
     expect(deleted).toEqual([]);
   });
 
-  it("пока мышь на строке, она не исчезает; потом ещё 4 секунды", async () => {
+  it("while the mouse is over the bar it doesn't disappear; then 4 more seconds", async () => {
     const { scope, deleted, timers, expire } = setup();
     await remove(scope, dentist);
     const first = scope.getState($undo)?.id ?? -1;
@@ -105,7 +105,7 @@ describe("отмена удаления", () => {
     expect(deleted).toHaveLength(1);
   });
 
-  it("× закрывает строку и сразу отправляет удаление", async () => {
+  it("× closes the bar and sends the deletion right away", async () => {
     const { scope, deleted } = setup();
     await remove(scope, dentist);
     await allSettled(undoDismissed, { scope });
@@ -113,7 +113,7 @@ describe("отмена удаления", () => {
     expect(scope.getState($undo)).toBeNull();
   });
 
-  it("следующее удаление сразу отправляет предыдущее", async () => {
+  it("the next deletion sends the previous one right away", async () => {
     const { scope, deleted, titles } = setup();
     await remove(scope, dentist);
     await remove(scope, lunch);
@@ -122,8 +122,8 @@ describe("отмена удаления", () => {
     expect(scope.getState($undo)).toMatchObject({ title: "Lunch" });
   });
 
-  it("обновление из Google, пока «Отменить» видна, не возвращает событие на экран", async () => {
-    // загрузку подменяем ответом Google, где событие ещё есть
+  it("a refresh from Google while 'Undo' is visible doesn't bring the event back to the screen", async () => {
+    // replace the load with a Google response where the event still exists
     const reloaded = fork({
       values: [[$events, [dentist, lunch]]],
       handlers: [
@@ -140,7 +140,7 @@ describe("отмена удаления", () => {
     expect(reloaded.getState($events).map((e) => e.title)).toEqual(["Lunch"]);
   });
 
-  it("«это и следующие» у серии прячет повторения с этого дня, «это» — одно", async () => {
+  it("'this and following' on a series hides occurrences from this day, 'this' — only one", async () => {
     const { scope, titles, deleted, expire } = setup([yoga(1), yoga(2), yoga(3), lunch]);
     await allSettled(eventOpened, { scope, params: yoga(2) });
     await allSettled(deleteClicked, { scope });
@@ -157,11 +157,11 @@ describe("отмена удаления", () => {
   });
 });
 
-describe("отмена переноса", () => {
+describe("undo move", () => {
   const start = new Date(2026, 10, 13, 10, 0);
   const end = new Date(2026, 10, 13, 10, 45);
 
-  it("«Отменить» возвращает прежнее время и не предлагает отменить саму отмену", async () => {
+  it("'Undo' restores the previous time and doesn't offer to undo the undo itself", async () => {
     const { scope, moved, restored } = setup();
     await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
     expect(scope.getState($undo)).toMatchObject({ kind: "moved", title: "Dentist" });
@@ -174,10 +174,10 @@ describe("отмена переноса", () => {
     expect(scope.getState($undo)).toBeNull();
   });
 
-  it("отмена меняет только время: правка, сделанная после переноса, остаётся", async () => {
+  it("undo changes only the time: an edit made after the move stays", async () => {
     const { scope, restored } = setup();
     await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
-    // пока строка видна, событию поменяли цвет (Ctrl+K)
+    // while the bar is visible, the event's color was changed (Ctrl+K)
     const recolored = scope.getState($events).map((e) => (e.id === "e1" ? { ...e, colorId: "11" } : e));
     await allSettled($events, { scope, params: recolored });
     await allSettled(undoClicked, { scope });
@@ -185,7 +185,7 @@ describe("отмена переноса", () => {
     expect(restored[0]).toMatchObject({ start: dentist.start, end: dentist.end });
   });
 
-  it("строка появляется, только когда Google подтвердил перенос: отмена не обгоняет его", async () => {
+  it("the bar appears only when Google confirmed the move: the undo doesn't overtake it", async () => {
     let done = () => {};
     const scope = fork({
       values: [[$events, [dentist]]],
@@ -202,7 +202,7 @@ describe("отмена переноса", () => {
     expect(scope.getState($undo)).toMatchObject({ kind: "moved" });
   });
 
-  it("перенос сразу отправляет ожидающее удаление", async () => {
+  it("a move sends the pending deletion right away", async () => {
     const { scope, deleted } = setup();
     await remove(scope, lunch);
     await allSettled(eventMoved, { scope, params: { event: dentist, start, end } });
@@ -210,7 +210,7 @@ describe("отмена переноса", () => {
     expect(scope.getState($undo)).toMatchObject({ kind: "moved" });
   });
 
-  it("перенос не удался — отменять нечего", async () => {
+  it("the move failed — nothing to undo", async () => {
     const scope = fork({
       values: [[$events, [dentist]]],
       handlers: [
@@ -223,8 +223,8 @@ describe("отмена переноса", () => {
   });
 });
 
-describe("удаление не теряется", () => {
-  it("выход из аккаунта ждёт, пока ожидающее удаление дойдёт до Google", async () => {
+describe("deletion is not lost", () => {
+  it("signing out of an account waits until the pending deletion reaches Google", async () => {
     const order: string[] = [];
     const scope = fork({
       values: [[$events, [dentist, lunch]]],
@@ -241,7 +241,7 @@ describe("удаление не теряется", () => {
     expect(scope.getState($undo)).toBeNull();
   });
 
-  it("без ожидающего удаления выход идёт сразу", async () => {
+  it("without a pending deletion sign-out happens right away", async () => {
     const order: string[] = [];
     const scope = fork({
       handlers: [[signOutFx, async () => void order.push("sign out")]],
@@ -250,10 +250,10 @@ describe("удаление не теряется", () => {
     expect(order).toEqual(["sign out"]);
   });
 
-  // журнал удалений на диске: удаление стирается из него, только когда Google ответил
+  // deletion log on disk: a deletion is erased from it only when Google has responded
   const journal = (saved: unknown[]) => (saved.at(-1) as Change[] | undefined)?.map((c) => c.draft.id) ?? [];
 
-  it("удаление в журнале, пока Google не ответил; отмена его стирает", async () => {
+  it("deletion is in the log until Google responds; undo erases it", async () => {
     const saved: unknown[] = [];
     let answer = () => {};
     const scope = fork({
@@ -272,14 +272,14 @@ describe("удаление не теряется", () => {
     await remove(scope, lunch);
     const sending = allSettled(undoDismissed, { scope });
     await Promise.resolve();
-    // запрос ещё идёт: закрой приложение сейчас — удаление уйдёт при следующем входе
+    // request still in flight: close the app now — the deletion goes out on the next sign-in
     expect(journal(saved)).toEqual(["e2"]);
     answer();
     await sending;
     expect(journal(saved)).toEqual([]);
   });
 
-  it("ответ на старое удаление не стирает из журнала новое", async () => {
+  it("a response to an old deletion doesn't erase a new one from the log", async () => {
     const saved: unknown[] = [];
     const answers: (() => void)[] = [];
     const scope = fork({
@@ -292,14 +292,14 @@ describe("удаление не теряется", () => {
     });
     await remove(scope, dentist);
     const first = allSettled(undoDismissed, { scope });
-    // пока первое удаление идёт, удаляем второе (без ожидания: allSettled ждал бы и первый запрос)
+    // while the first deletion is in flight, delete a second one (without waiting: allSettled would also wait for the first request)
     removeNow(scope, lunch);
     answers[0]();
     await first;
     expect(journal(saved)).toEqual(["e2"]);
   });
 
-  it("сбой сети оставляет удаление в журнале, отказ Google (событие уже удалено) — убирает", async () => {
+  it("a network failure keeps the deletion in the log, a Google refusal (event already deleted) removes it", async () => {
     const saved: unknown[] = [];
     let error: AppError = { kind: "network", message: "нет сети" };
     const scope = fork({
@@ -319,7 +319,7 @@ describe("удаление не теряется", () => {
     expect(journal(saved)).toEqual(["e1"]);
   });
 
-  it("после перезапуска удаление досылается, когда вошли именно в его аккаунт", async () => {
+  it("after a restart the deletion is resent when signed in to exactly its account", async () => {
     const deleted: Deleted[] = [];
     let fail: AppError | null = { kind: "not_signed_in", message: "" };
     const leftover: Change = {
@@ -338,15 +338,15 @@ describe("удаление не теряется", () => {
         [fetchStatusFx, () => ({ clientSource: "file", accounts })],
       ],
     });
-    // вошли только в рабочий аккаунт: ждём
+    // signed in only to the work account: wait
     await allSettled(fetchStatusFx, { scope });
     expect(deleted).toHaveLength(0);
-    // вошли в свой, но вход ещё не действует: удаление не пропадает
+    // signed in to our own, but the sign-in isn't valid yet: the deletion is not lost
     accounts = [...accounts, { email: "me@example.com", signedIn: true }];
     await allSettled(fetchStatusFx, { scope });
     expect(deleted).toHaveLength(1);
     expect(scope.getState($deleteJournal)).toHaveLength(1);
-    // вход снова потерян и восстановлен — пробуем ещё раз, теперь удачно
+    // sign-in lost again and restored — try again, now successfully
     fail = null;
     accounts = [{ email: "work@example.com", signedIn: true }];
     await allSettled(fetchStatusFx, { scope });
@@ -357,8 +357,8 @@ describe("удаление не теряется", () => {
   });
 });
 
-describe("перенос и удаление вперемешку", () => {
-  it("медленный перенос не затирает более новое удаление", async () => {
+describe("moves and deletions mixed", () => {
+  it("a slow move doesn't overwrite a newer deletion", async () => {
     let saved = () => {};
     const deleted: Deleted[] = [];
     const scope = fork({
@@ -383,16 +383,16 @@ describe("перенос и удаление вперемешку", () => {
   });
 });
 
-describe("удаление серии и отмена: точнее", () => {
-  // повторение серии, перенесённое с одного дня на другой: originalStart — его день по правилу
+describe("series deletion and undo: more precisely", () => {
+  // a series occurrence moved from one day to another: originalStart is its day by the rule
   const moved = (origDay: number, day: number) =>
     make(`y_2026111${origDay}`, "Yoga", `2026-11-1${day}T07:00:00+01:00`, `2026-11-1${day}T08:00:00+01:00`, {
       recurringEventId: "y",
       originalStartTime: { dateTime: `2026-11-1${origDay}T07:00:00+01:00` },
     });
 
-  it("«это и следующие» считает от дня повторения по правилу, а не от перенесённого времени", async () => {
-    // повторение 11-го перенесено на 14-е, повторение 14-го — на 10-е; удаляем с 12-го
+  it("'this and following' counts from the occurrence's day by the rule, not from the moved time", async () => {
+    // the occurrence on the 11th moved to the 14th, the one on the 14th to the 10th; delete from the 12th
     const { scope } = setup([moved(1, 4), yoga(2), yoga(3), moved(4, 0)]);
     await allSettled(eventOpened, { scope, params: yoga(2) });
     await allSettled(deleteClicked, { scope });
@@ -400,7 +400,7 @@ describe("удаление серии и отмена: точнее", () => {
     expect(scope.getState($events).map((e) => e.id)).toEqual(["y_20261111"]);
   });
 
-  it("«Отменить» не возвращает события календаря, который за это время скрыли, и перечитывает список", async () => {
+  it("'Undo' doesn't bring back events of a calendar that was hidden meanwhile, and reloads the list", async () => {
     const { scope } = setup();
     const reloads: number[] = [];
     createWatch({ unit: reloadRequested, scope, fn: () => void reloads.push(1) });
@@ -412,8 +412,8 @@ describe("удаление серии и отмена: точнее", () => {
   });
 });
 
-describe("журнал удалений: каждое удаление само по себе", () => {
-  // приглашение на встречу: копии в календарях двух аккаунтов с одним и тем же id события
+describe("deletion log: each deletion on its own", () => {
+  // meeting invitation: copies in calendars of two accounts with the same event id
   const copyIn = (calendarId: string) =>
     toCalendarEvent(calendarId, {
       id: "m1",
@@ -424,7 +424,7 @@ describe("журнал удалений: каждое удаление само 
   const mine = copyIn("me@example.com\u0000primary");
   const work = copyIn("work@example.com\u0000primary");
 
-  it("ответ на удаление одной копии не трогает удаление другой", async () => {
+  it("a response to deleting one copy doesn't touch the deletion of another", async () => {
     const answers: (() => void)[] = [];
     const scope = fork({
       values: [[$events, [mine, work]]],
@@ -441,7 +441,7 @@ describe("журнал удалений: каждое удаление само 
     answers[0]();
     await first;
     expect(scope.getState($deleteJournal).map((c) => c.draft.originalCalendarId)).toEqual([work.calendarId]);
-    // вторая копия всё ещё спрятана: её удаление ждёт своего ответа
+    // the second copy is still hidden: its deletion waits for its own response
     scopeBind(fetchEventsFx, { scope })({ calendars: [], range: { start: new Date(2026, 10, 9), end: new Date(2026, 10, 16) }, id: 0 });
     await Promise.resolve();
     await Promise.resolve();
@@ -449,7 +449,7 @@ describe("журнал удалений: каждое удаление само 
     answers[1]?.();
   });
 
-  it("неудачная попытка не удалит событие, если его потом удалили снова и отменили", async () => {
+  it("a failed attempt won't delete the event if it was later deleted again and undone", async () => {
     const deleted: Deleted[] = [];
     let fail: AppError | null = { kind: "network", message: "нет сети" };
     let accounts = [{ email: "me@example.com", signedIn: true }];
@@ -465,12 +465,12 @@ describe("журнал удалений: каждое удаление само 
     await remove(scope, dentist);
     await allSettled(undoDismissed, { scope });
     expect(scope.getState($leftoverDeletes)).toHaveLength(1);
-    // событие вернулось на экран (удаление не дошло), его удалили снова и передумали
+    // the event came back to the screen (deletion didn't go through), it was deleted again and undone
     await allSettled($events, { scope, params: [dentist, lunch] });
     await remove(scope, dentist);
     await allSettled(undoClicked, { scope });
     expect(scope.getState($leftoverDeletes)).toEqual([]);
-    // сеть вернулась, вход заработал — повторять нечего
+    // network is back, sign-in works — nothing to retry
     fail = null;
     accounts = [{ email: "work@example.com", signedIn: true }];
     await allSettled(fetchStatusFx, { scope });

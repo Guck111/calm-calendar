@@ -1,8 +1,8 @@
-// Українські рядки інтерфейсу. Ті самі ключі, що в ru.ts, перевіряє компілятор.
+// Ukrainian UI strings. Same keys as in ru.ts, checked by the compiler.
 import type { Dict } from "./ru";
 import type { Freq } from "../lib/rrule";
 
-/** 1 день, 2 дні, 5 днів */
+/** 1 day, 2 days, 5 days */
 const ukPlural = (n: number, [one, few, many]: string[]): string => {
   const d = n % 10;
   const dd = n % 100;
@@ -18,7 +18,7 @@ const ukUnits: Record<Freq, string[]> = {
   YEARLY: ["рік", "роки", "років"],
 };
 
-/** у перший понеділок, у другу середу, в останню неділю */
+/** on the first Monday, on the second Wednesday, on the last Sunday */
 const ukNth = (n: number, day: number): string => {
   const names = ["неділю", "понеділок", "вівторок", "середу", "четвер", "п'ятницю", "суботу"];
   const feminine = [true, false, false, true, false, true, true][day];

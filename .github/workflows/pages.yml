@@ -1,6 +1,6 @@
 name: pages
 
-# Сайт приложения (папка site/) на GitHub Pages: главная, политика конфиденциальности, условия
+# App website (site/ folder) on GitHub Pages: home page, privacy policy, terms
 on:
   push:
     branches: [main]
@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
-      # в сайт попадают только страницы, стили и картинки; исходники текстов и README остаются в репозитории
+      # only pages, styles and images go to the site; text sources and README stay in the repository
       - name: Collect site files
         run: |
           mkdir -p _site

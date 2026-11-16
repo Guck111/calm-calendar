@@ -1,6 +1,6 @@
-// Окно заметного напоминания: Rust открывает его поверх всех окон за минуту до начала события.
-// Список открытых напоминаний живёт в Rust (get_alerts), окно только показывает его и отвечает
-// кнопками: «Подключиться», «Отложить на 5 мин», «Закрыть».
+// Prominent reminder window: Rust opens it on top of all windows a minute before the event starts.
+// The list of open reminders lives in Rust (get_alerts); the window only shows it and responds
+// with buttons: "Join", "Snooze 5 min", "Close".
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri, subscribe } from "../shared/api/bus";
@@ -15,7 +15,7 @@ export type AlertItem = { key: string; title: string; start: number; end: number
 const WIDTH = 460;
 const SNOOZE_MINUTES = 5;
 
-/** в обычном браузере (npm run dev) — пример, чтобы видеть окно без Tauri */
+/** in a plain browser (npm run dev) — a sample, to see the window without Tauri */
 const demo = (): AlertItem[] => {
   const start = Date.now() + 60_000;
   return [
@@ -35,7 +35,7 @@ const span = (ms: number): string => {
   return t.time.span(Math.floor(total / 60), total % 60);
 };
 
-/** «через 1 мин», «начинается сейчас», «идёт, ещё 25 мин» */
+/** "in 1 min", "starting now", "in progress, 25 min left" */
 export const alertStatus = (a: Pick<AlertItem, "start" | "end">, now: number): string => {
   if (a.start - now > 30_000) return t.time.in(span(a.start - now));
   if (a.start > now - 60_000) return t.reminders.startsNow;
@@ -67,7 +67,7 @@ export const AlertWindow = () => {
     };
   }, [load]);
 
-  // окно по высоте содержимого, как виджет
+  // window height follows content, like the widget
   useLayoutEffect(() => {
     const card = cardRef.current;
     if (!card || !inTauri) return;
@@ -92,7 +92,7 @@ export const AlertWindow = () => {
     dismiss(a.key);
   };
 
-  // Enter — подключиться (или закрыть, если встречи нет), Esc — закрыть
+  // Enter — join (or close if there is no meeting), Esc — close
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const first = items[0];

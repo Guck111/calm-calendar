@@ -1,11 +1,11 @@
-// Второй часовой пояс: дополнительная колонка часов в видах «Неделя» и «День»
+// Second time zone: an extra hours column in the "Week" and "Day" views
 import { createEvent, createStore } from "effector";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { isTimeZone } from "../shared/lib/tz";
 
 const KEY = "calm.secondZone";
 
-/** выбранный пояс запоминается и когда колонка выключена */
+/** the chosen time zone is remembered even when the column is off */
 export type SecondZone = { enabled: boolean; zone: string };
 
 const DEFAULT: SecondZone = { enabled: false, zone: "UTC" };
@@ -24,8 +24,8 @@ export const $secondZoneSetting = createStore<SecondZone>(parseSecondZone(readJs
 
 $secondZoneSetting.updates.watch((v) => writeJson(KEY, v));
 
-/** пояс сменили в окне настроек — перечитываем сохранённый */
+/** the time zone was changed in the settings window — reload the saved one */
 export const secondZoneReloaded = () => secondZoneChanged(parseSecondZone(readJson<unknown>(KEY, DEFAULT)));
 
-/** пояс второй колонки; null — колонка выключена */
+/** time zone of the second column; null — the column is off */
 export const $secondZone = $secondZoneSetting.map((s) => (s.enabled ? s.zone : null));

@@ -31,7 +31,7 @@
   outline: none;
 }
 
-/* выбранное событие: к нему относятся первые команды */
+/* selected event: the first commands apply to it */
 .subject {
   margin: 0;
   padding: 8px 16px 0;

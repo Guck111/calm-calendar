@@ -1,17 +1,17 @@
-// Государственные праздники: публичные календари Google вида «ru.russian#holiday@group.v.calendar.google.com».
-// Их можно читать с правом calendar.events, а добавить в список календарей Google нельзя без нового права,
-// поэтому выбранная страна хранится только в приложении. Первая часть id — язык названий праздников.
+// Public holidays: public Google calendars like "ru.russian#holiday@group.v.calendar.google.com".
+// They can be read with the calendar.events scope, but can't be added to the Google calendar list without a new scope,
+// so the chosen country is stored only in the app. The first part of the id is the language of holiday names.
 import { calendarRef } from "../api/calendar";
 import type { Calendar } from "../api/types";
 import { lang, locale } from "../i18n";
 
-/** выбранная страна в localStorage: её читают и главное окно, и виджет */
+/** chosen country in localStorage: read by both the main window and the widget */
 export const HOLIDAYS_KEY = "calm.holidays";
 
-/** цвет праздников, как у календарей праздников в Google */
+/** holiday color, as for Google holiday calendars */
 const HOLIDAY_COLOR = "#16a765";
 
-/** страна (ISO 3166) → имя календаря у Google; проверено, что каждый календарь существует */
+/** country (ISO 3166) → Google calendar name; verified that each calendar exists */
 export const HOLIDAY_REGIONS: Record<string, string> = {
   AE: "ae", AM: "am", AR: "ar", AT: "austrian", AU: "australian", BD: "bd", BE: "be", BG: "bulgarian",
   BR: "brazilian", BY: "by", CA: "canadian", CH: "ch", CL: "cl", CN: "china", CO: "co", CY: "cy", CZ: "czech",
@@ -27,11 +27,11 @@ export const HOLIDAY_REGIONS: Record<string, string> = {
 
 export const isHolidayRegion = (v: unknown): v is string => typeof v === "string" && v in HOLIDAY_REGIONS;
 
-/** id календаря праздников страны с названиями на языке приложения */
+/** id of the country's holiday calendar with names in the app language */
 export const holidayCalendarId = (region: string, language: string = lang): string =>
   `${language}.${HOLIDAY_REGIONS[region]}#holiday@group.v.calendar.google.com`;
 
-/** «Польша», «Poland» — на языке приложения */
+/** «Польша», "Poland" — in the app language */
 export const regionName = (region: string): string => {
   try {
     return new Intl.DisplayNames([locale], { type: "region" }).of(region) ?? region;
@@ -40,14 +40,14 @@ export const regionName = (region: string): string => {
   }
 };
 
-/** страны по алфавиту языка приложения */
+/** countries in the alphabetical order of the app language */
 export const sortedRegions = (): { region: string; name: string }[] =>
   Object.keys(HOLIDAY_REGIONS)
     .map((region) => ({ region, name: regionName(region) }))
     .sort((a, b) => a.name.localeCompare(b.name, locale));
 
-/** Календарь праздников страны из настроек. Читаем через первый аккаунт; если такой календарь
- *  уже есть в списке Google, второй раз не добавляем */
+/** Holiday calendar of the country from settings. Read via the first account; if such a calendar
+ *  is already in the Google list, don't add it a second time */
 export const holidayCalendar = (region: string | null, accounts: string[], google: Calendar[]): Calendar | null => {
   if (!region || !isHolidayRegion(region) || !accounts.length) return null;
   const slug = `.${HOLIDAY_REGIONS[region]}#holiday@`;

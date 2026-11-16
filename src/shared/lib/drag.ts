@@ -1,4 +1,4 @@
-// Перетаскивание событий в сетке времени: шаг и пересчёт времени
+// Dragging events in the time grid: step and time recalculation
 import type { CalendarEvent } from "../api/types";
 import { addDays, addMinutes } from "./date";
 
@@ -8,7 +8,7 @@ export type DragMode = "move" | "resize";
 
 export const snap = (minutes: number, step = DRAG_STEP): number => Math.round(minutes / step) * step;
 
-/** Новое время события после перетаскивания; при растягивании длина не меньше одного шага */
+/** New event time after dragging; when resizing, the length is at least one step */
 export const shiftEvent = (
   e: Pick<CalendarEvent, "start" | "end">,
   mode: DragMode,

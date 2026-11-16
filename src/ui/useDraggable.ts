@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 
 type Offset = { x: number; y: number };
 
-/** сколько окна должно оставаться видно, чтобы его можно было ухватить обратно */
+/** how much of the window must stay visible so it can be grabbed back */
 const KEEP = 80;
 
 /**
- * Перетаскивание окна за ручку (обычно шапку). Возвращает ref для окна,
- * обработчик для ручки и стиль со сдвигом. Окно не уходит за край так,
- * что его шапку уже не достать. Нажатие на кнопки в ручке не тянет окно.
+ * Dragging a window by a handle (usually the header). Returns a ref for the window,
+ * a handler for the handle and a style with the offset. The window doesn't go past the edge so far
+ * that its header can't be reached. Pressing buttons in the handle doesn't drag the window.
  */
 export const useDraggable = <T extends HTMLElement>() => {
   const ref = useRef<T>(null);
@@ -20,7 +20,7 @@ export const useDraggable = <T extends HTMLElement>() => {
     const el = ref.current;
     if (!el) return next;
     const r = el.getBoundingClientRect();
-    // где окно стояло бы без сдвига
+    // where the window would be without the offset
     const baseLeft = r.left - offsetRef.current.x;
     const baseTop = r.top - offsetRef.current.y;
     const minX = KEEP - r.width - baseLeft;
@@ -33,7 +33,7 @@ export const useDraggable = <T extends HTMLElement>() => {
     };
   }, []);
 
-  // окно календаря уменьшили — возвращаем настройки в видимую часть
+  // the calendar window was shrunk — bring the settings back into the visible area
   useEffect(() => {
     const onResize = () => setOffset((o) => clamp(o));
     window.addEventListener("resize", onResize);

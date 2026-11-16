@@ -10,7 +10,7 @@
 
 .dialog {
   width: min(440px, 100%);
-  /* в невысоком окне настройки прокручиваются, а не уходят за край */
+  /* in a short window settings scroll instead of going past the edge */
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   display: flex;
@@ -22,7 +22,7 @@
   box-shadow: var(--shadow);
 }
 
-/* отдельное окно настроек: панель во всё окно */
+/* separate settings window: the panel fills the whole window */
 :global(html[data-window="settings"]),
 :global(html[data-window="settings"] body),
 :global(html[data-window="settings"] #root) {
@@ -45,7 +45,7 @@
   box-shadow: none;
 }
 
-/* шапка остаётся наверху и при прокрутке: за неё всегда можно утащить окно */
+/* the header stays on top while scrolling: the window can always be dragged by it */
 .window .head {
   position: sticky;
   top: 0;
@@ -55,7 +55,7 @@
   background: var(--surface);
 }
 
-/* за шапку настройки перетаскиваются */
+/* settings are dragged by the header */
 .head {
   display: flex;
   align-items: center;
@@ -93,7 +93,7 @@
   color: var(--text-2);
 }
 
-/* группа настроек: заголовок крупнее и тише, разделы внутри — как раньше */
+/* settings group: the heading is larger and quieter, sections inside — as before */
 .group {
   display: flex;
   flex-direction: column;
@@ -107,7 +107,7 @@
   border-block-start: 0;
 }
 
-/* без заглавных и разрядки: в арабском, деванагари и бенгальском они ломают начертание */
+/* no uppercase or letter spacing: they break the lettering in Arabic, Devanagari and Bengali */
 .groupTitle {
   margin: 0;
   font-size: 13px;
@@ -137,7 +137,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-/* стили оформления: образцы в ряд */
+/* visual styles: samples in a row */
 .styles {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -174,7 +174,7 @@
   white-space: nowrap;
 }
 
-/* образец берёт переменные своего стиля из styles.css, цвета — по текущей теме */
+/* a sample takes its style's variables from styles.css, colors follow the current theme */
 .preview {
   position: relative;
   display: block;
@@ -267,7 +267,7 @@
   line-height: 1.35;
 }
 
-/* переключатель на нативном чекбоксе */
+/* toggle built on a native checkbox */
 .toggle input {
   appearance: none;
   flex: none;
@@ -339,7 +339,7 @@
   line-height: 1.35;
 }
 
-/* подписки на календари .ics */
+/* .ics calendar subscriptions */
 .feeds {
   margin: 0;
   padding: 0;

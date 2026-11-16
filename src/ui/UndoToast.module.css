@@ -1,5 +1,5 @@
-/* Внизу по центру, над календарём, но под карточкой и меню. Цвета наоборот (как у строк «Отменить»
-   в Google и Outlook): строку видно на любой сетке, текст контрастен в светлой и тёмной теме */
+/* Bottom center, above the calendar but below the card and menu. Inverted colors (like the "Undo" bars
+   in Google and Outlook): the bar is visible on any grid, the text contrasts in light and dark themes */
 .region {
   position: fixed;
   inset-block-end: 20px;

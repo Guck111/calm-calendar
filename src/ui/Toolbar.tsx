@@ -20,7 +20,7 @@ const VIEWS: { id: ViewMode; key: string }[] = [
 
 export const Toolbar = () => {
   const [view, cursor, loading, weekNumbers] = useUnit([$view, $cursor, $loading, $weekNumbers]);
-  // в видах «Неделя» и «День» номер недели — в заголовке
+  // in the "Week" and "Day" views the week number is in the title
   const week =
     weekNumbers && (view === "week" || view === "day") ? t.time.week(formatWeekNumber(startOfWeek(cursor))) : null;
   const [onPrev, onNext, onToday, onView, onRefresh] = useUnit([

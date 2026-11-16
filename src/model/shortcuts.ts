@@ -1,4 +1,4 @@
-// Окно со списком сочетаний клавиш: открывается клавишей «?» и командой в меню Ctrl+K
+// Keyboard shortcuts window: opens with the "?" key and a command in the Ctrl+K menu
 import { createEvent } from "effector";
 
 export const shortcutsRequested = createEvent();

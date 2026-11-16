@@ -1,5 +1,5 @@
-// Эффект стекла. Само размытие включает Rust (Windows DWM), здесь — только
-// атрибуты на <html>, по которым CSS делает фон окна полупрозрачным.
+// Glass effect. Rust turns on the blur itself (Windows DWM); here only
+// the attributes on <html> that CSS uses to make the window background translucent.
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri, subscribe } from "../api/bus";
 import { DEFAULT_QUICK_HOTKEY } from "./hotkeys";
@@ -11,7 +11,7 @@ const setAttr = (enabled: boolean) => {
   else delete root.dataset.glass;
 };
 
-/** Заметное напоминание: выключено, только видеовстречи, все события со временем */
+/** Prominent reminder: off, video meetings only, all timed events */
 export type AlertMode = "off" | "calls" | "all";
 
 export type AppSettings = {
@@ -19,7 +19,7 @@ export type AppSettings = {
   notifications: boolean;
   private_notifications: boolean;
   alerts: AlertMode;
-  /** сочетание клавиш для быстрого создания из любого места; null — выключено */
+  /** hotkey for quick add from anywhere; null — off */
   quick_hotkey: string | null;
 };
 
@@ -40,7 +40,7 @@ export const readSettings = async (): Promise<AppSettings> => {
   }
 };
 
-/** Не получилось (сочетание занято другой программой) — исключение, прежнее сочетание остаётся */
+/** Failed (the hotkey is taken by another program) — an exception, the previous hotkey stays */
 export const setQuickHotkey = async (hotkey: string | null): Promise<void> => {
   if (inTauri) await invoke("set_quick_hotkey", { hotkey });
 };
@@ -53,7 +53,7 @@ export const setPrivateNotifications = async (enabled: boolean): Promise<void> =
   if (inTauri) await invoke("set_private_notifications", { enabled });
 };
 
-/** Виджет на рабочем столе и автозапуск: живут в Rust (окно виджета, реестр или StartupTask) */
+/** Desktop widget and autostart: live in Rust (widget window, registry or StartupTask) */
 export type DesktopState = { widget: boolean; on_top: boolean; autostart: boolean };
 
 const OFFLINE_DESKTOP: DesktopState = { widget: false, on_top: false, autostart: false };
@@ -67,12 +67,12 @@ export const readDesktop = async (): Promise<DesktopState> => {
   }
 };
 
-/** что не передано, остаётся как было; галочки в меню трея следуют */
+/** whatever isn't passed stays as it was; the tray menu checkboxes follow */
 export const setWidget = async (change: { visible?: boolean; onTop?: boolean }): Promise<void> => {
   if (inTauri) await invoke("set_widget", { visible: change.visible, onTop: change.onTop });
 };
 
-/** Возвращает, что вышло на деле: автозапуск можно запретить в диспетчере задач */
+/** Returns what actually happened: autostart can be disabled in Task Manager */
 export const setAutostart = async (enabled: boolean): Promise<boolean> =>
   inTauri ? invoke<boolean>("set_autostart", { enabled }) : false;
 
@@ -95,13 +95,13 @@ export const setGlass = async (enabled: boolean): Promise<void> => {
   if (inTauri) await invoke("set_glass", { enabled });
 };
 
-/** Применяет текущую настройку и следит за изменениями из другого окна */
+/** Applies the current setting and watches for changes from another window */
 export const initGlass = (onChange?: (enabled: boolean) => void): (() => void) => {
   void readGlass().then((g) => {
     setAttr(g);
     onChange?.(g);
   });
-  // Acrylic в Windows гаснет без фокуса — тогда CSS возвращает непрозрачный фон
+  // Acrylic in Windows fades without focus — then CSS restores an opaque background
   const onFocus = () => (root.dataset.focused = "");
   const onBlur = () => delete root.dataset.focused;
   if (document.hasFocus()) onFocus();

@@ -1,4 +1,4 @@
-/* в «Витрине» панели отделены от края окна и друг от друга */
+/* in "Showcase" panels are separated from the window edge and from each other */
 .app {
   height: 100%;
   display: flex;
@@ -6,7 +6,7 @@
   padding: var(--shell-gap);
 }
 
-/* без overflow: выпадающий поиск выходит за панель; углы скругляют панель инструментов и .view */
+/* no overflow: the search dropdown extends past the panel; the toolbar and .view round the corners */
 .main {
   flex: 1;
   min-width: 0;

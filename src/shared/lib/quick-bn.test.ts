@@ -9,7 +9,7 @@ const calendars = [
 ];
 const at = (d: number, h: number, m = 0, month = 10) => new Date(2026, month, d, h, m);
 const bn = (text: string) => parseQuick(text, now, calendars, "bn");
-// «য়» и «ড়» бывают одним знаком и двумя: сравниваем в одной форме
+// «য়» and «ড়» can be one character or two: compare in one form
 const nfc = (s: string) => s.normalize("NFC");
 
 describe("quick add in Bengali", () => {

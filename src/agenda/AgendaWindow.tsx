@@ -1,5 +1,5 @@
-// Список дел на сегодня и завтра: открывается левым кликом по значку в трее
-// (в Windows 11 из часов на панели задач убрали события). Данные — та же модель, что у виджета.
+// Agenda for today and tomorrow: opens on left click on the tray icon
+// (Windows 11 removed events from the taskbar clock). Data is the same model as the widget's.
 import { useUnit } from "effector-react";
 import { useEffect, type CSSProperties } from "react";
 import { invoke } from "@tauri-apps/api/core";
@@ -36,7 +36,7 @@ export const AgendaWindow = () => {
 
   useEffect(() => {
     start();
-    // при каждом показе — свежие данные и текущее время
+    // fresh data and current time on every show
     const offShown = subscribe("agenda-shown", () => {
       tick(new Date());
       refresh();

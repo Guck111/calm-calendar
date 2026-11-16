@@ -4,11 +4,11 @@ import { broadcast } from "../shared/api/bus";
 import type { Account, AppError, AuthStatus } from "../shared/api/types";
 
 export const appStarted = createEvent();
-/** любой запрос к Google сообщил, что вход больше недействителен */
+/** some Google request reported that the sign-in is no longer valid */
 export const sessionLost = createEvent();
-/** вход в Google: первый аккаунт, ещё один или повторный в аккаунт, где вход истёк */
+/** Google sign-in: first account, another one, or again into an account whose sign-in expired */
 export const signInClicked = createEvent();
-/** выход из одного аккаунта; без email — из всех */
+/** sign out of one account; without email — of all */
 export const signOutClicked = createEvent<string | void>();
 export const clientSubmitted = createEvent<{ clientId: string; clientSecret: string }>();
 export const clientEditRequested = createEvent();
@@ -16,9 +16,9 @@ export const clientEditCancelled = createEvent();
 
 export const fetchStatusFx = createEffect(bridge.getAuthStatus);
 export const signInFx = createEffect<void, string, AppError>(() => bridge.signIn());
-/** вкладка входа потерялась или закрыта: открыть ту же страницу Google ещё раз */
+/** sign-in tab got lost or closed: open the same Google page again */
 export const signInReopenClicked = createEvent();
-/** передумал входить: Rust перестаёт ждать браузер, signInFx отклоняется с kind "cancelled" */
+/** changed mind about signing in: Rust stops waiting for the browser, signInFx rejects with kind "cancelled" */
 export const signInCancelClicked = createEvent();
 export const reopenSignInFx = createEffect<void, void, AppError>(() => bridge.reopenSignIn());
 export const cancelSignInFx = createEffect<void, void, AppError>(() => bridge.cancelSignIn());
@@ -29,13 +29,13 @@ export const saveClientFx = createEffect<{ clientId: string; clientSecret: strin
 
 export const $status = createStore<AuthStatus | null>(null).on(fetchStatusFx.doneData, (_, s) => s);
 
-/** все добавленные аккаунты, включая те, где вход истёк */
+/** all added accounts, including those whose sign-in expired */
 export const $accounts = $status.map((s): Account[] => (s?.clientSource === "none" ? [] : (s?.accounts ?? [])));
 
-/** аккаунты с действующим входом — из них и читаем календари */
+/** accounts with valid sign-in — calendars are read from them */
 export const $activeAccounts = $accounts.map((list) => list.filter((a) => a.signedIn).map((a) => a.email));
 
-// без клиента OAuth токен не обновить, поэтому вход без клиента не считается действующим
+// without an OAuth client the token can't be refreshed, so sign-in without a client is not considered valid
 export const $signedIn = $activeAccounts.map((list) => list.length > 0);
 
 export const $editingClient = createStore(false)
@@ -48,7 +48,7 @@ export const $needsClient = sample({
 });
 
 export const $authError = createStore<string | null>(null)
-  // отмена входа — решение человека, а не ошибка
+  // cancelling sign-in is the person's decision, not an error
   .on(signInFx.failData, (prev, e) => (e.kind === "cancelled" ? prev : e.message))
   .on(saveClientFx.failData, (_, e) => e.message)
   .reset([signInFx, saveClientFx, clientEditRequested, clientEditCancelled]);
@@ -59,10 +59,10 @@ sample({ clock: [appStarted, sessionLost], target: fetchStatusFx });
 sample({ clock: signInClicked, filter: signInFx.pending.map((p) => !p), target: signInFx });
 sample({ clock: signInReopenClicked, target: reopenSignInFx });
 sample({ clock: signInCancelClicked, target: cancelSignInFx });
-/** выход придержан: сначала в Google должно уйти ожидающее удаление (model/undo.ts), иначе оно
- *  потеряется вместе с входом аккаунта */
+/** sign-out is held: a pending deletion must reach Google first (model/undo.ts), otherwise it
+ *  would be lost together with the account's sign-in */
 export const $signOutHeld = createStore(false);
-/** удаление ушло — придержанный выход продолжается */
+/** deletion went through — the held sign-out continues */
 export const signOutResumed = createEvent<string | void>();
 sample({ clock: signOutClicked, filter: $signOutHeld.map((held) => !held), target: signOutFx });
 sample({ clock: signOutResumed, target: signOutFx });
@@ -72,6 +72,6 @@ sample({
   target: fetchStatusFx,
 });
 
-// виджет и список у трея живут в отдельных окнах и узнают о входе и выходе отсюда
+// the widget and the tray agenda live in separate windows and learn about sign-in and sign-out from here
 signInFx.done.watch(() => broadcast("auth-changed"));
 signOutFx.finally.watch(() => broadcast("auth-changed"));

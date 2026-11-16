@@ -1,7 +1,7 @@
-// Стиль оформления и шрифты: общие для главного окна, виджета и окон у трея, как тема.
-// Стиль — набор переменных CSS в styles/styles.css (атрибут data-style на <html>), у каждого
-// стиля светлый и тёмный вариант. Шрифты по умолчанию берутся из стиля; выбранный вручную
-// шрифт задаётся переменной --font-display или --font-text прямо на <html>.
+// Visual style and fonts: shared by the main window, the widget and the tray windows, like the theme.
+// A style is a set of CSS variables in styles/styles.css (data-style attribute on <html>), each
+// style has a light and a dark variant. Default fonts come from the style; a manually chosen
+// font is set by the --font-display or --font-text variable directly on <html>.
 import { broadcast, subscribe } from "../api/bus";
 import { readJson, writeJson } from "./storage";
 
@@ -11,14 +11,14 @@ export type StyleId = (typeof STYLES)[number];
 export const FONTS = ["segoe", "inter", "manrope", "onest", "geist", "geistMono", "unbounded", "cormorant"] as const;
 export type FontId = (typeof FONTS)[number];
 
-/** "auto" — шрифт, который задаёт стиль */
+/** "auto" — the font set by the style */
 export type FontChoice = FontId | "auto";
 
 export type Appearance = { style: StyleId; display: FontChoice; text: FontChoice };
 
 export const DEFAULT_APPEARANCE: Appearance = { style: "classic", display: "auto", text: "auto" };
 
-/** название в списке: имена шрифтов не переводятся */
+/** name in the list: font names are not translated */
 export const FONT_NAMES: Record<FontId, string> = {
   segoe: "Segoe UI",
   inter: "Inter",
@@ -30,7 +30,7 @@ export const FONT_NAMES: Record<FontId, string> = {
   cormorant: "Cormorant Garamond",
 };
 
-// семейства из пакетов @fontsource-variable (styles/fonts.css), Segoe UI — системный
+// families from @fontsource-variable packages (styles/fonts.css), Segoe UI is a system font
 const FAMILIES: Record<FontId, string> = {
   segoe: '"Segoe UI Variable Text", "Segoe UI"',
   inter: '"Inter Variable"',
@@ -42,7 +42,7 @@ const FAMILIES: Record<FontId, string> = {
   cormorant: '"Cormorant Garamond Variable"',
 };
 
-/** шрифты стиля по умолчанию; совпадают с --font-display и --font-text в styles.css */
+/** the style's default fonts; match --font-display and --font-text in styles.css */
 export const STYLE_FONTS: Record<StyleId, { display: FontId; text: FontId }> = {
   classic: { display: "segoe", text: "segoe" },
   paper: { display: "cormorant", text: "inter" },
@@ -51,9 +51,9 @@ export const STYLE_FONTS: Record<StyleId, { display: FontId; text: FontId }> = {
   mono: { display: "geistMono", text: "geist" },
 };
 
-/** для заголовков и цифр — все шрифты */
+/** for headings and digits — all fonts */
 export const DISPLAY_FONTS: readonly FontId[] = FONTS;
-/** для текста — без широкого Unbounded и тонкого Cormorant: мелкий текст ими читается плохо */
+/** for text — without the wide Unbounded and thin Cormorant: small text is hard to read in them */
 export const TEXT_FONTS: readonly FontId[] = FONTS.filter((f) => f !== "unbounded" && f !== "cormorant");
 
 const KEY = "calm.appearance";
@@ -62,7 +62,7 @@ const isStyle = (v: unknown): v is StyleId => STYLES.includes(v as StyleId);
 const isChoice = (v: unknown, allowed: readonly FontId[]): v is FontChoice =>
   v === "auto" || allowed.includes(v as FontId);
 
-/** настройка из хранилища или из другого окна; всё незнакомое — по умолчанию */
+/** setting from storage or another window; anything unknown falls back to the default */
 export const parseAppearance = (v: unknown): Appearance => {
   const o = v && typeof v === "object" ? (v as Record<string, unknown>) : {};
   return {
@@ -74,10 +74,10 @@ export const parseAppearance = (v: unknown): Appearance => {
 
 export const readAppearance = (): Appearance => parseAppearance(readJson<unknown>(KEY, null));
 
-/** значение font-family; запасные шрифты (--font-fallback) зависят от языка интерфейса */
+/** font-family value; fallback fonts (--font-fallback) depend on the UI language */
 export const fontStack = (id: FontId): string => `${FAMILIES[id]}, var(--font-fallback)`;
 
-/** шрифт, который будет на экране: выбранный или шрифт стиля */
+/** the font that will be on screen: the chosen one or the style's font */
 export const effectiveFont = (a: Appearance, role: "display" | "text"): FontId =>
   a[role] === "auto" ? STYLE_FONTS[a.style][role] : (a[role] as FontId);
 
@@ -86,11 +86,11 @@ type Root = {
   style: Pick<CSSStyleDeclaration, "setProperty" | "removeProperty">;
 };
 
-/** атрибут data-style и выбранные шрифты на <html> */
+/** data-style attribute and chosen fonts on <html> */
 export const applyAppearance = (a: Appearance, root: Root = document.documentElement): void => {
   if (a.style === "classic") delete root.dataset.style;
   else root.dataset.style = a.style;
-  // часы виджета — шрифтом заголовков (в «Классическом» по умолчанию они шрифтом текста)
+  // widget clock uses the heading font (in "Classic" it uses the text font by default)
   const fonts: [string, FontChoice][] = [
     ["--font-display", a.display],
     ["--font-clock", a.display],
@@ -108,7 +108,7 @@ export const saveAppearance = (a: Appearance): void => {
   broadcast("appearance-changed", a);
 };
 
-/** стиль или шрифт, выбранные в другом окне */
+/** style or font chosen in another window */
 export const followAppearance = (onChange?: (a: Appearance) => void): (() => void) => {
   const apply = (v: unknown) => {
     const a = parseAppearance(v);
@@ -120,7 +120,7 @@ export const followAppearance = (onChange?: (a: Appearance) => void): (() => voi
     try {
       apply(JSON.parse(e.newValue));
     } catch {
-      // испорченное значение — оставляем как есть
+      // corrupted value — leave as is
     }
   };
   window.addEventListener("storage", onStorage);
