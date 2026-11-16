@@ -1,5 +1,5 @@
-// Отдельное окно настроек (?window=settings): без рамки, тянется за шапку куда угодно,
-// в том числе за пределы окна календаря. Закрывается крестиком или Esc.
+// Separate settings window (?window=settings): frameless, can be dragged by its header anywhere,
+// including outside the calendar window. Closes with the cross or Esc.
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -10,7 +10,7 @@ const close = () => {
   if (inTauri) void invoke("close_settings");
 };
 
-/** окно календаря перечитает события и заново запланирует напоминания */
+/** the calendar window will reload events and reschedule reminders */
 const reschedule = () => broadcast("events-changed", { from: "settings" });
 
 const drag = (e: ReactPointerEvent<HTMLElement>) => {

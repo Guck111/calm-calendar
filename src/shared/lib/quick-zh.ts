@@ -12,7 +12,7 @@ export const parseQuickZh = makeCjkParser({
   inDays: `(\\d+)\\s*天${AFTER}`,
   inWeeks: `(\\d+)\\s*(?:个|個)?${WEEK}${AFTER}`,
   daySuffix: "日|号|號",
-  // «这周五», «本周五» — ближайшая пятница; «下周五» — пятница следующей недели
+  // «这周五», «本周五» — the nearest Friday; «下周五» — Friday of next week
   weekday: `(下(?:个|個)?)?(?:这|這|本)?${WEEK}([一二三四五六日天])`,
   weekdayChars: ["一", "二", "三", "四", "五", "六", "[日天]"],
   hour: "点钟?|點鐘?|时|時",

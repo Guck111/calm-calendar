@@ -34,22 +34,22 @@ const base: EventDraft = {
   recurrence: [],
 };
 
-describe("форма события", () => {
-  it("при сдвиге начала конец сдвигается с той же длительностью", () => {
+describe("event form", () => {
+  it("moving the start moves the end, keeping the duration", () => {
     const next = applyChange(base, { startTime: "23:00" });
     expect([next.endDate, next.endTime]).toEqual(["2026-11-05", "00:30"]);
   });
 
-  it("смена названия не трогает время", () => {
+  it("changing the title doesn't touch the time", () => {
     expect(applyChange(base, { title: "x" }).endTime).toBe("10:30");
   });
 
-  it("для события на весь день сохраняется число дней", () => {
+  it("an all-day event keeps its number of days", () => {
     const multi = { ...base, allDay: true, endDate: "2026-11-06" };
     expect(applyChange(multi, { startDate: "2026-11-10" }).endDate).toBe("2026-11-12");
   });
 
-  it("конец раньше начала — ошибка, однодневное событие на весь день — нет", () => {
+  it("end before start is an error, a one-day all-day event is not", () => {
     expect(validate({ ...base, endTime: "08:00" })).not.toBeNull();
     expect(validate({ ...base, allDay: true, endDate: "2026-11-04" })).toBeNull();
     expect(validate({ ...base, calendarId: "" })).not.toBeNull();
@@ -67,8 +67,8 @@ const event: CalendarEvent = {
   recurring: false,
 };
 
-describe("просмотр и правка события", () => {
-  it("клик по событию открывает просмотр, «Редактировать» — форму", async () => {
+describe("viewing and editing an event", () => {
+  it("clicking an event opens the view, 'Edit' opens the form", async () => {
     const scope = fork();
     await allSettled(eventOpened, { scope, params: event });
     expect(scope.getState($mode)).toBe("view");
@@ -76,7 +76,7 @@ describe("просмотр и правка события", () => {
     expect(scope.getState($mode)).toBe("edit");
   });
 
-  it("«Отмена» возвращает к просмотру и отбрасывает несохранённые правки", async () => {
+  it("'Cancel' returns to the view and discards unsaved edits", async () => {
     const scope = fork();
     await allSettled(eventOpened, { scope, params: event });
     await allSettled(editClicked, { scope });
@@ -101,19 +101,19 @@ const occurrence: CalendarEvent = {
 
 const WEEKDAYS = ["RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"];
 
-describe("правило повтора в форме", () => {
-  it("у нового события правило следует за датой начала", () => {
+describe("recurrence rule in the form", () => {
+  it("for a new event the rule follows the start date", () => {
     const weekly = { ...base, recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=WE"] };
     expect(applyChange(weekly, { startDate: "2026-11-05" }).recurrence).toEqual(["RRULE:FREQ=WEEKLY;BYDAY=TH"]);
   });
 
-  it("у повторения серии перенос даты правило не меняет", () => {
+  it("for an occurrence of a series moving the date doesn't change the rule", () => {
     const one = { ...base, recurringEventId: "w", recurrence: WEEKDAYS, originalRecurrence: WEEKDAYS };
     expect(applyChange(one, { startDate: "2026-11-05" }).recurrence).toEqual(WEEKDAYS);
   });
 });
 
-describe("повторение серии", () => {
+describe("series occurrence", () => {
   const opened = async () => {
     const calls: { save: unknown[]; del: unknown[] } = { save: [], del: [] };
     const scope = fork({
@@ -122,18 +122,18 @@ describe("повторение серии", () => {
         [saveFx, async (p: unknown) => void calls.save.push(p)],
       ],
     });
-    // удаление уходит в Google позже (строка «Отменить»), здесь важен сам запрос
+    // deletion goes to Google later ('Undo' bar); what matters here is the request itself
     createWatch({ unit: deleteRequested, scope, fn: (p) => void calls.del.push(p) });
     await allSettled(eventOpened, { scope, params: occurrence });
     return { scope, calls };
   };
 
-  it("правило серии подгружается в черновик", async () => {
+  it("the series rule is loaded into the draft", async () => {
     const { scope } = await opened();
     expect(scope.getState($draft)).toMatchObject({ recurrence: WEEKDAYS, originalRecurrence: WEEKDAYS });
   });
 
-  it("перед сохранением спрашивает, к каким повторениям применить", async () => {
+  it("before saving, asks which occurrences to apply to", async () => {
     const { scope, calls } = await opened();
     await allSettled(editClicked, { scope });
     await allSettled(draftChanged, { scope, params: { startTime: "13:00" } });
@@ -146,7 +146,7 @@ describe("повторение серии", () => {
     expect(scope.getState($askScope)).toBeNull();
   });
 
-  it("удаление тоже спрашивает; «Отмена» ничего не удаляет", async () => {
+  it("deletion asks too; 'Cancel' deletes nothing", async () => {
     const { scope, calls } = await opened();
     await allSettled(deleteClicked, { scope });
     expect(scope.getState($askScope)).toBe("delete");
@@ -157,7 +157,7 @@ describe("повторение серии", () => {
     expect(calls.del).toMatchObject([{ scope: "this", draft: { id: "w_20261111" } }]);
   });
 
-  it("изменённое правило замечается", async () => {
+  it("a changed rule is detected", async () => {
     const { scope } = await opened();
     await allSettled(editClicked, { scope });
     expect(scope.getState($recurrenceEdited)).toBe(false);
@@ -165,7 +165,7 @@ describe("повторение серии", () => {
     expect(scope.getState($recurrenceEdited)).toBe(true);
   });
 
-  it("обычное событие сохраняется без вопроса", async () => {
+  it("a regular event is saved without asking", async () => {
     const { scope, calls } = await opened();
     await allSettled(eventOpened, { scope, params: event });
     await allSettled(editClicked, { scope });

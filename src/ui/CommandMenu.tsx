@@ -1,5 +1,5 @@
-// Меню команд на Ctrl+K: перейти к дате, создать событие, найти, сменить вид — одной строкой с клавиатуры.
-// Строка — combobox, команды — listbox: стрелки выбирают, Enter выполняет, Esc закрывает.
+// Command menu on Ctrl+K: jump to a date, create an event, search, change the view — from one keyboard input.
+// The input is a combobox, commands are a listbox: arrows select, Enter runs, Esc closes.
 import { useUnit } from "effector-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { t } from "../shared/i18n";
@@ -24,7 +24,7 @@ const LIST_ID = "command-menu-list";
 
 type DialogProps = {
   onClose: () => void;
-  /** выбранное событие, которое можно менять: его действия — первыми */
+  /** selected event that can be changed: its actions come first */
   subject: CalendarEvent | null;
 };
 
@@ -79,7 +79,7 @@ const CommandDialog = ({ onClose, subject }: DialogProps) => {
       case "welcome":
         return showWelcome();
       case "create": {
-        // как Ctrl+Enter в быстром создании: форма с разобранной строкой
+        // like Ctrl+Enter in quick add: the form with the parsed line
         const draft = quickToDraft(parseQuick(c.text, new Date(), writable), writable[0]?.id ?? "");
         return openDraft({ ...draft, timeZone: localTimeZone(), guests: [], addMeet: false, attachments: [] });
       }
@@ -158,12 +158,12 @@ const CommandDialog = ({ onClose, subject }: DialogProps) => {
   );
 };
 
-/** Ctrl+K в любой раскладке (по коду клавиши) открывает меню, даже из поля ввода */
+/** Ctrl+K in any layout (by key code) opens the menu, even from an input field */
 export const CommandMenu = () => {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState<CalendarEvent | null>(null);
   const [events, opened, writable] = useUnit([$events, $opened, $writableCalendars]);
-  // свежие значения для обработчика клавиш без его пересоздания
+  // fresh values for the key handler without recreating it
   const latest = useRef({ events, opened, writable });
   latest.current = { events, opened, writable };
 
@@ -171,7 +171,7 @@ export const CommandMenu = () => {
     const onKey = (e: globalThis.KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === "KeyK") {
         e.preventDefault();
-        // выбранное событие: блок под фокусом или открытая карточка; только то, что можно менять
+        // selected event: the focused block or the open card; only what can be changed
         const { events: list, opened: card, writable: own } = latest.current;
         const key = eventElement(document.activeElement)?.dataset.eventKey;
         const event = (key && list.find((x) => x.key === key)) || card;

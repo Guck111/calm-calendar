@@ -1,23 +1,23 @@
-// Работа с датами на нативном Date и Intl, без библиотек.
-// Язык и регион (первый день недели, 12 или 24 часа) берутся из i18n.
+// Working with dates on native Date and Intl, no libraries.
+// Language and region (first day of week, 12 or 24 hours) come from i18n.
 import { locale, t, uses12h, weekStart } from "../i18n";
 
 export type ViewMode = "month" | "week" | "day" | "agenda";
 
-/** сколько дней показывает «Расписание» и на сколько листает */
+/** how many days "Schedule" shows and pages by */
 export const AGENDA_DAYS = 28;
 
 export type DateRange = { start: Date; end: Date };
 
 export const MINUTES_IN_DAY = 24 * 60;
 
-/** Граница календарного дня, даже если в исходный день полночь была пропущена. */
+/** Calendar day boundary, even if midnight was skipped on the original day. */
 export const addCalendarDays = (d: Date, n: number): Date =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
 export const startOfDay = (d: Date): Date => addCalendarDays(d, 0);
 
-/** Часы на циферблате, записанные в UTC, чтобы системный пояс их не нормализовал. */
+/** Wall clock hours stored in UTC so the system time zone doesn't normalize them. */
 export class WallClockDate extends Date {
   getFullYear() { return this.getUTCFullYear(); }
   getMonth() { return this.getUTCMonth(); }
@@ -29,7 +29,7 @@ export class WallClockDate extends Date {
   getTimezoneOffset() { return 0; }
 }
 
-// Сдвиг по календарным дням: корректен при переходе на летнее и зимнее время
+// Shift by calendar days: correct across the switch to summer and winter time
 export const addDays = (d: Date, n: number): Date =>
   new Date(
     d.getFullYear(),
@@ -50,7 +50,7 @@ export const addMonths = (d: Date, n: number): Date => {
   return new Date(target.getFullYear(), target.getMonth(), Math.min(d.getDate(), lastDay));
 };
 
-/** номер дня в неделе с учётом первого дня недели региона: 0 — первый столбец */
+/** day index in the week considering the region's first day of week: 0 — the first column */
 export const weekdayIndex = (d: Date): number => (d.getDay() - weekStart() + 7) % 7;
 
 export const startOfWeek = (d: Date): Date => addCalendarDays(d, -weekdayIndex(d));
@@ -65,11 +65,11 @@ export const isSameMonth = (a: Date, b: Date): boolean =>
 
 const pad = (n: number): string => String(n).padStart(2, "0");
 
-/** "2026-11-04" в местном времени */
+/** "2026-11-04" in local time */
 export const toDateKey = (d: Date): string =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/** "2026-11-04" → полночь по местному времени */
+/** "2026-11-04" → midnight local time */
 export const fromDateKey = (key: string): Date => {
   const [y, m, d] = key.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -89,7 +89,7 @@ export const minutesOfDay = (d: Date): number => d.getHours() * 60 + d.getMinute
 export const daysBetween = (start: Date, end: Date): number =>
   Math.round((startOfDay(end).getTime() - startOfDay(start).getTime()) / 86_400_000);
 
-/** 6 недель по 7 дней, как в обычном настенном календаре */
+/** 6 weeks of 7 days, like a regular wall calendar */
 export const monthGrid = (cursor: Date): Date[] => {
   const first = startOfWeek(startOfMonth(cursor));
   return Array.from({ length: 42 }, (_, i) => addCalendarDays(first, i));
@@ -132,10 +132,10 @@ export const shiftCursor = (view: ViewMode, cursor: Date, step: 1 | -1): Date =>
 };
 
 const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-/** «ноябрь 2026 г.» → «ноябрь 2026», и украинское «р.» */
+/** «ноябрь 2026 г.» → «ноябрь 2026», and the Ukrainian «р.» */
 const dropYearSuffix = (s: string): string => s.replace(/\s*[гр]\.$/, "");
 
-// Форматтеры запоминают пояс при создании, поэтому он входит в ключ.
+// Formatters remember the time zone on creation, so it is part of the key.
 const cache = new Map<string, Intl.DateTimeFormat>();
 const formatter = (options: Intl.DateTimeFormatOptions, date?: Date): Intl.DateTimeFormat => {
   const timeZone = date instanceof WallClockDate ? "UTC" : localTimeZone();
@@ -150,13 +150,13 @@ const formatter = (options: Intl.DateTimeFormatOptions, date?: Date): Intl.DateT
 const fmt = (options: Intl.DateTimeFormatOptions) => (d: Date) => formatter(options, d).format(d);
 
 let numbers: { locale: string; f: Intl.NumberFormat } | null = null;
-/** Число дня цифрами языка: «٨» по-арабски, «৮» по-бенгальски, без «日» и «일», которые добавил бы формат даты */
+/** Day number in the language's digits: «٨» in Arabic, «৮» in Bengali, without «日» and «일» that the date format would add */
 export const formatDayNumber = (d: Date): string => {
   if (numbers?.locale !== locale) numbers = { locale, f: new Intl.NumberFormat(locale, { useGrouping: false }) };
   return numbers.f.format(d.getDate());
 };
 
-/** Номер недели по ISO 8601: неделя с понедельника, первая — та, где первый четверг года */
+/** ISO 8601 week number: week from Monday, the first one contains the year's first Thursday */
 export const isoWeek = (d: Date): number => {
   const day = startOfDay(d);
   const thursday = addDays(day, 3 - ((day.getDay() + 6) % 7));
@@ -165,11 +165,11 @@ export const isoWeek = (d: Date): number => {
   return 1 + Math.round((thursday.getTime() - firstWeekThursday.getTime()) / (7 * 86_400_000));
 };
 
-/** Номер недели строки календаря, начатой с d. Строка может начинаться с воскресенья или субботы,
- *  поэтому берём её середину: так у всей строки один номер */
+/** Week number of a calendar row starting at d. A row may start on Sunday or Saturday,
+ *  so take its middle: that way the whole row has one number */
 export const weekNumberOf = (rowStart: Date): number => isoWeek(addDays(rowStart, 3));
 
-/** номер недели цифрами языка */
+/** week number in the language's digits */
 export const formatWeekNumber = (rowStart: Date): string => {
   if (numbers?.locale !== locale) numbers = { locale, f: new Intl.NumberFormat(locale, { useGrouping: false }) };
   return numbers.f.format(weekNumberOf(rowStart));
@@ -183,10 +183,10 @@ export const formatWeekdayLong = (d: Date): string => capitalize(fmt({ weekday: 
 export const formatDayMonth = fmt({ day: "numeric", month: "long" });
 export const formatFullDate = (d: Date): string =>
   capitalize(dropYearSuffix(fmt({ weekday: "long", day: "numeric", month: "long", year: "numeric" })(d)));
-/** «09:30» или «9:30 AM» по региону */
+/** "09:30" or "9:30 AM" by region */
 export const formatTime = (d: Date): string =>
   fmt({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" })(d);
-/** Время для крупных часов: цифры отдельно от AM/PM, чтобы набрать их мельче */
+/** Time for the big clock: digits apart from AM/PM so they can be set smaller */
 export const formatClock = (d: Date): { time: string; period: string } => {
   const parts = formatter({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" }, d).formatToParts(d);
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
@@ -197,10 +197,10 @@ export const formatClock = (d: Date): { time: string; period: string } => {
     .trim();
   return { time, period };
 };
-/** подпись часа в сетке: «09:00» или «9 AM» */
+/** hour label in the grid: "09:00" or "9 AM" */
 export const formatHour = (h: number): string =>
   uses12h() ? fmt({ hour: "numeric" })(new Date(2000, 0, 1, h)) : `${pad(h)}:00`;
-/** «Чт, 5 нояб.» для дат этого года и «5 нояб. 2027 г.» для других */
+/** «Чт, 5 нояб.» for dates of this year and «5 нояб. 2027 г.» for others */
 export const formatShortDate = (d: Date, now = new Date()): string =>
   dropYearSuffix(
     d.getFullYear() === now.getFullYear()
@@ -211,10 +211,10 @@ export const formatShortDate = (d: Date, now = new Date()): string =>
 export const formatWeekdayDayMonth = (d: Date): string =>
   capitalize(fmt({ weekday: "short", day: "numeric", month: "long" })(d));
 
-/** Подписи дней недели с первого дня недели региона: «Пн», «Вт»… или «S», «M»… в мини-месяце */
+/** Weekday labels from the region's first day of week: «Пн», «Вт»… or «S», «M»… in the mini month */
 export const weekdayLabels = (style: "short" | "narrow" = "short"): string[] => {
   const ref = startOfWeek(new Date(2026, 0, 7));
-  // узкие буквы П В С Ч П С у славянских языков не различить
+  // narrow letters П В С Ч П С can't be told apart in Slavic languages
   const format = fmt({ weekday: /^(ru|be|uk)\b/.test(locale) ? "short" : style });
   return Array.from({ length: 7 }, (_, i) => capitalize(format(addDays(ref, i))));
 };
@@ -223,7 +223,7 @@ export const viewTitle = (view: ViewMode, cursor: Date): string => {
   if (view === "month") return formatMonthYear(cursor);
   if (view === "day") return formatFullDate(cursor);
   const days = viewDays(view, cursor);
-  // «2–8 ноября 2026», «November 2 – 8, 2026»: диапазон по правилам языка
+  // «2–8 ноября 2026», «November 2 – 8, 2026»: a range by the language's rules
   return dropYearSuffix(
     formatter({ day: "numeric", month: "long", year: "numeric" }).formatRange(days[0], days[days.length - 1]),
   );

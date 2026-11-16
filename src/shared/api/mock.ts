@@ -1,5 +1,5 @@
-// Подмена Rust-команд для разработки интерфейса в обычном браузере (npm run dev без Tauri).
-// В сборку приложения не попадает: подключается динамически, только если нет Tauri.
+// Replacement of Rust commands for developing the UI in a regular browser (npm run dev without Tauri).
+// Not included in the app build: loaded dynamically, only when there is no Tauri.
 import { lang } from "../i18n";
 import { addDays, localTimeZone, startOfDay, startOfWeek, toDateKey } from "../lib/date";
 import { occurrences, parseRecurrence, utcStamp } from "../lib/rrule";
@@ -13,7 +13,7 @@ const at = (day: number, h: number, m = 0) => {
   return d.toISOString();
 };
 
-// серии начинаются с понедельника две недели назад: есть и прошлые повторения, и первое для «всей серии»
+// series start on Monday two weeks ago: there are past occurrences and the first one for "the whole series"
 const monday = addDays(startOfDay(new Date()), -((new Date().getDay() + 6) % 7) - 14);
 const series = (day: number, h: number, m = 0) => {
   const d = addDays(monday, day);
@@ -21,7 +21,7 @@ const series = (day: number, h: number, m = 0) => {
   return d.toISOString();
 };
 const WEEKDAYS_RULE = "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
-/** второй вторник позапрошлого месяца */
+/** second Tuesday of the month before last */
 const secondTuesday = (h: number) => {
   const now = new Date();
   const first = new Date(now.getFullYear(), now.getMonth() - 2, 1);
@@ -32,14 +32,14 @@ const soon = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOS
 const MEET = "https://meet.google.com/abc-defg-hij";
 const ZOOM = "https://us02web.zoom.us/j/81234567890?pwd=calm";
 
-// два аккаунта: личный и рабочий; календарь «work» живёт в рабочем, остальные — в личном
+// two accounts: personal and work; the "work" calendar lives in the work one, the rest in the personal one
 const ME = "me@example.com";
 const WORK = "work@example.com";
 let accounts = [ME, WORK];
 const ownerOf = (calendarId: string) => (calendarId === "work" ? WORK : ME);
 let seq = 100;
 
-// русские данные — для разработки, английские — ещё и для скриншотов сайта и Store
+// Russian data is for development, English is also for website and Store screenshots
 const ruCalendars = [
   { id: "me@example.com", summary: "Личное", backgroundColor: "#4f8ef7", accessRole: "owner", primary: true, selected: true, defaultReminders: [{ method: "popup", minutes: 10 }] },
   { id: "work", summary: "Работа", backgroundColor: "#e8a33d", accessRole: "owner", selected: true },
@@ -52,9 +52,9 @@ const ruEvents = (): Record<string, Json[]> => ({
     { id: "e1", summary: "Урок английского", start: { dateTime: at(2, 19) }, end: { dateTime: at(2, 19, 50) } },
     { id: "e2", summary: "День рождения", start: { date: toDateKey(addDays(week, 5)) }, end: { date: toDateKey(addDays(week, 6)) } },
     { id: "e3", summary: "Польский", start: { dateTime: at(5, 14, 30) }, end: { dateTime: at(5, 16, 30) }, location: "Гдыня", extendedProperties: { private: { calmTravelMinutes: "45" } } },
-    // в рабочее время из рабочего аккаунта: пересечение
+    // during working hours from the work account: an overlap
     { id: "e4", summary: "Стоматолог", start: { dateTime: at(3, 16) }, end: { dateTime: at(3, 17) } },
-    // позвали оба аккаунта: на экране одна встреча
+    // both accounts were invited: one meeting on screen
     { id: "e5", iCalUID: "demo-both@example.com", summary: "Встреча выпускников", start: { dateTime: at(4, 18) }, end: { dateTime: at(4, 19) } },
   ],
   work: ([
@@ -81,9 +81,9 @@ const ruEvents = (): Record<string, Json[]> => ({
         { email: "ivan@example.com", responseStatus: "needsAction" },
       ],
     },
-    // начинается через 10 минут: в виджете видна кнопка «Подключиться»
+    // starts in 10 minutes: the widget shows the "Join" button
     { id: "w10", summary: "Планёрка", start: { dateTime: soon(10) }, end: { dateTime: soon(40) }, location: ZOOM },
-    // создано в поясе Нью-Йорка: форма показывает время там и «по вашему времени»
+    // created in the New York time zone: the form shows the time there and "in your time"
     {
       id: "w11",
       summary: "Созвон с Нью-Йорком",
@@ -100,7 +100,7 @@ const ruEvents = (): Record<string, Json[]> => ({
       start: { dateTime: series(1, 8) },
       end: { dateTime: series(1, 10) },
     },
-    // каждый месяц во второй вторник, 10 раз
+    // every month on the second Tuesday, 10 times
     {
       id: "m",
       summary: "Уборка",
@@ -131,7 +131,7 @@ const timed = (prefix: string, plan: Plan[]): Json[] =>
     ...extra,
   }));
 
-// неделя считается от первого дня недели региона: для en-US 0 — воскресенье
+// the week counts from the region's first day of week: for en-US 0 is Sunday
 const enEvents = (): Record<string, Json[]> => ({
   "me@example.com": timed("p", [
     [0, "Brunch with Anna", [11, 0], [12, 30], { location: "Blue Door Cafe" }],
@@ -167,10 +167,10 @@ const enEvents = (): Record<string, Json[]> => ({
           ],
         },
       ],
-      // в то же время, что и Dentist в личном аккаунте: пересечение
+      // at the same time as Dentist in the personal account: an overlap
       [2, "Hiring panel", [15, 30], [16, 30]],
       [3, "Focus time", [13, 0], [16, 0]],
-      // чужая встреча, рабочий аккаунт приглашён и ещё не ответил
+      // someone else's meeting, the work account is invited and hasn't responded yet
       [
         1,
         "Quarterly planning",
@@ -197,7 +197,7 @@ const enEvents = (): Record<string, Json[]> => ({
           },
         },
       ],
-      // приглашения Zoom кладут в место длинную ссылку
+      // Zoom invitations put a long link into the location
       [5, "Sprint demo", [15, 0], [16, 0], { location: ZOOM }],
     ]),
   ],
@@ -212,7 +212,7 @@ const enEvents = (): Record<string, Json[]> => ({
   ],
 });
 
-// подставные данные — русские или английские; для остальных языков английские
+// mock data is Russian or English; English for other languages
 const english = lang !== "ru";
 const calendars = english ? enCalendars : ruCalendars;
 const events: Record<string, Json[]> = english ? enEvents() : ruEvents();
@@ -223,8 +223,8 @@ const startOf = (e: Json) => new Date(time(e.start));
 const endOf = (e: Json) => new Date(time(e.end));
 const isSeries = (e: Json) => Array.isArray(e.recurrence) && e.recurrence.length > 0;
 
-// Серии хранятся, как в Google: главное событие с правилом, а изменённые и удалённые повторения —
-// отдельными записями с recurringEventId. Повторения разворачиваются при чтении.
+// Series are stored as in Google: a master event with a rule, and changed and deleted occurrences as
+// separate records with recurringEventId. Occurrences are expanded on read.
 const expand = (master: Json, before: Date): Json[] => {
   const start = startOf(master);
   const allDay = Boolean((master.start as Time).date);
@@ -246,7 +246,7 @@ const expand = (master: Json, before: Date): Json[] => {
   });
 };
 
-/** события календаря с развёрнутыми сериями, включая удалённые повторения */
+/** calendar events with expanded series, including deleted occurrences */
 const flatten = (list: Json[], before: Date): Json[] => {
   const changed = new Map(list.filter((e) => e.recurringEventId).map((e) => [e.id, e]));
   return list.flatMap((e) => {
@@ -258,8 +258,8 @@ const flatten = (list: Json[], before: Date): Json[] => {
 
 const FAR = new Date(2100, 0, 1);
 
-/** Заявка на Google Meet (conferenceData.createRequest): Google создаёт встречу и отдаёт ссылку.
- *  Без conferenceDataVersion=1 Google заявку молча пропускает */
+/** Google Meet request (conferenceData.createRequest): Google creates the meeting and returns the link.
+ *  Without conferenceDataVersion=1 Google silently skips the request */
 const withMeet = (body: Json | undefined, q: Record<string, string>): Json | undefined => {
   const request = (body?.conferenceData as { createRequest?: unknown } | undefined)?.createRequest;
   if (!body || !request || q.conferenceDataVersion !== "1") return body;
@@ -288,9 +288,9 @@ const google = (
     return { items: calendars.filter((c) => ownerOf(c.id) === account) };
   }
   const m = path.match(/^\/calendar\/v3\/calendars\/([^/]+)\/events(?:\/([^/]+))?(\/move|\/instances)?$/);
-  if (!m) throw { kind: "google", message: `mock: нет обработчика ${path}` };
+  if (!m) throw { kind: "google", message: `mock: no handler for ${path}` };
   const calId = decodeURIComponent(m[1]);
-  // публичный календарь праздников страны: два праздника в каждом месяце диапазона
+  // public holiday calendar of a country: two holidays in each month of the range
   if (calId.endsWith("#holiday@group.v.calendar.google.com") && method === "GET") {
     const from = new Date(q.timeMin);
     const items: Json[] = [];
@@ -318,7 +318,7 @@ const google = (
       const text = q.q ? String(e.summary ?? "").toLowerCase().includes(q.q.toLowerCase()) : true;
       return text && e.status !== "cancelled" && startOf(e) < new Date(q.timeMax) && endOf(e) > new Date(q.timeMin);
     });
-    // как Google: у списка событий указан пояс календаря
+    // like Google: the event list includes the calendar time zone
     return { items: items.sort(byStart), timeZone: localTimeZone() };
   }
   body = withMeet(body, q);
@@ -329,20 +329,20 @@ const google = (
   }
   const index = list.findIndex((e) => e.id === id);
   if (m[3] === "/instances") {
-    if (index === -1) throw { kind: "google", message: "mock: серия не найдена" };
+    if (index === -1) throw { kind: "google", message: "mock: series not found" };
     const items = flatten([list[index], ...list.filter((e) => e.recurringEventId === id)], new Date(q.timeMax ?? FAR));
     return { items: q.showDeleted === "true" ? items : items.filter((e) => e.status !== "cancelled") };
   }
-  // повторение, которое ещё не меняли, существует только в развёрнутом виде
+  // an occurrence not yet changed exists only in expanded form
   const instance = index === -1 ? flatten(list, FAR).find((e) => e.id === id) : undefined;
-  if (index === -1 && !instance) throw { kind: "google", message: "mock: событие не найдено" };
+  if (index === -1 && !instance) throw { kind: "google", message: "mock: event not found" };
   if (method === "GET") return list[index] ?? instance;
   if (m[3] === "/move") {
     const [moved] = list.splice(index, 1);
     (events[q.destination] ??= []).push(moved);
     return moved;
   }
-  // ответ на приглашение: Google меняет только ответы перечисленных гостей, остальной список остаётся
+  // invitation response: Google changes only the responses of the listed guests, the rest of the list stays
   if (method === "PATCH" && body?.attendeesOmitted) {
     const current = list[index] ?? instance;
     const answers = new Map((body.attendees as { email: string; responseStatus: string }[]).map((a) => [a.email, a.responseStatus]));
@@ -364,7 +364,7 @@ const google = (
     if (instance) list.push({ ...instance, status: "cancelled" });
     else {
       list.splice(index, 1);
-      // вместе с серией уходят и её изменённые повторения
+      // the series' changed occurrences go away together with it
       events[calId] = list.filter((e) => e.recurringEventId !== id);
     }
     return null;
@@ -372,10 +372,10 @@ const google = (
   throw { kind: "other", message: `mock: ${method}` };
 };
 
-/** Для автотестов: window.calmMock.outage = "network" | "503" — Google не отвечает, null — снова отвечает */
-/** outage — сбой сети или Google; signIn "hang" — браузер так и не вернулся со входа (ждём до отмены);
- *  reopened — сколько раз страницу входа открыли снова */
-/** slow — задержка ответов Google, мс (проверка состояния «Загружаю…») */
+/** For autotests: window.calmMock.outage = "network" | "503" — Google doesn't respond, null — responds again */
+/** outage — network or Google failure; signIn "hang" — the browser never came back from sign-in (wait until cancel);
+ *  reopened — how many times the sign-in page was opened again */
+/** slow — Google response delay, ms (to check the "Loading…" state) */
 const mockControl: { outage: "network" | "503" | null; signIn: "hang" | null; reopened: number; slow: number } = {
   outage: null,
   slow: 0,
@@ -387,8 +387,8 @@ let cancelSignIn: (() => void) | null = null;
 
 const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(value), ms));
 
-/** Подписка .ics в подставных данных: йога по понедельникам и средам с этой недели и матч в субботу.
- *  Ссылка со словом «broken» — не календарь; calmMock.outage = "network" — нет сети и для подписок */
+/** .ics subscription in mock data: yoga on Mondays and Wednesdays from this week and a match on Saturday.
+ *  A link with the word "broken" is not a calendar; calmMock.outage = "network" — offline for subscriptions too */
 const mockFeed = (url: string): string => {
   if (mockControl.outage === "network") throw { kind: "network", message: "mock: no network" };
   if (url.includes("broken")) return "<html><body>Not found</body></html>";
@@ -431,7 +431,7 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
         return new Promise((_, reject) => {
           cancelSignIn = () => reject({ kind: "cancelled", message: "Sign-in cancelled" });
         });
-      // входим в первый из двух аккаунтов, которого ещё нет
+      // sign in to the first of two accounts that isn't added yet
       const next = [ME, WORK].find((a) => !accounts.includes(a)) ?? ME;
       accounts = [...new Set([...accounts, next])];
       return delay(next, 800);
@@ -457,6 +457,6 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
     case "fetch_feed":
       return delay(mockFeed(String(args.url)));
     default:
-      throw { kind: "other", message: `mock: неизвестная команда ${cmd}` };
+      throw { kind: "other", message: `mock: unknown command ${cmd}` };
   }
 };

@@ -14,7 +14,7 @@ pub enum Error {
     Cancelled,
     #[error("Calendar scopes were not granted")]
     MissingScope,
-    // интерфейс разбирает «403: текст» и пишет своё сообщение с кодом
+    // the UI parses "403: text" and writes its own message with the code
     #[error("{status}: {message}")]
     Google { status: u16, message: String },
     #[error("Network: {0}")]
@@ -39,7 +39,7 @@ impl Error {
     }
 }
 
-// Во фронтенд ошибка уходит объектом { kind, message }
+// The error goes to the frontend as a { kind, message } object
 impl Serialize for Error {
     fn serialize<S: Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
         let mut st = s.serialize_struct("Error", 2)?;

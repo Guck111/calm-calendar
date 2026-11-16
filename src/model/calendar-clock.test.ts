@@ -9,7 +9,7 @@ import { $range, dateSelected, minuteTicked, viewChanged } from "./view";
 
 afterEach(() => vi.unstubAllEnvs());
 
-it("сохраняет оба момента второго часа при правке заголовка осеннего события", () => {
+it("keeps both instants of the second hour when editing the title of an autumn event", () => {
   const timeZone = "Europe/Warsaw";
   const event = toCalendarEvent("c", {
     id: "fall-back",
@@ -17,7 +17,7 @@ it("сохраняет оба момента второго часа при пр
     start: { dateTime: "2026-10-25T02:30:00+01:00", timeZone },
     end: { dateTime: "2026-10-25T02:50:00+01:00", timeZone },
   });
-  if (!event) throw new Error("Событие должно быть прочитано из Google");
+  if (!event) throw new Error("The event must be read from Google");
   const body = draftToBody(applyChange(fromEvent(event), { title: "После правки" }));
 
   expect(body).toMatchObject({
@@ -27,7 +27,7 @@ it("сохраняет оба момента второго часа при пр
   });
 });
 
-it("сохраняет часы UTC внутри отсутствующего локального часа", () => {
+it("keeps UTC hours inside a missing local hour", () => {
   vi.stubEnv("TZ", "Europe/Warsaw");
   const warsaw = toTimeKey(wallClock(new Date("2026-03-29T02:30:00Z"), "UTC"));
   vi.stubEnv("TZ", "America/New_York");
@@ -36,14 +36,14 @@ it("сохраняет часы UTC внутри отсутствующего л
   expect([warsaw, newYork]).toEqual(["02:30", "02:30"]);
 });
 
-it("пропускает правку события, которое пересекает повторяющийся час", () => {
+it("skips editing an event that crosses a repeated hour", () => {
   const timeZone = "Europe/Warsaw";
   const event = toCalendarEvent("c", {
     id: "cross-fall-back",
     start: { dateTime: "2026-10-25T02:50:00+02:00", timeZone },
     end: { dateTime: "2026-10-25T02:10:00+01:00", timeZone },
   });
-  if (!event) throw new Error("Событие должно быть прочитано из Google");
+  if (!event) throw new Error("The event must be read from Google");
   const draft = applyChange(fromEvent(event), { title: "Через перевод часов" });
   expect(draftToBody(draft)).toMatchObject({
     start: { dateTime: "2026-10-25T00:50:00.000Z" },
@@ -52,7 +52,7 @@ it("пропускает правку события, которое перес�
   expect(validate(draft)).toBeNull();
 });
 
-it("пересчитывает выбранный день и формат времени после смены системного пояса", async () => {
+it("recomputes the selected day and time format after the system time zone changes", async () => {
   vi.stubEnv("TZ", "Europe/Warsaw");
   const scope = fork();
   const instant = new Date("2026-11-16T12:00:00Z");
@@ -80,7 +80,7 @@ it("пересчитывает выбранный день и формат вр�
   });
 });
 
-it("относит событие после полуночи в Гаване только к новому дню", () => {
+it("assigns an event after midnight in Havana only to the new day", () => {
   vi.stubEnv("TZ", "America/Havana");
   const march8 = new Date(2026, 2, 8);
   const march9 = new Date(2026, 2, 9);
@@ -89,7 +89,7 @@ it("относит событие после полуночи в Гаване т
     start: { dateTime: "2026-03-09T00:15:00-04:00" },
     end: { dateTime: "2026-03-09T00:30:00-04:00" },
   });
-  if (!event) throw new Error("Событие должно быть прочитано из Google");
+  if (!event) throw new Error("The event must be read from Google");
 
   expect({
     end: viewRange("day", march8).end.toISOString(),

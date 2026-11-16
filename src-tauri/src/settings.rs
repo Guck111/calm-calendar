@@ -1,12 +1,12 @@
-//! Окно настроек: отдельное окно без рамки, его можно утащить за шапку куда угодно,
-//! в том числе за пределы календаря. Открывается по центру главного окна,
-//! закрывается совсем — следующее открытие снова по центру и с свежими настройками.
+//! Settings window: a separate frameless window, it can be dragged by its header anywhere,
+//! including outside the calendar. Opens centered on the main window,
+//! closes completely — the next open is centered again and with fresh settings.
 
 use crate::desktop;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 
 pub const SETTINGS: &str = "settings";
-/// размер в логических пикселях; в невысоком экране окно ниже, содержимое прокручивается
+/// size in logical pixels; on a short screen the window is shorter, the content scrolls
 const SIZE: (f64, f64) = (440.0, 760.0);
 
 pub fn show(app: &AppHandle) {
@@ -26,7 +26,7 @@ pub fn show(app: &AppHandle) {
         .decorations(false)
         .skip_taskbar(true)
         .visible(false);
-    // окно принадлежит главному: держится над ним и не путается в панели задач
+    // the window belongs to the main one: stays above it and doesn't clutter the taskbar
     let builder = match &main {
         Some(m) => match builder.parent(m) {
             Ok(b) => b,
@@ -58,7 +58,7 @@ pub fn close(app: &AppHandle) {
     }
 }
 
-/// высота окна: не выше рабочей области монитора, где главное окно, с запасом
+/// window height: no taller than the work area of the main window's monitor, with a margin
 fn height(main: Option<&WebviewWindow>) -> f64 {
     let area = main.and_then(|m| m.current_monitor().ok().flatten()).map(|m| {
         let scale = m.scale_factor();
@@ -70,7 +70,7 @@ fn height(main: Option<&WebviewWindow>) -> f64 {
     }
 }
 
-/// по центру главного окна, но целиком на его мониторе
+/// centered on the main window, but entirely on its monitor
 fn centered(main: &WebviewWindow, w: &WebviewWindow) -> Option<PhysicalPosition<i32>> {
     let pos = main.outer_position().ok()?;
     let size = main.outer_size().ok()?;

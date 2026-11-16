@@ -1,5 +1,5 @@
-// Український розбір рядка: «завтра о 19:00 англійська 50 хв #особисте @Київ».
-// Устроєний як російський (quick-ru.ts): розпізнані шматки вирізаються, залишок — назва.
+// Ukrainian phrase parsing: «завтра о 19:00 англійська 50 хв #особисте @Київ».
+// Built like the Russian one (quick-ru.ts): recognized pieces are cut out, the rest is the title.
 import { addDays, startOfDay } from "./date";
 import {
   L,
@@ -18,11 +18,11 @@ import {
   type TimeRange,
 } from "./quick-core";
 
-/** апостроф пишуть трьома знаками, а часто й пропускають: «п'ятниця», «п’ятниця», «пʼятниця», «пятниця» */
+/** the apostrophe is written with three characters, and often skipped: «п'ятниця», «п’ятниця», «пʼятниця», «пятниця» */
 const APOS = "['’ʼ]?";
 
 const MONTHS = ["січ", "лют", "бер", "квіт", "трав", "черв", "лип", "серп", "вер", "жовт", "лист", "груд"];
-/** з понеділка */
+/** from Monday */
 const WEEKDAYS = [
   "пн|пон(?:еділ(?:ок|ка))?",
   "вт|вів(?:тор(?:ок|ка))?",
@@ -41,7 +41,7 @@ const toHour = (h: number, part?: string): number => {
   return h;
 };
 
-/** Число місяця без місяця: у цьому місяці, а якщо вже минуло — у наступному */
+/** Day of month without a month: in this month, and if it has passed — in the next one */
 const monthDay = (today: Date, day: number): Date | null => {
   for (const shift of [0, 1, 2]) {
     const d = new Date(today.getFullYear(), today.getMonth() + shift, day);
@@ -70,20 +70,20 @@ const parseDate = (cut: Cut, now: Date): Date | null => {
     return upcomingDate(today, month, Number(named[1]), named[3] ? Number(named[3]) : null);
   }
 
-  // «05.11», «5.11.2026»; «о 10.30» — це час
+  // «05.11», «5.11.2026»; «о 10.30» is a time
   const dotted = cut.take(re("(?<!(?:о|об)\\s)(0?[1-9]|[12]\\d|3[01])\\.(0?[1-9]|1[0-2])(?:\\.(\\d{4}))?"));
   if (dotted) {
     return upcomingDate(today, Number(dotted[2]) - 1, Number(dotted[1]), dotted[3] ? Number(dotted[3]) : null);
   }
 
-  // «14-го», «14 числа», «…, 14» наприкінці
+  // «14-го», «14 числа», «…, 14» at the end
   const day = cut.take(re("(\\d{1,2})(?:-?го|\\s+числа)")) ?? cut.take(/,\s*(\d{1,2})\s*$/u);
   if (day) {
     const d = monthDay(today, Number(day[1]));
     if (d) return d;
   }
 
-  // «пт», «у п'ятницю» — найближчий такий день, включно з сьогоднішнім
+  // «пт», «у п'ятницю» — the nearest such day, including today
   for (let i = 0; i < WEEKDAYS.length; i++) {
     if (cut.take(re(`(?:[ув]\\s+)?(?:${WEEKDAYS[i]})`))) return nextWeekday(today, i);
   }
@@ -127,7 +127,7 @@ const parseDuration = (cut: Cut): number | null => {
   return Math.round(d[2].toLowerCase().startsWith("г") ? n * 60 : n);
 };
 
-// «пт 18 кіно», «завтра 9 зарядка»: число одразу після дня — це година
+// «пт 18 кіно», «завтра 9 зарядка»: a number right after the day is the hour
 const DAY_WORDS = [
   "сьогодні",
   "завтра",

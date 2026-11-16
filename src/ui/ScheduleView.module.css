@@ -12,7 +12,7 @@
   color: var(--text-3);
 }
 
-/* день: дата слева, события справа; на узком окне — дата сверху */
+/* day: date on the left, events on the right; in a narrow window — date on top */
 .day {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
@@ -129,12 +129,12 @@
   }
 }
 
-/* прошедшее — бледнее: взгляд сразу находит, что дальше */
+/* past is paler: the eye finds what's next right away */
 .past {
   opacity: 0.55;
 }
 
-/* строка: само событие и, когда пора, «Подключиться» рядом (кнопка в кнопке недопустима) */
+/* row: the event itself and, when it's time, "Join" next to it (a button inside a button is not allowed) */
 .row {
   display: flex;
   align-items: center;

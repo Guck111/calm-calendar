@@ -9,9 +9,9 @@ const MAX_RESULTS = 40;
 
 export const queryChanged = createEvent<string>();
 export const searchClosed = createEvent();
-/** перевести фокус в строку поиска (из меню команд) */
+/** move focus to the search input (from the command menu) */
 export const searchFocusRequested = createEvent();
-/** вызывается из строки поиска после паузы в наборе */
+/** called from the search input after a pause in typing */
 export const searchRequested = createEvent();
 
 let lastId = 0;

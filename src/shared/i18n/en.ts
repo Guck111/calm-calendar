@@ -154,14 +154,14 @@ export const en: Dict = {
     ruleChanged: "The repeat has changed, so the edit applies to this and following events.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "Add account",
     signOutTitle: (email: string) => `Sign out of ${email}`,
     expired: "Signed out.",
     signInAgain: "Sign in again",
     confirmSignOut: "Sign out?",
     alsoIn: (list: string) => `Also in: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `Overlaps with: ${list}`,
   },
   meeting: {

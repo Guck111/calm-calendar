@@ -7,8 +7,8 @@ import s from "./ErrorBoundary.module.css";
 type Props = { children: ReactNode; compact?: boolean };
 type State = { failed: boolean };
 
-/** Ошибка при отрисовке окна: вместо белого экрана — короткое объяснение и «Перезапустить окно».
- *  Данные в Google от этого не страдают: всё, что сохранено, уже там */
+/** Error while rendering a window: instead of a white screen — a short explanation and "Restart window".
+ *  Data in Google doesn't suffer from this: everything saved is already there */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { failed: false };
 

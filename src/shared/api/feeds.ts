@@ -1,6 +1,6 @@
-// Загрузка подписок .ics: файл скачивает Rust (fetch_feed), разбирает lib/ics.
-// Разобранный файл держим в памяти 10 минут: виды и виджет просят события часто, а файл меняется редко.
-// Последний скачанный текст лежит в localStorage — без сети подписка показывает его.
+// Loading .ics subscriptions: Rust downloads the file (fetch_feed), lib/ics parses it.
+// The parsed file is kept in memory for 10 minutes: views and the widget ask for events often, and the file changes rarely.
+// The last downloaded text is kept in localStorage — without network the subscription shows it.
 import { t } from "../i18n";
 import { expandIcs, parseIcs, type IcsCalendar } from "../lib/ics";
 import { FEED_ACCOUNT, FEEDS_KEY, parseFeeds, type Feed } from "../lib/feeds";
@@ -11,29 +11,29 @@ import { splitRef } from "./calendar";
 import type { CalendarEvent } from "./types";
 
 const FRESH_MS = 10 * 60_000;
-/** больше этого текст не сохраняем: localStorage на всё приложение около 5 МБ */
+/** don't save text larger than this: localStorage for the whole app is about 5 MB */
 const SAVE_LIMIT = 1_500_000;
 const savedKey = (id: string) => `calm.feedCache.${id}`;
 
 const memory = new Map<string, { at: number; url: string; cal: IcsCalendar }>();
 
-/** кнопка «Обновить»: следующий запрос скачает подписки заново */
+/** "Refresh" button: the next request re-downloads subscriptions */
 export const forgetFeeds = (): void => memory.clear();
 
-/** убрать сохранённое у удалённой подписки */
+/** remove saved data of a deleted subscription */
 export const dropFeedCache = (id: string): void => {
   memory.delete(id);
   try {
     localStorage.removeItem(savedKey(id));
   } catch {
-    // хранилище недоступно — нечего и убирать
+    // storage is unavailable — nothing to remove
   }
 };
 
-/** в файле есть календарь: пустой календарь тоже календарь, а страница сайта — нет */
+/** the file contains a calendar: an empty calendar is still a calendar, but a website page is not */
 export const isCalendarText = (text: string): boolean => /BEGIN:VCALENDAR/i.test(text);
 
-/** Скачать и разобрать файл по ссылке; не календарь — ошибка с понятным текстом */
+/** Download and parse the file by link; not a calendar — an error with a clear text */
 export const downloadFeed = async (url: string): Promise<IcsCalendar> => {
   const text = await fetchFeed(url);
   if (!isCalendarText(text)) throw { kind: "other", message: t.settings.feedNotIcs };
@@ -51,7 +51,7 @@ const loadFeed = async (feed: Feed): Promise<IcsCalendar> => {
     try {
       if (text.length <= SAVE_LIMIT) localStorage.setItem(savedKey(feed.id), text);
     } catch {
-      // места нет — без сети подписки просто не будет видно
+      // no space — without network the subscription just won't be visible
     }
     return cal;
   } catch (e) {
@@ -73,14 +73,14 @@ const feedOf = (calendarId: string): Feed | undefined => {
   return parseFeeds(readJson<unknown>(FEEDS_KEY, [])).find((f) => f.id === googleId);
 };
 
-/** события подписки в промежутке */
+/** subscription events in a range */
 export const listFeedEvents = async (calendarId: string, range: DateRange): Promise<CalendarEvent[]> => {
   const feed = feedOf(calendarId);
   if (!feed) return [];
   return expandIcs(await loadFeed(feed), range, calendarId, FEED_ACCOUNT, t.common.untitled);
 };
 
-/** поиск по подписке: в названии, месте и описании, за тот же срок, что ищет Google */
+/** subscription search: in title, location and description, over the same period Google searches */
 export const searchFeedEvents = async (calendarId: string, query: string, range: DateRange, limit: number): Promise<CalendarEvent[]> => {
   const needle = query.trim().toLocaleLowerCase();
   if (!needle) return [];

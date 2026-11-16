@@ -1,8 +1,8 @@
-// Беларускія радкі інтэрфейсу. Тыя ж ключы, што ў ru.ts, правярае кампілятар.
+// Belarusian UI strings. Same keys as in ru.ts, checked by the compiler.
 import type { Dict } from "./ru";
 import type { Freq } from "../lib/rrule";
 
-/** 1 дзень, 2 дні, 5 дзён */
+/** 1 day, 2 days, 5 days */
 const bePlural = (n: number, [one, few, many]: string[]): string => {
   const d = n % 10;
   const dd = n % 100;
@@ -18,7 +18,7 @@ const beUnits: Record<Freq, string[]> = {
   YEARLY: ["год", "гады", "гадоў"],
 };
 
-/** у першы панядзелак, у другую сераду, у апошнюю нядзелю */
+/** on the first Monday, on the second Wednesday, on the last Sunday */
 const beNth = (n: number, day: number): string => {
   const names = ["нядзелю", "панядзелак", "аўторак", "сераду", "чацвер", "пятніцу", "суботу"];
   const feminine = [true, false, false, true, false, true, true][day];

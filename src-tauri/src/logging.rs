@@ -1,5 +1,5 @@
-// Журнал работы: файл в папке логов приложения (%LOCALAPPDATA%\<id>\logs), чтобы разбирать сбои
-// у пользователей. В журнал не пишем токены, названия и описания событий; email — только в виде «a***@gmail.com».
+// Work log: a file in the app's log folder (%LOCALAPPDATA%\<id>\logs), to investigate failures
+// on users' machines. The log doesn't get tokens, event titles or descriptions; email only as "a***@gmail.com".
 use tauri::plugin::TauriPlugin;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -7,15 +7,15 @@ use tauri_plugin_opener::OpenerExt;
 
 use crate::error::{Error, Result};
 
-/// имя файла журнала без расширения
+/// log file name without extension
 const FILE_NAME: &str = "calm-calendar";
-/// размер одного файла; старые файлы переименовываются с датой, хранится несколько последних
+/// size of one file; old files are renamed with a date, the last few are kept
 const MAX_FILE_SIZE: u128 = 1_000_000;
 const KEEP_FILES: usize = 5;
 
 pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
-    // подробные записи — только из кода приложения и только в отладочной сборке; у библиотек — предупреждения
-    // и ошибки: их отладочные строки бывают с личными данными (keyring пишет email в имени записи)
+    // verbose records — only from the app's code and only in a debug build; libraries get warnings
+    // and errors: their debug lines may contain personal data (keyring writes the email in the entry name)
     let own = if cfg!(debug_assertions) { log::LevelFilter::Debug } else { log::LevelFilter::Info };
     tauri_plugin_log::Builder::new()
         .clear_targets()
@@ -25,7 +25,7 @@ pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
         ])
         .level(log::LevelFilter::Warn)
         .level_for(env!("CARGO_CRATE_NAME"), own)
-        // сообщения окон (log_message) идут с target "ui"
+        // window messages (log_message) come with target "ui"
         .level_for("ui", log::LevelFilter::Info)
         .max_file_size(MAX_FILE_SIZE)
         .rotation_strategy(RotationStrategy::KeepSome(KEEP_FILES))
@@ -33,7 +33,7 @@ pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
         .build()
 }
 
-/// Паника в релизной сборке закрывает приложение (panic = "abort"); до этого успеваем записать её в журнал
+/// A panic in a release build closes the app (panic = "abort"); before that we manage to write it to the log
 pub fn install_panic_hook() {
     let default = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
@@ -42,7 +42,7 @@ pub fn install_panic_hook() {
     }));
 }
 
-/// «a***@gmail.com»: по журналу видно, какой из аккаунтов, но не сам адрес
+/// "a***@gmail.com": the log shows which account it is, but not the address itself
 pub fn mask(email: &str) -> String {
     match email.split_once('@') {
         Some((name, domain)) => {
@@ -54,7 +54,7 @@ pub fn mask(email: &str) -> String {
     }
 }
 
-/// Путь запроса к Google без id календарей и событий: «calendars/…/events/…/instances»
+/// Google request path without calendar and event ids: "calendars/…/events/…/instances"
 pub fn path_shape(path: &str) -> String {
     let mut out = Vec::new();
     let mut hide_next = false;
@@ -70,9 +70,9 @@ pub fn path_shape(path: &str) -> String {
     out.join("/")
 }
 
-/// Сообщение из интерфейса: окна сами пишут в журнал свои ошибки
+/// Message from the UI: windows write their own errors to the log
 pub fn from_ui(level: &str, window: &str, message: &str) {
-    // строка из интерфейса может быть длинной (стек вызовов): ограничиваем
+    // a string from the UI can be long (call stack): limit it
     let text: String = message.chars().take(4000).collect();
     match level {
         "error" => log::error!(target: "ui", "[{window}] {text}"),
@@ -81,7 +81,7 @@ pub fn from_ui(level: &str, window: &str, message: &str) {
     }
 }
 
-/// Открыть папку с журналом в Проводнике
+/// Open the log folder in Explorer
 pub fn open_folder(app: &AppHandle) -> Result<()> {
     let dir = app.path().app_log_dir().map_err(|e| Error::Other(e.to_string()))?;
     std::fs::create_dir_all(&dir)?;
@@ -90,10 +90,10 @@ pub fn open_folder(app: &AppHandle) -> Result<()> {
         .map_err(|e| Error::Other(format!("Could not open the logs folder: {e}")))
 }
 
-/// Запись об ошибке команды: вид ошибки и текст без личных данных
+/// Command error record: the error kind and text without personal data
 pub fn command_failed(what: &str, e: &Error) {
     match e {
-        // вход истёк — обычное дело, интерфейс сам предложит войти снова; отмену входа нажал человек
+        // sign-in expired is normal, the UI will offer to sign in again; cancelling sign-in was the person's choice
         Error::NotSignedIn | Error::Cancelled => log::info!("{what}: {e}"),
         _ => log::warn!("{what}: {} — {e}", e.kind()),
     }

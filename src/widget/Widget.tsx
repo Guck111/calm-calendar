@@ -66,7 +66,7 @@ const whenLabel = (e: CalendarEvent, today: Date): string => {
   return e.allDay || e.start < today ? dayLabel : `${dayLabel} ${formatTime(e.start)}`;
 };
 
-/** таймеры, обновление по событиям других окон и подгонка высоты окна под содержимое */
+/** timers, refresh on events from other windows and fitting the window height to the content */
 const useWidgetEffects = (cardRef: RefObject<HTMLDivElement | null>) => {
   const [start, tick, refresh, onAuth] = useUnit([widgetStarted, minuteTicked, refreshRequested, authChanged]);
 
@@ -114,7 +114,7 @@ const useWidgetEffects = (cardRef: RefObject<HTMLDivElement | null>) => {
   }, [cardRef]);
 };
 
-/** перетаскивание окна за любое место карточки, кроме кнопок */
+/** dragging the window by any part of the card except buttons */
 const startDrag = async (e: MouseEvent) => {
   if (e.button !== 0 || !inTauri || (e.target as HTMLElement).closest("button, input")) return;
   const { getCurrentWindow } = await import("@tauri-apps/api/window");
@@ -229,7 +229,7 @@ export const Widget = () => {
       ) : (
         <ul className={s.events}>
           {upcoming.map((e) => {
-            // за 15 минут до встречи и пока она идёт — кнопка «Подключиться» прямо в строке
+            // 15 minutes before a meeting and while it's in progress — the "Join" button right in the row
             const join = e.meeting && isJoinable(e.start, e.end, now) ? e.meeting : undefined;
             return (
               <li key={e.key}>

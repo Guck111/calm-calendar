@@ -1,4 +1,4 @@
-// Копия события: форма нового события с полями исходного
+// Event copy: new event form with the original's fields
 import { allSettled, fork } from "effector";
 import { describe, expect, it } from "vitest";
 import type { CalendarEvent } from "../shared/api/types";
@@ -29,8 +29,8 @@ const event = (over: Record<string, unknown> = {}, calendarId = MINE): CalendarE
     },
   ) as CalendarEvent;
 
-describe("копия события", () => {
-  it("новое событие с теми же полями, без id, ответов гостей и старой видеовстречи", () => {
+describe("event copy", () => {
+  it("new event with the same fields, without id, guest responses and the old video meeting", () => {
     const d = duplicateDraft(event(), [MINE]);
     expect(d.id).toBeUndefined();
     expect(d.originalCalendarId).toBeUndefined();
@@ -47,23 +47,23 @@ describe("копия события", () => {
       recurrence: [],
       addMeet: false,
     });
-    // сам аккаунт станет организатором копии; ответы других гостей — заново
+    // the account itself becomes the organizer of the copy; other guests' responses start over
     expect(d.guests).toEqual([{ email: "anna@example.com", displayName: "Анна" }]);
   });
 
-  it("повторение серии копируется как одно событие", () => {
+  it("an occurrence of a series is copied as a single event", () => {
     const d = duplicateDraft(event({ recurringEventId: "s1", originalStartTime: { dateTime: "2026-11-11T15:00:00Z" } }), [MINE]);
     expect(d.recurringEventId).toBeUndefined();
     expect(d.originalStart).toBeUndefined();
     expect(d.recurrence).toEqual([]);
   });
 
-  it("событие из календаря только для чтения копируется в первый свой календарь", () => {
+  it("an event from a read-only calendar is copied into the first own calendar", () => {
     const d = duplicateDraft(event({}, HOLIDAYS), [MINE]);
     expect(d.calendarId).toBe(MINE);
   });
 
-  it("из карточки: «Создать копию» открывает форму нового события", async () => {
+  it("from the card: 'Duplicate' opens the new event form", async () => {
     const scope = fork();
     await allSettled(eventOpened, { scope, params: event() });
     await allSettled(duplicateClicked, { scope });

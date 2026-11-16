@@ -10,8 +10,8 @@ type Props = {
   "aria-label"?: string;
 };
 
-/** Список всех поясов по смещению. Пояс системы стоит первым; пояс, которого нет в списке Intl
- *  (бывает у старых событий Google), добавляется, чтобы значение не терялось */
+/** List of all time zones by offset. The system time zone comes first; a time zone missing from the Intl list
+ *  (happens with old Google events) is added so the value isn't lost */
 export const TimeZoneSelect = ({ value, onChange, className, disabled, "aria-label": label }: Props) => {
   const options = useMemo(() => {
     const now = new Date();

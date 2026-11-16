@@ -25,7 +25,7 @@
   line-height: 1.45;
 }
 
-/* виджет и маленькие окна: только заголовок и кнопка */
+/* widget and small windows: only the title and the button */
 .compact {
   gap: 8px;
   padding: 12px;

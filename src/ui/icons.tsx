@@ -1,4 +1,4 @@
-// Небольшой набор линейных иконок, нарисованных вручную
+// A small set of hand-drawn line icons
 type P = { size?: number };
 
 const base = (size: number) => ({
@@ -13,7 +13,7 @@ const base = (size: number) => ({
   "aria-hidden": true,
 });
 
-// стрелки «назад/вперёд» справа налево зеркалятся (global.css, data-rtl-flip)
+// "back/forward" arrows are mirrored in right-to-left (global.css, data-rtl-flip)
 export const ChevronLeft = ({ size = 16 }: P) => (
   <svg {...base(size)} data-rtl-flip="">
     <path d="M10 3.5 5.5 8l4.5 4.5" />
@@ -77,7 +77,7 @@ export const Repeat = ({ size = 12 }: P) => (
   </svg>
 );
 
-/** треугольник с восклицательным знаком: пересечение событий */
+/** triangle with an exclamation mark: event overlap */
 export const Warning = ({ size = 12 }: P) => (
   <svg {...base(size)}>
     <path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11.3v.2" />
@@ -112,7 +112,7 @@ export const Gear = ({ size = 16 }: P) => (
   </svg>
 );
 
-/** «Свободное время»: часы */
+/** "Free time": a clock */
 export const Clock = ({ size = 16 }: P) => (
   <svg {...base(size)}>
     <circle cx="8" cy="8" r="5.75" />

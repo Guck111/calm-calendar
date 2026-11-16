@@ -27,7 +27,7 @@ import s from "./EventEditor.module.css";
 
 const clamp = (value: string, max: number) => Math.min(max, Math.max(1, Math.round(Number(value)) || 1));
 
-/** Своё правило: шаг, дни недели, вариант для месяца и окончание */
+/** Custom rule: interval, weekdays, monthly variant and end */
 const CustomRule = ({ rule, start, onChange }: { rule: Rule; start: Date; onChange: (r: Rule) => void }) => {
   const r = t.repeat;
   const patch = (p: Partial<Rule>) => onChange({ ...rule, ...p });
@@ -136,12 +136,12 @@ const CustomRule = ({ rule, start, onChange }: { rule: Rule; start: Date; onChan
 
 type Props = {
   draft: EventDraft;
-  /** правило серии ещё грузится */
+  /** the series rule is still loading */
   loading: boolean;
   onChange: (recurrence: string[]) => void;
 };
 
-/** Поле «Повтор»: готовые варианты от даты начала и своё правило */
+/** "Repeat" field: presets from the start date and a custom rule */
 export const RepeatField = ({ draft, loading, onChange }: Props) => {
   const [customOpen, setCustomOpen] = useState(false);
   const r = t.repeat;

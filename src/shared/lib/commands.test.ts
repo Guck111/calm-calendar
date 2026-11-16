@@ -1,4 +1,4 @@
-// Меню команд (Ctrl+K): что предложить по введённому тексту. Тесты на русском — язык по умолчанию в тестах
+// Command menu (Ctrl+K): what to offer for the typed text. Tests are in Russian — the default language in tests
 import { describe, expect, it } from "vitest";
 import { buildCommands, commandLabel } from "./commands";
 import { t } from "../i18n";
@@ -6,35 +6,35 @@ import { t } from "../i18n";
 const now = new Date(2026, 10, 11, 9, 50);
 const kinds = (text: string) => buildCommands(text, now).map((c) => (c.kind === "view" ? `view:${c.view}` : c.kind));
 
-describe("меню команд", () => {
-  it("пустая строка: создать, сегодня, четыре вида, сочетания клавиш и «Что умеет»", () => {
+describe("command menu", () => {
+  it("empty input: create, today, four views, keyboard shortcuts and 'What it can do'", () => {
     expect(kinds("")).toEqual(["new", "today", "view:day", "view:week", "view:month", "view:agenda", "shortcuts", "welcome"]);
     expect(commandLabel({ kind: "welcome" })).toBe(t.welcome.command);
   });
 
-  it("дата словами — сначала переход к ней", () => {
+  it("a date in words — first the jump to it", () => {
     const [first] = buildCommands("завтра", now);
     expect(first).toEqual({ kind: "date", date: new Date(2026, 10, 12) });
     expect(buildCommands("20 ноября", now)[0]).toEqual({ kind: "date", date: new Date(2026, 10, 20) });
     expect(buildCommands("пт", now)[0]).toEqual({ kind: "date", date: new Date(2026, 10, 13) });
   });
 
-  it("обычный текст: создать событие и найти", () => {
+  it("plain text: create an event and search", () => {
     expect(kinds("стоматолог")).toEqual(["create", "search"]);
     expect(buildCommands("стоматолог", now)[0]).toEqual({ kind: "create", text: "стоматолог" });
   });
 
-  it("часть названия команды находит её, в том числе вместе с «создать» и «найти»", () => {
+  it("part of a command name finds it, including together with 'create' and 'search'", () => {
     expect(kinds("меся")).toEqual(["create", "search", "view:month"]);
     expect(kinds("СЕГОД")).toContain("today");
   });
 
-  it("фраза быстрого ввода с датой — и переход, и создание", () => {
+  it("a quick add phrase with a date — both jump and create", () => {
     expect(kinds("пт 13:00 обед с Олей")).toEqual(["create", "search"]);
     expect(kinds("пт")).toEqual(["date", "create", "search"]);
   });
 
-  it("подписи команд — на языке интерфейса", () => {
+  it("command labels are in the UI language", () => {
     expect(commandLabel({ kind: "view", view: "month" })).toBe(t.toolbar.views.month);
     expect(commandLabel({ kind: "search", text: "йога" })).toBe(t.commands.search("йога"));
     expect(commandLabel({ kind: "create", text: "йога" })).toBe(t.commands.create("йога"));
@@ -42,12 +42,12 @@ describe("меню команд", () => {
   });
 });
 
-describe("меню команд: выбранное событие", () => {
+describe("command menu: selected event", () => {
   const timed = { title: "Стоматолог", allDay: false, hasMeet: false };
   const eventKinds = (text: string, subject = timed) =>
     buildCommands(text, now, subject).map((c) => (c.kind === "view" ? `view:${c.view}` : c.kind === "color" ? `color:${c.colorId}` : c.kind));
 
-  it("пустая строка: сначала действия с событием, потом обычные команды", () => {
+  it("empty input: first actions on the event, then regular commands", () => {
     expect(eventKinds("")).toEqual([
       "tomorrow",
       "later",
@@ -63,19 +63,19 @@ describe("меню команд: выбранное событие", () => {
     ]);
   });
 
-  it("на весь день — без «на час позже»; с видеовстречей — без «добавить Meet»", () => {
+  it("all-day — without 'an hour later'; with a video meeting — without 'add Meet'", () => {
     expect(eventKinds("", { ...timed, allDay: true })).not.toContain("later");
     expect(eventKinds("", { ...timed, hasMeet: true })).not.toContain("meet");
   });
 
-  it("цвета находятся по названию, «цвет календаря» — тоже", () => {
+  it("colors are found by name, 'calendar color' too", () => {
     expect(eventKinds("томат")).toContain("color:11");
     expect(eventKinds("цвет")).toEqual(expect.arrayContaining(["color:", "color:1", "color:11"]));
-    // без выбранного события цветов нет
+    // no colors without a selected event
     expect(kinds("томат")).not.toContain("color");
   });
 
-  it("подписи действий", () => {
+  it("action labels", () => {
     expect(commandLabel({ kind: "tomorrow" })).toBe(t.commands.moveTomorrow);
     expect(commandLabel({ kind: "later" })).toBe(t.commands.hourLater);
     expect(commandLabel({ kind: "meet" })).toBe(t.editor.addMeet);
@@ -84,8 +84,8 @@ describe("меню команд: выбранное событие", () => {
   });
 });
 
-describe("меню команд: тема и свободное время", () => {
-  it("находятся по названию, но не загромождают пустую строку", () => {
+describe("command menu: theme and free time", () => {
+  it("found by name, but don't clutter the empty input", () => {
     expect(kinds("")).not.toContain("theme");
     expect(kinds("")).not.toContain("free");
     const dark = buildCommands(t.settings.themes.dark, now);

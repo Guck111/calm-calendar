@@ -65,7 +65,7 @@ describe("reading with a fallback", () => {
     googleRequest.mockResolvedValueOnce({ items: ["mine"] });
     await readWithCache("me@example.com", "/calendar/v3/users/me/calendarList", {});
     googleRequest.mockRejectedValueOnce(network);
-    // у второго аккаунта тот же путь, но сохранённого ответа нет: чужие календари не показываем
+    // the second account has the same path but no saved response: other accounts' calendars are not shown
     await expect(readWithCache("work@example.com", "/calendar/v3/users/me/calendarList", {})).rejects.toMatchObject({
       kind: "network",
     });

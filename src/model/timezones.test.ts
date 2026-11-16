@@ -1,4 +1,4 @@
-// Пояс события: читается из Google, сохраняется при правке, перетаскивании и правке серии
+// Event time zone: read from Google, kept on edit, drag and series edit
 import { allSettled, fork } from "effector";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEvent, EventDraft } from "../shared/api/types";
@@ -22,7 +22,7 @@ beforeEach(() => {
 const NY = "America/New_York";
 const TOKYO = "Asia/Tokyo";
 
-/** созвон в 9:00 по Нью-Йорку, 4 ноября 2026 (UTC−5) */
+/** a call at 9:00 New York time, November 4, 2026 (UTC−5) */
 const nyCall = (): CalendarEvent =>
   toCalendarEvent("c", {
     id: "e1",
@@ -34,8 +34,8 @@ const nyCall = (): CalendarEvent =>
 const patches = () =>
   googleRequest.mock.calls.filter((c) => c[1] === "PATCH").map((c) => c[4] as ReturnType<typeof draftToBody>);
 
-describe("пояс события из Google", () => {
-  it("берётся из start.timeZone, без него — пояс календаря; у событий на весь день его нет", () => {
+describe("event time zone from Google", () => {
+  it("taken from start.timeZone, without it — the calendar's time zone; all-day events have none", () => {
     expect(nyCall().timeZone).toBe(NY);
     const plain = toCalendarEvent("c", { id: "2", start: { dateTime: "2026-11-04T09:00:00Z" } }, TOKYO);
     expect(plain?.timeZone).toBe(TOKYO);
@@ -43,7 +43,7 @@ describe("пояс события из Google", () => {
     expect(allDay?.timeZone).toBeUndefined();
   });
 
-  it("свой пояс конца запоминается, только если он другой", () => {
+  it("a separate end time zone is remembered only if it differs", () => {
     expect(nyCall().endTimeZone).toBeUndefined();
     const flight = toCalendarEvent("c", {
       id: "f",
@@ -53,29 +53,29 @@ describe("пояс события из Google", () => {
     expect(flight?.endTimeZone).toBe(TOKYO);
   });
 
-  it("в форме время по часам пояса события", () => {
+  it("in the form, time follows the event's time zone clock", () => {
     const d = fromEvent(nyCall());
     expect([d.startDate, d.startTime, d.endTime, d.timeZone]).toEqual(["2026-11-04", "09:00", "10:00", NY]);
   });
 
-  it("сохранение без правок не меняет ни момент, ни пояс", () => {
+  it("saving without edits changes neither the instant nor the time zone", () => {
     const body = draftToBody(fromEvent(nyCall()));
     expect(body.start).toMatchObject({ dateTime: "2026-11-04T14:00:00.000Z", timeZone: NY });
     expect(body.end).toMatchObject({ dateTime: "2026-11-04T15:00:00.000Z", timeZone: NY });
   });
 
-  it("правка времени в форме — по часам пояса события", () => {
+  it("editing the time in the form follows the event's time zone clock", () => {
     const d = applyChange(fromEvent(nyCall()), { startTime: "11:00" });
     expect(draftToBody(d).start).toMatchObject({ dateTime: "2026-11-04T16:00:00.000Z", timeZone: NY });
   });
 
-  it("смена пояса оставляет часы в форме и меняет момент", () => {
+  it("changing the time zone keeps the clock in the form and changes the instant", () => {
     const d = applyChange(fromEvent(nyCall()), { timeZone: TOKYO });
     expect([d.startTime, d.endTime]).toEqual(["09:00", "10:00"]);
     expect(draftToBody(d).start).toMatchObject({ dateTime: "2026-11-04T00:00:00.000Z", timeZone: TOKYO });
   });
 
-  it("пояс конца сохраняется, пока пояс в форме не меняли", () => {
+  it("the end time zone is kept as long as the time zone in the form wasn't changed", () => {
     const flight = toCalendarEvent("c", {
       id: "f",
       start: { dateTime: "2026-11-04T09:00:00-05:00", timeZone: NY },
@@ -87,7 +87,7 @@ describe("пояс события из Google", () => {
     expect(draftToBody(changed).end).toMatchObject({ timeZone: "Europe/London" });
   });
 
-  it("новое событие — в поясе системы", () => {
+  it("new event — in the system time zone", () => {
     const d: EventDraft = {
       calendarId: "c",
       title: "",
@@ -103,7 +103,7 @@ describe("пояс события из Google", () => {
     expect(draftToBody(d).start).toMatchObject({ timeZone: localTimeZone() });
   });
 
-  it("перетаскивание сохраняет пояс события", async () => {
+  it("dragging keeps the event's time zone", async () => {
     const e = nyCall();
     const hour = 3_600_000;
     await allSettled(moveFx, {
@@ -118,7 +118,7 @@ describe("пояс события из Google", () => {
     ]);
   });
 
-  it("правка повторения «только это» сохраняет пояс", async () => {
+  it("editing an occurrence 'only this' keeps the time zone", async () => {
     const e = toCalendarEvent("c", {
       id: "s_1",
       recurringEventId: "s",
@@ -131,8 +131,8 @@ describe("пояс события из Google", () => {
   });
 });
 
-describe("правило повтора в поясе события", () => {
-  // по средам в 7:00 по Токио — в Европе и в UTC это ещё вторник
+describe("recurrence rule in the event's time zone", () => {
+  // Wednesdays at 7:00 Tokyo time — in Europe and in UTC it is still Tuesday
   const series = {
     id: "s",
     recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=WE"],
@@ -140,7 +140,7 @@ describe("правило повтора в поясе события", () => {
     end: { dateTime: "2026-11-04T08:00:00+09:00", timeZone: TOKYO },
   };
 
-  it("«это и следующие» с переносом на четверг: день недели по часам события", () => {
+  it("'this and following' moved to Thursday: weekday follows the event's clock", () => {
     const occurrence = toCalendarEvent("c", {
       id: "s_2",
       recurringEventId: "s",
@@ -152,7 +152,7 @@ describe("правило повтора в поясе события", () => {
     expect(followingRecurrence(d, series, 0)).toEqual(["RRULE:FREQ=WEEKLY;BYDAY=TH"]);
   });
 
-  it("UNTIL — конец дня по часам пояса события", () => {
+  it("UNTIL — end of day in the event's time zone", () => {
     const rule = { freq: "DAILY" as const, interval: 1, days: [], end: { kind: "until" as const, date: "2026-11-20" } };
     const start = new Date(2026, 10, 4, 18);
     const lines = buildRecurrence(rule, [], start, false, "America/Los_Angeles");

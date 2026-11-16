@@ -32,13 +32,13 @@ export const Search = () => {
   ]);
   const input = useRef<HTMLInputElement>(null);
 
-  // поиск запускается после паузы в наборе
+  // search runs after a pause in typing
   useEffect(() => {
     const t = window.setTimeout(() => request(), DEBOUNCE_MS);
     return () => window.clearTimeout(t);
   }, [query, request]);
 
-  // Ctrl+F или / — к строке поиска
+  // Ctrl+F or / — to the search input
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);

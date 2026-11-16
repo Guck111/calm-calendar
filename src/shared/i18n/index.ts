@@ -1,7 +1,7 @@
-// Язык интерфейса. Выбор хранится в localStorage (общий для главного окна и виджета)
-// и передаётся в Rust для меню трея и страницы входа в браузере.
-// Язык выбирается один раз при загрузке страницы: после смены настройки окна перезагружаются.
-// Новый язык: словарь в ./xx.ts, строка в LANGUAGES ниже, разбор строки в lib/quick-xx.ts.
+// UI language. The choice is stored in localStorage (shared by the main window and widget)
+// and passed to Rust for the tray menu and the sign-in page in the browser.
+// The language is chosen once on page load: after the setting changes, windows reload.
+// New language: dictionary in ./xx.ts, a line in LANGUAGES below, phrase parsing in lib/quick-xx.ts.
 import { broadcast, inTauri, subscribe } from "../api/bus";
 import { readJson, writeJson } from "../lib/storage";
 import { en } from "./en";
@@ -19,10 +19,10 @@ import { fr } from "./fr";
 import { es } from "./es";
 
 type LangInfo = {
-  /** название на самом языке — так его ищут в списке */
+  /** name in the language itself — that's how people look for it in the list */
   name: string;
   dict: Dict;
-  /** регион для дат, если в системе нет этого языка с регионом */
+  /** region for dates if the system doesn't have this language with a region */
   region: string;
   rtl?: boolean;
 };
@@ -48,7 +48,7 @@ export type LangSetting = "system" | Lang;
 
 const info = (l: Lang): LangInfo => LANGUAGES[l];
 
-/** Языки в порядке списка в настройках */
+/** Languages in the order of the settings list */
 export const LANGS = Object.keys(LANGUAGES) as Lang[];
 export const langName = (l: Lang): string => info(l).name;
 export const dictOf = (l: Lang): Dict => info(l).dict;
@@ -70,12 +70,12 @@ const systemLanguages = (): readonly string[] => {
 
 const base = (tag: string): string => tag.toLowerCase().split(/[-_]/)[0];
 
-/** Первый из языков системы, на который есть перевод; иначе английский */
+/** The first system language that has a translation; otherwise English */
 export const systemLang = (): Lang => systemLanguages().map(base).find(isLang) ?? "en";
 
 const resolve = (setting: LangSetting): Lang => (setting === "system" ? systemLang() : setting);
 
-/** События в Google — по григорианскому календарю, даже если регион по умолчанию считает иначе (ar-SA) */
+/** Events in Google use the Gregorian calendar, even if the region's default is different (ar-SA) */
 const gregorian = (tag: string): string => {
   try {
     return new Intl.Locale(tag, { calendar: "gregory" }).toString();
@@ -84,19 +84,19 @@ const gregorian = (tag: string): string => {
   }
 };
 
-/** Для дат берём регион системы, если в ней есть этот язык (en-US — 12 часов и неделя с воскресенья,
- *  pt-PT — европейский португальский), иначе регион по умолчанию: для английского это британский
- *  вариант с 24 часами и понедельником. */
+/** For dates use the system region if it has this language (en-US — 12-hour clock and week from Sunday,
+ *  pt-PT — European Portuguese), otherwise the default region: for English it's the British
+ *  variant with 24 hours and Monday. */
 const localeFor = (l: Lang): string => gregorian(systemLanguages().find((x) => base(x) === l) ?? info(l).region);
 
 export let lang: Lang = "ru";
 export let locale = "ru-RU";
 export let t: Dict = ru;
 
-/** Письмо справа налево (арабский) */
+/** Right-to-left script (Arabic) */
 export const isRtl = (l: Lang = lang): boolean => info(l).rtl === true;
 
-/** regionLocale — только для тестов: регион без оглядки на систему */
+/** regionLocale — tests only: region regardless of the system */
 export const setLang = (l: Lang, regionLocale?: string): void => {
   lang = l;
   locale = regionLocale ?? localeFor(l);
@@ -107,17 +107,17 @@ export const setLang = (l: Lang, regionLocale?: string): void => {
   }
 };
 
-// тесты пишутся на русских строках; в приложении — по настройке или языку системы
+// tests are written against Russian strings; in the app — by setting or system language
 setLang(import.meta.env.MODE === "test" ? "ru" : resolve(readLangSetting()));
 
-/** Сообщить Rust-части язык: меню трея и страница входа в браузере */
+/** Tell the Rust side the language: tray menu and sign-in page in the browser */
 export const syncLangToRust = async (): Promise<void> => {
   if (!inTauri) return;
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("set_language", { language: lang }).catch(() => {});
 };
 
-/** Смена языка: запоминаем, сообщаем другому окну и перезагружаемся */
+/** Language change: remember it, tell the other window and reload */
 export const saveLangSetting = (setting: LangSetting): void => {
   writeJson(KEY, setting);
   setLang(resolve(setting));
@@ -127,7 +127,7 @@ export const saveLangSetting = (setting: LangSetting): void => {
   });
 };
 
-/** Язык сменили в другом окне — перезагружаемся с новым */
+/** The language was changed in another window — reload with the new one */
 export const followLang = (): (() => void) => {
   const reloadIfChanged = () => resolve(readLangSetting()) !== lang && window.location.reload();
   const onStorage = (e: StorageEvent) => e.key === KEY && reloadIfChanged();
@@ -139,7 +139,7 @@ export const followLang = (): (() => void) => {
   };
 };
 
-/** Первый день недели по региону: 1 — понедельник, 0 — воскресенье, 6 — суббота */
+/** First day of week by region: 1 — Monday, 0 — Sunday, 6 — Saturday */
 export const weekStart = (): number => {
   try {
     const l = new Intl.Locale(locale) as Intl.Locale & {
@@ -149,12 +149,12 @@ export const weekStart = (): number => {
     const info = l.getWeekInfo?.() ?? l.weekInfo;
     if (info) return info.firstDay % 7;
   } catch {
-    // старый движок без weekInfo
+    // old engine without weekInfo
   }
   return 1;
 };
 
-/** 12-часовой формат времени в этом регионе (en-US) */
+/** 12-hour time format in this region (en-US) */
 export const uses12h = (): boolean => {
   const cycle = new Intl.DateTimeFormat(locale, { hour: "numeric" }).resolvedOptions().hourCycle;
   return cycle === "h11" || cycle === "h12";

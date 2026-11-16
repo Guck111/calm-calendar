@@ -1,5 +1,5 @@
-// Клавиши на выбранном блоке события: Enter — карточка, E — правка, Ctrl+D — копия, Delete — удалить.
-// Какой блок выбран, знает DOM (фокус); сюда приходит ключ события и действие.
+// Keys on a selected event block: Enter — card, E — edit, Ctrl+D — duplicate, Delete — delete.
+// The DOM (focus) knows which block is selected; the event key and the action arrive here.
 import { createEvent, sample } from "effector";
 import type { CalendarEvent } from "../shared/api/types";
 import { $events } from "./events";
@@ -16,8 +16,8 @@ const found = sample({
   filter: (events, { key }) => events.some((e) => e.key === key),
 });
 
-// сначала карточка этого события: правка, копия и удаление работают с открытым событием
-// (sample с target вернул бы сам eventOpened, и действия срабатывали бы на любой клик по событию)
+// first the card of this event: edit, duplicate and delete work with the open event
+// (sample with target would return eventOpened itself, and the actions would fire on any click on an event)
 sample({ clock: found, fn: ({ event }) => event as CalendarEvent, target: eventOpened });
 
 sample({ clock: found, filter: ({ action }) => action === "edit", target: editClicked });

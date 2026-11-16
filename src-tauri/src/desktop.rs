@@ -1,5 +1,5 @@
-//! Окна, значок в трее и автозапуск.
-//! Главное окно при закрытии прячется, приложение продолжает жить в трее и в виджете.
+//! Windows, tray icon and autostart.
+//! The main window hides on close, the app keeps living in the tray and in the widget.
 
 use crate::autostart;
 use crate::config::{self, WidgetSettings};
@@ -13,15 +13,15 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 
 pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
-/// заметное напоминание о начале события
+/// prominent reminder of an event start
 pub const ALERT: &str = "alert";
-/// список дел на сегодня и завтра по клику на значок в трее
+/// agenda for today and tomorrow on a click on the tray icon
 pub const AGENDA: &str = "agenda";
-/// размер списка в логических пикселях и отступ от угла рабочей области
+/// agenda size in logical pixels and the margin from the work area corner
 const AGENDA_SIZE: (f64, f64) = (340.0, 440.0);
 const AGENDA_MARGIN: f64 = 12.0;
 const TRAY: &str = "main";
-/// с этим флагом приложение запускается при входе в Windows: без главного окна
+/// with this flag the app starts at Windows sign-in: without the main window
 pub const HIDDEN_ARG: &str = "--hidden";
 
 #[derive(Clone, Serialize)]
@@ -33,7 +33,7 @@ fn window<R: Runtime>(app: &AppHandle<R>, label: &str) -> Option<WebviewWindow<R
     app.get_webview_window(label)
 }
 
-/// Показывает главное окно; если передана дата, открывает этот день
+/// Shows the main window; if a date is passed, opens that day
 pub fn show_main(app: &AppHandle, date: Option<String>) {
     if let Some(w) = window(app, MAIN) {
         let _ = w.unminimize();
@@ -52,7 +52,7 @@ pub fn apply_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
-/// Виджет и автозапуск — для карточки «Что ещё умеет» и настроек в окне
+/// Widget and autostart — for the "What else it can do" card and the settings window
 #[derive(Serialize)]
 pub struct DesktopState {
     pub widget: bool,
@@ -73,7 +73,7 @@ fn tray_items(app: &AppHandle) -> Option<CheckItems> {
     app.state::<TrayItems>().0.lock().ok().and_then(|i| i.clone())
 }
 
-/// Показать или скрыть виджет, держать ли поверх окон: из интерфейса; галочки в меню трея следуют
+/// Show or hide the widget, keep it on top or not: from the UI; the tray menu checkboxes follow
 pub fn set_widget(app: &AppHandle, settings: WidgetSettings) {
     config::save_widget(app, settings);
     apply_widget(app, settings);
@@ -83,8 +83,8 @@ pub fn set_widget(app: &AppHandle, settings: WidgetSettings) {
     }
 }
 
-/// Включает или выключает автозапуск; возвращает, что вышло на деле (его можно запретить
-/// в диспетчере задач). Галочка в меню трея — по факту
+/// Turns autostart on or off; returns what actually happened (it can be disabled
+/// in Task Manager). The tray menu checkbox reflects the actual state
 pub fn set_launch(app: &AppHandle, want: bool) -> bool {
     let actual = autostart::set_enabled(app, want);
     if let Some(items) = tray_items(app) {
@@ -93,10 +93,10 @@ pub fn set_launch(app: &AppHandle, want: bool) -> bool {
     actual
 }
 
-/// Стекло: размытие того, что под окном, средствами Windows.
-/// Главное окно — системный Acrylic (гаснет без фокуса, интерфейс подставляет непрозрачный фон).
-/// Виджет почти всегда без фокуса, поэтому ему нужен «старый» Acrylic через accent policy:
-/// он не выключается у неактивного окна. Эффект Blur в новых сборках Windows 11 даёт чёрный фон.
+/// Glass: blur of what is under the window, done by Windows.
+/// Main window — system Acrylic (fades without focus, the UI substitutes an opaque background).
+/// The widget is almost always unfocused, so it needs the "old" Acrylic via the accent policy:
+/// it doesn't turn off for an inactive window. The Blur effect gives a black background on new Windows 11 builds.
 pub fn apply_glass(app: &AppHandle, enabled: bool) {
     if let Some(w) = window(app, MAIN) {
         let _ = if enabled {
@@ -117,8 +117,8 @@ pub fn apply_glass(app: &AppHandle, enabled: bool) {
     let _ = app.emit("glass-changed", enabled);
 }
 
-/// Включает или выключает Acrylic через недокументированную, но давно стабильную
-/// функцию user32 SetWindowCompositionAttribute (её же используют window-vibrancy и Rainmeter-скины)
+/// Turns Acrylic on or off via the undocumented but long-stable
+/// user32 function SetWindowCompositionAttribute (also used by window-vibrancy and Rainmeter skins)
 #[cfg(windows)]
 fn set_accent_acrylic<R: Runtime>(w: &WebviewWindow<R>, enabled: bool) {
     use std::ffi::c_void;
@@ -142,8 +142,8 @@ fn set_accent_acrylic<R: Runtime>(w: &WebviewWindow<R>, enabled: bool) {
     const WCA_ACCENT_POLICY: u32 = 19;
     const ACCENT_DISABLED: u32 = 0;
     const ACCENT_ENABLE_ACRYLICBLURBEHIND: u32 = 4;
-    // цвет в формате 0xAABBGGRR; почти прозрачный тон, основной цвет задаёт CSS.
-    // Совсем нулевая прозрачность на части сборок Windows ломает эффект
+    // color in 0xAABBGGRR format; an almost transparent tint, the main color is set by CSS.
+    // Fully zero opacity breaks the effect on some Windows builds
     const TINT: u32 = 0x10_00_00_00;
 
     let Ok(hwnd) = w.hwnd() else { return };
@@ -175,7 +175,7 @@ fn set_accent_acrylic<R: Runtime>(w: &WebviewWindow<R>, enabled: bool) {
 #[cfg(not(windows))]
 fn set_accent_acrylic<R: Runtime>(_w: &WebviewWindow<R>, _enabled: bool) {}
 
-/// Окно без рамки в Windows 11 по умолчанию квадратное: просим DWM скруглить углы и убрать рамку
+/// A frameless window in Windows 11 is square by default: ask DWM to round the corners and remove the border
 #[cfg(windows)]
 pub fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
     use windows_sys::Win32::Graphics::Dwm::{
@@ -185,7 +185,7 @@ pub fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
     let Ok(hwnd) = w.hwnd() else { return };
     let corner = DWMWCP_ROUND;
     let border = DWMWA_COLOR_NONE;
-    // на Windows 10 атрибутов нет — вызовы просто вернут ошибку
+    // on Windows 10 the attributes don't exist — the calls just return an error
     unsafe {
         DwmSetWindowAttribute(
             hwnd.0 as _,
@@ -205,7 +205,7 @@ pub fn round_corners<R: Runtime>(w: &WebviewWindow<R>) {
 #[cfg(not(windows))]
 pub fn round_corners<R: Runtime>(_w: &WebviewWindow<R>) {}
 
-/// Показывает окно заметного напоминания поверх всех окон или обновляет уже открытое
+/// Shows the prominent reminder window on top of all windows or updates the already open one
 pub fn show_alert(app: &AppHandle) {
     if let Some(w) = window(app, ALERT) {
         let _ = app.emit_to(ALERT, "alerts-changed", ());
@@ -215,7 +215,7 @@ pub fn show_alert(app: &AppHandle) {
     }
     let built = tauri::WebviewWindowBuilder::new(app, ALERT, tauri::WebviewUrl::App("index.html?window=alert".into()))
         .title("Calm Calendar")
-        // высоту окно подгоняет под содержимое само, как виджет
+        // the window fits its height to the content by itself, like the widget
         .inner_size(460.0, 180.0)
         .resizable(false)
         .decorations(false)
@@ -238,7 +238,7 @@ pub fn close_alert(app: &AppHandle) {
     }
 }
 
-/// Список открытых напоминаний изменился: окно перерисовывается или закрывается, если пусто
+/// The list of open reminders changed: the window redraws or closes if empty
 pub fn alerts_changed(app: &AppHandle, empty: bool) {
     if empty {
         close_alert(app);
@@ -247,8 +247,8 @@ pub fn alerts_changed(app: &AppHandle, empty: bool) {
     }
 }
 
-/// Когда список спрятался из-за потери фокуса. Клик по значку сначала забирает фокус у списка,
-/// и без этой отметки тот же клик сразу открыл бы его снова
+/// When the agenda hid because of focus loss. A click on the icon first takes focus from the agenda,
+/// and without this mark the same click would open it again right away
 #[derive(Default)]
 pub struct AgendaHidden(Mutex<Option<std::time::Instant>>);
 
@@ -263,8 +263,8 @@ pub fn hide_agenda(app: &AppHandle) {
     }
 }
 
-/// Фокус ушёл. Сразу после показа окно на миг отдаёт фокус своей же веб-странице,
-/// поэтому прячем список, только если через 200 мс окно всё ещё не активно
+/// Focus left. Right after showing, the window briefly gives focus to its own web page,
+/// so hide the agenda only if the window is still inactive after 200 ms
 pub fn agenda_lost_focus(app: &AppHandle) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
@@ -276,7 +276,7 @@ pub fn agenda_lost_focus(app: &AppHandle) {
     });
 }
 
-/// Правый нижний угол рабочей области того монитора, где значок: как у системных всплывающих окон
+/// Bottom right corner of the work area of the monitor with the icon: like system flyouts
 fn agenda_position(app: &AppHandle, x: f64, y: f64) -> Option<tauri::PhysicalPosition<i32>> {
     let monitor = app.monitor_from_point(x, y).ok().flatten().or_else(|| app.primary_monitor().ok().flatten())?;
     let scale = monitor.scale_factor();
@@ -290,7 +290,7 @@ fn agenda_position(app: &AppHandle, x: f64, y: f64) -> Option<tauri::PhysicalPos
     ))
 }
 
-/// Левый клик по значку: показать список дел или спрятать, если он открыт
+/// Left click on the icon: show the agenda or hide it if it's open
 fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
     let just_hidden = app
         .state::<AgendaHidden>()
@@ -345,11 +345,11 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     }
     let widget = config::load_widget(app);
     apply_widget(app, widget);
-    // только в сборке для разработки: `CALM_DEMO_AGENDA=1 npx tauri dev` сразу открывает список дел,
-    // тем же кодом, что и клик по значку в трее
+    // development build only: `CALM_DEMO_AGENDA=1 npx tauri dev` opens the agenda right away,
+    // with the same code as a click on the tray icon
     #[cfg(debug_assertions)]
     if std::env::var_os("CALM_DEMO_AGENDA").is_some() {
-        // после главного окна, иначе оно заберёт фокус и список сразу спрячется
+        // after the main window, otherwise it takes focus and the agenda hides right away
         let app = app.clone();
         tauri::async_runtime::spawn(async move {
             tokio::time::sleep(std::time::Duration::from_secs(3)).await;
@@ -360,8 +360,8 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     build_tray(app)
 }
 
-/// Пункты меню трея с галочками. Обработчик читает их отсюда, потому что при смене языка
-/// меню пересоздаётся целиком.
+/// Tray menu items with checkboxes. The handler reads them from here because on a language change
+/// the menu is recreated entirely.
 #[derive(Default)]
 pub struct TrayItems(Mutex<Option<CheckItems>>);
 
@@ -390,7 +390,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
     Ok(menu)
 }
 
-/// Меню трея заново: после смены языка
+/// Tray menu anew: after a language change
 pub fn rebuild_tray_menu(app: &AppHandle) {
     if let (Some(tray), Ok(menu)) = (app.tray_by_id(TRAY), build_menu(app)) {
         let _ = tray.set_menu(Some(menu));
@@ -411,7 +411,7 @@ fn on_menu(app: &AppHandle, id: &str) {
             apply_widget(app, settings);
         }
         ("autostart", Some(items)) => {
-            // не получилось (например, автозапуск запрещён в диспетчере задач) — галочка по факту
+            // failed (e.g. autostart is disabled in Task Manager) — the checkbox reflects the actual state
             set_launch(app, items.launch.is_checked().unwrap_or(false));
         }
         _ => {}
@@ -426,7 +426,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| on_menu(app, event.id().as_ref()))
         .on_tray_icon_event(|tray, event| {
-            // левый клик — список дел на сегодня и завтра, правый — меню
+            // left click — agenda for today and tomorrow, right click — menu
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,

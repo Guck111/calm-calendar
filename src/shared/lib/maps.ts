@@ -1,7 +1,7 @@
-// Место встречи по клику: адрес открывается в Google Картах в браузере. Без ключа API и без прав Google:
-// это обычная ссылка поиска на картах. Если в поле «Место» уже ссылка, открываем её саму.
+// Meeting location on click: the address opens in Google Maps in the browser. No API key and no Google scopes:
+// it's a regular maps search link. If the "Location" field is already a link, open it as is.
 
-/** Ссылка для поля «Место»; null — открывать нечего */
+/** Link for the "Location" field; null — nothing to open */
 export const placeLink = (location: string | undefined): string | null => {
   const place = location?.trim();
   if (!place) return null;

@@ -23,10 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# файл клиента OAuth, скачанный из Google Cloud
+# OAuth client file downloaded from Google Cloud
 client_secret*.json
 
-# отчёты аудита, исследования, план работы и список дел: только для себя
+# audit reports, research, work plan and to-do list: private
 docs/audit-*.md
 docs/research-*.md
 docs/next-steps.md

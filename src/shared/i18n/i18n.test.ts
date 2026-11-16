@@ -21,11 +21,11 @@ const event = (over: Partial<CalendarEvent>): CalendarEvent => ({
 
 afterEach(() => setLang("ru"));
 
-// Intl ставит узкие пробелы (U+2009, U+202F) вокруг тире и перед AM: сравниваем с обычными
+// Intl puts narrow spaces (U+2009, U+202F) around dashes and before AM: compare with regular ones
 const plain = (s: string) => s.replace(/[\u2009\u202f]/g, " ");
 
 describe("dictionaries", () => {
-  // одинаковые ключи на любой глубине: английский не может отстать от русского незаметно
+  // identical keys at any depth: English can't silently fall behind Russian
   const keys = (o: object, prefix = ""): string[] =>
     Object.entries(o).flatMap(([k, v]) =>
       v && typeof v === "object" ? keys(v, `${prefix}${k}.`) : [`${prefix}${k}:${typeof v}`],

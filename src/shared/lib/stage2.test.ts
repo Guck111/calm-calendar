@@ -26,23 +26,23 @@ const ev = (key: string, account: string, from: number, to: number, over: Partia
   ...over,
 });
 
-describe("номера недель", () => {
-  it("ISO 8601: неделя с понедельника, первая — с первым четвергом", () => {
+describe("week numbers", () => {
+  it("ISO 8601: week from Monday, the first one contains the first Thursday", () => {
     expect(isoWeek(new Date(2026, 10, 9))).toBe(46);
-    expect(isoWeek(new Date(2026, 0, 1))).toBe(1); // четверг
-    expect(isoWeek(new Date(2027, 0, 1))).toBe(53); // пятница: ещё 53-я неделя 2026
-    expect(isoWeek(new Date(2025, 11, 29))).toBe(1); // понедельник первой недели 2026
+    expect(isoWeek(new Date(2026, 0, 1))).toBe(1); // Thursday
+    expect(isoWeek(new Date(2027, 0, 1))).toBe(53); // Friday: still week 53 of 2026
+    expect(isoWeek(new Date(2025, 11, 29))).toBe(1); // Monday of the first week of 2026
     expect(isoWeek(new Date(2026, 11, 31))).toBe(53);
   });
 
-  it("строка, начатая с воскресенья или понедельника, получает один номер", () => {
-    expect(weekNumberOf(new Date(2026, 10, 8))).toBe(46); // воскресенье
-    expect(weekNumberOf(new Date(2026, 10, 9))).toBe(46); // понедельник
+  it("a row starting on Sunday or Monday gets one number", () => {
+    expect(weekNumberOf(new Date(2026, 10, 8))).toBe(46); // Sunday
+    expect(weekNumberOf(new Date(2026, 10, 9))).toBe(46); // Monday
   });
 });
 
-describe("вид «Расписание»", () => {
-  it("четыре недели с выбранного дня и листание на столько же", () => {
+describe("'Schedule' view", () => {
+  it("four weeks from the selected day and paging by the same amount", () => {
     const cursor = new Date(2026, 10, 11);
     const days = viewDays("agenda", cursor);
     expect(days).toHaveLength(AGENDA_DAYS);
@@ -52,16 +52,16 @@ describe("вид «Расписание»", () => {
   });
 });
 
-describe("свободное время", () => {
+describe("free time", () => {
   const o: FreeOptions = { from: 9 * 60, to: 18 * 60, minLength: 30, weekends: false };
   const monday = new Date(2026, 10, 9);
   const early = new Date(2026, 10, 9, 7);
 
-  it("окна между событиями в рабочие часы; «свободен», весь день и короткие окна не мешают", () => {
+  it("gaps between events during working hours; 'free', all-day and short gaps don't get in the way", () => {
     const events = [
       ev("a", "me", 10, 11),
-      ev("b", "work", 10, 12), // пересекается с a
-      ev("c", "me", 12, 12, { end: new Date(2026, 10, 9, 12, 20) }), // окно 12:00–12:00 — пусто, после — 12:20
+      ev("b", "work", 10, 12), // overlaps a
+      ev("c", "me", 12, 12, { end: new Date(2026, 10, 9, 12, 20) }), // gap 12:00–12:00 — empty, after it — 12:20
       ev("d", "me", 13, 14, { free: true }),
       ev("e", "me", 0, 0, { allDay: true, end: new Date(2026, 10, 10) }),
       ev("f", "me", 17, 17, { start: new Date(2026, 10, 9, 17, 40), end: new Date(2026, 10, 9, 19) }),
@@ -73,16 +73,16 @@ describe("свободное время", () => {
     ]);
   });
 
-  it("сегодня — только с текущего момента, округлённого до четверти часа; прошлые дни и выходные пропускаем", () => {
+  it("today — only from the current moment rounded to a quarter hour; past days and weekends are skipped", () => {
     const now = new Date(2026, 10, 10, 15, 7);
-    const days = [9, 10, 14, 15].map((d) => new Date(2026, 10, d)); // пн, вт, сб, вс
+    const days = [9, 10, 14, 15].map((d) => new Date(2026, 10, d)); // Mon, Tue, Sat, Sun
     const result = freeSlots([], days, o, now);
     expect(result.map((d) => d.day.getDate())).toEqual([10]);
     expect(result[0].slots[0].start).toEqual(new Date(2026, 10, 10, 15, 15));
     expect(freeSlots([], days, { ...o, weekends: true }, now).map((d) => d.day.getDate())).toEqual([10, 14, 15]);
   });
 
-  it("текст для мессенджера", () => {
+  it("text for a messenger", () => {
     setLang("ru", "ru-RU");
     const text = formatFreeSlots(freeSlots([ev("a", "me", 10, 11)], [monday], o, early), early, "Europe/Warsaw");
     expect(text.split("\n")).toEqual(["Когда я свободен (Warsaw, GMT+1):", "Пн, 9 ноября: 09:00–10:00 и 11:00–18:00"]);
@@ -90,10 +90,10 @@ describe("свободное время", () => {
   });
 });
 
-describe("одна встреча в двух аккаунтах", () => {
+describe("one meeting in two accounts", () => {
   const calId = (a: string) => `${a}\u0000primary`;
 
-  it("показывается один раз, остаётся копия, которую можно править", () => {
+  it("shown once, the editable copy remains", () => {
     const events = [
       ev("me-copy", "me", 9, 10, { iCalUID: "x" }),
       ev("work-copy", "work", 9, 10, { iCalUID: "x" }),
@@ -104,7 +104,7 @@ describe("одна встреча в двух аккаунтах", () => {
     expect(merged[0].alsoIn).toEqual([calId("me")]);
   });
 
-  it("повторения серии и копии в одном аккаунте не объединяются", () => {
+  it("series occurrences and copies in one account are not merged", () => {
     const events = [
       ev("mon", "me", 9, 10, { iCalUID: "s" }),
       ev("tue", "me", 9, 10, { iCalUID: "s", start: new Date(2026, 10, 10, 9), end: new Date(2026, 10, 10, 10) }),
@@ -114,8 +114,8 @@ describe("одна встреча в двух аккаунтах", () => {
   });
 });
 
-describe("праздники", () => {
-  it("id календаря Google с языком названий", () => {
+describe("holidays", () => {
+  it("Google calendar id with the naming language", () => {
     expect(holidayCalendarId("PL", "ru")).toBe("ru.polish#holiday@group.v.calendar.google.com");
     expect(holidayCalendarId("BD", "bn")).toBe("bn.bd#holiday@group.v.calendar.google.com");
     expect(isHolidayRegion("US")).toBe(true);
@@ -123,7 +123,7 @@ describe("праздники", () => {
     expect(isHolidayRegion(null)).toBe(false);
   });
 
-  it("страны по алфавиту языка", () => {
+  it("countries in the language's alphabetical order", () => {
     setLang("ru", "ru-RU");
     expect(regionName("PL")).toBe("Польша");
     const names = sortedRegions().map((r) => r.name);
@@ -131,7 +131,7 @@ describe("праздники", () => {
     expect([...names].sort((a, b) => a.localeCompare(b, "ru"))).toEqual(names);
   });
 
-  it("календарь праздников для главного окна и виджета: через первый аккаунт, без повтора", () => {
+  it("holiday calendar for the main window and widget: via the first account, without duplicates", () => {
     setLang("ru", "ru-RU");
     const cal = holidayCalendar("PL", ["me@example.com", "work@example.com"], []);
     expect(cal).toMatchObject({
@@ -141,7 +141,7 @@ describe("праздники", () => {
       accessRole: "reader",
       holiday: true,
     });
-    // такой календарь уже есть в Google, на любом языке названий
+    // such a calendar is already in Google, in any naming language
     const google = [{ ...cal!, googleId: "en.polish#holiday@group.v.calendar.google.com", holiday: undefined }];
     expect(holidayCalendar("PL", ["me@example.com"], google)).toBeNull();
     expect(holidayCalendar(null, ["me@example.com"], [])).toBeNull();

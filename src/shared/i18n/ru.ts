@@ -1,8 +1,8 @@
-// Русские строки интерфейса. Это эталон: английский словарь обязан иметь те же ключи.
+// Russian UI strings. This is the reference: the English dictionary must have the same keys.
 
 import type { Freq } from "../lib/rrule";
 
-/** 1 день, 2 дня, 5 дней */
+/** 1 day, 2 days, 5 days */
 const ruPlural = (n: number, [one, few, many]: string[]): string => {
   const d = n % 10;
   const dd = n % 100;
@@ -18,7 +18,7 @@ const ruUnits: Record<Freq, string[]> = {
   YEARLY: ["год", "года", "лет"],
 };
 
-/** в первый понедельник, во вторую среду, в последнее воскресенье */
+/** on the first Monday, on the second Wednesday, on the last Sunday */
 const ruNth = (n: number, day: number): string => {
   const names = ["воскресенье", "понедельник", "вторник", "среду", "четверг", "пятницу", "субботу"];
   const gender = [2, 0, 0, 1, 0, 1, 1][day];
@@ -165,7 +165,7 @@ export const ru = {
     weekdays: "По будням",
     onDays: (days: string) => `по ${days}`,
     onMonthDay: (n: number) => `${n}-го числа`,
-    /** day — номер дня недели как в Date.getDay(), name — его название из Intl */
+    /** day — weekday number as in Date.getDay(), name — its name from Intl */
     onNth: (n: number, day: number, _name: string) => ruNth(n, day),
     onDate: (date: string) => date,
     untilDate: (date: string) => `до ${date}`,
@@ -180,23 +180,23 @@ export const ru = {
     ruleChanged: "Повтор изменён, поэтому правка коснётся этого и следующих событий.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "Добавить аккаунт",
     signOutTitle: (email: string) => `Выйти из ${email}`,
     expired: "Вход истёк.",
     signInAgain: "Войти снова",
     confirmSignOut: "Точно выйти?",
     alsoIn: (list: string) => `Также в: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `Пересекается с: ${list}`,
   },
   meeting: {
-    /** кнопка видеовстречи: Meet, Zoom, Teams */
+    /** video meeting button: Meet, Zoom, Teams */
     join: "Подключиться",
     joinTitle: (provider: string) => `Подключиться к встрече (${provider})`,
   },
   alert: {
-    /** окно поверх всех окон за минуту до начала события */
+    /** a window on top of all windows a minute before the event starts */
     label: "Заметное напоминание",
     text: "За минуту до начала поверх всех окон появится окно с кнопками «Подключиться», «Отложить» и «Закрыть».",
     modes: { off: "Выключено", calls: "Только видеовстречи", all: "Все события со временем" },
@@ -204,7 +204,7 @@ export const ru = {
     dismiss: "Закрыть",
   },
   agenda: {
-    /** список дел у значка в трее */
+    /** agenda at the tray icon */
     empty: "Ничего не запланировано",
   },
   month: {
@@ -387,5 +387,5 @@ export const ru = {
   },
 };
 
-/** Тип словаря: функции с теми же параметрами, строки — любые */
+/** Dictionary type: functions with the same parameters, strings — any */
 export type Dict = typeof ru;

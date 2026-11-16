@@ -1,4 +1,4 @@
-// Окно со всеми сочетаниями клавиш: «?» в любом месте, кроме поля ввода, или команда в меню Ctrl+K.
+// Window with all keyboard shortcuts: "?" anywhere except an input field, or a command in the Ctrl+K menu.
 import { useUnit } from "effector-react";
 import { Fragment, useEffect, useState } from "react";
 import { t } from "../shared/i18n";
@@ -67,9 +67,9 @@ export const Shortcuts = () => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
-      // «?» — Shift+/ на английской раскладке, Shift+7 на русской; e.key одинаков
+      // "?" is Shift+/ on the English layout, Shift+7 on the Russian one; e.key is the same
       if (e.key !== "?" && !(e.code === "Slash" && e.shiftKey)) return;
-      // поверх другого окна (карточки, формы, меню) не открываем
+      // not opened on top of another window (card, form, menu)
       if (document.querySelector('[role="dialog"]')) return;
       e.preventDefault();
       request();

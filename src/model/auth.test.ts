@@ -27,23 +27,23 @@ const run = async (clientSource: AuthStatus["clientSource"], accounts: Account[]
 const me = { email: "me@gmail.com", signedIn: true };
 const work = { email: "work@company.com", signedIn: true };
 
-describe("состояние входа", () => {
-  it("токен есть, а файла клиента нет — просим клиента, а не показываем календарь с ошибкой", async () => {
+describe("sign-in state", () => {
+  it("token exists but client file is missing — ask for the client instead of showing the calendar with an error", async () => {
     expect(await run("none", [me])).toMatchObject({ signedIn: false, needsClient: true });
   });
 
-  it("клиент и токен на месте — вход действует", async () => {
+  it("client and token in place — sign-in is valid", async () => {
     expect(await run("file", [me])).toMatchObject({ signedIn: true, needsClient: false });
   });
 
-  it("аккаунт, где вход истёк, не читается, а остальные работают", async () => {
+  it("account with expired sign-in is not read, the others work", async () => {
     expect(await run("build", [{ ...me, signedIn: false }, work])).toMatchObject({
       signedIn: true,
       active: ["work@company.com"],
     });
   });
 
-  it("отменённый вход — не ошибка, а настоящая ошибка входа видна", async () => {
+  it("cancelled sign-in is not an error, but a real sign-in error is shown", async () => {
     const cancelled = fork({ handlers: [[signInFx, () => Promise.reject({ kind: "cancelled", message: "" })]] });
     await allSettled(signInFx, { scope: cancelled });
     expect(cancelled.getState($authError)).toBeNull();
@@ -53,7 +53,7 @@ describe("состояние входа", () => {
     expect(failed.getState($authError)).toBe("Время вышло");
   });
 
-  it("«Отменить» и «Открыть снова» во время входа уходят в Rust", async () => {
+  it("'Cancel' and 'Open again' during sign-in go to Rust", async () => {
     const calls: string[] = [];
     const scope = fork({
       handlers: [
@@ -66,7 +66,7 @@ describe("состояние входа", () => {
     expect(calls).toEqual(["reopen", "cancel"]);
   });
 
-  it("если вход истёк везде, показываем экран входа", async () => {
+  it("if sign-in expired everywhere, show the sign-in screen", async () => {
     expect(await run("build", [{ ...me, signedIn: false }])).toMatchObject({ signedIn: false, active: [] });
   });
 });

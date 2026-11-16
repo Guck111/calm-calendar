@@ -17,13 +17,13 @@ const Row = ({ name, hint, on, set }: Toggle) => (
       <b>{name}</b>
       <small>{hint}</small>
     </span>
-    {/* виджет, автозапуск и напоминание живут в приложении; в браузере переключать нечего */}
+    {/* widget, autostart and reminder live in the app; in the browser there is nothing to toggle */}
     <input type="checkbox" role="switch" checked={on} disabled={!inTauri} onChange={(e) => set(e.target.checked)} />
   </label>
 );
 
-/** «Что ещё умеет Calm Calendar»: после первого входа, сбоку внизу, не забирая фокус и не закрывая календарь.
- *  Самое полезное, что иначе прячется в меню трея и в настройках, — с переключателями прямо здесь */
+/** "What else Calm Calendar can do": after the first sign-in, bottom side, without taking focus or covering the calendar.
+ *  The most useful things that otherwise hide in the tray menu and settings — with toggles right here */
 export const Welcome = () => {
   const [open, close] = useUnit([$welcomeOpen, welcomeClosed]);
   const [widget, setWidgetState] = useState(false);
@@ -44,7 +44,7 @@ export const Welcome = () => {
     });
   }, [open]);
 
-  // Esc закрывает карточку, только когда фокус в ней: иначе Esc нужен календарю
+  // Esc closes the card only when focus is in it: otherwise Esc belongs to the calendar
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -64,7 +64,7 @@ export const Welcome = () => {
     setAutostartState(on);
     void setAutostart(on).then(setAutostartState, () => setAutostartState(!on));
   };
-  // «все события» тоже считаются включённым; выключатель здесь — «только звонки» или «выключено»
+  // "all events" also counts as on; the toggle here is "calls only" or "off"
   const toggleAlert = (on: boolean) => {
     const previous = alerts;
     const mode: AlertMode = on ? "calls" : "off";
@@ -73,7 +73,7 @@ export const Welcome = () => {
   };
 
   return (
-    // немодальная панель сбоку, а не диалог: календарь рядом работает, фокус она не забирает
+    // a non-modal side panel, not a dialog: the calendar next to it works, it doesn't take focus
     <aside ref={card} className={s.card} aria-labelledby="welcome-title">
       <div className={s.head}>
         <h2 id="welcome-title" className={s.title}>

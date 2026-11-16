@@ -1,7 +1,7 @@
-/* Шрифты стилей оформления (настройки → «Шрифт заголовков» и «Шрифт текста»).
-   Вариативные шрифты из пакетов @fontsource-variable, лицензия SIL Open Font License 1.1.
-   Файлы лежат в сборке приложения, сеть не нужна. Браузер загружает только те шрифты
-   и только те наборы символов (латиница, кириллица…), что есть на экране */
+/* Fonts of the visual styles (settings → "Heading font" and "Text font").
+   Variable fonts from @fontsource-variable packages, SIL Open Font License 1.1.
+   The files are in the app build, no network needed. The browser loads only the fonts
+   and only the character subsets (Latin, Cyrillic…) that are on screen */
 @import "@fontsource-variable/inter/wght.css";
 @import "@fontsource-variable/manrope/wght.css";
 @import "@fontsource-variable/onest/wght.css";

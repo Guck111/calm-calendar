@@ -157,14 +157,14 @@ export const fr: Dict = {
     ruleChanged: "La répétition a changé : la modification s’appliquera à cet événement et aux suivants.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "Ajouter un compte",
     signOutTitle: (email: string) => `Se déconnecter de ${email}`,
     expired: "La session a expiré.",
     signInAgain: "Se reconnecter",
     confirmSignOut: "Se déconnecter ?",
     alsoIn: (list: string) => `Aussi dans : ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `Chevauche : ${list}`,
   },
   meeting: {

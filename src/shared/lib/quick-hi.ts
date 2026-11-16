@@ -5,7 +5,7 @@ const HOUR = "घंटे|घंटा|घंटों";
 
 export const parseQuickHi = makeIndicParser({
   today: "आज",
-  // «कल» — и вчера, и завтра; в календаре это завтра
+  // «कल» means both yesterday and tomorrow; in a calendar it's tomorrow
   tomorrow: "कल",
   dayAfterTomorrow: "परसों",
   tonight: "आज\\s+(?:रात|शाम)(?:\\s+को)?",

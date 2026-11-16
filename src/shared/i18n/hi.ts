@@ -149,14 +149,14 @@ export const hi: Dict = {
     ruleChanged: "दोहराव बदला है, इसलिए बदलाव इस और आगे के इवेंट पर लागू होगा।",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "खाता जोड़ें",
     signOutTitle: (email: string) => `${email} से साइन आउट करें`,
     expired: "साइन-इन की अवधि खत्म हो गई।",
     signInAgain: "फिर से साइन इन करें",
     confirmSignOut: "साइन आउट करें?",
     alsoIn: (list: string) => `इनमें भी: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `इससे टकराता है: ${list}`,
   },
   meeting: {

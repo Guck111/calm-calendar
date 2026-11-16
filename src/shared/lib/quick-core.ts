@@ -1,6 +1,6 @@
-// Общая часть разбора строки быстрого создания: вырезание распознанных кусков,
-// метки календаря и места, сборка события из даты, времени и длительности.
-// Словари и шаблоны каждого языка — в quick.ts (русский) и quick-en.ts (английский).
+// Shared part of quick add parsing: cutting out recognized pieces,
+// calendar and location tags, assembling an event from date, time and duration.
+// Vocabularies and patterns of each language are in quick.ts (Russian) and quick-en.ts (English).
 import { addDays, addMinutes, MINUTES_IN_DAY, startOfDay } from "./date";
 
 export type QuickCalendar = { id: string; name: string };
@@ -16,30 +16,30 @@ export type QuickResult = {
 
 export type TimeRange = { h: number; m: number; endH?: number; endM?: number };
 
-// \b в JS не понимает кириллицу, поэтому границы слова — через юникод-классы.
-// \p{M} — огласовки хинди и бенгали: они часть слова, а не граница.
+// \b in JS doesn't understand Cyrillic, so word boundaries use Unicode classes.
+// \p{M} — Hindi and Bengali vowel signs: they are part of the word, not a boundary.
 export const L = "(?<![\\p{L}\\p{M}\\d])";
 export const R = "(?![\\p{L}\\p{M}\\d])";
-// группа нужна, чтобы границы относились ко всем вариантам «завтра|tmrw», а не только к крайним
+// the group is needed so the boundaries apply to all alternatives of «завтра|tmrw», not just the outer ones
 export const re = (body: string) => new RegExp(`${L}(?:${body})${R}`, "iu");
 
-/** Нули цифр, которые набирают вместо 0–9: арабские, персидские, деванагари, бенгальские, полноширинные */
+/** Zeros of digits typed instead of 0–9: Arabic, Persian, Devanagari, Bengali, full-width */
 const DIGIT_ZEROS = [0x660, 0x6f0, 0x966, 0x9e6, 0xff10];
 
 const PUNCTUATION: Record<string, string> = {
-  "：": ":", // полноширинное двоеточие (китайский, японский)
+  "：": ":", // full-width colon (Chinese, Japanese)
   "－": "-",
   "～": "-",
   "〜": "-",
-  "،": ",", // арабская запятая
-  "٫": ",", // арабский десятичный разделитель
+  "،": ",", // Arabic comma
+  "٫": ",", // Arabic decimal separator
   "＃": "#",
   "＠": "@",
   "　": " ",
 };
 
-/** Цифры любого письма — в 0–9, полноширинные знаки — в обычные: дальше разбор видит одно и то же.
- *  NFC: «য়» и «ड़» набираются и одним знаком, и двумя — шаблоны видят одну форму */
+/** Digits of any script → 0–9, full-width characters → regular ones: from here on the parser sees the same thing.
+ *  NFC: «য়» and «ड़» are typed as one character or two — patterns see one form */
 export const normalizeInput = (input: string): string =>
   input.normalize("NFC").replace(/[\p{Nd}：－～〜،٫＃＠　]/gu, (ch) => {
     if (PUNCTUATION[ch]) return PUNCTUATION[ch];
@@ -51,7 +51,7 @@ export const normalizeInput = (input: string): string =>
 export type Cut = {
   text: string;
   take: (r: RegExp) => RegExpMatchArray | null;
-  /** первое совпадение, которое подошло по accept: «2 से 3 लोग» без «बजे» — не время */
+  /** the first match that passed accept: «2 से 3 लोग» without «बजे» is not a time */
   takeWhere: (r: RegExp, accept: (m: RegExpMatchArray) => boolean) => RegExpMatchArray | null;
 };
 
@@ -88,16 +88,16 @@ export const validTime = (h: number, m: number) => h >= 0 && h <= 23 && m >= 0 &
 const withTime = (day: Date, h: number, m: number) =>
   new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
 
-/** Понедельник — 0. Не зависит от первого дня недели региона: словари дней начинаются с понедельника */
+/** Monday is 0. Doesn't depend on the region's first day of week: day vocabularies start with Monday */
 export const mondayIndex = (d: Date): number => (d.getDay() + 6) % 7;
 
-/** Ближайший день недели (0 — понедельник) начиная с сегодня; skipToday — «next friday» */
+/** Nearest weekday (0 — Monday) starting from today; skipToday — "next friday" */
 export const nextWeekday = (today: Date, index: number, skipToday = false): Date => {
   const ahead = (index - mondayIndex(today) + 7) % 7;
   return addDays(today, ahead === 0 && skipToday ? 7 : ahead);
 };
 
-/** Дата без года — ближайшая допустимая. Несуществующая дата с годом недействительна. */
+/** A date without a year is the nearest valid one. A nonexistent date with a year is invalid. */
 export const upcomingDate = (today: Date, month: number, day: number, year: number | null): Date => {
   const atYear = (y: number) => {
     const date = new Date(y, month, day);
@@ -106,7 +106,7 @@ export const upcomingDate = (today: Date, month: number, day: number, year: numb
   if (year !== null) return atYear(year);
 
   const currentYear = today.getFullYear();
-  // На границе столетия между високосными годами может пройти восемь лет.
+  // At a century boundary eight years may pass between leap years.
   const lastYear = currentYear + (month === 1 && day === 29 ? 8 : 1);
   for (let y = currentYear; y <= lastYear; y++) {
     const date = atYear(y);
@@ -121,7 +121,7 @@ const findCalendar = (tag: string, calendars: QuickCalendar[]): string | undefin
   return (byStart ?? calendars.find((c) => c.name.toLowerCase().includes(t)))?.id;
 };
 
-/** «#работа» и «@Офис_Гдыня» — одинаково на любом языке */
+/** «#работа» and «@Офис_Гдыня» — the same in any language */
 export const takeTags = (cut: Cut, calendars: QuickCalendar[]) => {
   const tag = cut.take(/(?:^|\s)#(\S+)/u);
   const place = cut.take(/(?:^|\s)@(\S+)/u);
@@ -131,7 +131,7 @@ export const takeTags = (cut: Cut, calendars: QuickCalendar[]) => {
   };
 };
 
-/** Остаток строки — название; висящие по краям предлоги убираем */
+/** The rest of the string is the title; dangling prepositions at the edges are removed */
 export const cleanTitle = (text: string, prepositions: string): string =>
   text
     .replace(/\s+/g, " ")
@@ -160,7 +160,7 @@ export const assemble = (p: Parsed, now: Date): QuickResult => {
 
   let day = date ?? startOfDay(now);
   let start = withTime(day, time.h, time.m);
-  // без даты и со временем, которое уже прошло, — значит завтра
+  // no date and a time that has already passed means tomorrow
   if (!date && start < now) {
     day = addDays(day, 1);
     start = withTime(day, time.h, time.m);
@@ -172,7 +172,7 @@ export const assemble = (p: Parsed, now: Date): QuickResult => {
   } else {
     const endM = time.endM ?? 0;
     const span = (time.endH - time.h) * 60 + endM - time.m;
-    // «23-1»: конец на следующий день. Сравниваем введённые часы до перевода на летнее время.
+    // «23-1»: the end is on the next day. Compare the entered hours before the switch to summer time.
     end = withTime(span <= 0 ? addDays(day, 1) : day, time.endH, endM);
     if (end <= start) end = addMinutes(start, span > 0 ? span : span + MINUTES_IN_DAY);
   }

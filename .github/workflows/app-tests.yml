@@ -1,7 +1,7 @@
 name: app-tests
 
-# Тесты настоящего приложения: отладочная сборка на подставных данных под tauri-driver и msedgedriver.
-# Без Google. Запуск вручную: Actions → app-tests → Run workflow
+# Tests of the real app: debug build on mock data under tauri-driver and msedgedriver.
+# No Google. Run manually: Actions → app-tests → Run workflow
 on:
   workflow_dispatch:
 
@@ -30,7 +30,7 @@ jobs:
       - run: npm ci
       - run: cargo install tauri-driver --locked
 
-      # msedgedriver той же версии, что WebView2 на машине
+      # msedgedriver of the same version as WebView2 on the machine
       - name: Edge WebDriver
         shell: pwsh
         run: ./scripts/msedgedriver.ps1

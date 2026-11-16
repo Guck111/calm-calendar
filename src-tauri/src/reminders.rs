@@ -1,6 +1,6 @@
-//! Напоминания о событиях. Расписание присылает интерфейс (время напоминаний
-//! из Google Календаря), а показывает уведомления Rust-часть: таймеры в скрытом
-//! окне Windows может притормаживать.
+//! Event reminders. The UI sends the schedule (reminder times
+//! from Google Calendar), and the Rust side shows the notifications: Windows may throttle timers in a hidden
+//! window.
 
 use crate::config::AlertMode;
 use serde::{Deserialize, Serialize};
@@ -12,34 +12,34 @@ use tokio::sync::{Mutex, Notify};
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Reminder {
-    /// уникален для пары «событие + напоминание», чтобы не показать дважды
+    /// unique for the "event + reminder" pair, so it isn't shown twice
     pub key: String,
     pub title: String,
     pub body: String,
-    /// заголовок и текст без названия и места — для режима «скрывать названия»
+    /// title and text without the event title and location — for the "hide titles" mode
     #[serde(default)]
     pub private_title: Option<String>,
     #[serde(default)]
     pub private_body: Option<String>,
-    /// момент показа, миллисекунды Unix
+    /// show time, Unix milliseconds
     pub at: i64,
-    /// ссылка на видеовстречу и подпись кнопки «Подключиться» на языке интерфейса
+    /// video meeting link and the "Join" button label in the UI language
     #[serde(default)]
     pub url: Option<String>,
     #[serde(default)]
     pub join_label: Option<String>,
-    /// заметное напоминание: окно поверх всех окон вместо уведомления
+    /// prominent reminder: a window on top of all windows instead of a notification
     #[serde(default)]
     pub alert: bool,
-    /// начало и конец события, миллисекунды Unix: окно напоминания пишет «через 1 мин» само
+    /// event start and end, Unix milliseconds: the reminder window writes "in 1 min" itself
     #[serde(default)]
     pub start: i64,
     #[serde(default)]
     pub end: i64,
-    /// сервис видеовстречи: Google Meet, Zoom…
+    /// video meeting service: Google Meet, Zoom…
     #[serde(default)]
     pub provider: Option<String>,
-    /// отложенная копия: человек сам попросил напомнить снова, настройку не проверяем
+    /// snoozed copy: the person asked to be reminded again, the setting is not checked
     #[serde(skip)]
     pub snoozed: bool,
 }
@@ -47,17 +47,17 @@ pub struct Reminder {
 #[derive(Default)]
 pub struct Reminders {
     items: Mutex<Vec<Reminder>>,
-    /// отложенные заметные напоминания: новое расписание из интерфейса их не стирает
+    /// snoozed prominent reminders: a new schedule from the UI doesn't erase them
     snoozed: Mutex<Vec<Reminder>>,
-    /// заметные напоминания, которые сейчас в окне поверх всех окон
+    /// prominent reminders currently in the window on top of all windows
     open: Mutex<Vec<Reminder>>,
     shown: Mutex<HashSet<String>>,
     changed: Notify,
 }
 
-/// напоминание, опоздавшее больше чем на это время (компьютер спал), уже не показываем
+/// a reminder late by more than this (the computer was asleep) is no longer shown
 const LATE_LIMIT_MS: i64 = 5 * 60_000;
-/// даже без изменений просыпаемся раз в минуту: часы могли сдвинуться после сна
+/// even without changes wake up once a minute: the clock may have shifted after sleep
 const MAX_SLEEP: Duration = Duration::from_secs(60);
 
 fn now_ms() -> i64 {
@@ -67,7 +67,7 @@ fn now_ms() -> i64 {
         .unwrap_or(0)
 }
 
-/// Показывать ли это заметное напоминание при такой настройке
+/// Whether to show this prominent reminder with this setting
 pub fn alert_allowed(mode: AlertMode, r: &Reminder) -> bool {
     match mode {
         AlertMode::Off => false,
@@ -76,7 +76,7 @@ pub fn alert_allowed(mode: AlertMode, r: &Reminder) -> bool {
     }
 }
 
-/// Отложенная копия: новый ключ, чтобы её показали ещё раз
+/// Snoozed copy: a new key so it is shown again
 fn snoozed_copy(r: &Reminder, now: i64, minutes: i64) -> Reminder {
     let at = now + minutes * 60_000;
     Reminder { key: format!("{}|snooze|{at}", r.key), at, snoozed: true, ..r.clone() }
@@ -88,7 +88,7 @@ impl Reminders {
         self.changed.notify_one();
     }
 
-    /// Уведомления выключили: остаются только заметные напоминания, у них своя настройка
+    /// Notifications turned off: only prominent reminders remain, they have their own setting
     pub async fn keep_alerts_only(&self) {
         self.items.lock().await.retain(|r| r.alert);
         self.changed.notify_one();
@@ -98,19 +98,19 @@ impl Reminders {
         self.open.lock().await.clone()
     }
 
-    /// Закрыть напоминание; true — больше открытых нет
+    /// Close a reminder; true — no more open ones
     pub async fn dismiss(&self, key: &str) -> bool {
         let mut open = self.open.lock().await;
         open.retain(|r| r.key != key);
         open.is_empty()
     }
 
-    /// Окно закрыли целиком (Alt+F4): все открытые напоминания считаются закрытыми
+    /// The window was closed entirely (Alt+F4): all open reminders count as closed
     pub async fn dismiss_all(&self) {
         self.open.lock().await.clear();
     }
 
-    /// Отложить на minutes минут; true — больше открытых нет
+    /// Snooze for minutes minutes; true — no more open ones
     pub async fn snooze(&self, key: &str, minutes: i64) -> bool {
         let mut open = self.open.lock().await;
         if let Some(pos) = open.iter().position(|r| r.key == key) {
@@ -150,8 +150,8 @@ impl Reminders {
                     let _ = app.notification().builder().title(title).body(body).show();
                 }
             }
-            // отложенные показываются один раз; чтобы множество не росло бесконечно,
-            // забываем ключи, которых нет в расписании
+            // snoozed ones are shown once; so the set doesn't grow forever,
+            // forget keys that are not in the schedule
             self.snoozed.lock().await.retain(|r| r.at > now);
             let keys: HashSet<&String> = items.iter().map(|r| &r.key).collect();
             shown.retain(|k| keys.contains(k));
@@ -171,7 +171,7 @@ impl Reminders {
     }
 }
 
-/// Уведомление с кнопкой «Подключиться», если у события есть видеовстреча. false — показать обычное
+/// A notification with a "Join" button if the event has a video meeting. false — show a regular one
 #[cfg(windows)]
 fn show_with_link(app: &AppHandle, r: &Reminder, title: &str, body: &str) -> bool {
     let (Some(url), Some(label)) = (&r.url, &r.join_label) else { return false };
@@ -184,8 +184,8 @@ fn show_with_link(_: &AppHandle, _: &Reminder, _: &str, _: &str) -> bool {
     false
 }
 
-/// Только в сборке для разработки: `CALM_DEMO_ALERT=1 npx tauri dev` сразу показывает окно
-/// заметного напоминания с примером, чтобы проверить его без события в Google
+/// Development build only: `CALM_DEMO_ALERT=1 npx tauri dev` immediately shows the
+/// prominent reminder window with a sample, to check it without an event in Google
 #[cfg(debug_assertions)]
 async fn demo_alert(app: &AppHandle) {
     if std::env::var_os("CALM_DEMO_ALERT").is_none() {

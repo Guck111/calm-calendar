@@ -2,7 +2,7 @@
 import type { Dict } from "./ru";
 import type { Freq } from "../lib/rrule";
 
-/** «بعد يومين», «بعد 3 أيام», «بعد 11 يومًا» — числительные в арабском требуют разных форм */
+/** «بعد يومين», «بعد 3 أيام», «بعد 11 يومًا» — Arabic numerals require different forms */
 const days = (d: number): string => {
   if (d === 1) return "يوم واحد";
   if (d === 2) return "يومين";
@@ -170,14 +170,14 @@ export const ar: Dict = {
     ruleChanged: "تغيّر التكرار، لذا سينطبق التعديل على هذا الحدث والأحداث التالية.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "إضافة حساب",
     signOutTitle: (email: string) => `تسجيل الخروج من ${email}`,
     expired: "انتهت صلاحية تسجيل الدخول.",
     signInAgain: "تسجيل الدخول مجددًا",
     confirmSignOut: "تسجيل الخروج؟",
     alsoIn: (list: string) => `موجود أيضًا في: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `يتعارض مع: ${list}`,
   },
   meeting: {
@@ -359,7 +359,7 @@ export const ar: Dict = {
   },
   time: {
     week: (n: string) => `الأسبوع ${n}`,
-    // «س» — час, «د» — минута: так пишут в интерфейсах, без сложных форм множественного числа
+    // «س» — hour, «د» — minute: that's how interfaces write it, without complex plural forms
     span: (h: number, m: number) => (!h ? `${m} د` : m ? `${h} س ${m} د` : `${h} س`),
     in: (span: string) => `بعد ${span}`,
     ongoing: (span: string) => `جارٍ الآن، متبقٍّ ${span}`,

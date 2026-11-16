@@ -1,7 +1,7 @@
-//! Вход через Google для настольного приложения:
-//! системный браузер + приём кода на 127.0.0.1 + PKCE (RFC 7636).
-//! Аккаунтов может быть несколько. Токен обновления каждого хранится в системном
-//! хранилище паролей (на Windows это диспетчер учётных данных), а не в файле.
+//! Google sign-in for a desktop app:
+//! system browser + receiving the code on 127.0.0.1 + PKCE (RFC 7636).
+//! There may be several accounts. Each one's refresh token is stored in the system
+//! password store (on Windows it's Credential Manager), not in a file.
 
 use crate::config::{self, Account, ClientConfig};
 use crate::error::{Error, Result};
@@ -32,10 +32,10 @@ const CALENDAR_SCOPES: [&str; 2] = [
 const ID_SCOPES: [&str; 2] = ["openid", "email"];
 
 const KEYRING_SERVICE: &str = "com.arseni.calmcalendar";
-/// единственный токен версий до 0.5; переносится под ключ с email
+/// the single token of versions before 0.5; moved under a key with the email
 const LEGACY_KEYRING_USER: &str = "google-refresh-token";
 const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
-/// браузер присылает запрос сразу; соединение, которое молчит дольше, — не браузер
+/// the browser sends the request right away; a connection that stays silent longer is not the browser
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 
 struct AccessToken {
@@ -45,9 +45,9 @@ struct AccessToken {
 
 pub struct Auth {
     http: reqwest::Client,
-    /// токены доступа по email аккаунта
+    /// access tokens by account email
     tokens: Mutex<HashMap<String, AccessToken>>,
-    /// вход, который сейчас ждёт браузер: его страницу можно открыть снова или отменить
+    /// sign-in currently waiting for the browser: its page can be opened again or cancelled
     pending: std::sync::Mutex<Option<PendingSignIn>>,
 }
 
@@ -56,7 +56,7 @@ struct PendingSignIn {
     cancel: Arc<Notify>,
 }
 
-/// Убирает ожидающий вход, чем бы он ни закончился
+/// Removes the pending sign-in, however it ended
 struct PendingGuard<'a>(&'a std::sync::Mutex<Option<PendingSignIn>>);
 
 impl Drop for PendingGuard<'_> {
@@ -67,7 +67,7 @@ impl Drop for PendingGuard<'_> {
     }
 }
 
-/// Ждёт код из браузера, пока не выйдет время или человек не нажмёт «Отменить»
+/// Waits for the code from the browser until time runs out or the person presses "Cancel"
 async fn wait_or_cancel<T>(wait: impl Future<Output = Result<T>>, cancel: &Notify, limit: Duration) -> Result<T> {
     tokio::select! {
         r = tokio::time::timeout(limit, wait) => r.map_err(|_| Error::Timeout)?,
@@ -75,7 +75,7 @@ async fn wait_or_cancel<T>(wait: impl Future<Output = Result<T>>, cancel: &Notif
     }
 }
 
-/// Аккаунт для интерфейса: signed_in false — Google отозвал доступ, нужно войти снова
+/// Account for the UI: signed_in false — Google revoked access, need to sign in again
 #[derive(Serialize)]
 pub struct AccountStatus {
     pub email: String,
@@ -105,7 +105,7 @@ fn random_string(len: usize) -> String {
         .collect()
 }
 
-/// ключ записи в хранилище паролей: email в нижнем регистре
+/// password store entry key: lowercase email
 fn keyring_user(email: &str) -> String {
     format!("{LEGACY_KEYRING_USER}:{}", email.to_ascii_lowercase())
 }
@@ -120,7 +120,7 @@ fn stored_refresh_token(email: &str) -> Option<String> {
 
 fn delete_refresh_token(email: &str) {
     let Ok(entry) = keyring_entry(&keyring_user(email)) else { return };
-    // запись старой версии с тем же токеном тоже убираем: иначе выход был бы неполным
+    // the old version's entry with the same token is removed too: otherwise sign-out would be incomplete
     if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(LEGACY_KEYRING_USER)) {
         if legacy.get_password().is_ok_and(|old| old == token) {
             let _ = legacy.delete_credential();
@@ -129,9 +129,9 @@ fn delete_refresh_token(email: &str) {
     let _ = entry.delete_credential();
 }
 
-/// Перенос входа старой версии: один токен без email в ключе и email в account.json.
-/// Токен копируется, а не переносится: старая запись нужна версии 0.4, если она ещё установлена
-/// (хранилище паролей у них общее). Если email неизвестен, токен не к чему привязать — тогда войти заново.
+/// Migrating the old version's sign-in: one token without email in the key and the email in account.json.
+/// The token is copied, not moved: version 0.4 needs the old entry if it is still installed
+/// (they share the password store). If the email is unknown, there's nothing to attach the token to — then sign in again.
 pub fn migrate_legacy(app: &AppHandle) {
     if config::load_accounts(app).is_some() {
         return;
@@ -146,8 +146,8 @@ pub fn migrate_legacy(app: &AppHandle) {
     let _ = config::save_accounts(app, &accounts);
 }
 
-/// Достаёт email из id_token. Подпись не проверяем: токен получен
-/// напрямую от Google по HTTPS и используется только для отображения.
+/// Gets the email from id_token. The signature isn't checked: the token was received
+/// directly from Google over HTTPS and is used only for display.
 fn email_from_id_token(id_token: &str) -> Option<String> {
     let payload = id_token.split('.').nth(1)?;
     let bytes = URL_SAFE_NO_PAD.decode(payload.trim_end_matches('=')).ok()?;
@@ -189,9 +189,9 @@ async fn read_request_line(stream: &mut TcpStream) -> Option<String> {
     text.lines().next().map(str::to_owned)
 }
 
-/// Разбирает один запрос браузера. None — запрос не тот (чужой, favicon, неверный state).
+/// Parses one browser request. None — not the right request (foreign, favicon, wrong state).
 async fn handle_redirect(mut stream: TcpStream, expected_state: String, lang: Lang) -> Option<Result<String>> {
-    // молчащее соединение от другой программы закрываем, а не ждём
+    // a silent connection from another program is closed instead of waited on
     let Ok(Some(line)) = tokio::time::timeout(REQUEST_TIMEOUT, read_request_line(&mut stream)).await else {
         return None;
     };
@@ -202,7 +202,7 @@ async fn handle_redirect(mut stream: TcpStream, expected_state: String, lang: La
         return None;
     };
     if url.path() != "/" {
-        // например, запрос favicon.ico
+        // e.g. a favicon.ico request
         respond(&mut stream, "404 Not Found", "").await;
         return None;
     }
@@ -227,8 +227,8 @@ async fn handle_redirect(mut stream: TcpStream, expected_state: String, lang: La
     None
 }
 
-/// Ждёт, пока браузер вернётся на 127.0.0.1 с кодом авторизации.
-/// Каждое соединение обрабатывается отдельно, поэтому медленное или чужое не задерживает браузер.
+/// Waits until the browser comes back to 127.0.0.1 with the authorization code.
+/// Each connection is handled separately, so a slow or foreign one doesn't hold up the browser.
 async fn wait_for_code(listener: &TcpListener, expected_state: &str, lang: Lang) -> Result<String> {
     let (tx, mut rx) = tokio::sync::mpsc::channel::<Result<String>>(1);
     loop {
@@ -260,7 +260,7 @@ impl Auth {
         }
     }
 
-    /// Вкладка входа потерялась: открыть ту же страницу Google ещё раз (тот же state и PKCE)
+    /// The sign-in tab got lost: open the same Google page again (same state and PKCE)
     pub fn reopen_sign_in(&self, app: &AppHandle) -> Result<()> {
         let url = self.pending.lock().ok().and_then(|p| p.as_ref().map(|p| p.url.clone()));
         let Some(url) = url else { return Ok(()) };
@@ -269,7 +269,7 @@ impl Auth {
             .map_err(|e| Error::Other(format!("Could not open the browser: {e}")))
     }
 
-    /// Человек передумал: sign_in перестаёт ждать браузер и возвращает Error::Cancelled
+    /// The person changed their mind: sign_in stops waiting for the browser and returns Error::Cancelled
     pub fn cancel_sign_in(&self) {
         if let Ok(p) = self.pending.lock() {
             if let Some(p) = p.as_ref() {
@@ -282,7 +282,7 @@ impl Auth {
         &self.http
     }
 
-    /// Аккаунты в порядке входа и есть ли у каждого действующий вход
+    /// Accounts in sign-in order and whether each has a valid sign-in
     pub fn accounts(&self, app: &AppHandle) -> Vec<AccountStatus> {
         config::load_accounts(app)
             .unwrap_or_default()
@@ -294,7 +294,7 @@ impl Auth {
             .collect()
     }
 
-    /// account — чей токен обновления удалить, если Google его больше не принимает
+    /// account — whose refresh token to delete if Google no longer accepts it
     async fn post_token(&self, form: &[(&str, &str)], account: Option<&str>) -> Result<TokenResponse> {
         let resp = self.http.post(TOKEN_URL).form(form).send().await?;
         if resp.status().is_success() {
@@ -306,7 +306,7 @@ impl Auth {
             error_description: None,
         });
         if err.error == "invalid_grant" {
-            // токен отозван или истёк — нужен новый вход в этот аккаунт; аккаунт остаётся в списке
+            // the token was revoked or expired — a new sign-in to this account is needed; the account stays in the list
             if let Some(email) = account {
                 delete_refresh_token(email);
             }
@@ -318,7 +318,7 @@ impl Auth {
         })
     }
 
-    /// Вход в ещё один аккаунт (или повторный вход в уже добавленный). Возвращает email
+    /// Sign in to one more account (or again to an already added one). Returns the email
     pub async fn sign_in(&self, app: &AppHandle) -> Result<String> {
         let client = config::client(app)?;
         let listener = TcpListener::bind("127.0.0.1:0").await?;
@@ -345,9 +345,9 @@ impl Auth {
             .append_pair("code_challenge_method", "S256")
             .append_pair("state", &state)
             .append_pair("access_type", "offline")
-            // select_account: Google даёт выбрать аккаунт, а не входит молча в тот, что открыт в браузере
+            // select_account: Google lets you choose an account instead of silently signing in to the one open in the browser
             .append_pair("prompt", "select_account consent")
-            // экран согласия Google на языке интерфейса, а не браузера
+            // Google consent screen in the UI language, not the browser's
             .append_pair("hl", i18n::current(app).hl());
 
         let cancel = Arc::new(Notify::new());
@@ -369,7 +369,7 @@ impl Auth {
             SIGN_IN_TIMEOUT,
         )
         .await?;
-        // код получен: дальше отменять и открывать снова нечего
+        // code received: from here there's nothing to cancel or reopen
         drop(guard);
 
         let tokens = self
@@ -384,7 +384,7 @@ impl Auth {
             .refresh_token
             .clone()
             .ok_or_else(|| Error::Other("Google did not return a refresh token".into()))?;
-        // email — ключ аккаунта: без него токен не к чему привязать
+        // email is the account key: without it there's nothing to attach the token to
         let email = tokens
             .id_token
             .as_deref()
@@ -423,13 +423,13 @@ impl Auth {
         .await
     }
 
-    /// Действующий токен доступа аккаунта; при необходимости обновляет его.
-    /// Запросы разных аккаунтов ждут друг друга только на время обновления токена.
+    /// A valid access token for the account; refreshes it if needed.
+    /// Requests of different accounts wait for each other only during a token refresh.
     pub async fn access_token(&self, app: &AppHandle, account: &str) -> Result<String> {
         let key = account.to_ascii_lowercase();
         let mut guard = self.tokens.lock().await;
         if let Some(t) = guard.get(&key) {
-            // запас в минуту, чтобы токен не истёк посреди запроса
+            // a minute of margin so the token doesn't expire in the middle of a request
             if t.expires_at > Instant::now() + Duration::from_secs(60) {
                 return Ok(t.value.clone());
             }
@@ -462,7 +462,7 @@ impl Auth {
         self.tokens.lock().await.remove(&account.to_ascii_lowercase());
     }
 
-    /// Выход из одного аккаунта; None — из всех
+    /// Sign out of one account; None — of all
     pub async fn sign_out(&self, app: &AppHandle, account: Option<&str>) {
         let all = config::load_accounts(app).unwrap_or_default();
         let leaving: Vec<Account> = match account {
@@ -471,7 +471,7 @@ impl Auth {
         };
         for a in &leaving {
             if let Some(refresh) = stored_refresh_token(&a.email) {
-                // отзываем доступ у Google; ошибку сети не считаем фатальной
+                // revoke access at Google; a network error is not considered fatal
                 let _ = self
                     .http
                     .post(REVOKE_URL)
@@ -513,12 +513,12 @@ mod tests {
         let addr = listener.local_addr().unwrap();
         let waiter = tokio::spawn(async move { wait_for_code(&listener, "st", Lang::En).await });
 
-        // чужая программа подключилась и молчит
+        // a foreign program connected and stays silent
         let _silent = TcpStream::connect(addr).await.unwrap();
-        // чужой запрос с неверным state игнорируется
+        // a foreign request with a wrong state is ignored
         let mut wrong = TcpStream::connect(addr).await.unwrap();
         wrong.write_all(b"GET /?code=evil&state=bad HTTP/1.1\r\n\r\n").await.unwrap();
-        // браузер приходит следом и не ждёт молчащее соединение
+        // the browser comes next and doesn't wait for the silent connection
         let mut browser = TcpStream::connect(addr).await.unwrap();
         browser.write_all(b"GET /?code=good&state=st HTTP/1.1\r\n\r\n").await.unwrap();
 
@@ -529,7 +529,7 @@ mod tests {
     #[tokio::test]
     async fn sign_in_wait_can_be_cancelled() {
         let cancel = Notify::new();
-        // «Отменить» нажали раньше, чем ожидание началось: отмена не теряется
+        // "Cancel" was pressed before the wait started: the cancellation is not lost
         cancel.notify_one();
         let never = std::future::pending::<Result<String>>();
         let r = wait_or_cancel(never, &cancel, Duration::from_secs(5)).await;
@@ -554,7 +554,7 @@ mod tests {
 
     #[test]
     fn pkce_challenge_matches_rfc_example() {
-        // пример из RFC 7636, приложение B
+        // example from RFC 7636, appendix B
         let verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
         let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
         assert_eq!(challenge, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");

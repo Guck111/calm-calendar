@@ -36,7 +36,7 @@ const MiniMonth = () => {
     dateSelected,
     $weekNumbers,
   ]);
-  // мини-календарь листается сам, но догоняет основной вид при его смене
+  // the mini calendar pages by itself, but catches up with the main view when it changes
   const [month, setMonth] = useState(() => startOfMonth(cursor));
   useEffect(() => setMonth(startOfMonth(cursor)), [cursor]);
 
@@ -94,8 +94,8 @@ const CalendarRow = ({ c, toggle }: { c: Calendar & { visible: boolean }; toggle
   </label>
 );
 
-/** «Выйти» спрашивает второй раз: выход сразу отзывает доступ, и войти заново — это снова окно Google.
- *  Вопрос пропадает, если увести с кнопки фокус или подождать */
+/** "Sign out" asks a second time: sign-out revokes access right away, and signing in again means the Google window again.
+ *  The question disappears if focus leaves the button or after a wait */
 const SignOutButton = ({ email, onConfirm }: { email: string; onConfirm: () => void }) => {
   const [asking, setAsking] = useState(false);
   useEffect(() => {
@@ -117,7 +117,7 @@ const SignOutButton = ({ email, onConfirm }: { email: string; onConfirm: () => v
   );
 };
 
-/** Календари по аккаунтам: у каждого аккаунта свой заголовок с email и «Выйти» */
+/** Calendars by account: each account has its own header with the email and "Sign out" */
 const CalendarList = () => {
   const [calendars, accounts, toggle, signOut, signIn, signingIn] = useUnit([
     $calendarsWithVisibility,

@@ -1,6 +1,6 @@
-//! Быстрое создание из любого места Windows: сочетание клавиш (по умолчанию Ctrl+Alt+Space)
-//! открывает маленькое окно со строкой быстрого создания поверх всех окон, даже когда
-//! календарь свёрнут в трей. Окно прячется после создания, по Esc и когда уходит фокус.
+//! Quick add from anywhere in Windows: a hotkey (Ctrl+Alt+Space by default)
+//! opens a small window with the quick add input on top of all windows, even when
+//! the calendar is minimized to the tray. The window hides after creating, on Esc and when focus leaves.
 
 use crate::config;
 use crate::desktop;
@@ -9,10 +9,10 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 pub const QUICK: &str = "quick";
-/// размер окна в логических пикселях: строка и подсказка под ней с календарём и местом
+/// window size in logical pixels: the input and the hint below it with calendar and location
 const SIZE: (f64, f64) = (520.0, 200.0);
 
-/// Плагин сочетаний: на нажатие (не на отпускание) — окно быстрого создания
+/// Hotkey plugin: on press (not on release) — the quick add window
 pub fn plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {
     tauri_plugin_global_shortcut::Builder::new()
         .with_handler(|app, _shortcut, event| {
@@ -23,8 +23,8 @@ pub fn plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {
         .build()
 }
 
-/// Регистрирует сочетание вместо прежнего; None — выключить.
-/// Сочетание может быть занято другой программой — тогда ошибка, прежнее уже снято
+/// Registers the hotkey in place of the previous one; None — turn off.
+/// The hotkey may be taken by another program — then an error, the previous one is already unregistered
 pub fn register(app: &AppHandle, hotkey: Option<&str>) -> Result<()> {
     let shortcuts = app.global_shortcut();
     let _ = shortcuts.unregister_all();
@@ -35,8 +35,8 @@ pub fn register(app: &AppHandle, hotkey: Option<&str>) -> Result<()> {
     shortcuts.register(hotkey).map_err(|e| Error::Other(format!("shortcut {hotkey}: {e}")))
 }
 
-/// При запуске: сочетание из настроек. Занято другой программой — первое свободное из списка,
-/// и оно сохраняется в настройках, чтобы там было видно, какое работает. Все заняты — только запись в журнал
+/// At startup: the hotkey from settings. Taken by another program — the first free one from the list,
+/// and it is saved in settings so they show which one works. All taken — only a log record
 pub fn setup(app: &AppHandle) {
     let settings = config::load_settings(app);
     if let Some(chosen) = settings.quick_hotkey.clone() {
@@ -59,7 +59,7 @@ pub fn setup(app: &AppHandle) {
             None => log::warn!("quick add shortcut: every shortcut is taken"),
         }
     }
-    // только в сборке для разработки: `CALM_DEMO_QUICK=1` открывает окно тем же кодом, что и сочетание
+    // development build only: `CALM_DEMO_QUICK=1` opens the window with the same code as the hotkey
     #[cfg(debug_assertions)]
     if std::env::var_os("CALM_DEMO_QUICK").is_some() {
         let app = app.clone();
@@ -70,7 +70,7 @@ pub fn setup(app: &AppHandle) {
     }
 }
 
-/// Верхняя треть экрана, где сейчас мышь, по центру: как у поиска Windows
+/// Upper third of the screen where the mouse is now, centered: like Windows search
 fn position(app: &AppHandle) -> Option<tauri::PhysicalPosition<i32>> {
     let cursor = app.cursor_position().ok();
     let monitor = cursor
@@ -124,7 +124,7 @@ pub fn hide(app: &AppHandle) {
     }
 }
 
-/// Фокус ушёл: как у списка дел, ждём 200 мс — сразу после показа фокус на миг уходит к веб-странице
+/// Focus left: like the agenda, wait 200 ms — right after showing, focus briefly goes to the web page
 pub fn lost_focus(app: &AppHandle) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {

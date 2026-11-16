@@ -16,9 +16,9 @@ import { followLang, syncLangToRust } from "./shared/i18n";
 import { catchUnhandled } from "./shared/lib/log";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 
-// одна страница на шесть окон: главное, виджет (?window=widget), заметное напоминание
-// (?window=alert), список дел у значка в трее (?window=agenda) и быстрое создание по
-// сочетанию клавиш (?window=quick), настройки (?window=settings)
+// one page for six windows: main, widget (?window=widget), prominent reminder
+// (?window=alert), agenda at the tray icon (?window=agenda) and quick add by
+// hotkey (?window=quick), settings (?window=settings)
 const kind = new URLSearchParams(window.location.search).get("window");
 const isWidget = kind === "widget";
 const isAlert = kind === "alert";
@@ -38,22 +38,22 @@ document.documentElement.dataset.window = isWidget
           ? "settings"
           : "main";
 
-// необработанные ошибки любого окна — в журнал
+// unhandled errors of any window go to the log
 catchUnhandled();
 
-// тему, стиль и шрифты применяем до первой отрисовки, чтобы не мигало
+// apply theme, style and fonts before the first render to avoid flicker
 applyTheme(readTheme());
 followTheme();
 applyAppearance(readAppearance());
 followAppearance();
 initGlass();
-// язык сменили в другом окне — перезагружаемся; главное окно сообщает язык Rust (меню трея)
+// language changed in another window — reload; the main window tells Rust the language (tray menu)
 followLang();
 if (!isSmall) void syncLangToRust();
 
 const Window = isWidget ? Widget : isAlert ? AlertWindow : isAgenda ? AgendaWindow : isQuick ? QuickWindow : isSettings ? SettingsWindow : App;
 
-// только в npm run dev: ?crash=1 ломает отрисовку окна, чтобы автотесты видели экран ошибки
+// only in npm run dev: ?crash=1 breaks window rendering so autotests can see the error screen
 const Crash = () => {
   throw new Error("test crash (?crash=1)");
 };

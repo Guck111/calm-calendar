@@ -36,7 +36,7 @@ const minutesOf = (key: string): number => {
 };
 const timeKeyOf = (minutes: number): string => toTimeKey(new Date(2000, 0, 1, 0, minutes));
 
-/** Копирование в буфер: в окне Tauri и в браузере есть Clipboard API, запасной путь — через выделение */
+/** Copy to clipboard: the Tauri window and the browser have the Clipboard API, the fallback is via selection */
 const copyText = async (text: string): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text);
@@ -67,8 +67,8 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
   const found = freeSlots(events, viewDays(view, cursor), options, now);
   const text = formatFreeSlots(found, now);
   const nothing = !found.length;
-  // пока грузятся события новых дат или они не загрузились, считать по старым нельзя:
-  // неделя выглядела бы свободной
+  // while events for new dates are loading or failed to load, we can't compute from the old ones:
+  // the week would look free
   const waiting = loading || Boolean(loadError);
 
   useEffect(() => {
@@ -125,7 +125,7 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
           <input type="checkbox" checked={options.weekends} onChange={(e) => change({ weekends: e.target.checked })} />
           {t.free.weekends}
         </label>
-        {/* пусто — не тупик: почему так и куда дальше */}
+        {/* empty is not a dead end: why, and where to go next */}
         {waiting ? (
           <p className={f.empty} role="status">
             {loading ? t.common.loading : loadError}
@@ -150,7 +150,7 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
 
 export const FreeSlotsButton = () => {
   const [open, setOpen] = useState(false);
-  // Ctrl+K → «Свободное время»
+  // Ctrl+K → "Free time"
   useEffect(() => freeSlotsRequested.watch(() => setOpen(true)), []);
   return (
     <>

@@ -1,5 +1,5 @@
-// Часовые пояса на Intl, без библиотек: перевод между моментом времени и часами в поясе,
-// смещение от UTC и подписи для списков.
+// Time zones on Intl, no libraries: conversion between an instant and a wall clock in a time zone,
+// offset from UTC and labels for lists.
 import { locale } from "../i18n";
 import { localTimeZone, WallClockDate } from "./date";
 
@@ -39,46 +39,46 @@ const wallParts = (instant: Date, zone: string): Wall => {
   };
 };
 
-/** Смещение пояса от UTC в минутах в этот момент: +180 для Москвы, −300 для Нью-Йорка зимой */
+/** Time zone offset from UTC in minutes at this instant: +180 for Moscow, −300 for New York in winter */
 export const zoneOffset = (zone: string, instant: Date): number => {
   const w = wallParts(instant, zone);
   const asUtc = Date.UTC(w.y, w.mo - 1, w.d, w.h, w.mi, w.s);
   return Math.round((asUtc - Math.floor(instant.getTime() / 1000) * 1000) / 60_000);
 };
 
-/** Момент времени, когда в поясе на часах эта дата и время. Несуществующее время (переход на летнее)
- *  сдвигается вперёд, а двойное берётся первым, если исходный момент не уточняет выбор. */
+/** The instant when the time zone's clock shows this date and time. Nonexistent time (switch to summer time)
+ *  is shifted forward, and doubled time takes the first one unless the original instant specifies the choice. */
 export const fromZonedParts = (
   y: number, mo: number, d: number, h: number, mi: number, s: number, zone: string, original?: number,
 ): Date => {
   const guess = Date.UTC(y, mo - 1, d, h, mi, s);
   if (!Number.isFinite(guess)) return new Date(NaN);
-  // смещение за сутки до и после: переходов чаще одного в сутки не бывает
+  // offset a day before and after: there is never more than one transition per day
   const before = zoneOffset(zone, new Date(guess - DAY));
   const after = zoneOffset(zone, new Date(guess + DAY));
   const fits = (t: number) => zoneOffset(zone, new Date(t)) * 60_000 === guess - t;
   const found = [guess - before * 60_000, guess - after * 60_000].filter(fits);
   if (original !== undefined && found.includes(original)) return new Date(original);
-  // времени нет на часах — считаем по смещению до перехода, это и есть сдвиг вперёд
+  // the time doesn't exist on the clock — use the offset before the transition, which is the forward shift
   return new Date(found.length ? Math.min(...found) : guess - before * 60_000);
 };
 
-/** "2026-11-04" и "09:30" по часам пояса → момент времени */
+/** "2026-11-04" and "09:30" by the time zone clock → instant */
 export const fromZoned = (dateKey: string, timeKey: string, zone: string, original?: Date): Date => {
   const [y, mo, d] = dateKey.split("-").map(Number);
   const [h, mi] = timeKey.split(":").map(Number);
-  // Форма хранит целые минуты. Исходный момент выбирается только среди совпавших вариантов.
+  // The form stores whole minutes. The original instant is chosen only among matching variants.
   const originalMinute = original && Math.floor(original.getTime() / 60_000) * 60_000;
   return fromZonedParts(y, mo, d, h || 0, mi || 0, 0, zone, originalMinute);
 };
 
-/** Те же год, месяц, день и время на циферблате, что и в зоне (для формы и правил повтора). */
+/** The same year, month, day and wall clock time as in the zone (for the form and recurrence rules). */
 export const wallClock = (instant: Date, zone: string): Date => {
   const w = wallParts(instant, zone);
   return new WallClockDate(Date.UTC(w.y, w.mo - 1, w.d, w.h, w.mi, w.s));
 };
 
-/** Обратно: местная дата как часы пояса → момент времени */
+/** Back: a local date as the time zone clock → instant */
 export const fromWallClock = (wall: Date, zone: string): Date =>
   fromZonedParts(
     wall.getFullYear(),
@@ -91,7 +91,7 @@ export const fromWallClock = (wall: Date, zone: string): Date =>
   );
 
 let zonesCache: string[] | null = null;
-/** Все пояса, которые знает Intl; системный и UTC добавляются, если их нет в списке */
+/** All time zones Intl knows; the system one and UTC are added if they are not in the list */
 export const allTimeZones = (): string[] => {
   if (!zonesCache) {
     const supported = (Intl as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") ?? [];
@@ -135,10 +135,10 @@ export const formatOffset = (minutes: number): string => {
   return `GMT${sign}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`;
 };
 
-/** город из id пояса: "America/Argentina/Buenos_Aires" → "Buenos Aires" */
+/** city from a time zone id: "America/Argentina/Buenos_Aires" → "Buenos Aires" */
 export const zoneCity = (zone: string): string => zone.slice(zone.lastIndexOf("/") + 1).replaceAll("_", " ");
 
-/** Подпись для списка: «(GMT+03:00) Москва, стандартное время — Moscow». Название пояса — на языке интерфейса */
+/** Label for the list: «(GMT+03:00) Москва, стандартное время — Moscow». The time zone name is in the UI language */
 export const zoneLabel = (zone: string, at = new Date()): string => {
   const offset = formatOffset(zoneOffset(zone, at));
   const name = zoneName(zone, "longGeneric", at);
@@ -147,21 +147,21 @@ export const zoneLabel = (zone: string, at = new Date()): string => {
   return name && !name.startsWith("GMT") ? `(${offset}) ${name} — ${city}` : `(${offset}) ${city}`;
 };
 
-/** Короткое название над колонкой часов: «MSK», «PST», «GMT+9» */
+/** Short name above the hours column: "MSK", "PST", "GMT+9" */
 export const zoneShort = (zone: string, at = new Date()): string => {
   const short = zoneName(zone, "short", at);
   return short || formatOffset(zoneOffset(zone, at));
 };
 
-/** Время во втором поясе на каждой часовой линии сетки этого дня: «9:00 у нас» → часы и минуты там.
- *  Минуты не нулевые у поясов вроде Индии (+5:30) */
+/** Time in the second time zone on each hour line of this day's grid: "9:00 here" → hours and minutes there.
+ *  Minutes are nonzero for time zones like India (+5:30) */
 export const zoneHours = (day: Date, zone: string): { hour: number; minute: number }[] =>
   Array.from({ length: 24 }, (_, h) => {
     const wall = wallClock(new Date(day.getFullYear(), day.getMonth(), day.getDate(), h), zone);
     return { hour: wall.getHours(), minute: wall.getMinutes() };
   });
 
-/** Пояса для списка, отсортированные по смещению, затем по городу */
+/** Time zones for the list, sorted by offset, then by city */
 export const sortedTimeZones = (at = new Date()): { zone: string; offset: number }[] =>
   allTimeZones()
     .map((zone) => ({ zone, offset: zoneOffset(zone, at) }))

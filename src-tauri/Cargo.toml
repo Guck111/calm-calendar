@@ -7,7 +7,7 @@ license = "MIT"
 edition = "2024"
 
 [lib]
-# Суффикс _lib нужен, чтобы имя библиотеки не конфликтовало с бинарником на Windows
+# The _lib suffix is needed so the library name doesn't clash with the binary on Windows
 name = "calm_calendar_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -31,22 +31,22 @@ rand = "0.8"
 url = "2"
 thiserror = "2"
 tauri-plugin-log = "2"
-# сочетание клавиш на всю Windows для быстрого создания
+# system-wide Windows hotkey for quick add
 tauri-plugin-global-shortcut = "2"
 log = "0.4"
 
-# Токен входа хранится в системном хранилище паролей
+# The sign-in token is stored in the system password store
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3", features = ["windows-native"] }
-# скруглённые углы и без рамки для окна виджета (DWM)
+# rounded corners and no border for the widget window (DWM)
 windows-sys = { version = "0.61", features = ["Win32_Globalization", "Win32_Graphics_Dwm", "Win32_System_LibraryLoader"] }
-# автозапуск сборки MSIX через StartupTask, уведомления с кнопкой «Подключиться»
+# autostart of the MSIX build via StartupTask, notifications with a "Join" button
 windows = { version = "0.62", features = ["ApplicationModel", "ApplicationModel_Activation", "Foundation", "Data_Xml_Dom", "UI_Notifications"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", features = ["apple-native"] }
 
-# На Linux пока без системного хранилища (только для разработки)
+# No system store on Linux for now (development only)
 [target.'cfg(all(not(windows), not(target_os = "macos")))'.dependencies]
 keyring = { version = "3" }
 

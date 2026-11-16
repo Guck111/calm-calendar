@@ -1,5 +1,5 @@
-// Шестерёнка в панели инструментов. В приложении настройки открываются отдельным окном
-// (его можно утащить за пределы календаря), в браузере — окном поверх страницы.
+// Gear in the toolbar. In the app settings open in a separate window
+// (it can be dragged outside the calendar), in the browser — in a window on top of the page.
 import { useState } from "react";
 import { useUnit } from "effector-react";
 import { invoke } from "@tauri-apps/api/core";

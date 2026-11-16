@@ -5,7 +5,7 @@ const MAÑANA = "ma[ñn]ana";
 
 export const parseQuickEs = makeEuParser({
   today: "hoy",
-  // «de la mañana», «por la mañana» — это утро, а не «завтра»
+  // «de la mañana», «por la mañana» mean morning, not "tomorrow"
   tomorrow: `(?<!(?:de|por)\\s+la\\s+)${MAÑANA}`,
   dayAfterTomorrow: `pasado\\s+${MAÑANA}`,
   tonight: "esta\\s+noche|hoy\\s+por\\s+la\\s+noche",

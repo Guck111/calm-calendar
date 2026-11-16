@@ -53,7 +53,7 @@
   grid-template-columns: auto repeat(7, 1fr);
 }
 
-/* номер недели перед строкой мини-календаря */
+/* week number before a mini calendar row */
 .weekNo {
   display: grid;
   place-items: center;
@@ -205,8 +205,8 @@
   text-decoration: underline;
 }
 
-/* редкое и необратимое действие не мозолит глаза: видно, когда мышь или фокус на аккаунте,
-   и всё время, пока спрашивает «Выйти?» */
+/* a rare and irreversible action doesn't catch the eye: visible when the mouse or focus is on the account,
+   and the whole time it asks "Sign out?" */
 .signOut {
   opacity: 0;
   transition: opacity 0.12s;
@@ -224,7 +224,7 @@
   }
 }
 
-/* календари одного аккаунта */
+/* calendars of one account */
 .group {
   display: flex;
   flex-direction: column;

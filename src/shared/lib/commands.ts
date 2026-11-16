@@ -1,6 +1,6 @@
-// Меню команд (Ctrl+K): переход к дате, создание, поиск и виды из одной строки,
-// а если выбрано событие — действия с ним: на завтра, на час позже, Google Meet, цвет.
-// Дату понимает тот же разбор, что и быстрое создание, — на всех 11 языках.
+// Command menu (Ctrl+K): jump to a date, create, search and views from one input,
+// and if an event is selected — actions on it: to tomorrow, an hour later, Google Meet, color.
+// The date is understood by the same parser as quick add — in all 11 languages.
 import { t } from "../i18n";
 import { COLOR_IDS } from "./colors";
 import { formatWeekdayDayMonth, startOfDay, type ViewMode } from "./date";
@@ -14,21 +14,21 @@ export type Command =
   | { kind: "new" }
   | { kind: "today" }
   | { kind: "view"; view: ViewMode }
-  /** окно со списком сочетаний клавиш */
+  /** keyboard shortcuts window */
   | { kind: "shortcuts" }
-  /** карточка «Что умеет Calm Calendar» */
+  /** "What Calm Calendar can do" card */
   | { kind: "welcome" }
-  /** найти по названию: свободное время, тема (кнопки темы на панели нет) */
+  /** find by name: free time, theme (there is no theme button on the toolbar) */
   | { kind: "free" }
   | { kind: "theme"; theme: Theme }
-  /** действия с выбранным событием */
+  /** actions on the selected event */
   | { kind: "tomorrow" }
   | { kind: "later" }
   | { kind: "meet" }
-  /** "" — цвет календаря */
+  /** "" — calendar color */
   | { kind: "color"; colorId: string };
 
-/** Выбранное событие, которое можно менять (своё или в календаре с правом записи) */
+/** Selected event that can be changed (our own or in a writable calendar) */
 export type CommandSubject = { title: string; allDay: boolean; hasMeet: boolean };
 
 const VIEWS: ViewMode[] = ["day", "week", "month", "agenda"];
@@ -41,7 +41,7 @@ const STATIC: Command[] = [
   { kind: "welcome" },
 ];
 
-/** только по совпадению с текстом, в пустой строке их нет */
+/** only on a text match, they aren't in the empty input */
 const FOUND_BY_NAME: Command[] = [
   { kind: "free" },
   ...(["light", "dark", "system"] as const).map((theme) => ({ kind: "theme" as const, theme })),
@@ -84,16 +84,16 @@ export const commandLabel = (c: Command): string => {
   }
 };
 
-/** Действия с событием: «на час позже» — только у события со временем, Meet — если созвона ещё нет */
+/** Event actions: "an hour later" — only for timed events, Meet — if there is no call yet */
 const eventCommands = (subject: CommandSubject): Command[] => [
   { kind: "tomorrow" },
   ...(subject.allDay ? [] : [{ kind: "later" } as const]),
   ...(subject.hasMeet ? [] : [{ kind: "meet" } as const]),
 ];
 
-/** Что предложить по тексту: дату (если весь текст — дата), «создать» и «найти» с этим текстом,
- *  и команды, в названии которых он встречается. С выбранным событием — сначала действия с ним;
- *  цвета (их двенадцать) — только когда текст совпал с названием */
+/** What to offer for the text: a date (if the whole text is a date), "create" and "search" with this text,
+ *  and commands whose names contain it. With a selected event — its actions first;
+ *  colors (there are twelve) — only when the text matched a name */
 export const buildCommands = (input: string, now: Date, subject?: CommandSubject | null): Command[] => {
   const text = input.trim();
   const own = subject ? eventCommands(subject) : [];

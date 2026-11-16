@@ -1,15 +1,15 @@
-//! Автозапуск при входе в Windows.
+//! Autostart at Windows sign-in.
 //!
-//! Обычная сборка (NSIS, MSI): раздел Run в реестре через tauri-plugin-autostart,
-//! приложение запускается с флагом --hidden.
-//! Сборка MSIX: StartupTask из манифеста (src-tauri/msix/AppxManifest.xml).
-//! Раздел Run ей не подходит: путь к exe внутри пакета меняется с каждым обновлением.
-//! Аргументы StartupTask не передаёт, поэтому запуск при входе узнаём по виду активации.
+//! Regular build (NSIS, MSI): the Run registry key via tauri-plugin-autostart,
+//! the app starts with the --hidden flag.
+//! MSIX build: StartupTask from the manifest (src-tauri/msix/AppxManifest.xml).
+//! The Run key doesn't suit it: the exe path inside the package changes with every update.
+//! StartupTask passes no arguments, so a sign-in launch is detected by the activation kind.
 
 use tauri::AppHandle;
 use tauri_plugin_autostart::ManagerExt;
 
-/// Включён ли автозапуск сейчас
+/// Whether autostart is on now
 pub fn is_enabled(app: &AppHandle) -> bool {
     if packaged::is_packaged() {
         packaged::is_enabled()
@@ -18,8 +18,8 @@ pub fn is_enabled(app: &AppHandle) -> bool {
     }
 }
 
-/// Включает или выключает автозапуск. Возвращает состояние после попытки:
-/// пользователь может запретить автозапуск в диспетчере задач, тогда включить его нельзя.
+/// Turns autostart on or off. Returns the state after the attempt:
+/// the user can disable autostart in Task Manager, then it can't be turned on.
 pub fn set_enabled(app: &AppHandle, enabled: bool) -> bool {
     if packaged::is_packaged() {
         return packaged::set_enabled(enabled);
@@ -29,7 +29,7 @@ pub fn set_enabled(app: &AppHandle, enabled: bool) -> bool {
     manager.is_enabled().unwrap_or(false)
 }
 
-/// Упакованное приложение запущено Windows при входе пользователя
+/// The packaged app was started by Windows at user sign-in
 pub fn launched_at_startup() -> bool {
     packaged::launched_at_startup()
 }
@@ -40,11 +40,11 @@ mod packaged {
     use windows::ApplicationModel::{AppInstance, Package, StartupTask, StartupTaskState};
     use windows::core::{HSTRING, Result};
 
-    /// TaskId из AppxManifest.xml
+    /// TaskId from AppxManifest.xml
     const TASK_ID: &str = "CalmCalendarStartup";
 
-    /// Вызовы WinRT ждут асинхронный ответ. Делаем это в отдельном потоке (MTA),
-    /// а не в главном потоке окна (STA), где блокирующее ожидание нежелательно.
+    /// WinRT calls wait for an async response. Do it in a separate thread (MTA),
+    /// not in the window's main thread (STA), where blocking waits are undesirable.
     fn off_ui_thread<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) -> Option<T> {
         std::thread::spawn(f).join().ok()
     }

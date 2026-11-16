@@ -10,7 +10,7 @@ const span = (ms: number): string => {
   return t.time.span(h, m);
 };
 
-/** «Muay Thai через 25 мин» или «Сейчас: Работа · ещё 2 ч 10 мин»; события на весь день не считаем */
+/** «Muay Thai через 25 мин» or «Сейчас: Работа · ещё 2 ч 10 мин»; all-day events are not counted */
 export type Countdown = { title: string; text: string; event: CalendarEvent };
 
 export const countdown = (events: CalendarEvent[], now: Date): Countdown | null => {
@@ -19,7 +19,7 @@ export const countdown = (events: CalendarEvent[], now: Date): Countdown | null 
     .sort((a, b) => a.start.getTime() - b.start.getTime());
   const current = timed.find((e) => e.start <= now);
   const next = timed.find((e) => e.start > now);
-  // если следующее начинается скоро (до 30 минут), важнее оно, а не текущее
+  // if the next one starts soon (within 30 minutes), it matters more than the current one
   if (next && next.start.getTime() - now.getTime() <= 30 * 60_000) {
     return { title: next.title, text: t.time.in(span(next.start.getTime() - now.getTime())), event: next };
   }

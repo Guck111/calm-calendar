@@ -57,7 +57,7 @@ describe("quick add in Arabic", () => {
 
   it("لا يغيّر الأرقام في العنوان", () => {
     expect(ar("شراء 2 تذاكر")).toMatchObject({ title: "شراء 2 تذاكر", allDay: true });
-    // «غداء» (обед) — не «غدا» (завтра)
+    // «غداء» (lunch) is not «غدا» (tomorrow)
     expect(ar("بعد 3 أيام غداء")).toMatchObject({ title: "غداء", start: at(7, 0) });
   });
 });

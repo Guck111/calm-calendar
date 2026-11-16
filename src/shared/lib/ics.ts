@@ -1,9 +1,9 @@
-// Календарь в формате iCalendar (.ics, RFC 5545): разбор файла и раскладка повторов на нужные дни.
-// Нужен подпискам по ссылке: их скачивает Rust, а события в календарь кладёт этот код.
-// Поддержаны повторы, которые встречаются в настоящих файлах (Google, Outlook, расписания, спорт):
-// FREQ DAILY/WEEKLY/MONTHLY/YEARLY с INTERVAL, COUNT, UNTIL, BYDAY (и «2-й вторник»), BYMONTHDAY, BYMONTH,
-// а также EXDATE, RDATE и перенесённые повторения (RECURRENCE-ID). Правило с чем-то ещё (BYSETPOS…)
-// показывает только первое событие серии — лучше одно верное, чем много неверных.
+// Calendar in iCalendar format (.ics, RFC 5545): parsing the file and expanding recurrences onto the needed days.
+// Needed for link subscriptions: Rust downloads them, and this code puts the events into the calendar.
+// Supported recurrences are those found in real files (Google, Outlook, timetables, sports):
+// FREQ DAILY/WEEKLY/MONTHLY/YEARLY with INTERVAL, COUNT, UNTIL, BYDAY (and "2nd Tuesday"), BYMONTHDAY, BYMONTH,
+// plus EXDATE, RDATE and moved occurrences (RECURRENCE-ID). A rule with anything else (BYSETPOS…)
+// shows only the first event of the series — better one correct than many wrong.
 import type { CalendarEvent } from "../api/types";
 import { WallClockDate, type DateRange } from "./date";
 import { findMeeting } from "./meeting";
@@ -17,16 +17,16 @@ type CustomZone = {
 type Duration = { days: number; ms: number };
 type Period = { start: IcsTime; duration: Duration };
 
-/** время из файла как оно записано: дата, время по часам, UTC или пояс */
+/** time from the file as written: date, wall clock time, UTC or time zone */
 export type IcsTime = {
   y: number;
   mo: number;
   d: number;
-  /** нет — дата без времени (событие на весь день) */
+  /** none — a date without time (all-day event) */
   time?: { h: number; mi: number; s: number };
-  /** время с Z на конце */
+  /** time with a trailing Z */
   utc?: boolean;
-  /** пояс IANA; нет и не utc — «плавающее» время, по часам компьютера */
+  /** IANA time zone; none and not utc — "floating" time, by the computer clock */
   zone?: string;
   customZone?: CustomZone;
 };
@@ -38,27 +38,27 @@ export type IcsEvent = {
   location?: string;
   start: IcsTime;
   end?: IcsTime;
-  /** DURATION в номинальных миллисекундах. */
+  /** DURATION in nominal milliseconds. */
   durationMs?: number;
-  /** Сутки из DURATION, которые прибавляются по календарю. */
+  /** Days from DURATION that are added by the calendar. */
   durationDays?: number;
   rrule?: string;
   exdates: IcsTime[];
   rdates: IcsTime[];
   periods?: Period[];
-  /** у перенесённого повторения — исходное время повторения */
+  /** for a moved occurrence — the original time of the occurrence */
   recurrenceId?: IcsTime;
   rangeFuture?: boolean;
   cancelled: boolean;
-  /** TRANSP:TRANSPARENT — время не занято */
+  /** TRANSP:TRANSPARENT — time is not busy */
   free: boolean;
 };
 
 export type IcsCalendar = { name?: string; events: IcsEvent[] };
 
-// --- строки файла ---
+// --- file lines ---
 
-/** строки файла: перенос с пробелом или табом в начале продолжает предыдущую строку */
+/** file lines: a line break followed by a space or tab continues the previous line */
 const unfold = (text: string): string[] =>
   text
     .replace(/\r\n?/g, "\n")
@@ -68,7 +68,7 @@ const unfold = (text: string): string[] =>
 
 type Line = { name: string; params: Record<string, string>; value: string };
 
-/** «DTSTART;TZID="Europe/Berlin":20261111T090000» → имя, параметры, значение; двоеточие в кавычках не граница */
+/** «DTSTART;TZID="Europe/Berlin":20261111T090000» → name, parameters, value; a colon in quotes is not a boundary */
 const parseLine = (raw: string): Line | null => {
   let quoted = false;
   let colon = -1;
@@ -101,13 +101,13 @@ const parseLine = (raw: string): Line | null => {
   return { name: name.toUpperCase(), params, value: raw.slice(colon + 1) };
 };
 
-/** текст из файла: \n — перенос строки, \, \; \\ — сами знаки */
+/** text from the file: \n — line break, \, \; \\ — the characters themselves */
 export const unescapeText = (v: string): string =>
   v.replace(/\\([nN,;\\])/g, (_, c: string) => (c === "n" || c === "N" ? "\n" : c));
 
-// --- пояса ---
+// --- time zones ---
 
-/** пояса Windows, которыми подписывает файлы Outlook, → IANA */
+/** Windows time zones that Outlook signs files with → IANA */
 const WINDOWS_ZONES: Record<string, string> = {
   "UTC": "UTC",
   "GMT Standard Time": "Europe/London",
@@ -149,7 +149,7 @@ const WINDOWS_ZONES: Record<string, string> = {
   "Central Standard Time (Mexico)": "America/Mexico_City",
 };
 
-/** TZID из файла → пояс IANA; «/Europe/Berlin» и «/mozilla.org/…/Europe/Berlin» тоже узнаём */
+/** TZID from the file → IANA time zone; «/Europe/Berlin» and «/mozilla.org/…/Europe/Berlin» are recognized too */
 export const zoneOf = (tzid: string | undefined): string | undefined => {
   if (!tzid) return undefined;
   const name = tzid.trim();
@@ -159,7 +159,7 @@ export const zoneOf = (tzid: string | undefined): string | undefined => {
   return tail && isTimeZone(tail) ? tail : undefined;
 };
 
-// --- значения ---
+// --- values ---
 
 /** «20261111», «20261111T090000», «20261111T090000Z» */
 export const parseTime = (
@@ -191,7 +191,7 @@ const durationParts = (value: string): Duration | null => {
 
 const durationSize = (duration: Duration): number => duration.days * DAY_MS + duration.ms;
 
-/** Номинальное число миллисекунд, без привязки к дате и поясу. */
+/** Nominal number of milliseconds, not tied to a date or time zone. */
 export const parseDuration = (value: string): number | null => {
   const duration = durationParts(value);
   return duration ? durationSize(duration) : null;
@@ -200,7 +200,7 @@ export const parseDuration = (value: string): number | null => {
 const wallStamp = (t: IcsTime): number =>
   Date.UTC(t.y, t.mo - 1, t.d, t.time?.h ?? 0, t.time?.mi ?? 0, t.time?.s ?? 0);
 
-/** момент времени: дата без времени — местная полночь, плавающее время — по часам компьютера */
+/** instant: a date without time is local midnight, floating time uses the computer clock */
 export const toInstant = (t: IcsTime): Date => {
   if (!t.time) return new Date(t.y, t.mo - 1, t.d);
   if (t.utc) return new Date(wallStamp(t));
@@ -227,7 +227,7 @@ const listPeriods = (line: Line, zones: ReadonlyMap<string, CustomZone>): Period
     return duration && durationSize(duration) > 0 ? [{ start, duration }] : [];
   });
 
-// --- разбор файла ---
+// --- file parsing ---
 
 export const parseIcs = (text: string): IcsCalendar => {
   const events: IcsEvent[] = [];
@@ -235,7 +235,7 @@ export const parseIcs = (text: string): IcsCalendar => {
   const zones = readZones(lines);
   let name: string | undefined;
   let current: Partial<IcsEvent> | null = null;
-  // вложенные блоки события (VALARM) пропускаем
+  // nested event blocks (VALARM) are skipped
   let nested = 0;
   for (const line of lines) {
     if (line.name === "BEGIN") {
@@ -303,12 +303,12 @@ export const parseIcs = (text: string): IcsCalendar => {
         break;
     }
   }
-  // событие без UID всё равно показываем: id придумываем из начала и названия
+  // an event without UID is still shown: the id is made up from the start and title
   for (const e of events) if (!e.uid) e.uid = `${e.summary ?? ""}@${e.start.y}${e.start.mo}${e.start.d}`;
   return { name, events };
 };
 
-// --- правило повтора ---
+// --- recurrence rule ---
 
 type Freq = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 const WEEKDAY_CODES = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
@@ -321,7 +321,7 @@ export type IcsRule = {
   byDay: { n?: number; wd: number }[];
   byMonthDay: number[];
   byMonth: number[];
-  /** день начала недели для INTERVAL у WEEKLY, 0 — воскресенье */
+  /** week start day for INTERVAL with WEEKLY, 0 — Sunday */
   wkst: number;
 };
 
@@ -331,7 +331,7 @@ const numbers = (v: string | undefined, min: number, max: number): number[] | nu
   return out.every((n) => Number.isInteger(n) && n !== 0 && Math.abs(n) >= min && Math.abs(n) <= max) ? out : null;
 };
 
-/** null — правило с тем, что мы не умеем раскладывать */
+/** null — a rule with something we can't expand */
 export const parseRule = (value: string): IcsRule | null => {
   const parts = new Map<string, string>();
   for (const p of value.replace(/^RRULE:/i, "").split(";")) {
@@ -364,7 +364,7 @@ export const parseRule = (value: string): IcsRule | null => {
   return { freq, interval, ...(count ? { count } : {}), ...(until ? { until } : {}), byDay, byMonthDay, byMonth, wkst };
 };
 
-// дни календаря считаем в UTC: так переход на летнее время не сдвигает даты
+// calendar days are counted in UTC: that way the switch to summer time doesn't shift dates
 const DAY_MS = 86_400_000;
 const dayNumber = (y: number, mo: number, d: number) => Math.round(Date.UTC(y, mo - 1, d) / DAY_MS);
 const fromDayNumber = (n: number) => {
@@ -374,7 +374,7 @@ const fromDayNumber = (n: number) => {
 const daysInMonth = (y: number, mo: number) => new Date(Date.UTC(y, mo, 0)).getUTCDate();
 const daysInYear = (y: number) => dayNumber(y + 1, 1, 1) - dayNumber(y, 1, 1);
 
-/** день (номер дня) подходит под правило; start — номер дня начала серии */
+/** the day (day number) matches the rule; start — day number of the series start */
 const matches = (rule: IcsRule, start: number, day: number): boolean => {
   const s = fromDayNumber(start);
   const c = fromDayNumber(day);
@@ -396,20 +396,20 @@ const matches = (rule: IcsRule, start: number, day: number): boolean => {
   }
   const hasDay = rule.byDay.length > 0;
   const hasMonthDay = rule.byMonthDay.length > 0;
-  // месяц
+  // month
   if (rule.byMonth.length) {
     if (!rule.byMonth.includes(c.mo)) return false;
   } else if (rule.freq === "YEARLY" && !hasDay && !hasMonthDay) {
     if (c.mo !== s.mo) return false;
   }
-  // число месяца
+  // day of month
   if (hasMonthDay) {
     const dim = daysInMonth(c.y, c.mo);
     if (!rule.byMonthDay.some((n) => (n > 0 ? n : dim + n + 1) === c.d)) return false;
   } else if ((rule.freq === "MONTHLY" || rule.freq === "YEARLY") && !hasDay) {
     if (c.d !== s.d) return false;
   }
-  // день недели, с номером — внутри месяца (или года у YEARLY без BYMONTH)
+  // weekday, with a number — within the month (or the year for YEARLY without BYMONTH)
   if (hasDay) {
     const inYear = rule.freq === "YEARLY" && !rule.byMonth.length;
     const ok = rule.byDay.some(({ n, wd }) => {
@@ -426,13 +426,13 @@ const matches = (rule: IcsRule, start: number, day: number): boolean => {
   return true;
 };
 
-/** сколько повторений самое большее раскладываем у одного события */
+/** the maximum number of occurrences we expand for one event */
 const MAX_OCCURRENCES = 5000;
 
 const sameMoment = (a: IcsTime, b: IcsTime): boolean =>
   a.time && b.time ? toInstant(a).getTime() === toInstant(b).getTime() : a.y === b.y && a.mo === b.mo && a.d === b.d;
 
-/** UNTIL по часам события: время без Z — в поясе события, дата без времени у события со временем — до конца дня */
+/** UNTIL by the event clock: time without Z is in the event time zone, a date without time for a timed event — until the end of the day */
 const untilTime = (until: IcsTime, first: IcsTime): IcsTime => {
   const clock = { zone: first.zone, utc: first.utc, customZone: first.customZone };
   if (until.time) return until.utc ? until : { ...until, ...clock };
@@ -474,7 +474,7 @@ function* ruleStarts(first: IcsTime, rule: IcsRule, earliest: number, lastDay: n
   }
 }
 
-// --- пользовательские пояса VTIMEZONE ---
+// --- custom VTIMEZONE time zones ---
 
 type Observance = { start: IcsTime; from: number; to: number; rule?: IcsRule; rdates: IcsTime[] };
 type Transition = { instant: number; from: number; to: number };
@@ -503,7 +503,7 @@ const customTimeZone = (observances: Observance[]): CustomZone => {
   });
   let through = Math.min(...rules.map(({ first }) => dayNumber(first.y, first.mo, first.d))) - 1;
   const offsetAt = (instant: number): number => {
-    // Время перехода задано по часам до смены смещения. Один год запаса покрывает границу года.
+    // The transition time is given by the clock before the offset change. One year of margin covers the year boundary.
     const year = new Date(instant).getUTCFullYear();
     if (dayNumber(year + 1, 1, 1) > through) {
       const next = dayNumber(year + 2, 1, 1) - 1;
@@ -573,7 +573,7 @@ const readZones = (lines: Line[]): Map<string, CustomZone> => {
   return zones;
 };
 
-/** Начала повторений события, которые могут задеть промежуток (с запасом на длительность) */
+/** Occurrence starts of the event that may touch the range (with a margin for the duration) */
 export const occurrenceStarts = (e: IcsEvent, range: DateRange, durationMs: number): IcsTime[] => {
   const first = e.start;
   const rule = e.rrule ? parseRule(e.rrule) : null;
@@ -581,7 +581,7 @@ export const occurrenceStarts = (e: IcsEvent, range: DateRange, durationMs: numb
   if (rule) {
     const lastDay = Math.floor(range.end.getTime() / DAY_MS) + 2;
     const earliest = Math.floor((range.start.getTime() - Math.max(durationMs, 0)) / DAY_MS) - 2;
-    // Старые повторения входят в COUNT, но не в лимит возвращаемых дат.
+    // Old occurrences count toward COUNT, but not toward the limit of returned dates.
     let remaining = MAX_OCCURRENCES - Number(dayNumber(first.y, first.mo, first.d) >= earliest);
     for (const time of ruleStarts(first, rule, earliest, lastDay)) {
       out.push(time);
@@ -594,7 +594,7 @@ export const occurrenceStarts = (e: IcsEvent, range: DateRange, durationMs: numb
   return out.filter((t) => !e.exdates.some((x) => sameMoment(x, t)));
 };
 
-/** длительность: DTEND, DURATION или по умолчанию (день у событий на весь день, ноль у остальных) */
+/** duration: DTEND, DURATION or the default (a day for all-day events, zero for the rest) */
 const durationOf = (e: IcsEvent): Duration => {
   if (!e.start.time) {
     if (e.end && !e.end.time) return { ms: 0, days: Math.max(1, dayNumber(e.end.y, e.end.mo, e.end.d) - dayNumber(e.start.y, e.start.mo, e.start.d)) };
@@ -611,7 +611,7 @@ const instanceKey = (t: IcsTime, at?: number): string =>
 const addCalendarDays = (time: IcsTime, days: number): IcsTime =>
   onDay(time, dayNumber(time.y, time.mo, time.d) + days);
 
-/** Событие календаря приложения: только для чтения, без связи с Google */
+/** App calendar event: read-only, not linked to Google */
 const toEvent = (
   calendarId: string, account: string, e: IcsEvent, start: IcsTime, untitled: string, duration: Duration,
   begin = toInstant(start),
@@ -634,7 +634,7 @@ const toEvent = (
     ...(e.location ? { location: e.location } : {}),
     ...(e.description ? { description: e.description } : {}),
     ...(meeting ? { meeting } : {}),
-    // «повторяется» в карточке читает правило из Google — у подписки его там нет
+    // "repeats" in the card reads the rule from Google — a subscription doesn't have it there
     recurring: false,
     reminders: "default",
     organizerSelf: false,
@@ -643,7 +643,7 @@ const toEvent = (
 
 type RangeEdit = { event: IcsEvent; at: number; shift: number; duration?: Duration };
 
-/** События календаря из файла, которые задевают промежуток: повторы разложены, перенесённые и отменённые учтены */
+/** Calendar events from the file that touch the range: recurrences expanded, moved and cancelled ones accounted for */
 export const expandIcs = (
   cal: IcsCalendar,
   range: DateRange,
@@ -651,7 +651,7 @@ export const expandIcs = (
   account: string,
   untitled: string,
 ): CalendarEvent[] => {
-  // перенесённые повторения по UID и исходному времени
+  // moved occurrences by UID and original time
   const moved = new Map<string, IcsEvent>();
   const ranged = new Map<string, RangeEdit[]>();
   const masters = new Map<string, IcsEvent>();

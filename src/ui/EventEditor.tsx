@@ -52,7 +52,7 @@ const formatWhen = (e: CalendarEvent): string => {
     : `${formatFullDate(e.start)}, ${formatTime(e.start)} — ${formatFullDate(e.end)}, ${formatTime(e.end)}`;
 };
 
-// Google хранит описание то текстом, то простым HTML: показываем как текст
+// Google stores the description either as text or as simple HTML: show it as text
 const plainText = (html: string): string =>
   html
     .replace(/<br\s*\/?>/gi, "\n")
@@ -68,12 +68,12 @@ const plainText = (html: string): string =>
 type DeleteProps = {
   busy: boolean;
   onConfirm: () => void;
-  /** открыто клавишей Delete: кнопка в фокусе, Enter удаляет */
+  /** opened with the Delete key: the button is focused, Enter deletes */
   armed?: boolean;
 };
 
-/** Удаляет одним нажатием: вместо «Точно удалить?» после удаления есть «Отменить» (model/undo.ts).
- *  У повторения серии сначала вопрос «только это или это и следующие» */
+/** Deletes with one press: instead of "Really delete?" there is "Undo" after deletion (model/undo.ts).
+ *  For a series occurrence, first the question "only this or this and following" */
 const DeleteButton = ({ busy, onConfirm, armed = false }: DeleteProps) => (
   <Button danger variant="ghost" disabled={busy} autoFocus={armed} onClick={onConfirm}>
     {t.editor.delete}
@@ -87,10 +87,10 @@ const GoogleLink = ({ href }: { href?: string }) =>
     </Button>
   ) : null;
 
-/** Вопрос перед сохранением или удалением повторения серии */
+/** Question before saving or deleting a series occurrence */
 const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
   const [busy, edited, choose, cancel] = useUnit([$busy, $recurrenceEdited, scopeChosen, scopeCancelled]);
-  // новое правило может начаться только с этого повторения
+  // a new rule can only start from this occurrence
   const onlyFollowing = kind === "save" && edited;
   const title = kind === "save" ? t.scope.saveTitle : t.scope.deleteTitle;
   return (
@@ -103,7 +103,7 @@ const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
           {t.common.cancel}
         </Button>
         {!onlyFollowing && (
-          // у удаления обе кнопки красные, без заливки: синий фон с красным текстом не читается
+          // for deletion both buttons are red, without fill: red text on a blue background is unreadable
           <Button
             variant={kind === "delete" ? "default" : "primary"}
             danger={kind === "delete"}
@@ -128,18 +128,18 @@ const ScopePrompt = ({ kind }: { kind: "save" | "delete" }) => {
   );
 };
 
-/** «Каждую неделю, по пн и ср» у повторения серии; пока правило грузится — просто «повторяющееся» */
+/** "Every week, on Mon and Wed" for a series occurrence; while the rule is loading — just "recurring" */
 const SeriesNote = ({ event }: { event: CalendarEvent }) => {
   const series = useUnit($series);
   const lines = series?.id === event.recurringEventId ? series?.lines : null;
-  // дни недели в правиле — по часам пояса события
+  // weekdays in the rule follow the event's time zone clock
   const zone = event.allDay ? undefined : event.timeZone;
   const start = zone ? wallClock(event.start, zone) : event.start;
   const text = lines?.length ? describeRule(parseRecurrence(lines, start, zone).rule, start) : t.editor.recurring;
   return <p className={s.note}>{text}</p>;
 };
 
-/** место встречи: по клику — Google Карты в браузере (или сама ссылка, если в поле ссылка) */
+/** meeting location: on click — Google Maps in the browser (or the link itself, if the field is a link) */
 const PlaceLink = ({ location }: { location: string }) => {
   const href = placeLink(location);
   if (!href) return <>{location}</>;
@@ -150,7 +150,7 @@ const PlaceLink = ({ location }: { location: string }) => {
   );
 };
 
-/** «Пересекается с: Созвон 14:00–15:00 (work@company.com)» — событие из другого аккаунта в то же время */
+/** "Overlaps with: Call 14:00–15:00 (work@company.com)" — an event from another account at the same time */
 const ConflictNote = ({ event }: { event: CalendarEvent }) => {
   const conflicts = useUnit($conflicts).get(event.key);
   if (!conflicts?.length) return null;
@@ -164,7 +164,7 @@ const ConflictNote = ({ event }: { event: CalendarEvent }) => {
   );
 };
 
-/** «9:00–10:00 (GMT−05:00) Северная Америка, восточное время — New York» у события в чужом поясе */
+/** "9:00–10:00 (GMT−05:00) Eastern Time — New York" for an event in another time zone */
 const ZoneNote = ({ event }: { event: CalendarEvent }) => {
   const zone = event.timeZone;
   if (event.allDay || !zone || zone === localTimeZone()) return null;
@@ -177,7 +177,7 @@ const ZoneNote = ({ event }: { event: CalendarEvent }) => {
   );
 };
 
-/** «По вашему времени: Чт, 5 нояб., 0:30–1:30» в форме, если пояс события не системный */
+/** "In your time: Thu, Nov 5, 0:30–1:30" in the form, if the event time zone isn't the system one */
 const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
   const zone = draftZone(draft);
   if (zone === localTimeZone()) return null;
@@ -192,7 +192,7 @@ const LocalTimeNote = ({ draft }: { draft: EventDraft }) => {
 
 const ANSWERS = ["accepted", "declined", "tentative"] as const;
 
-/** «Пойдёте? Да · Нет · Может быть» у чужой встречи, куда позвали этот аккаунт */
+/** "Going? Yes · No · Maybe" for someone else's meeting this account was invited to */
 const RsvpButtons = ({
   response,
   busy,
@@ -222,7 +222,7 @@ const RsvpButtons = ({
   );
 };
 
-/** Карточка события: только просмотр, правка по кнопке */
+/** Event card: view only, edit by button */
 const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boolean }) => {
   const response = myResponse(event);
   const [byId, accounts, busy, error, ask, close, edit, remove, duplicate, writable, rsvp, armed] = useUnit([
@@ -330,7 +330,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
         <div className={s.actions}>
           <GoogleLink href={event.htmlLink} />
           <div className={s.spacer} />
-          {/* копию можно сделать и из чужого календаря: она ляжет в свой */}
+          {/* a copy can be made from someone else's calendar too: it goes into our own */}
           {writable.length > 0 && (
             <Button variant="ghost" onClick={() => duplicate()} disabled={busy}>
               {t.editor.duplicate}
@@ -361,8 +361,8 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   </label>
 );
 
-/** Календари для записи. Аккаунтов несколько — календари сгруппированы по ним.
- *  У существующего события в списке только календари его аккаунта: Google не переносит события между аккаунтами */
+/** Writable calendars. With several accounts the calendars are grouped by account.
+ *  For an existing event the list has only its account's calendars: Google doesn't move events between accounts */
 const CalendarSelect = ({
   value,
   calendars,
@@ -391,7 +391,7 @@ const CalendarSelect = ({
   );
 };
 
-/** Цвет события: цвет календаря или один из 11 цветов Google */
+/** Event color: calendar color or one of 11 Google colors */
 const ColorField = ({
   value,
   calendarColor,
@@ -429,7 +429,7 @@ const ColorField = ({
 
 const TRAVEL_OPTIONS = [0, 5, 10, 15, 30, 45, 60, 90, 120];
 
-/** Время в пути: Google Календарь такого поля не знает, храним его в скрытых полях события */
+/** Travel time: Google Calendar has no such field, we store it in the event's hidden fields */
 const TravelField = ({ value, onChange }: { value: number; onChange: (minutes: number) => void }) => {
   const options = TRAVEL_OPTIONS.includes(value) ? TRAVEL_OPTIONS : [...TRAVEL_OPTIONS, value].sort((a, b) => a - b);
   return (
@@ -447,7 +447,7 @@ const TravelField = ({ value, onChange }: { value: number; onChange: (minutes: n
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Гости: email через Enter, запятую или пробел; у каждого — ответ на приглашение */
+/** Guests: email via Enter, comma or space; each one shows their invitation response */
 const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (guests: Attendee[]) => void }) => {
   const [text, setText] = useState("");
   const [bad, setBad] = useState(false);
@@ -506,7 +506,7 @@ const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (gues
           setBad(false);
         }}
         onKeyDown={(e) => {
-          // Enter с текстом в поле добавляет гостя, а не сохраняет форму
+          // Enter with text in the field adds a guest instead of saving the form
           if ((e.key === "Enter" || e.key === ",") && text.trim()) {
             e.preventDefault();
             add();
@@ -520,7 +520,7 @@ const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (gues
   );
 };
 
-/** Вложения в форме: файлы Google Диска; новый — по ссылке (Enter или уход из поля) */
+/** Attachments in the form: Google Drive files; a new one by link (Enter or leaving the field) */
 const AttachmentsField = ({ files, onChange }: { files: Attachment[]; onChange: (files: Attachment[]) => void }) => {
   const [text, setText] = useState("");
   const [bad, setBad] = useState(false);
@@ -569,7 +569,7 @@ const AttachmentsField = ({ files, onChange }: { files: Attachment[]; onChange: 
             setBad(false);
           }}
           onKeyDown={(e) => {
-            // Enter со ссылкой в поле прикрепляет файл, а не сохраняет форму
+            // Enter with a link in the field attaches the file instead of saving the form
             if (e.key === "Enter" && text.trim()) {
               e.preventDefault();
               add();
@@ -583,7 +583,7 @@ const AttachmentsField = ({ files, onChange }: { files: Attachment[]; onChange: 
   );
 };
 
-/** Гости в карточке: «Анна — придёт», организатор отмечен */
+/** Guests in the card: "Anna — going", the organizer is marked */
 const GuestList = ({ guests }: { guests: Attendee[] }) => (
   <ul className={s.guests}>
     {guests.map((g) => (
@@ -597,16 +597,16 @@ const GuestList = ({ guests }: { guests: Attendee[] }) => (
   </ul>
 );
 
-/** У события заполнено одно из редких полей — «Ещё» открыто сразу, чтобы значение не пряталось */
+/** The event has one of the rare fields filled — "More" is open right away so the value isn't hidden */
 export const usesMore = (d: EventDraft): boolean =>
   (!d.allDay && (draftZone(d) !== localTimeZone() || Boolean(d.endTimeZone) || Boolean(d.travelMinutes))) ||
   Boolean(d.colorId) ||
   Boolean(d.attachments?.length);
 
-/** Форма создания и правки. Частые поля сверху, описание (заметки) сразу после места; пояс, время в пути,
- *  цвет и вложения — под «Ещё». Кнопки внизу всегда видны, даже в низком окне */
+/** Create and edit form. Frequent fields on top, description (notes) right after location; time zone, travel time,
+ *  color and attachments — under "More". The bottom buttons are always visible, even in a short window */
 const EventForm = () => {
-  // раскрыли или свернули «Ещё» вручную: запоминаем для этого события, пока форма открыта
+  // "More" was expanded or collapsed manually: remember it for this event while the form is open
   const [toggled, setToggled] = useState<{ key: string; open: boolean } | null>(null);
   const [draft, error, busy, writable, byId, ask, series] = useUnit([
     $draft,
@@ -628,9 +628,9 @@ const EventForm = () => {
 
   const isNew = !draft.id;
   const calendar = byId.get(draft.originalCalendarId ?? draft.calendarId);
-  // перенести одно повторение в другой календарь Google не позволяет
+  // Google doesn't allow moving a single occurrence to another calendar
   const calendarLocked = !isNew && Boolean(draft.recurringEventId);
-  // правило серии ещё грузится; если не загрузилось, поле не показываем: правка одного повторения работает и без него
+  // the series rule is still loading; if it didn't load, the field isn't shown: editing one occurrence works without it
   const seriesFailed = Boolean(series?.failed && series.id === draft.recurringEventId);
   const seriesLoading = Boolean(draft.recurringEventId) && draft.originalRecurrence === undefined && !seriesFailed;
   const formKey = draft.id ?? "new";
@@ -778,7 +778,7 @@ const EventForm = () => {
         </div>
       )}
 
-      {/* закреплено внизу окна формы: «Сохранить» видно, сколько бы полей ни было открыто */}
+      {/* pinned to the bottom of the form window: "Save" is visible no matter how many fields are open */}
       <div className={s.footer}>
         {error && <p className={s.error}>{error}</p>}
         {ask ? (
@@ -819,9 +819,9 @@ export const EventEditor = () => {
     if (!draft) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      // сначала закрывается вопрос о повторениях
+      // the occurrences question closes first
       if (ask) return cancelScope();
-      // из правки существующего события Esc возвращает к просмотру
+      // from editing an existing event Esc returns to the view
       if (mode === "edit" && opened) cancel();
       else close();
     };

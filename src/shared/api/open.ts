@@ -1,5 +1,5 @@
-// Открыть ссылку в браузере по умолчанию: в приложении — через плагин opener,
-// в разработке интерфейса в обычном браузере — новой вкладкой.
+// Open a link in the default browser: in the app — via the opener plugin,
+// when developing the UI in a regular browser — in a new tab.
 import { inTauri } from "./bus";
 
 export const openExternal = async (url: string): Promise<void> => {

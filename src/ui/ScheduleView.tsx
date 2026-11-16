@@ -14,7 +14,7 @@ import { isJoinable, shortPlace } from "../shared/lib/meeting";
 import { openExternal } from "../shared/api/open";
 import s from "./ScheduleView.module.css";
 
-/** «Расписание»: события четырёх недель списком по дням, дни без событий пропускаем */
+/** "Schedule": events of four weeks as a list by day, days without events are skipped */
 export const ScheduleView = () => {
   const [view, cursor, today, now, events, calendars, conflicts] = useUnit([
     $view,
@@ -30,7 +30,7 @@ export const ScheduleView = () => {
     .map((day) => ({ day, list: eventsForDay(events, day) }))
     .filter((d) => d.list.length);
   const scrollRef = useRef<HTMLDivElement>(null);
-  // каждое перелистывание начинаем сверху
+  // each page starts from the top
   useLayoutEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [cursor]);
@@ -75,7 +75,7 @@ export const ScheduleView = () => {
                       </span>
                     )}
                   </button>
-                  {/* как в виджете: за 15 минут до начала и до конца — сразу в созвон */}
+                  {/* like in the widget: from 15 minutes before the start until the end — straight into the call */}
                   {join && (
                     <button
                       className={s.join}

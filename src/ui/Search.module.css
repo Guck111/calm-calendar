@@ -4,7 +4,7 @@
   min-width: 120px;
 }
 
-/* лупа в поле: поле узнаётся и тогда, когда в узком окне сжато до значка */
+/* magnifier in the field: the field is recognizable even when shrunk to an icon in a narrow window */
 .search::before {
   content: "";
   position: absolute;
@@ -94,7 +94,7 @@
   font-size: 13px;
 }
 
-/* совсем узкое окно: поле — значок лупы, раскрывается, когда в нём фокус (Ctrl+F, /, щелчок) */
+/* very narrow window: the field is a magnifier icon, expands when focused (Ctrl+F, /, click) */
 @media (max-width: 1100px) {
   .search {
     flex: 0 0 34px;

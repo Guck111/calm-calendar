@@ -149,14 +149,14 @@ export const zh: Dict = {
     ruleChanged: "重复规则已更改，修改将应用于此日程及后续日程。",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "添加账号",
     signOutTitle: (email: string) => `退出 ${email}`,
     expired: "登录已过期。",
     signInAgain: "重新登录",
     confirmSignOut: "确定退出？",
     alsoIn: (list: string) => `也在：${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `时间冲突：${list}`,
   },
   meeting: {

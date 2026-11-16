@@ -1,6 +1,6 @@
-// Разбор строки для хинди и бенгали. Часть дня стоит перед часом, слово часа — после:
-// «शाम 7 बजे», «সন্ধ্যা 7টায়»; «साढ़े 7» — половина восьмого; промежуток — «7 से 9 बजे तक».
-// Язык задаёт словарь (IndicVocab), шаблоны общие. Все шаблоны и строка приводятся к NFC.
+// Phrase parsing for Hindi and Bengali. The part of day comes before the hour, the hour word after:
+// «शाम 7 बजे», «সন্ধ্যা 7টায়»; «साढ़े 7» — half past seven; a range — «7 से 9 बजे तक».
+// The language provides the vocabulary (IndicVocab), the patterns are shared. All patterns and the string are normalized to NFC.
 import { addDays, startOfDay } from "./date";
 import {
   assemble,
@@ -17,47 +17,47 @@ import {
   type TimeRange,
 } from "./quick-core";
 
-/** Все поля — куски регулярных выражений без захватывающих групп, кроме сказанного */
+/** All fields are pieces of regular expressions without capturing groups, except where stated */
 export type IndicVocab = {
   today: string;
   tomorrow: string;
   dayAfterTomorrow: string;
-  /** «сегодня вечером»: «8 बजे» значит 20:00 */
+  /** "this evening": «8 बजे» means 20:00 */
   tonight: string;
-  /** одна группа — число: «3 दिन बाद» */
+  /** one group — the number: «3 दिन बाद» */
   inDays: string;
   inWeeks: string;
-  /** 12 названий месяцев с января (можно с английскими вариантами) */
+  /** 12 month names from January (English variants allowed) */
   months: string[];
-  /** окончание числа в дате: бенгальское «৫ই নভেম্বর» */
+  /** number suffix in a date: Bengali «৫ই নভেম্বর» */
   ordinal?: string;
-  /** 7 дней недели с понедельника */
+  /** 7 weekdays from Monday */
   weekdays: string[];
-  /** что идёт после дня недели: «शुक्रवार को», «শুক্রবারে» */
+  /** what comes after a weekday: «शुक्रवार को», «শুক্রবারে» */
   weekdaySuffix: string;
-  /** «следующий» перед днём недели */
+  /** "next" before a weekday */
   next: string;
   am: string;
   pm: string;
-  /** ночь: 9 — это 21, а 2 — это 2 часа ночи */
+  /** night: 9 is 21, and 2 is 2 at night */
   night: string;
-  /** слово часа после числа: «बजे», «টায়» */
+  /** hour word after the number: «बजे», «টায়» */
   hourWord: string;
-  /** «половина», «четверть после», «без четверти» перед числом */
+  /** "half", "quarter past", "quarter to" before the number */
   half: string;
   quarterPast: string;
   quarterTo: string;
-  /** «полтора», «два с половиной» вместо числа */
+  /** "one and a half", "two and a half" instead of a number */
   oneAndHalf: string;
   twoAndHalf: string;
-  /** между началом и концом промежутка и после конца */
+  /** between the start and end of a range and after the end */
   from: string;
   until: string;
   midnight: string;
   minute: string;
   hour: string;
   halfHour: string;
-  /** «для», «на» после длительности */
+  /** "for" after a duration */
   forWord: string;
   prepositions: string;
 };
@@ -93,7 +93,7 @@ export const makeIndicParser = (raw: IndicVocab) => {
     if (named && monthIndex(named[2]) >= 0) {
       return { date: upcomingDate(today, monthIndex(named[2]), Number(named[1]), named[3] ? Number(named[3]) : null) };
     }
-    // «12/11» — в Индии и Бангладеш день впереди
+    // «12/11» — in India and Bangladesh the day comes first
     const numeric = cut.take(re("(0?[1-9]|[12]\\d|3[01])/(0?[1-9]|1[0-2])(?:/(\\d{4}))?"));
     if (numeric) {
       return { date: upcomingDate(today, Number(numeric[2]) - 1, Number(numeric[1]), numeric[3] ? Number(numeric[3]) : null) };
@@ -128,7 +128,7 @@ export const makeIndicParser = (raw: IndicVocab) => {
     if (g[4]) m = 30;
     if (g[5]) m = 15;
     if (g[6]) [h, m] = [h - 1, 45];
-    // голое число — не время; «डेढ़» без «बजे» — скорее длительность
+    // a bare number is not a time; «डेढ़» without «बजे» is more likely a duration
     const marked = Boolean(part || g[4] || g[5] || g[6] || g[8] !== undefined || g[11]);
     return { h, m, part, marked };
   };

@@ -36,48 +36,48 @@ export const createClicked = createEvent();
 export const draftChanged = createEvent<Partial<EventDraft>>();
 export const editorClosed = createEvent();
 export const editClicked = createEvent();
-/** открыть форму с готовым черновиком (из быстрого создания) */
+/** open the form with a ready draft (from quick add) */
 export const draftOpened = createEvent<EventDraft>();
 export const editCancelled = createEvent();
 export const saveClicked = createEvent();
 export const deleteClicked = createEvent();
-/** ответ на вопрос «только это событие или это и следующие» */
+/** answer to the question "only this event or this and following" */
 export const scopeChosen = createEvent<Scope>();
 export const scopeCancelled = createEvent();
-/** ответ на приглашение в карточке чужой встречи */
+/** response to an invitation in the card of someone else's meeting */
 export const rsvpClicked = createEvent<ResponseStatus>();
 export const rsvpFx = createEffect<{ event: CalendarEvent; status: ResponseStatus }, void, AppError>(({ event, status }) =>
   respondToEvent(event, status),
 );
-/** «Создать копию» в карточке события */
+/** "Duplicate" in the event card */
 export const duplicateClicked = createEvent();
-/** Delete на выбранном событии: карточка открывается с кнопкой «Нажмите ещё раз, чтобы удалить» */
+/** Delete on a selected event: the card opens with the "Press again to delete" button */
 export const deleteArmed = createEvent();
 
 type Change = { draft: EventDraft; scope: Scope };
 
 export const saveFx = createEffect<Change, void, AppError>(({ draft, scope }) => saveEvent(draft, scope));
 
-/** перетаскивание в сетке: новое время сохраняем сразу, без формы; у серии — только это повторение */
+/** dragging in the grid: save the new time right away, without the form; for a series — only this occurrence */
 export const eventMoved = createEvent<{ event: CalendarEvent; start: Date; end: Date }>();
 export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
   ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
-/** Удаление выбрано: карточка закрывается, событие пропадает с экрана, а в Google уходит,
- *  когда строка «Отменить» исчезнет (model/undo.ts) */
+/** Deletion chosen: the card closes, the event disappears from the screen, and goes to Google
+ *  when the "Undo" bar disappears (model/undo.ts) */
 export const deleteRequested = createEvent<Change & { event: CalendarEvent }>();
 
-/** одно поле без формы (меню Ctrl+K: Google Meet, цвет); у серии — только это повторение */
+/** a single field without the form (Ctrl+K menu: Google Meet, color); for a series — only this occurrence */
 export const eventPatched = createEvent<{ event: CalendarEvent; patch: Partial<EventDraft> }>();
 export const patchFx = createEffect<EventDraft, void, AppError>((draft) => saveEvent(draft));
 
-/** правило серии хранится у главного события: загружаем, когда открыли повторение */
+/** the series rule is stored on the master event: load it when an occurrence is opened */
 export const loadSeriesFx = createEffect<{ calendarId: string; id: string }, string[], AppError>(({ calendarId, id }) =>
   loadRecurrence(calendarId, id),
 );
 
-/** правило серии, открытой сейчас: lines — null, пока грузится, и при ошибке */
+/** rule of the currently open series: lines — null while loading and on error */
 export const $series = createStore<{ id: string; lines: string[] | null; failed: boolean } | null>(null)
   .on(loadSeriesFx, (_, { id }) => ({ id, lines: null, failed: false }))
   .on(loadSeriesFx.done, (state, { params, result }) =>
@@ -85,11 +85,11 @@ export const $series = createStore<{ id: string; lines: string[] | null; failed:
   )
   .on(loadSeriesFx.fail, (state, { params }) => (state?.id === params.id ? { ...state, failed: true } : state));
 
-/** Черновик из события. Время в форме — по часам пояса события, чтобы при сохранении
- *  и перетаскивании пояс из Google не менялся на системный */
+/** Draft from an event. Time in the form follows the event's time zone clock, so that on save
+ *  and drag the time zone from Google isn't replaced with the system one */
 export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraft => {
   const zone = e.timeZone ?? localTimeZone();
-  // событие на весь день — просто даты, пояс им не нужен
+  // all-day event — just dates, it needs no time zone
   const start = e.allDay ? e.start : wallClock(e.start, zone);
   const end = e.allDay ? addDays(e.end, -1) : wallClock(e.end, zone);
   return {
@@ -100,7 +100,7 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     allDay: e.allDay,
     startDate: toDateKey(start),
     startTime: toTimeKey(start),
-    // в форме последний день события на весь день показываем включительно
+    // in the form the last day of an all-day event is shown inclusive
     endDate: toDateKey(end),
     endTime: toTimeKey(end),
     timeZone: zone,
@@ -113,21 +113,21 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     recurringEventId: e.recurringEventId,
     originalStart: e.originalStart,
     htmlLink: e.htmlLink,
-    // поле в Google пишем, только если время в пути есть или его меняли
+    // write the field to Google only if travel time exists or was changed
     ...(e.travelMinutes ? { travelMinutes: e.travelMinutes } : {}),
-    // список гостей меняет только организатор; у чужой встречи его не трогаем
+    // only the organizer changes the guest list; for someone else's meeting leave it alone
     ...(e.organizerSelf !== false ? { guests: e.attendees ?? [] } : {}),
-    // вложения чужой встречи меняет её организатор
+    // attachments of someone else's meeting are changed by its organizer
     ...(e.organizerSelf !== false ? { attachments: e.attachments ?? [] } : {}),
     colorId: e.colorId ?? "",
-    // видеовстречу можно добавить, только если её ещё нет
+    // a video meeting can be added only if there isn't one yet
     ...(e.meeting ? {} : { addMeet: false }),
   };
 };
 
-/** Копия события — новое событие с теми же полями. Повторение серии копируется одним событием,
- *  старая видеовстреча и ответы гостей не переносятся: сам аккаунт станет организатором копии.
- *  Событие из календаря только для чтения копируется в первый календарь, куда можно писать */
+/** Event copy is a new event with the same fields. A series occurrence is copied as one event,
+ *  the old video meeting and guest responses are not carried over: the account itself becomes the organizer of the copy.
+ *  An event from a read-only calendar is copied into the first writable calendar */
 export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft => {
   const draft: EventDraft = { ...fromEvent(e) };
   delete draft.id;
@@ -144,7 +144,7 @@ export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft
       .filter((a) => !a.self)
       .map((a) => ({ email: a.email, ...(a.displayName ? { displayName: a.displayName } : {}) })),
     addMeet: false,
-    // у копии вложения те же, их надо отправить вместе с новым событием
+    // the copy has the same attachments; they must be sent along with the new event
     attachmentsChanged: Boolean(e.attachments?.length),
     attachments: e.attachments ?? [],
   };
@@ -170,7 +170,7 @@ const newDraft = (calendarId: string, start: Date, allDay: boolean): EventDraft 
   };
 };
 
-/** ближайшие полчаса от текущего момента */
+/** the nearest half hour from now */
 const nextHalfHour = (): Date => {
   const d = new Date();
   d.setSeconds(0, 0);
@@ -181,8 +181,8 @@ const nextHalfHour = (): Date => {
 export const draftStart = (d: EventDraft): Date =>
   d.allDay ? fromDateKey(d.startDate) : combineDateTime(d.startDate, d.startTime);
 
-/** Правило обычного события следует за началом: «каждую среду» → «каждый четверг».
- *  У повторения серии правило не трогаем: перенос одного повторения его не меняет */
+/** A regular event's rule follows its start: "every Wednesday" → "every Thursday".
+ *  A series occurrence's rule is left alone: moving one occurrence doesn't change it */
 const followRule = (prev: EventDraft, next: EventDraft): EventDraft => {
   if (next.recurringEventId || !next.recurrence.length) return next;
   const { rule, extra } = parseRecurrence(next.recurrence, draftStart(prev), draftZone(prev));
@@ -194,8 +194,8 @@ const followRule = (prev: EventDraft, next: EventDraft): EventDraft => {
   };
 };
 
-/** Если начало сдвинули позже конца, конец сдвигается следом с той же длительностью.
- *  Смена пояса оставляет часы в форме как есть (как в Google), а свой пояс конца забывается */
+/** If the start is moved past the end, the end follows, keeping the duration.
+ *  Changing the time zone keeps the clock in the form as is (as in Google), and the separate end time zone is dropped */
 export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): EventDraft => {
   const next = { ...draft, ...patch, ...("attachments" in patch ? { attachmentsChanged: true } : {}) };
   if ("timeZone" in patch && patch.timeZone !== draft.timeZone) {
@@ -226,12 +226,12 @@ export const validate = (d: EventDraft): string | null => {
   return null;
 };
 
-/** событие, открытое для просмотра (до перехода в правку) */
+/** event opened for viewing (before switching to edit) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
   .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteRequested]);
 
-/** просмотр существующего события или форма правки и создания */
+/** viewing an existing event or the edit/create form */
 export const $mode = createStore<"view" | "edit">("view")
   .on(eventOpened, () => "view")
   .on([slotClicked, createClicked, editClicked, draftOpened], () => "edit")
@@ -241,7 +241,7 @@ export const $draft = createStore<EventDraft | null>(null)
   .on(eventOpened, (_, e) => fromEvent(e))
   .on(draftOpened, (_, d) => d)
   .on(draftChanged, (d, patch) => (d ? applyChange(d, patch) : d))
-  // правило серии пришло: подставляем, если пользователь ещё не начал его менять
+  // series rule arrived: fill it in if the user hasn't started changing it yet
   .on(loadSeriesFx.done, (d, { params, result }) =>
     d && d.recurringEventId === params.id && d.originalRecurrence === undefined
       ? { ...d, recurrence: result, originalRecurrence: result }
@@ -249,12 +249,12 @@ export const $draft = createStore<EventDraft | null>(null)
   )
   .reset([editorClosed, saveFx.done, deleteRequested]);
 
-/** карточка открыта клавишей Delete: кнопка удаления уже в фокусе, Enter удаляет */
+/** card opened with the Delete key: the delete button is already focused, Enter deletes */
 export const $deleteArmed = createStore(false)
   .on(deleteArmed, () => true)
   .reset([eventOpened, editorClosed, editClicked, duplicateClicked, deleteRequested]);
 
-/** черновик копии: открытое событие берём до того, как карточка закроется */
+/** copy draft: take the open event before the card closes */
 const duplicated = sample({
   clock: duplicateClicked,
   source: { opened: $opened, writable: $writableCalendars },
@@ -270,7 +270,7 @@ sample({
   fn: (event, status) => ({ event: event as CalendarEvent, status }),
   target: rsvpFx,
 });
-// карточка сразу показывает новый ответ, события перечитываются следом
+// the card shows the new response right away, events are reloaded after
 $opened.on(rsvpFx.done, (e, { params }) => (e && e.key === params.event.key ? withResponse(e, params.status) : e));
 $opened.reset(duplicated);
 $mode.on(duplicated, () => "edit");
@@ -282,7 +282,7 @@ sample({
   target: loadSeriesFx,
 });
 
-// «Отмена» в форме существующего события возвращает исходные значения
+// "Cancel" in the form of an existing event restores the original values
 sample({
   clock: editCancelled,
   source: { opened: $opened, series: $series },
@@ -310,19 +310,19 @@ sample({
   target: $draft,
 });
 
-/** открыт вопрос, к каким повторениям серии применить сохранение или удаление */
+/** the question of which series occurrences to apply save or delete to is open */
 export const $askScope = createStore<"save" | "delete" | null>(null)
-  // не по scopeChosen: ответ ещё нужен, чтобы выбрать сохранение или удаление
+  // not via scopeChosen: the answer is still needed to pick save or delete
   .reset([saveFx, deleteRequested, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
 
-/** правило в форме поменяли: тогда правка возможна только для «это и следующие» */
+/** the rule in the form was changed: then editing is possible only for "this and following" */
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
   .on([saveFx.failData, rsvpFx.failData], (_, e) => e.message)
   .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteRequested, duplicated]);
 
-// удаление уходит в Google, когда карточка уже закрыта: его ошибка — в полосу над календарём
+// deletion goes to Google when the card is already closed: its error goes to the bar above the calendar
 export const $busy = sample({
   source: { save: saveFx.pending, rsvp: rsvpFx.pending },
   fn: ({ save, rsvp }) => save || rsvp,
@@ -342,7 +342,7 @@ const $canSave = sample({
   fn: ({ draft, error, busy }) => Boolean(draft) && !error && !busy,
 });
 
-// повторение серии: сначала спросить, к каким повторениям применить
+// series occurrence: first ask which occurrences to apply to
 sample({
   clock: saveClicked,
   source: { draft: $draft, ok: $canSave },
@@ -397,7 +397,7 @@ sample({
   fn: ({ event, start, end }) => ({ key: event.key, start, end }),
   target: eventShifted,
 });
-// при ошибке событие вернётся на место после перечитывания
+// on error the event returns to its place after reloading
 sample({
   clock: moveFx.failData,
   fn: (e) => t.errors.moveFailed(e.message),
@@ -406,18 +406,18 @@ sample({
 
 sample({ clock: eventPatched, fn: ({ event, patch }) => ({ ...fromEvent(event), ...patch }), target: patchFx });
 sample({ clock: patchFx.failData, fn: (e) => t.errors.changeFailed(e.message), target: actionFailed });
-// при ошибке удаления событие вернётся на экран после перечитывания
+// on delete error the event returns to the screen after reloading
 sample({ clock: deleteFx.failData, fn: (e) => t.errors.deleteFailed(e.message), target: actionFailed });
 sample({ clock: [saveFx.done, deleteFx.finally, moveFx.finally, rsvpFx.done, patchFx.finally], target: reloadRequested });
 patchFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 rsvpFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
-// ошибки самого интерфейса при сохранении (ответы Google пишет Rust) — в журнал
+// UI errors during save (Rust logs Google responses) go to the log
 for (const [name, fx] of [["save", saveFx], ["delete", deleteFx], ["move", moveFx]] as const) {
   fx.failData.watch((e) => e.kind === "other" && logError(`${name} event failed`, e));
 }
 
-// виджет перечитает события
+// the widget will reload events
 saveFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 deleteFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 

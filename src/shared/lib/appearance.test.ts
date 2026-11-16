@@ -12,7 +12,7 @@ import {
   parseAppearance,
 } from "./appearance";
 
-// <html> без DOM: только то, что трогает applyAppearance
+// <html> without DOM: only what applyAppearance touches
 const fakeRoot = () => {
   const props = new Map<string, string>();
   return {

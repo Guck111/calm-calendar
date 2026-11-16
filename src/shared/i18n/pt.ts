@@ -163,14 +163,14 @@ export const pt: Dict = {
     ruleChanged: "A repetição mudou, então a alteração vale para este evento e os seguintes.",
   },
   accounts: {
-    /** несколько аккаунтов Google в одном окне */
+    /** multiple Google accounts in one window */
     add: "Adicionar conta",
     signOutTitle: (email: string) => `Sair de ${email}`,
     expired: "A sessão expirou.",
     signInAgain: "Entrar de novo",
     confirmSignOut: "Sair da conta?",
     alsoIn: (list: string) => `Também em: ${list}`,
-    /** событие другого аккаунта в то же время */
+    /** an event from another account at the same time */
     conflict: (list: string) => `Coincide com: ${list}`,
   },
   meeting: {

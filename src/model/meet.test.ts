@@ -1,4 +1,4 @@
-// «Добавить Google Meet»: запрос на создание видеовстречи при сохранении события
+// "Add Google Meet": request to create a video meeting when saving the event
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEvent, EventDraft } from "../shared/api/types";
 
@@ -34,8 +34,8 @@ const draft = (over: Partial<EventDraft> = {}): EventDraft => ({
 
 const call = (method: string) => googleRequest.mock.calls.find((c) => c[1] === method);
 
-describe("Google Meet при создании", () => {
-  it("с галочкой в теле запроса есть заявка на Meet с уникальным requestId", () => {
+describe("Google Meet on create", () => {
+  it("with the checkbox, the request body has a Meet request with a unique requestId", () => {
     const a = draftToBody(draft({ addMeet: true }));
     const b = draftToBody(draft({ addMeet: true }));
     expect(a.conferenceData).toEqual({
@@ -44,26 +44,26 @@ describe("Google Meet при создании", () => {
     expect(a.conferenceData?.createRequest.requestId).not.toBe(b.conferenceData?.createRequest.requestId);
   });
 
-  it("без галочки видеовстречу не трогаем", () => {
+  it("without the checkbox the video meeting is left alone", () => {
     expect(draftToBody(draft())).not.toHaveProperty("conferenceData");
     expect(draftToBody(draft({ addMeet: false }))).not.toHaveProperty("conferenceData");
   });
 
-  it("новое событие с Meet: conferenceDataVersion=1, без неё Google заявку не примет", async () => {
+  it("new event with Meet: conferenceDataVersion=1, without it Google won't accept the request", async () => {
     await saveEvent(draft({ addMeet: true }));
     const [, , , query, body] = call("POST") ?? [];
     expect(query).toMatchObject({ conferenceDataVersion: "1" });
     expect(body.conferenceData.createRequest.conferenceSolutionKey.type).toBe("hangoutsMeet");
   });
 
-  it("Meet можно добавить и к существующему событию", async () => {
+  it("Meet can be added to an existing event too", async () => {
     await saveEvent(draft({ id: "e1", originalCalendarId: CAL, addMeet: true }));
     const [, , , query, body] = call("PATCH") ?? [];
     expect(query).toMatchObject({ conferenceDataVersion: "1" });
     expect(body).toHaveProperty("conferenceData.createRequest");
   });
 
-  it("у события с видеовстречей галочки нет, у события без неё — выключена", () => {
+  it("an event with a video meeting has no checkbox, an event without one has it off", () => {
     const withMeet = toCalendarEvent(CAL, {
       id: "1",
       summary: "a",

@@ -1,5 +1,5 @@
-//! Узкий прокси к Google Calendar API. Токены не покидают Rust-часть:
-//! фронтенд передаёт только метод, путь, параметры и тело запроса.
+//! Narrow proxy to the Google Calendar API. Tokens never leave the Rust side:
+//! the frontend passes only the method, path, parameters and request body.
 
 use crate::error::{Error, Result};
 use crate::oauth::Auth;
@@ -24,8 +24,8 @@ fn parse_method(method: &str) -> Result<Method> {
 
 fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
     let rejected = || Error::Other("API path is not allowed".into());
-    // идентификаторы календарей и событий кодируются целиком, поэтому точек-сегментов,
-    // обратных слешей, «?» и «#» в пути быть не может — ни открытых, ни закодированных
+    // calendar and event ids are encoded whole, so dot segments,
+    // backslashes, "?" and "#" can't be in the path — neither raw nor encoded
     let lower = path.to_ascii_lowercase();
     if !path.starts_with(ALLOWED_PREFIX)
         || path.contains("..")
@@ -39,7 +39,7 @@ fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
         return Err(rejected());
     }
     let mut url = Url::parse(&format!("{API_BASE}{path}"))?;
-    // окончательная проверка — по уже разобранному адресу, после нормализации пути
+    // the final check is on the already parsed URL, after path normalization
     if url.scheme() != "https"
         || url.host_str() != Some("www.googleapis.com")
         || !url.path().starts_with(ALLOWED_PREFIX)
@@ -76,7 +76,7 @@ pub async fn request(
     let method = parse_method(method)?;
     let url = build_url(path, &query)?;
 
-    // одна повторная попытка, если токен внезапно стал недействителен
+    // one retry if the token suddenly became invalid
     for attempt in 0..2 {
         let token = auth.access_token(app, account).await?;
         let mut req = auth
@@ -129,7 +129,7 @@ mod tests {
             "/calendar/v3/x?alt=media",
             "/calendar/v3/x#frag",
         ] {
-            assert!(build_url(p, &[]).is_err(), "{p} должен отклоняться");
+            assert!(build_url(p, &[]).is_err(), "{p} must be rejected");
         }
     }
 
@@ -144,7 +144,7 @@ mod tests {
         assert!(url.as_str().ends_with("?singleEvents=true"));
     }
 
-    /// повторения серии и её главное событие: нужны для «это и следующие»
+    /// series occurrences and its master event: needed for "this and following"
     #[test]
     fn allows_series_instances() {
         let url = build_url(

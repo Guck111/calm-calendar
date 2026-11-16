@@ -1,12 +1,12 @@
-//! Подписки на календари .ics по ссылке (расписание, спорт, календарь из Outlook).
-//! Файл скачивает Rust: из страницы чужой сайт обычно не отдаётся (CORS). Разбирает его интерфейс.
-//! Ссылку подписки выбирает сам пользователь, Google тут не участвует, новых прав не нужно.
+//! Subscriptions to .ics calendars by link (timetable, sports, a calendar from Outlook).
+//! Rust downloads the file: another site usually won't serve it to a page (CORS). The UI parses it.
+//! The user picks the subscription link themselves, Google is not involved, no new scopes needed.
 
 use crate::error::{Error, Result};
 use std::sync::OnceLock;
 use std::time::Duration;
 
-/// больше этого календари по ссылке не бывают; защищает от случайной ссылки на огромный файл
+/// link calendars are never larger than this; protects against an accidental link to a huge file
 const MAX_BYTES: usize = 10 * 1024 * 1024;
 
 fn http() -> &'static reqwest::Client {
@@ -20,7 +20,7 @@ fn http() -> &'static reqwest::Client {
     })
 }
 
-/// webcal:// — та же ссылка по https; другие схемы, кроме http и https, не принимаем
+/// webcal:// is the same link over https; schemes other than http and https are not accepted
 pub fn normalize(url: &str) -> Result<url::Url> {
     let trimmed = url.trim();
     let fixed = match trimmed.get(..9) {
@@ -34,7 +34,7 @@ pub fn normalize(url: &str) -> Result<url::Url> {
     }
 }
 
-/// Текст календаря по ссылке. В журнал попадает только адрес сайта, без пути: в пути бывает секретный ключ
+/// Calendar text by link. Only the site address goes to the log, without the path: the path may contain a secret key
 pub async fn fetch(url: &str) -> Result<String> {
     let url = normalize(url)?;
     let host = url.host_str().unwrap_or("").to_owned();
@@ -76,7 +76,7 @@ mod tests {
         assert!(normalize("https://example.com/a.ics").is_ok());
     }
 
-    /// по сети, поэтому только вручную: cargo test feeds -- --ignored
+    /// over the network, so manual only: cargo test feeds -- --ignored
     #[tokio::test]
     #[ignore]
     async fn downloads_a_public_calendar() {

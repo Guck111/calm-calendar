@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Шаблон манифеста MSIX. Значения в {{...}} подставляет scripts/build-msix.ps1.
-  Для Store: Name, Publisher и PublisherDisplayName берутся из Partner Center
-  (Product identity), иначе пакет не примут.
+  MSIX manifest template. Values in {{...}} are filled in by scripts/build-msix.ps1.
+  For the Store: Name, Publisher and PublisherDisplayName come from Partner Center
+  (Product identity), otherwise the package is rejected.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -24,7 +24,7 @@
   </Properties>
 
   <Dependencies>
-    <!-- 1809: первая версия, где у MSIX есть всё нужное для настольных приложений -->
+    <!-- 1809: the first version where MSIX has everything needed for desktop apps -->
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
   </Dependencies>
 
@@ -45,8 +45,8 @@
   </Resources>
 
   <Applications>
-    <!-- Id совпадает с identifier из tauri.conf.json: под ним плагин уведомлений
-         отправляет их (PackageFamilyName!identifier), иначе Windows не свяжет уведомление с приложением -->
+    <!-- Id matches identifier from tauri.conf.json: the notification plugin sends notifications
+         under it (PackageFamilyName!identifier), otherwise Windows won't link the notification to the app -->
     <Application Id="com.arseni.calmcalendar" Executable="calm-calendar.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Calm Calendar"
@@ -55,7 +55,7 @@
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>
-        <!-- автозапуск для упакованного приложения: раздел Run в реестре внутри MSIX не работает -->
+        <!-- autostart for a packaged app: the Run registry key inside MSIX doesn't work -->
         <desktop:Extension Category="windows.startupTask" Executable="calm-calendar.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop:StartupTask TaskId="CalmCalendarStartup" Enabled="false" DisplayName="Calm Calendar" />
         </desktop:Extension>

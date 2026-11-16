@@ -12,13 +12,13 @@ import { $signedIn, sessionLost, signOutFx } from "./auth";
 import { $failedAccounts, $visibleCalendars, calendarsRequested, fetchCalendarsFx } from "./calendars";
 import { $range } from "./view";
 
-/** перечитать календари и события (кнопка «обновить», возврат в окно) */
+/** reload calendars and events ("refresh" button, returning to the window) */
 export const refreshRequested = createEvent();
-/** перечитать только события (после сохранения или удаления) */
+/** reload events only (after save or delete) */
 export const reloadRequested = createEvent();
 
 type Request = { calendars: Calendar[]; range: DateRange; id: number };
-/** lost — в каком-то аккаунте вход истёк, остальные загрузились */
+/** lost — sign-in expired in some account, the others loaded */
 type Result = { events: CalendarEvent[]; failed: string[]; lost: boolean; id: number };
 
 let lastRequestId = 0;
@@ -27,7 +27,7 @@ export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ ca
   const results = await Promise.allSettled(calendars.map((c) => listEvents(c.id, range)));
   const failed = calendars.filter((_, i) => results[i].status === "rejected").map((c) => c.name);
   const firstError = results.find((r) => r.status === "rejected");
-  // если не удалось ничего — это ошибка целиком (нет сети, вход истёк)
+  // if nothing loaded, it's a full error (offline, sign-in expired)
   if (calendars.length && failed.length === calendars.length && firstError?.status === "rejected") {
     throw toAppError(firstError.reason);
   }
@@ -38,18 +38,18 @@ export const fetchEventsFx = createEffect<Request, Result, AppError>(async ({ ca
   return { events, failed, lost, id };
 });
 
-/** действие с событием не удалось — показываем в полосе ошибок */
+/** an action on an event failed — show it in the error bar */
 export const actionFailed = createEvent<string>();
 
-/** событие уже передвинуто на экране, ещё до ответа Google */
+/** the event is already moved on screen, before Google responds */
 export const eventShifted = createEvent<{ key: string; start: Date; end: Date }>();
 
-/** События, которые удалены на экране, но ещё не в Google (пока видна «Отменить»):
- *  одно событие или повторения серии с этого времени («это и следующие») */
+/** Events deleted on screen but not yet in Google (while "Undo" is visible):
+ *  a single event or series occurrences from this time on ("this and following") */
 export type Hidden = { key: string; calendarId: string } & ({ id: string } | { recurringEventId: string; from: Date });
 
-/** Ключ удаления: календарь и id события. Только id мало: у приглашения копии в календарях разных
- *  аккаунтов — с одним и тем же id */
+/** Deletion key: calendar and event id. The id alone isn't enough: an invitation has copies in calendars of different
+ *  accounts with the same id */
 export const deleteKey = (calendarId: string, id: string): string => `${calendarId}\u0000${id}`;
 
 export const hides = (h: Hidden, e: CalendarEvent): boolean =>
@@ -57,9 +57,9 @@ export const hides = (h: Hidden, e: CalendarEvent): boolean =>
   ("id" in h ? e.id === h.id : e.recurringEventId === h.recurringEventId && occurrenceStart(e) >= h.from);
 
 export const eventsHidden = createEvent<Hidden>();
-/** «Отменить»: события возвращаются на экран, прятать их больше не нужно */
+/** "Undo": events return to the screen, no need to hide them anymore */
 export const eventsRestored = createEvent<{ hidden: Hidden; events: CalendarEvent[] }>();
-/** удаление дошло до Google (или не дошло): дальше список берём как есть */
+/** the deletion reached Google (or didn't): from now on take the list as is */
 export const hidingEnded = createEvent<string>();
 
 const $hidden = createStore<Hidden[]>([])
@@ -68,7 +68,7 @@ const $hidden = createStore<Hidden[]>([])
   .on(hidingEnded, (list, key) => list.filter((h) => h.key !== key))
   .reset(signOutFx.finally);
 
-// ответ на устаревший запрос (уже перелистнули дальше) не применяем; спрятанные не показываем
+// a response to a stale request (already paged further) is not applied; hidden ones are not shown
 const loaded = sample({
   clock: fetchEventsFx.doneData,
   source: $hidden,
@@ -83,7 +83,7 @@ export const $events = createStore<CalendarEvent[]>([])
   .on(eventsRestored, (list, { events }) => [...list, ...events])
   .reset(signOutFx.finally);
 
-/** пересечения событий разных аккаунтов: ключ события → с чем пересекается */
+/** overlaps of events from different accounts: event key → what it overlaps */
 export const $conflicts = $events.map((list): Conflicts => findConflicts(list));
 
 export const $loading = combine(fetchEventsFx.pending, fetchCalendarsFx.pending, (a, b) => a || b);
@@ -98,7 +98,7 @@ const $eventsError = createStore<string | null>(null)
   .on(actionFailed, (_, m) => m)
   .reset(signOutFx.finally);
 
-/** ошибка загрузки; если её нет, но не ответил один из аккаунтов, — пишем какой */
+/** load error; if there is none but one of the accounts didn't respond, say which */
 export const $loadError = combine($eventsError, $failedAccounts, (error, accounts) =>
   error ?? (accounts.length ? t.errors.accountsFailed(accounts.join(", ")) : null),
 );
@@ -111,9 +111,9 @@ sample({
   target: fetchEventsFx,
 });
 
-// новый список календарей сам запустит загрузку событий через $visibleCalendars
+// the new calendar list itself triggers event loading via $visibleCalendars
 sample({ clock: refreshRequested, target: calendarsRequested });
-// «Обновить» скачивает и подписки .ics заново, не дожидаясь, пока устареет запомненное
+// "Refresh" re-downloads .ics subscriptions too, without waiting for the cached copy to expire
 refreshRequested.watch(forgetFeeds);
 
 sample({
@@ -124,6 +124,6 @@ sample({
 
 sample({ clock: fetchEventsFx.doneData, filter: (r) => r.lost, target: sessionLost });
 
-// сбои самого интерфейса (не ответы Google — их пишет Rust) — в журнал
+// failures of the UI itself (not Google responses — Rust logs those) go to the log
 fetchEventsFx.failData.watch((e) => e.kind === "other" && logError("loading events failed", e));
 fetchCalendarsFx.failData.watch((e) => e.kind === "other" && logError("loading calendars failed", e));

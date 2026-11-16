@@ -1,4 +1,4 @@
-// Ответ на приглашение: пойду, не пойду, может быть — в карточке чужой встречи
+// Invitation response: yes, no, maybe — in the card of someone else's meeting
 import { allSettled, fork } from "effector";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CalendarEvent } from "../shared/api/types";
@@ -35,27 +35,27 @@ const invite = (over: Record<string, unknown> = {}): CalendarEvent =>
     ...over,
   }) as CalendarEvent;
 
-describe("ответ на приглашение", () => {
-  it("свой ответ есть только у приглашённого на чужую встречу", () => {
+describe("invitation response", () => {
+  it("only a guest invited to someone else's meeting has their own response", () => {
     expect(myResponse(invite())).toBe("needsAction");
     expect(myResponse(invite({ organizer: { email: ME, self: true } }))).toBeUndefined();
     expect(myResponse(invite({ attendees: undefined }))).toBeUndefined();
   });
 
-  it("в Google уходит только свой ответ, с письмом организатору", async () => {
+  it("only the own response goes to Google, with an email to the organizer", async () => {
     await respondToEvent(invite(), "accepted");
     const [account, method, path, query, body] = googleRequest.mock.calls[0];
     expect([account, method]).toEqual([ME, "PATCH"]);
     expect(path).toBe("/calendar/v3/calendars/work/events/q1_20261110T150000Z");
     expect(query).toEqual({ sendUpdates: "all" });
-    // attendeesOmitted: остальных гостей не трогаем, даже если Google прислал не весь список
+    // attendeesOmitted: other guests are left alone, even if Google sent an incomplete list
     expect(body).toEqual({
       attendeesOmitted: true,
       attendees: [{ email: "me.alias@example.com", responseStatus: "accepted" }],
     });
   });
 
-  it("после ответа карточка сразу показывает новый ответ", async () => {
+  it("after responding, the card shows the new response right away", async () => {
     const scope = fork();
     await allSettled(eventOpened, { scope, params: invite() });
     await allSettled(rsvpClicked, { scope, params: "declined" });

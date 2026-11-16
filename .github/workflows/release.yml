@@ -1,7 +1,7 @@
 name: release
 
-# Установщики собираются по тегу версии (git tag v0.2.0 && git push origin v0.2.0)
-# или вручную: Actions → release → Run workflow
+# Installers are built on a version tag (git tag v0.2.0 && git push origin v0.2.0)
+# or manually: Actions → release → Run workflow
 on:
   push:
     tags: ["v*"]
@@ -34,16 +34,16 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      # клиент OAuth можно зашить в сборку через секреты репозитория; без них приложение попросит его при запуске
+      # the OAuth client can be baked into the build via repository secrets; without them the app asks for it on start
       - name: Build installers
         run: npm run tauri build
         env:
           CALM_GOOGLE_CLIENT_ID: ${{ secrets.CALM_GOOGLE_CLIENT_ID }}
           CALM_GOOGLE_CLIENT_SECRET: ${{ secrets.CALM_GOOGLE_CLIENT_SECRET }}
 
-      # пакет для Microsoft Store. Identity берётся из Partner Center → Product identity и
-      # задаётся переменными репозитория (Settings → Variables): MSIX_IDENTITY_NAME,
-      # MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME. Пока их нет, шаг пропускается.
+      # package for the Microsoft Store. Identity comes from Partner Center → Product identity and
+      # is set by repository variables (Settings → Variables): MSIX_IDENTITY_NAME,
+      # MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME. Until they exist, the step is skipped.
       - name: Build MSIX for Microsoft Store
         if: vars.MSIX_IDENTITY_NAME != ''
         shell: pwsh
@@ -61,12 +61,12 @@ jobs:
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/msix/*.msix
 
-      # текст релиза — раздел этой версии из CHANGELOG.md; без него релиз не выпускаем
+      # release notes are this version's section of CHANGELOG.md; without it we don't publish the release
       - if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: node scripts/release-notes.mjs "${{ github.ref_name }}" > release-notes.md
 
-      # для тега создаём релиз на GitHub с установщиками
+      # for a tag, create a GitHub release with the installers
       - if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:

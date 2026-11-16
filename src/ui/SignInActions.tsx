@@ -3,7 +3,7 @@ import { signInCancelClicked, signInReopenClicked } from "../model/auth";
 import { t } from "../shared/i18n";
 import s from "./SignInActions.module.css";
 
-/** Пока ждём браузер со входом: вкладка могла потеряться или человек передумал — без выхода он ждал бы 5 минут */
+/** While waiting for the browser with sign-in: the tab could have got lost or the person changed their mind — without a way out they'd wait 5 minutes */
 export const SignInActions = ({ center = false }: { center?: boolean }) => {
   const [reopen, cancel] = useUnit([signInReopenClicked, signInCancelClicked]);
   return (

@@ -1,6 +1,6 @@
-// Правило повтора события (RRULE из RFC 5545) в том объёме, который умеет форма:
-// каждый день, неделю, месяц или год с шагом, дни недели, «2-й вторник месяца»,
-// конец по дате или по числу повторов. Правило сложнее остаётся как есть и не правится.
+// Event recurrence rule (RRULE from RFC 5545) to the extent the form supports:
+// every day, week, month or year with an interval, weekdays, "2nd Tuesday of the month",
+// end by date or by occurrence count. A more complex rule stays as is and isn't edited.
 import { locale, t, weekStart } from "../i18n";
 import { addCalendarDays, addDays, daysBetween, fromDateKey, minutesOfDay, startOfDay, startOfWeek, toDateKey } from "./date";
 import { parseTime as parseIcsTime, toInstant } from "./ics";
@@ -9,7 +9,7 @@ import { fromZonedParts, wallClock } from "./tz";
 export type Freq = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 export const FREQS: Freq[] = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
 
-/** коды дней недели по порядку Date.getDay(): 0 — воскресенье */
+/** weekday codes in Date.getDay() order: 0 — Sunday */
 export const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 
@@ -18,15 +18,15 @@ export type RuleEnd = { kind: "never" } | { kind: "until"; date: string } | { ki
 export type Rule = {
   freq: Freq;
   interval: number;
-  /** WEEKLY: дни недели (без BYDAY в правиле — день начала) */
+  /** WEEKLY: weekdays (no BYDAY in the rule — the start day) */
   days: Weekday[];
   weekStartsOn?: Weekday;
-  /** MONTHLY: n-й день недели месяца, 1…4 или −1 — последний; без него — то же число, что у начала */
+  /** MONTHLY: nth weekday of the month, 1…4 or −1 — the last; without it — the same day of month as the start */
   nth?: number;
   end: RuleEnd;
 };
 
-/** Разобранный список recurrence из Google: правило (null — не умеем править) и прочие строки (EXDATE, RDATE) */
+/** Parsed recurrence list from Google: the rule (null — we can't edit it) and other lines (EXDATE, RDATE) */
 export type Recurrence = { rule: Rule | null; extra: string[] };
 
 const BUSINESS: Weekday[] = ["MO", "TU", "WE", "TH", "FR"];
@@ -35,18 +35,18 @@ export const weekdayOf = (d: Date): Weekday => WEEKDAYS[d.getDay()];
 
 const daysInMonth = (d: Date): number => new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 
-/** какой по счёту этот день недели в месяце: 1…5 */
+/** which occurrence of this weekday in the month: 1…5 */
 export const nthOf = (d: Date): number => Math.ceil(d.getDate() / 7);
 export const isLastWeekday = (d: Date): boolean => d.getDate() + 7 > daysInMonth(d);
 
-/** n-й день недели для правила «каждый месяц»: пятый бывает не всегда, поэтому он «последний» */
+/** nth weekday for a "monthly" rule: the fifth doesn't always exist, so it becomes "last" */
 export const monthlyNth = (d: Date): number => (nthOf(d) > 4 ? -1 : nthOf(d));
 
 const pad = (n: number, w = 2) => String(n).padStart(w, "0");
 
-/** UNTIL из правила → последний день повторений по часам события, включительно.
- *  Для событий со временем UNTIL точный: 8:59:59 при начале в 9:00 значит «до вчера».
- *  start — часы события (см. wallClock), zone — пояс события; без него — пояс системы */
+/** UNTIL from the rule → last day of occurrences by the event clock, inclusive.
+ *  For timed events UNTIL is exact: 8:59:59 with a 9:00 start means "until yesterday".
+ *  start — event clock (see wallClock), zone — event time zone; without it — the system time zone */
 export const parseUntil = (value: string, start: Date, zone?: string): string | null => {
   const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/.exec(value);
   if (!m) return null;
@@ -58,14 +58,14 @@ export const parseUntil = (value: string, start: Date, zone?: string): string | 
   return minutesOfDay(start) > minutesOfDay(until) ? toDateKey(addCalendarDays(fromDateKey(day), -1)) : day;
 };
 
-/** UTC в виде 20261104T090000Z */
+/** UTC as 20261104T090000Z */
 export const utcStamp = (d: Date): string =>
   `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
 
 const dateStamp = (key: string): string => key.replaceAll("-", "");
 
-/** UNTIL для правила: для событий на весь день — дата, для событий со временем — конец дня
- *  по часам пояса события (без пояса — системного) в UTC */
+/** UNTIL for the rule: for all-day events — a date, for timed events — end of day
+ *  by the event time zone clock (without a time zone — the system one) in UTC */
 export const formatUntil = (dateKey: string, allDay: boolean, zone?: string): string => {
   if (allDay) return dateStamp(dateKey);
   const day = fromDateKey(dateKey);
@@ -105,7 +105,7 @@ const parseRule = (line: string, start: Date, zone?: string): Rule | null => {
     end = { kind: "until", date };
   }
 
-  // числа и месяцы допускаем только совпадающие с началом: тогда они ничего не меняют
+  // days of month and months are allowed only if they match the start: then they change nothing
   const monthDay = parts.get("BYMONTHDAY");
   if (monthDay && (!["MONTHLY", "YEARLY"].includes(freq) || Number(monthDay) !== start.getDate())) return null;
   const month = parts.get("BYMONTH");
@@ -135,11 +135,11 @@ const parseRule = (line: string, start: Date, zone?: string): Rule | null => {
   return byDay.length ? null : rule;
 };
 
-/** start — начало события по его часам (см. wallClock), zone — пояс события */
+/** start — event start by its clock (see wallClock), zone — event time zone */
 export const parseRecurrence = (lines: string[], start: Date, zone?: string): Recurrence => {
   const rules = lines.filter(isRRule);
   const extra = lines.filter((l) => !isRRule(l));
-  // EXRULE устарел, но если встретился — правило не наше
+  // EXRULE is deprecated, but if it shows up, the rule isn't ours
   if (rules.length !== 1 || extra.some((l) => /^EXRULE:/i.test(l))) return { rule: null, extra };
   return { rule: parseRule(rules[0], start, zone), extra };
 };
@@ -163,7 +163,7 @@ export const formatRule = (rule: Rule, start: Date, allDay: boolean, zone?: stri
 export const buildRecurrence = (rule: Rule | null, extra: string[], start: Date, allDay: boolean, zone?: string): string[] =>
   rule ? [formatRule(rule, start, allDay, zone), ...extra] : [];
 
-/** Готовые варианты повтора для начала события */
+/** Recurrence presets for the event start */
 export type PresetId = "daily" | "weekdays" | "weekly" | "monthly" | "monthlyNth" | "yearly";
 export const PRESETS: PresetId[] = ["daily", "weekdays", "weekly", "monthly", "monthlyNth", "yearly"];
 
@@ -192,11 +192,11 @@ const sameRule = (a: Rule, b: Rule): boolean =>
   a.days.join() === b.days.join() &&
   JSON.stringify(a.end) === JSON.stringify(b.end);
 
-/** какой готовый вариант совпадает с правилом; null — правило своё */
+/** which preset matches the rule; null — a custom rule */
 export const presetOf = (rule: Rule, start: Date): PresetId | null =>
   PRESETS.find((id) => sameRule(presetRule(id, start), rule)) ?? null;
 
-/** Начало события сдвинули: «каждую среду» становится «каждым четвергом», «2-й вторник» — новым днём */
+/** The event start was moved: "every Wednesday" becomes "every Thursday", "2nd Tuesday" — the new day */
 export const followStart = (rule: Rule, from: Date, to: Date): Rule => {
   if (rule.freq === "WEEKLY" && rule.days.length === 1 && rule.days[0] === weekdayOf(from)) {
     return { ...rule, days: [weekdayOf(to)] };
@@ -207,7 +207,7 @@ export const followStart = (rule: Rule, from: Date, to: Date): Rule => {
   return rule;
 };
 
-/** Строки RDATE могут содержать несколько дат по обе стороны границы серии. */
+/** RDATE lines may contain several dates on both sides of the series boundary. */
 export const filterRDates = (
   lines: string[], split: Date, part: "before" | "following", zone?: string,
 ): string[] =>
@@ -219,7 +219,7 @@ export const filterRDates = (
     const params = { TZID: tzid?.[1] ?? tzid?.[2] ?? zone ?? "" };
     const kept = values.split(",").filter((value) => {
       const time = parseIcsTime(value.split("/")[0].toUpperCase(), params);
-      // Нераспознанное значение сохраняем у исходной серии.
+      // An unrecognized value is kept on the original series.
       if (!time) return part === "before";
       const before = toInstant(time) < split;
       return part === "before" ? before : !before;
@@ -227,7 +227,7 @@ export const filterRDates = (
     return kept.length ? [`${header}:${kept.join(",")}`] : [];
   });
 
-/** Правило с концом прямо перед повторением split: так серия обрезается при «это и следующие» */
+/** Rule ending right before the split occurrence: that's how a series is trimmed for "this and following" */
 export const truncateBefore = (lines: string[], split: Date, allDay: boolean, zone?: string): string[] =>
   filterRDates(lines, split, "before", zone).map((line) => {
     if (!isRRule(line)) return line;
@@ -241,7 +241,7 @@ export const truncateBefore = (lines: string[], split: Date, allDay: boolean, zo
 
 const monthsBetween = (a: Date, b: Date) => (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth();
 
-/** Попадает ли день в правило (без учёта конца). */
+/** Whether a day matches the rule (ignoring the end). */
 const matches = (rule: Rule, start: Date, day: Date): boolean => {
   const sameMonthDay = day.getDate() === start.getDate();
   switch (rule.freq) {
@@ -268,7 +268,7 @@ const matches = (rule: Rule, start: Date, day: Date): boolean => {
   }
 };
 
-/** Начала повторений до before (не включительно). Нужно примерным данным и тестам */
+/** Occurrence starts before before (exclusive). Needed by sample data and tests */
 export const occurrences = (rule: Rule, start: Date, before: Date, limit = 1000): Date[] => {
   const out: Date[] = [];
   const last = rule.end.kind === "until" ? addDays(fromDateKey(rule.end.date), 1) : before;
@@ -281,7 +281,7 @@ export const occurrences = (rule: Rule, start: Date, before: Date, limit = 1000)
   return out;
 };
 
-// подписи на языке интерфейса
+// labels in the UI language
 
 const weekdayName = (d: Weekday, style: "short" | "long"): string => {
   const ref = startOfWeek(new Date(2026, 0, 7));
@@ -289,7 +289,7 @@ const weekdayName = (d: Weekday, style: "short" | "long"): string => {
   return new Intl.DateTimeFormat(locale, { weekday: style }).format(day);
 };
 
-/** дни недели по порядку недели региона */
+/** weekdays in the region's week order */
 export const orderedWeekdays = (): Weekday[] =>
   Array.from({ length: 7 }, (_, i) => WEEKDAYS[(weekStart() + i) % 7]);
 

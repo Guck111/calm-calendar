@@ -1,9 +1,9 @@
-// Последние ответы Google на запросы чтения. Без сети календарь и виджет показывают их,
-// а интерфейс пишет, от какого времени эти данные.
-// Хранятся в localStorage (общий у главного окна и виджета), стираются при входе и выходе.
+// Last Google responses to read requests. Without network the calendar and widget show them,
+// and the UI says how old this data is.
+// Stored in localStorage (shared by the main window and widget), erased on sign-in and sign-out.
 
 const KEY = "calm.cache.v1";
-/** столько последних запросов помним: виды за несколько недель и месяцев по всем календарям */
+/** how many recent requests we remember: views over several weeks and months for all calendars */
 const MAX_ENTRIES = 80;
 
 export type CacheEntry = { at: number; body: unknown };
@@ -17,7 +17,7 @@ const storage = (): Storage | null => {
   }
 };
 
-// копия в памяти: хранилище может быть недоступно, а читать каждый раз JSON дорого
+// in-memory copy: storage may be unavailable, and parsing JSON every time is expensive
 let memory: Stored | null = null;
 
 const load = (): Stored => {
@@ -35,7 +35,7 @@ const save = (data: Stored): void => {
   const store = storage();
   if (!store) return;
   let entries = Object.entries(data);
-  // не влезло — выбрасываем старую половину и пробуем ещё раз
+  // didn't fit — drop the older half and try again
   while (entries.length) {
     try {
       store.setItem(KEY, JSON.stringify(Object.fromEntries(entries)));
@@ -63,7 +63,7 @@ export const remember = (key: string, body: unknown, now = Date.now()): void => 
 };
 
 export const recall = (key: string): CacheEntry | undefined => {
-  // другое окно могло дописать свежие ответы: перечитываем хранилище, если оно есть
+  // another window could have written fresh responses: reread the storage if it exists
   if (storage()) memory = null;
   return load()[key];
 };
@@ -73,11 +73,11 @@ export const clearCache = (): void => {
   try {
     storage()?.removeItem(KEY);
   } catch {
-    // хранилище недоступно — в памяти уже пусто
+    // storage is unavailable — memory is already empty
   }
 };
 
-/** Работаем ли сейчас на сохранённых данных: время самых старых показанных или null */
+/** Whether we are working on saved data now: time of the oldest shown data or null */
 type Listener = (offlineSince: number | null) => void;
 const listeners = new Set<Listener>();
 let offlineSince: number | null = null;
