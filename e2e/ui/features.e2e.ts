@@ -176,8 +176,15 @@ test.describe("free time", () => {
     await free.locator('input[type="time"]').last().fill("11:00");
     await expect(free).toContainText(t.free.noneReason);
     await expect(free.getByRole("button", { name: t.free.copy })).toBeDisabled();
+    // the next week is not loaded yet: no answer from the old week's events, Copy stays off
+    await page.evaluate(() => {
+      (globalThis as unknown as { calmMock: { slow: number } }).calmMock.slow = 1500;
+    });
     await free.getByRole("button", { name: t.free.showLater }).click();
     await expect(page.locator("main header > h2")).not.toHaveText(title ?? "");
+    await expect(free).toContainText(t.common.loading);
+    await expect(free.getByRole("button", { name: t.free.copy })).toBeDisabled();
+    await expect(free).toContainText(t.free.noneReason, { timeout: 5000 });
     await expect(free).toBeVisible();
   });
 });

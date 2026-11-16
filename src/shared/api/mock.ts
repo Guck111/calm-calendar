@@ -375,8 +375,10 @@ const google = (
 /** Для автотестов: window.calmMock.outage = "network" | "503" — Google не отвечает, null — снова отвечает */
 /** outage — сбой сети или Google; signIn "hang" — браузер так и не вернулся со входа (ждём до отмены);
  *  reopened — сколько раз страницу входа открыли снова */
-const mockControl: { outage: "network" | "503" | null; signIn: "hang" | null; reopened: number } = {
+/** slow — задержка ответов Google, мс (проверка состояния «Загружаю…») */
+const mockControl: { outage: "network" | "503" | null; signIn: "hang" | null; reopened: number; slow: number } = {
   outage: null,
+  slow: 0,
   signIn: null,
   reopened: 0,
 };
@@ -450,6 +452,7 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
           args.query as [string, string][] | undefined,
           args.body as Json | undefined,
         ),
+        250 + mockControl.slow,
       );
     case "fetch_feed":
       return delay(mockFeed(String(args.url)));

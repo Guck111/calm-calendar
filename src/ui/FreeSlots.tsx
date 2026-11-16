@@ -1,7 +1,7 @@
 import { useUnit } from "effector-react";
 import { useEffect, useState } from "react";
 import { locale, t } from "../shared/i18n";
-import { $events } from "../model/events";
+import { $events, $loadError, $loading } from "../model/events";
 import { freeSlotsRequested } from "../model/free";
 import { $cursor, $now, $view, nextClicked } from "../model/view";
 import { toTimeKey, viewDays } from "../shared/lib/date";
@@ -53,7 +53,8 @@ const copyText = async (text: string): Promise<boolean> => {
 };
 
 const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
-  const [events, view, cursor, now, next] = useUnit([$events, $view, $cursor, $now, nextClicked]);
+  const [events, view, cursor, now, next, loading] = useUnit([$events, $view, $cursor, $now, nextClicked, $loading]);
+  const loadError = useUnit($loadError);
   const [options, setOptions] = useState(readOptions);
   const [copied, setCopied] = useState(false);
   const change = (patch: Partial<FreeOptions>) => {
@@ -66,6 +67,9 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
   const found = freeSlots(events, viewDays(view, cursor), options, now);
   const text = formatFreeSlots(found, now);
   const nothing = !found.length;
+  // пока грузятся события новых дат или они не загрузились, считать по старым нельзя:
+  // неделя выглядела бы свободной
+  const waiting = loading || Boolean(loadError);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -122,7 +126,11 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
           {t.free.weekends}
         </label>
         {/* пусто — не тупик: почему так и куда дальше */}
-        {nothing ? (
+        {waiting ? (
+          <p className={f.empty} role="status">
+            {loading ? t.common.loading : loadError}
+          </p>
+        ) : nothing ? (
           <p className={f.empty} role="status">
             <b>{t.free.none}</b> {t.free.noneReason}
           </p>
@@ -130,8 +138,8 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
           <textarea className={f.preview} readOnly value={text} rows={8} aria-label={t.free.title} />
         )}
         <div className={f.actions}>
-          {nothing && <Button onClick={() => next()}>{t.free.showLater}</Button>}
-          <Button variant="primary" disabled={nothing} onClick={() => void copyText(text).then(setCopied)}>
+          {nothing && !waiting && <Button onClick={() => next()}>{t.free.showLater}</Button>}
+          <Button variant="primary" disabled={nothing || waiting} onClick={() => void copyText(text).then(setCopied)}>
             {copied ? t.free.copied : t.free.copy}
           </Button>
         </div>
