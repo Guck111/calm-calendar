@@ -2,9 +2,9 @@ import { useEffect, useState, type FormEvent, type PointerEvent as ReactPointerE
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
-import { $feeds, $holidayRegion, $weekNumbers, feedsChanged, holidayRegionChanged, weekNumbersToggled } from "../model/display";
+import { $feeds, $holidayRegion, $weekNumbers, feedAdded, feedRemoved, holidayRegionChanged, weekNumbersToggled } from "../model/display";
 import { downloadFeed, dropFeedCache } from "../shared/api/feeds";
-import { looksLikeUrl, newFeed, sameFeedUrl, type Feed } from "../shared/lib/feeds";
+import { looksLikeUrl, sameFeedUrl, type Feed } from "../shared/lib/feeds";
 import { sortedRegions } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { broadcast, inTauri } from "../shared/api/bus";
@@ -97,7 +97,7 @@ const displayChanged = () => broadcast("display-changed");
 
 /** .ics calendar subscriptions: the link is checked by downloading, the name comes from the calendar itself */
 const FeedsSection = () => {
-  const [feeds, setFeeds] = useUnit([$feeds, feedsChanged]);
+  const [feeds, addFeed, removeFeed] = useUnit([$feeds, feedAdded, feedRemoved]);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +112,8 @@ const FeedsSection = () => {
     setError(null);
     try {
       const cal = await downloadFeed(link);
-      setFeeds([...feeds, newFeed(link, cal.name ?? "", feeds)]);
+      // subscriptions may have been removed while it downloaded: the model adds to the list as it is now
+      addFeed({ url: link, name: cal.name ?? "" });
       displayChanged();
       setUrl("");
     } catch (err) {
@@ -124,7 +125,7 @@ const FeedsSection = () => {
   };
 
   const remove = (feed: Feed) => {
-    setFeeds(feeds.filter((f) => f.id !== feed.id));
+    removeFeed(feed.id);
     dropFeedCache(feed.id);
     displayChanged();
   };
