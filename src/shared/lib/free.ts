@@ -1,7 +1,7 @@
 // «Свободное время»: окна между событиями в рабочие часы, текстом для мессенджера.
 import type { CalendarEvent } from "../api/types";
 import { locale, t } from "../i18n";
-import { addMinutes, formatTime, formatWeekdayDayMonth, localTimeZone, startOfDay } from "./date";
+import { formatTime, formatWeekdayDayMonth, localTimeZone, startOfDay } from "./date";
 import { busyStart } from "./conflicts";
 import { isAllDayLike } from "./layout";
 import { zoneCity, zoneShort } from "./tz";
@@ -49,10 +49,9 @@ export const freeSlots = (events: CalendarEvent[], days: Date[], o: FreeOptions,
   return days
     .filter((day) => startOfDay(day) >= startOfDay(now) && (o.weekends || !isWeekend(day)))
     .map((day) => {
-      const dayStart = startOfDay(day);
-      let from = addMinutes(dayStart, o.from).getTime();
-      const to = addMinutes(dayStart, o.to).getTime();
-      from = Math.max(from, ceilToStep(now).getTime());
+      const at = (minutes: number) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, minutes).getTime();
+      const from = Math.max(at(o.from), ceilToStep(now).getTime());
+      const to = at(o.to);
       const slots: Slot[] = [];
       let cursor = from;
       for (const b of blocks) {
