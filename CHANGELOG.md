@@ -4,6 +4,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+## 0.12.0 — 2026-11-16
+
 ### New
 
 - **What else Calm Calendar can do**: after the first sign-in a small card in the corner turns on the desktop widget, starting with Windows and the hard-to-miss alert for calls right there, and tells about quick add from any app and today's agenda in the tray. It does not take the focus and shows once; Ctrl+K → "What Calm Calendar can do" brings it back.
