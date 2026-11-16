@@ -527,6 +527,38 @@ const saveFollowing = async (draft: EventDraft): Promise<void> => {
   }
 };
 
+/** Fields of the request body that a form field writes */
+const BODY_FIELDS: Partial<Record<keyof EventDraft, string[]>> = {
+  title: ["summary"],
+  location: ["location"],
+  description: ["description"],
+  allDay: ["start", "end"],
+  startDate: ["start", "end"],
+  startTime: ["start", "end"],
+  endDate: ["start", "end"],
+  endTime: ["start", "end"],
+  timeZone: ["start", "end"],
+  endTimeZone: ["start", "end"],
+  travelMinutes: ["extendedProperties"],
+  guests: ["attendees"],
+  attachments: ["attachments"],
+  colorId: ["colorId"],
+  addMeet: ["conferenceData"],
+};
+
+/** Quick change of an existing event without the form (drag, Ctrl+K): only the changed fields go to Google.
+ *  Two quick changes in a row each carry a copy of the event from before the other one; a full body would put
+ *  the other change back (a new color, then a drag that sends the old color) */
+export const patchEvent = async (draft: EventDraft & { id: string }, changed: (keyof EventDraft)[]): Promise<void> => {
+  const full: Record<string, unknown> = draftToBody(draft);
+  const keys = new Set(changed.flatMap((k) => BODY_FIELDS[k] ?? []));
+  const body = Object.fromEntries(Object.entries(full).filter(([k]) => keys.has(k)));
+  await api(draft.originalCalendarId ?? draft.calendarId, "PATCH", one(draft.id), saveQuery(draft), body);
+};
+
+/** a move without the form: only start and end */
+export const moveEvent = (draft: EventDraft & { id: string }): Promise<void> => patchEvent(draft, ["startDate", "endDate"]);
+
 export const saveEvent = async (draft: EventDraft, scope: Scope = "this"): Promise<void> => {
   if (draft.recurringEventId && scope === "following") return saveFollowing(draft);
   const body = {

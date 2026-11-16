@@ -9,7 +9,7 @@ import { broadcast } from "../shared/api/bus";
 import { isTransient } from "./sync";
 import { readJson, writeJson } from "../shared/lib/storage";
 import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
-import { occurrenceStart, saveEvent, splitRef } from "../shared/api/calendar";
+import { moveEvent, occurrenceStart, splitRef } from "../shared/api/calendar";
 import { $visibility } from "./calendars";
 import { logError } from "../shared/lib/log";
 import { $events, actionFailed, eventShifted, reloadRequested, deleteKey, eventsHidden, eventsRestored, hidingEnded, hides, type Hidden } from "./events";
@@ -38,7 +38,7 @@ export const undoDismissed = createEvent();
 
 /** Undo move: the previous time is saved the same way as a move, but gives no new "Undo" bar */
 export const restoreMoveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
-  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+  ({ event, start, end }) => moveEvent({ ...fromEvent({ ...event, start, end }), id: event.id }),
 );
 
 /** waits ms and returns its bar's token */

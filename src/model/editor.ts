@@ -6,6 +6,8 @@ import {
   draftInstant,
   draftZone,
   loadRecurrence,
+  moveEvent,
+  patchEvent,
   recurrenceEdited,
   respondToEvent,
   saveEvent,
@@ -61,7 +63,7 @@ export const saveFx = createEffect<Change, void, AppError>(({ draft, scope }) =>
 /** dragging in the grid: save the new time right away, without the form; for a series — only this occurrence */
 export const eventMoved = createEvent<{ event: CalendarEvent; start: Date; end: Date }>();
 export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
-  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+  ({ event, start, end }) => moveEvent({ ...fromEvent({ ...event, start, end }), id: event.id }),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
 /** Deletion chosen: the card closes, the event disappears from the screen, and goes to Google
@@ -70,7 +72,9 @@ export const deleteRequested = createEvent<Change & { event: CalendarEvent }>();
 
 /** a single field without the form (Ctrl+K menu: Google Meet, color); for a series — only this occurrence */
 export const eventPatched = createEvent<{ event: CalendarEvent; patch: Partial<EventDraft> }>();
-export const patchFx = createEffect<EventDraft, void, AppError>((draft) => saveEvent(draft));
+export const patchFx = createEffect<{ draft: EventDraft & { id: string }; patch: Partial<EventDraft> }, void, AppError>(
+  ({ draft, patch }) => patchEvent(draft, Object.keys(patch) as (keyof EventDraft)[]),
+);
 
 /** the series rule is stored on the master event: load it when an occurrence is opened */
 export const loadSeriesFx = createEffect<{ calendarId: string; id: string }, string[], AppError>(({ calendarId, id }) =>
@@ -437,7 +441,11 @@ sample({
   target: actionFailed,
 });
 
-sample({ clock: eventPatched, fn: ({ event, patch }) => ({ ...fromEvent(event), ...patch }), target: patchFx });
+sample({
+  clock: eventPatched,
+  fn: ({ event, patch }) => ({ draft: { ...fromEvent(event), ...patch, id: event.id }, patch }),
+  target: patchFx,
+});
 sample({ clock: patchFx.failData, fn: (e) => t.errors.changeFailed(e.message), target: actionFailed });
 // on delete error the event returns to the screen after reloading
 sample({ clock: deleteFx.failData, fn: (e) => t.errors.deleteFailed(e.message), target: actionFailed });
