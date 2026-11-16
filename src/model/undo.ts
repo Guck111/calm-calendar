@@ -7,7 +7,7 @@ import type { AppError, CalendarEvent, EventDraft, Scope } from "../shared/api/t
 import { $activeAccounts, $signOutHeld, signOutClicked, signOutFx, signOutResumed } from "./auth";
 import { broadcast } from "../shared/api/bus";
 import { isTransient } from "./sync";
-import { readJson, writeJson } from "../shared/lib/storage";
+import { readJson, removeJson, saveJson } from "../shared/lib/storage";
 import { deleteFx, deleteRequested, eventMoved, fromEvent, moveFx } from "./editor";
 import { moveEvent, occurrenceStart, splitRef } from "../shared/api/calendar";
 import { $visibility } from "./calendars";
@@ -197,7 +197,16 @@ sample({ clock: deleteFx.finally, fn: ({ params }) => keyOf(params), target: hid
 // Google has responded. If the app is closed earlier (Quit in the tray closes immediately, and the "this and following" request
 // takes two steps), the deletion goes to Google after the next sign-in to its account
 const STORAGE_KEY = "calm.pendingDeletes";
-export const persistDeleteFx = createEffect<Change[], void>((list) => writeJson(STORAGE_KEY, list));
+export const persistDeleteFx = createEffect<Change[], void>((list) => {
+  try {
+    saveJson(STORAGE_KEY, list);
+  } catch {
+    // No space: drop the old copy and write again. If that fails too, the log is gone from disk: a deletion undone
+    // here must not reach Google on the next start, while a pending one is reported below
+    removeJson(STORAGE_KEY);
+    saveJson(STORAGE_KEY, list);
+  }
+});
 const saved = readJson<Change[]>(STORAGE_KEY, []);
 const journalOnDisk = Array.isArray(saved) ? saved : [];
 /** deletions not yet confirmed by Google */
@@ -227,6 +236,14 @@ $deleteJournal
   // a response to an old deletion erases only that one, not a newer one
   .on(settled, (list, change) => list.filter((c) => keyOf(c) !== keyOf(change)));
 sample({ clock: $deleteJournal.updates, target: persistDeleteFx });
+// the log didn't reach the disk: a deletion still waiting for Google would be lost if the app closed now
+sample({
+  clock: persistDeleteFx.fail,
+  filter: ({ params }) => params.length > 0,
+  fn: () => t.errors.deleteNotSaved,
+  target: actionFailed,
+});
+persistDeleteFx.failData.watch((e) => logError("saving the deletion log failed", e));
 
 // retry only what is still in the log: a deletion that was later undone, replaced by a new one, or that
 // Google has already answered leaves the retry queue

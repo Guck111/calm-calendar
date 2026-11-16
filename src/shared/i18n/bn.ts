@@ -54,6 +54,7 @@ export const bn: Dict = {
     glassFailed: "গ্লাস ইফেক্ট পরিবর্তন করা যায়নি",
     offline: (when: string) => `অফলাইন। ${when}-এর ডেটা দেখানো হচ্ছে`,
     otherAccount: "ইভেন্ট অন্য Google অ্যাকাউন্টের ক্যালেন্ডারে সরানো যায় না",
+    deleteNotSaved: "মুছে ফেলা ডিস্কে সংরক্ষণ করা যায়নি। Google-এ পৌঁছানো পর্যন্ত অ্যাপটি খোলা রাখুন",
     accountsFailed: (emails: string) => `এই অ্যাকাউন্টের ক্যালেন্ডার লোড হয়নি: ${emails}`,
   },
   auth: {

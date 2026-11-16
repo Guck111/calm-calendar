@@ -69,6 +69,7 @@ export const ar: Dict = {
     glassFailed: "تعذّر تغيير تأثير الزجاج",
     offline: (when: string) => `لا يوجد اتصال. تُعرض بيانات ${when}`,
     otherAccount: "لا يمكن نقل حدث إلى تقويم في حساب Google آخر",
+    deleteNotSaved: "تعذّر حفظ الحذف على القرص. أبقِ التطبيق مفتوحًا حتى يصل إلى Google",
     accountsFailed: (emails: string) => `تعذّر تحميل تقاويم الحساب: ${emails}`,
   },
   auth: {

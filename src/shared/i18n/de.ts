@@ -58,6 +58,7 @@ export const de: Dict = {
     glassFailed: "Glaseffekt konnte nicht geändert werden",
     offline: (when: string) => `Offline. Daten vom ${when}`,
     otherAccount: "Ein Termin kann nicht in einen Kalender eines anderen Google-Kontos verschoben werden",
+    deleteNotSaved: "Das Löschen konnte nicht auf dem Datenträger gespeichert werden. Lass die App offen, bis es bei Google ankommt",
     accountsFailed: (emails: string) => `Kalender dieses Kontos wurden nicht geladen: ${emails}`,
   },
   auth: {

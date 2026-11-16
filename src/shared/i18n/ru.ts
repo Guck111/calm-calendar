@@ -81,6 +81,7 @@ export const ru = {
     glassFailed: "Не удалось переключить эффект стекла",
     offline: (when: string) => `Нет сети. Показаны данные от ${when}`,
     otherAccount: "Событие нельзя перенести в календарь другого аккаунта Google",
+    deleteNotSaved: "Не удалось сохранить удаление на диске. Не закрывайте приложение, пока оно не дойдёт до Google",
     accountsFailed: (emails: string) => `Не загрузились календари аккаунта: ${emails}`,
   },
   auth: {

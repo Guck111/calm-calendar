@@ -81,6 +81,7 @@ export const be: Dict = {
     glassFailed: "Не ўдалося пераключыць эфект шкла",
     offline: (when: string) => `Няма сеткі. Паказаны даныя ад ${when}`,
     otherAccount: "Падзею нельга перанесці ў каляндар іншага акаўнта Google",
+    deleteNotSaved: "Не ўдалося захаваць выдаленне на дыску. Не закрывайце праграму, пакуль яно не дойдзе да Google",
     accountsFailed: (emails: string) => `Не загрузіліся календары акаўнта: ${emails}`,
   },
   auth: {

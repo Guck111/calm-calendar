@@ -55,6 +55,7 @@ export const en: Dict = {
     glassFailed: "Couldn't change the glass effect",
     offline: (when: string) => `Offline. Showing data from ${when}`,
     otherAccount: "An event can't be moved to a calendar of another Google account",
+    deleteNotSaved: "Couldn't save the pending deletion on disk. Keep the app open until it reaches Google",
     accountsFailed: (emails: string) => `Couldn't load the calendars of: ${emails}`,
   },
   auth: {

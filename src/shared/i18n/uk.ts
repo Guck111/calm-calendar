@@ -81,6 +81,7 @@ export const uk: Dict = {
     glassFailed: "Не вдалося перемкнути ефект скла",
     offline: (when: string) => `Немає мережі. Показано дані від ${when}`,
     otherAccount: "Подію не можна перенести в календар іншого акаунта Google",
+    deleteNotSaved: "Не вдалося зберегти видалення на диску. Не закривайте застосунок, доки воно не дійде до Google",
     accountsFailed: (emails: string) => `Не завантажилися календарі акаунта: ${emails}`,
   },
   auth: {
