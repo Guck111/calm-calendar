@@ -3,6 +3,7 @@ import { logError } from "../shared/lib/log";
 import { t } from "../shared/i18n";
 import {
   deleteOccurrence,
+  draftInstant,
   draftZone,
   loadRecurrence,
   recurrenceEdited,
@@ -17,6 +18,7 @@ import {
   addDays,
   addMinutes,
   combineDateTime,
+  daysBetween,
   fromDateKey,
   localTimeZone,
   toDateKey,
@@ -102,6 +104,7 @@ export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraf
     endDate: toDateKey(end),
     endTime: toTimeKey(end),
     timeZone: zone,
+    ...(e.allDay ? {} : { originalTimes: { zone, start: e.start, end: e.end } }),
     ...(e.endTimeZone ? { endTimeZone: e.endTimeZone } : {}),
     location: e.location ?? "",
     description: e.description ?? "",
@@ -203,9 +206,9 @@ export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): Even
   if (!startChanged) return "allDay" in patch ? followRule(draft, next) : next;
 
   if (next.allDay) {
-    const span = fromDateKey(draft.endDate).getTime() - fromDateKey(draft.startDate).getTime();
+    const span = daysBetween(fromDateKey(draft.startDate), fromDateKey(draft.endDate));
     const start = fromDateKey(next.startDate);
-    return followRule(draft, { ...next, endDate: toDateKey(new Date(start.getTime() + Math.max(0, span))) });
+    return followRule(draft, { ...next, endDate: toDateKey(addDays(start, Math.max(0, span))) });
   }
   const oldStart = combineDateTime(draft.startDate, draft.startTime);
   const oldEnd = combineDateTime(draft.endDate, draft.endTime);
@@ -216,8 +219,8 @@ export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): Even
 
 export const validate = (d: EventDraft): string | null => {
   if (!d.calendarId) return t.errors.noWritableCalendar;
-  const start = d.allDay ? fromDateKey(d.startDate) : combineDateTime(d.startDate, d.startTime);
-  const end = d.allDay ? fromDateKey(d.endDate) : combineDateTime(d.endDate, d.endTime);
+  const start = d.allDay ? fromDateKey(d.startDate) : draftInstant(d, "start");
+  const end = d.allDay ? fromDateKey(d.endDate) : draftInstant(d, "end");
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return t.errors.checkDateTime;
   if (d.allDay ? end < start : end <= start) return t.errors.endBeforeStart;
   return null;

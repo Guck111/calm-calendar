@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, sample } from "effector";
-import { shiftCursor, startOfDay, viewRange, type ViewMode } from "../shared/lib/date";
+import { fromDateKey, localTimeZone, shiftCursor, startOfDay, toDateKey, viewRange, type ViewMode } from "../shared/lib/date";
 import { readJson, writeJson } from "../shared/lib/storage";
 
 const VIEW_KEY = "calm.view";
@@ -20,22 +20,27 @@ export const $view = createStore<ViewMode>(isView(storedView) ? storedView : "we
   .on(viewChanged, (_, v) => v)
   .on(dayOpened, () => "day");
 
-export const $cursor = createStore(startOfDay(new Date()))
-  .on(todayClicked, () => startOfDay(new Date()))
-  .on([dateSelected, dayOpened], (_, d) => startOfDay(d));
+const $cursorKey = createStore(toDateKey(new Date()))
+  .on(todayClicked, () => toDateKey(new Date()))
+  .on([dateSelected, dayOpened], (_, d) => toDateKey(d));
+
+const $systemZone = createStore(localTimeZone())
+  .on([minuteTicked, todayClicked, dateSelected, dayOpened, prevClicked, nextClicked, viewChanged], localTimeZone);
+
+export const $cursor = combine($cursorKey, $systemZone, (key) => fromDateKey(key));
 
 sample({
   clock: prevClicked,
-  source: { view: $view, cursor: $cursor },
-  fn: ({ view, cursor }) => shiftCursor(view, cursor, -1),
-  target: $cursor,
+  source: { view: $view, key: $cursorKey },
+  fn: ({ view, key }) => toDateKey(shiftCursor(view, fromDateKey(key), -1)),
+  target: $cursorKey,
 });
 
 sample({
   clock: nextClicked,
-  source: { view: $view, cursor: $cursor },
-  fn: ({ view, cursor }) => shiftCursor(view, cursor, 1),
-  target: $cursor,
+  source: { view: $view, key: $cursorKey },
+  fn: ({ view, key }) => toDateKey(shiftCursor(view, fromDateKey(key), 1)),
+  target: $cursorKey,
 });
 
 $view.watch((v) => writeJson(VIEW_KEY, v));

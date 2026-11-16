@@ -17,12 +17,18 @@ import type {
   Scope,
 } from "./types";
 import { addDays, combineDateTime, fromDateKey, localTimeZone, toDateKey, type DateRange } from "../lib/date";
-import { fromZoned, wallClock } from "../lib/tz";
+import { fromZoned, fromZonedParts, isTimeZone, wallClock } from "../lib/tz";
 import { isColorId } from "../lib/colors";
 
 /** пояс, по часам которого заданы дата и время в черновике */
 export const draftZone = (d: EventDraft): string => d.timeZone ?? localTimeZone();
-import { buildRecurrence, followStart, parseRecurrence, truncateBefore } from "../lib/rrule";
+import { buildRecurrence, filterRDates, followStart, parseRecurrence, truncateBefore } from "../lib/rrule";
+
+export const draftInstant = (draft: EventDraft, bound: "start" | "end"): Date => {
+  const zone = draftZone(draft);
+  const original = draft.originalTimes?.zone === zone ? draft.originalTimes[bound] : undefined;
+  return fromZoned(draft[`${bound}Date`], draft[`${bound}Time`], zone, original);
+};
 
 /** у списка событий Google указывает и пояс календаря */
 type Page<T> = { items?: T[]; nextPageToken?: string; timeZone?: string };
@@ -201,8 +207,20 @@ export const listAllCalendars = async (accounts: string[]): Promise<AllCalendars
   };
 };
 
-const parseTime = (t: RawTime | undefined): { date: Date; allDay: boolean } | null => {
-  if (t?.dateTime) return { date: new Date(t.dateTime), allDay: false };
+const OFFSET_FREE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/i;
+
+const parseTime = (t: RawTime | undefined, fallbackZone?: string): { date: Date; allDay: boolean } | null => {
+  if (t?.dateTime) {
+    const zone = t.timeZone ?? fallbackZone;
+    const local = OFFSET_FREE.exec(t.dateTime);
+    if (local && isTimeZone(zone)) {
+      const [, y, mo, d, h, mi, s = "0", fraction = ""] = local;
+      const date = fromZonedParts(+y, +mo, +d, +h, +mi, +s, zone);
+      date.setUTCMilliseconds(Number(fraction.padEnd(3, "0").slice(0, 3)));
+      return { date, allDay: false };
+    }
+    return { date: new Date(t.dateTime), allDay: false };
+  }
   if (t?.date) return { date: fromDateKey(t.date), allDay: true };
   return null;
 };
@@ -210,11 +228,11 @@ const parseTime = (t: RawTime | undefined): { date: Date; allDay: boolean } | nu
 /** calendarZone — пояс календаря: в нём событие, у которого свой пояс не указан */
 export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?: string): CalendarEvent | null => {
   if (raw.status === "cancelled") return null;
-  const start = parseTime(raw.start);
-  const end = parseTime(raw.end);
+  const start = parseTime(raw.start, calendarZone);
   if (!start) return null;
   const fallbackEnd = start.allDay ? addDays(start.date, 1) : start.date;
   const timeZone = start.allDay ? undefined : (raw.start?.timeZone ?? calendarZone);
+  const end = parseTime(raw.end, timeZone);
   const endTimeZone = raw.end?.timeZone && raw.end.timeZone !== timeZone ? raw.end.timeZone : undefined;
   return {
     key: `${calendarId}\u0000${raw.id}`,
@@ -309,20 +327,19 @@ export const sortByRelevance = (events: CalendarEvent[], now: Date): CalendarEve
 export const draftToBody = (draft: EventDraft) => {
   // дата и время в форме — по часам пояса события; у существующего события это его пояс из Google
   const zone = draftZone(draft);
-  const time = (date: string, timeKey: string, label = zone): RawTime | Record<string, string | null> =>
-    draft.allDay
-      ? { date, dateTime: null, timeZone: null }
-      : { dateTime: fromZoned(date, timeKey, zone).toISOString(), timeZone: label, date: null };
-
   // в Google конец события на весь день не включительно
   const endDate = draft.allDay ? toDateKey(addDays(fromDateKey(draft.endDate), 1)) : draft.endDate;
+  const time = (bound: "start" | "end", label: string): RawTime | Record<string, string | null> =>
+    draft.allDay
+      ? { date: bound === "start" ? draft.startDate : endDate, dateTime: null, timeZone: null }
+      : { dateTime: draftInstant(draft, bound).toISOString(), timeZone: label, date: null };
 
   return {
     summary: draft.title.trim(),
     location: draft.location.trim(),
     description: draft.description.trim(),
-    start: time(draft.startDate, draft.startTime),
-    end: time(endDate, draft.endTime, draft.endTimeZone ?? zone),
+    start: time("start", zone),
+    end: time("end", draft.endTimeZone ?? zone),
     // patch сливает объекты: другие скрытые поля события остаются
     ...(draft.travelMinutes !== undefined
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }
@@ -371,16 +388,18 @@ export const getEvent = (calendarId: string, eventId: string): Promise<FullEvent
 export const loadRecurrence = async (calendarId: string, recurringEventId: string): Promise<string[]> =>
   (await getEvent(calendarId, recurringEventId)).recurrence ?? [];
 
-const instant = (time: EventTime | undefined): Date | null =>
-  time?.dateTime ? new Date(time.dateTime) : time?.date ? fromDateKey(time.date) : null;
+const instant = (time: EventTime | undefined, zone?: string): Date | null => parseTime(time, zone)?.date ?? null;
 
 /** Когда повторение серии стоит по правилу (originalStart), даже если его перенесли на другое время;
  *  у обычного события — его начало. По нему считается «это и следующие», как при удалении в Google */
-export const occurrenceStart = (e: Pick<CalendarEvent, "start" | "originalStart">): Date => instant(e.originalStart) ?? e.start;
+export const occurrenceStart = (e: Pick<CalendarEvent, "start" | "originalStart" | "timeZone">): Date =>
+  instant(e.originalStart, e.timeZone) ?? e.start;
 
 /** то же время по часам пояса события: правило повтора считает дни недели и числа по ним */
-const wallInstant = (time: EventTime | undefined, zone: string): Date | null =>
-  time?.dateTime ? wallClock(new Date(time.dateTime), zone) : instant(time);
+const wallInstant = (time: EventTime | undefined, zone: string): Date | null => {
+  const date = instant(time, zone);
+  return date && time?.dateTime ? wallClock(date, zone) : date;
+};
 
 /** начало события по часам его пояса (не момент времени) */
 const draftStart = (d: EventDraft): Date =>
@@ -392,7 +411,13 @@ const sameLines = (a: string[], b: string[]) => a.join("\n") === b.join("\n");
 export const recurrenceEdited = (d: EventDraft): boolean =>
   d.originalRecurrence !== undefined && !sameLines(d.recurrence, d.originalRecurrence);
 
-const hasCount = (lines: string[]) => lines.some((l) => /^RRULE:(?:.*;)?COUNT=/i.test(l));
+const hasCount = (lines: string[]) => {
+  const rules = lines.filter((line) => /^RRULE:/i.test(line));
+  return rules.length === 1 && /(?:^RRULE:|;)COUNT=\d+(?:;|$)/i.test(rules[0]);
+};
+
+const seriesZone = (draft: EventDraft, master: RawEvent): string =>
+  master.start?.timeZone ?? draft.originalStart?.timeZone ?? draft.originalTimes?.zone ?? draftZone(draft);
 
 /** Правило для повторений «с этого и дальше». Если правило не правили, оно следует за новым началом
  *  («каждую среду» → «каждый четверг»), а число повторов уменьшается на уже прошедшие */
@@ -400,9 +425,10 @@ export const followingRecurrence = (draft: EventDraft, master: RawEvent, countBe
   const original = master.recurrence ?? [];
   if (recurrenceEdited(draft)) return draft.recurrence;
   const zone = draftZone(draft);
-  const from = wallInstant(draft.originalStart, zone) ?? draftStart(draft);
+  const originalZone = seriesZone(draft, master);
+  const from = wallInstant(draft.originalStart, originalZone) ?? draftStart(draft);
   const to = draftStart(draft);
-  const { rule, extra } = parseRecurrence(original, from, zone);
+  const { rule, extra } = parseRecurrence(original, from, originalZone);
   if (!rule) return original;
   let next = followStart(rule, from, to);
   if (next.end.kind === "count") next = { ...next, end: { kind: "count", count: Math.max(1, next.end.count - countBefore) } };
@@ -437,8 +463,9 @@ export type FollowingPlan =
 
 export const planFollowing = (draft: EventDraft, master: FullEvent, countBefore: number): FollowingPlan => {
   const body = { ...draftToBody(draft), recurrence: followingRecurrence(draft, master, countBefore) };
-  const split = instant(draft.originalStart);
-  const first = instant(master.start);
+  const zone = seriesZone(draft, master);
+  const split = instant(draft.originalStart, zone);
+  const first = instant(master.start, zone);
   if (!split || !first || split <= first) return { kind: "series", patch: body };
   const copied = Object.fromEntries(COPIED.filter((k) => k in master).map((k) => [k, master[k]]));
   // в новой серии сохраняем и чужие скрытые поля главного события, а не только время в пути
@@ -452,24 +479,24 @@ export const planFollowing = (draft: EventDraft, master: FullEvent, countBefore:
     : {};
   return {
     kind: "split",
-    create: { ...copied, ...body, ...props },
-    truncate: { recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)) },
+    create: { ...copied, ...body, ...props, recurrence: filterRDates(body.recurrence, split, "following", zone) },
+    truncate: { recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date), zone) },
   };
 };
 
 /** Сколько повторений серии было до split, включая удалённые: они тоже считаются в COUNT */
-const countBefore = async (calendarId: string, master: FullEvent, split: Date): Promise<number> => {
+const countBefore = async (calendarId: string, master: FullEvent, split: Date, zone: string): Promise<number> => {
   let count = 0;
   let pageToken: string | undefined;
+  // timeMax смотрит на фактическое начало: перенесённые повторения могут начинаться позже split.
   do {
     const page = await api<Page<RawEvent>>(calendarId, "GET", `${one(master.id)}/instances`, {
       showDeleted: "true",
-      timeMax: split.toISOString(),
       maxResults: "2500",
       ...(pageToken ? { pageToken } : {}),
     });
     count += (page.items ?? []).filter((e) => {
-      const at = instant(e.originalStartTime ?? e.start);
+      const at = instant(e.originalStartTime ?? e.start, master.start?.timeZone ?? page.timeZone ?? zone);
       return at !== null && at < split;
     }).length;
     pageToken = page.nextPageToken;
@@ -480,9 +507,10 @@ const countBefore = async (calendarId: string, master: FullEvent, split: Date): 
 const saveFollowing = async (draft: EventDraft): Promise<void> => {
   const calendarId = draft.originalCalendarId ?? draft.calendarId;
   const master = await getEvent(calendarId, draft.recurringEventId ?? "");
-  const split = instant(draft.originalStart);
+  const zone = seriesZone(draft, master);
+  const split = instant(draft.originalStart, zone);
   const needCount = split && !recurrenceEdited(draft) && hasCount(master.recurrence ?? []);
-  const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split) : 0);
+  const plan = planFollowing(draft, master, needCount ? await countBefore(calendarId, master, split, zone) : 0);
   if (plan.kind === "series") {
     await api(calendarId, "PATCH", one(master.id), { conferenceDataVersion: "1", supportsAttachments: "true", ...notify(draft) }, plan.patch);
     return;
@@ -557,10 +585,11 @@ export const deleteOccurrence = async (draft: EventDraft, scope: Scope): Promise
   // гостям — письмо об отмене
   if (!draft.recurringEventId || scope === "this") return deleteEvent(calendarId, draft.id ?? "", notify(draft));
   const master = await getEvent(calendarId, draft.recurringEventId);
-  const split = instant(draft.originalStart);
-  const first = instant(master.start);
+  const zone = seriesZone(draft, master);
+  const split = instant(draft.originalStart, zone);
+  const first = instant(master.start, zone);
   if (!split || !first || split <= first) return deleteEvent(calendarId, master.id, notify(draft));
   await api(calendarId, "PATCH", one(master.id), undefined, {
-    recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date)),
+    recurrence: truncateBefore(master.recurrence ?? [], split, Boolean(master.start?.date), zone),
   });
 };

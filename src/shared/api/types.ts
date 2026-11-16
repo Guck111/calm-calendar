@@ -106,6 +106,8 @@ export type EventDraft = {
   timeZone?: string;
   /** у конца в Google свой пояс: сохраняем его, пока пояс в форме не меняли */
   endTimeZone?: string;
+  /** Исходные моменты для выбора нужного смещения в повторяющийся осенний час. */
+  originalTimes?: { zone: string; start: Date; end: Date };
   location: string;
   description: string;
   /** правило повтора (строки RRULE, EXDATE…); пусто — не повторяется */

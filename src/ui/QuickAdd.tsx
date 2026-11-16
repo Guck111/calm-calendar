@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState, type KeyboardEvent } from "react";
 import { t } from "../shared/i18n";
 import type { EventDraft } from "../shared/api/types";
-import { parseQuick, quickToDraft, quickWhen, type QuickCalendar } from "../shared/lib/quick";
+import { hasValidQuickDate, parseQuick, quickToDraft, quickWhen, type QuickCalendar } from "../shared/lib/quick";
 import { cx } from "./Button";
 import s from "./QuickAdd.module.css";
 
@@ -36,6 +36,10 @@ export const QuickAdd = forwardRef<QuickAddHandle, Props>(({ calendars, onCreate
     if (expand) {
       onExpand(draft);
       setText("");
+      return;
+    }
+    if (!hasValidQuickDate(result)) {
+      setError(t.errors.checkDateTime);
       return;
     }
     if (!result.title) {

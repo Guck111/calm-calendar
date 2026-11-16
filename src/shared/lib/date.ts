@@ -11,8 +11,23 @@ export type DateRange = { start: Date; end: Date };
 
 export const MINUTES_IN_DAY = 24 * 60;
 
-export const startOfDay = (d: Date): Date =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate());
+/** Граница календарного дня, даже если в исходный день полночь была пропущена. */
+export const addCalendarDays = (d: Date, n: number): Date =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+export const startOfDay = (d: Date): Date => addCalendarDays(d, 0);
+
+/** Часы на циферблате, записанные в UTC, чтобы системный пояс их не нормализовал. */
+export class WallClockDate extends Date {
+  getFullYear() { return this.getUTCFullYear(); }
+  getMonth() { return this.getUTCMonth(); }
+  getDate() { return this.getUTCDate(); }
+  getDay() { return this.getUTCDay(); }
+  getHours() { return this.getUTCHours(); }
+  getMinutes() { return this.getUTCMinutes(); }
+  getSeconds() { return this.getUTCSeconds(); }
+  getTimezoneOffset() { return 0; }
+}
 
 // Сдвиг по календарным дням: корректен при переходе на летнее и зимнее время
 export const addDays = (d: Date, n: number): Date =>
@@ -38,7 +53,7 @@ export const addMonths = (d: Date, n: number): Date => {
 /** номер дня в неделе с учётом первого дня недели региона: 0 — первый столбец */
 export const weekdayIndex = (d: Date): number => (d.getDay() - weekStart() + 7) % 7;
 
-export const startOfWeek = (d: Date): Date => addDays(startOfDay(d), -weekdayIndex(d));
+export const startOfWeek = (d: Date): Date => addCalendarDays(d, -weekdayIndex(d));
 
 export const isSameDay = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() &&
@@ -77,12 +92,12 @@ export const daysBetween = (start: Date, end: Date): number =>
 /** 6 недель по 7 дней, как в обычном настенном календаре */
 export const monthGrid = (cursor: Date): Date[] => {
   const first = startOfWeek(startOfMonth(cursor));
-  return Array.from({ length: 42 }, (_, i) => addDays(first, i));
+  return Array.from({ length: 42 }, (_, i) => addCalendarDays(first, i));
 };
 
 export const weekDays = (cursor: Date): Date[] => {
   const first = startOfWeek(cursor);
-  return Array.from({ length: 7 }, (_, i) => addDays(first, i));
+  return Array.from({ length: 7 }, (_, i) => addCalendarDays(first, i));
 };
 
 export const viewDays = (view: ViewMode, cursor: Date): Date[] => {
@@ -94,13 +109,13 @@ export const viewDays = (view: ViewMode, cursor: Date): Date[] => {
     case "day":
       return [startOfDay(cursor)];
     case "agenda":
-      return Array.from({ length: AGENDA_DAYS }, (_, i) => addDays(startOfDay(cursor), i));
+      return Array.from({ length: AGENDA_DAYS }, (_, i) => addCalendarDays(cursor, i));
   }
 };
 
 export const viewRange = (view: ViewMode, cursor: Date): DateRange => {
   const days = viewDays(view, cursor);
-  return { start: days[0], end: addDays(days[days.length - 1], 1) };
+  return { start: days[0], end: addCalendarDays(days[days.length - 1], 1) };
 };
 
 export const shiftCursor = (view: ViewMode, cursor: Date, step: 1 | -1): Date => {
@@ -120,18 +135,19 @@ const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 /** «ноябрь 2026 г.» → «ноябрь 2026», и украинское «р.» */
 const dropYearSuffix = (s: string): string => s.replace(/\s*[гр]\.$/, "");
 
-// форматтеры создаём лениво и запоминаем для текущего языка
+// Форматтеры запоминают пояс при создании, поэтому он входит в ключ.
 const cache = new Map<string, Intl.DateTimeFormat>();
-const formatter = (options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat => {
-  const key = `${locale}|${JSON.stringify(options)}`;
+const formatter = (options: Intl.DateTimeFormatOptions, date?: Date): Intl.DateTimeFormat => {
+  const timeZone = date instanceof WallClockDate ? "UTC" : localTimeZone();
+  const key = `${locale}|${timeZone}|${JSON.stringify(options)}`;
   let f = cache.get(key);
   if (!f) {
-    f = new Intl.DateTimeFormat(locale, options);
+    f = new Intl.DateTimeFormat(locale, { ...options, timeZone });
     cache.set(key, f);
   }
   return f;
 };
-const fmt = (options: Intl.DateTimeFormatOptions) => (d: Date) => formatter(options).format(d);
+const fmt = (options: Intl.DateTimeFormatOptions) => (d: Date) => formatter(options, d).format(d);
 
 let numbers: { locale: string; f: Intl.NumberFormat } | null = null;
 /** Число дня цифрами языка: «٨» по-арабски, «৮» по-бенгальски, без «日» и «일», которые добавил бы формат даты */
@@ -172,7 +188,7 @@ export const formatTime = (d: Date): string =>
   fmt({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" })(d);
 /** Время для крупных часов: цифры отдельно от AM/PM, чтобы набрать их мельче */
 export const formatClock = (d: Date): { time: string; period: string } => {
-  const parts = formatter({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" }).formatToParts(d);
+  const parts = formatter({ hour: uses12h() ? "numeric" : "2-digit", minute: "2-digit" }, d).formatToParts(d);
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
   const time = parts
     .filter((p) => p.type !== "dayPeriod")

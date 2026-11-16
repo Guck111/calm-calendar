@@ -2,11 +2,12 @@
 // пересекающиеся события в сетке времени без наложения.
 import type { CalendarEvent } from "../api/types";
 import { locale } from "../i18n";
-import { addDays, MINUTES_IN_DAY, startOfDay } from "./date";
+import { addCalendarDays, MINUTES_IN_DAY, minutesOfDay, startOfDay } from "./date";
 
 export const overlapsDay = (e: CalendarEvent, day: Date): boolean => {
   const dayStart = startOfDay(day);
-  const dayEnd = addDays(dayStart, 1);
+  const dayEnd = addCalendarDays(dayStart, 1);
+  if (e.start.getTime() === e.end.getTime()) return e.start >= dayStart && e.start < dayEnd;
   return e.start < dayEnd && e.end > dayStart;
 };
 
@@ -36,13 +37,18 @@ export type PlacedEvent = {
 const MIN_DURATION = 20;
 
 export const layoutDay = (events: CalendarEvent[], day: Date): PlacedEvent[] => {
-  const dayStart = startOfDay(day).getTime();
-  const toMin = (d: Date) => Math.round((d.getTime() - dayStart) / 60_000);
+  const dayStart = startOfDay(day);
+  const dayEnd = addCalendarDays(dayStart, 1);
+  const toMin = (d: Date) => {
+    if (d < dayStart) return 0;
+    if (d >= dayEnd) return MINUTES_IN_DAY;
+    return minutesOfDay(d) + Math.round((d.getSeconds() * 1000 + d.getMilliseconds()) / 60_000);
+  };
 
   const items = events
     .filter((e) => !isAllDayLike(e) && overlapsDay(e, day))
     .map((event) => {
-      const startMin = Math.max(0, toMin(event.start));
+      const startMin = Math.min(MINUTES_IN_DAY - 1, toMin(event.start));
       const endMin = Math.min(MINUTES_IN_DAY, Math.max(toMin(event.end), startMin + MIN_DURATION));
       return { event, startMin, endMin };
     })
