@@ -197,7 +197,8 @@ const enEvents = (): Record<string, Json[]> => ({
           },
         },
       ],
-      [5, "Sprint demo", [15, 0], [16, 0]],
+      // приглашения Zoom кладут в место длинную ссылку
+      [5, "Sprint demo", [15, 0], [16, 0], { location: ZOOM }],
     ]),
   ],
   fitness: timed("f", [
@@ -372,7 +373,16 @@ const google = (
 };
 
 /** Для автотестов: window.calmMock.outage = "network" | "503" — Google не отвечает, null — снова отвечает */
-const mockControl: { outage: "network" | "503" | null } = { outage: null };
+/** outage — сбой сети или Google; signIn "hang" — браузер так и не вернулся со входа (ждём до отмены);
+ *  reopened — сколько раз страницу входа открыли снова */
+/** slow — задержка ответов Google, мс (проверка состояния «Загружаю…») */
+const mockControl: { outage: "network" | "503" | null; signIn: "hang" | null; reopened: number; slow: number } = {
+  outage: null,
+  slow: 0,
+  signIn: null,
+  reopened: 0,
+};
+let cancelSignIn: (() => void) | null = null;
 (globalThis as unknown as { calmMock: typeof mockControl }).calmMock = mockControl;
 
 const delay = <T>(value: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(value), ms));
@@ -410,7 +420,17 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
   switch (cmd) {
     case "auth_status":
       return { client_source: "file", accounts: accounts.map((email) => ({ email, signed_in: true })) };
+    case "sign_in_reopen":
+      mockControl.reopened += 1;
+      return null;
+    case "sign_in_cancel":
+      cancelSignIn?.();
+      return null;
     case "sign_in": {
+      if (mockControl.signIn === "hang")
+        return new Promise((_, reject) => {
+          cancelSignIn = () => reject({ kind: "cancelled", message: "Sign-in cancelled" });
+        });
       // входим в первый из двух аккаунтов, которого ещё нет
       const next = [ME, WORK].find((a) => !accounts.includes(a)) ?? ME;
       accounts = [...new Set([...accounts, next])];
@@ -432,6 +452,7 @@ export const mockInvoke = async (cmd: string, args: Json = {}): Promise<unknown>
           args.query as [string, string][] | undefined,
           args.body as Json | undefined,
         ),
+        250 + mockControl.slow,
       );
     case "fetch_feed":
       return delay(mockFeed(String(args.url)));

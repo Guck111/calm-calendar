@@ -1,7 +1,18 @@
 import { allSettled, fork } from "effector";
 import { describe, expect, it } from "vitest";
 import type { Account, AuthStatus } from "../shared/api/types";
-import { $activeAccounts, $needsClient, $signedIn, fetchStatusFx } from "./auth";
+import {
+  $activeAccounts,
+  $authError,
+  $needsClient,
+  $signedIn,
+  cancelSignInFx,
+  fetchStatusFx,
+  reopenSignInFx,
+  signInCancelClicked,
+  signInFx,
+  signInReopenClicked,
+} from "./auth";
 
 const run = async (clientSource: AuthStatus["clientSource"], accounts: Account[]) => {
   const scope = fork({ handlers: [[fetchStatusFx, () => ({ clientSource, accounts })]] });
@@ -30,6 +41,29 @@ describe("состояние входа", () => {
       signedIn: true,
       active: ["work@company.com"],
     });
+  });
+
+  it("отменённый вход — не ошибка, а настоящая ошибка входа видна", async () => {
+    const cancelled = fork({ handlers: [[signInFx, () => Promise.reject({ kind: "cancelled", message: "" })]] });
+    await allSettled(signInFx, { scope: cancelled });
+    expect(cancelled.getState($authError)).toBeNull();
+
+    const failed = fork({ handlers: [[signInFx, () => Promise.reject({ kind: "timeout", message: "Время вышло" })]] });
+    await allSettled(signInFx, { scope: failed });
+    expect(failed.getState($authError)).toBe("Время вышло");
+  });
+
+  it("«Отменить» и «Открыть снова» во время входа уходят в Rust", async () => {
+    const calls: string[] = [];
+    const scope = fork({
+      handlers: [
+        [cancelSignInFx, () => void calls.push("cancel")],
+        [reopenSignInFx, () => void calls.push("reopen")],
+      ],
+    });
+    await allSettled(signInReopenClicked, { scope });
+    await allSettled(signInCancelClicked, { scope });
+    expect(calls).toEqual(["reopen", "cancel"]);
   });
 
   it("если вход истёк везде, показываем экран входа", async () => {

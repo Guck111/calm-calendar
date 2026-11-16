@@ -4,20 +4,23 @@ import { t } from "../shared/i18n";
 import { $calendarById } from "../model/calendars";
 import { eventOpened } from "../model/editor";
 import { $conflicts, $events } from "../model/events";
-import { $cursor, $today, $view, dayOpened } from "../model/view";
+import { $cursor, $now, $today, $view, dayOpened } from "../model/view";
 import { formatTime, formatWeekdayDayMonth, isSameDay, viewDays } from "../shared/lib/date";
 import { eventsForDay, isAllDayLike } from "../shared/lib/layout";
 import { cx } from "./Button";
 import { eventStyle } from "./eventColor";
-import { Repeat, Warning } from "./icons";
+import { Repeat, Video, Warning } from "./icons";
+import { isJoinable, shortPlace } from "../shared/lib/meeting";
+import { openExternal } from "../shared/api/open";
 import s from "./ScheduleView.module.css";
 
 /** «Расписание»: события четырёх недель списком по дням, дни без событий пропускаем */
 export const ScheduleView = () => {
-  const [view, cursor, today, events, calendars, conflicts] = useUnit([
+  const [view, cursor, today, now, events, calendars, conflicts] = useUnit([
     $view,
     $cursor,
     $today,
+    $now,
     $events,
     $calendarById,
     $conflicts,
@@ -44,10 +47,11 @@ export const ScheduleView = () => {
             {list.map((e) => {
               const clash = conflicts.get(e.key);
               const clashText = clash ? t.accounts.conflict(clash.map((c) => c.title).join(", ")) : "";
+              const join = e.meeting && isJoinable(e.start, e.end, now) ? e.meeting : undefined;
               return (
-                <li key={e.key}>
+                <li key={e.key} className={s.row}>
                   <button
-                    className={s.event}
+                    className={cx(s.event, e.end <= now && s.past)}
                     style={eventStyle(calendars.get(e.calendarId), e)}
                     onClick={() => openEvent(e)}
                     data-event-key={e.key}
@@ -65,8 +69,22 @@ export const ScheduleView = () => {
                       {e.recurring && <Repeat />}
                       {e.title}
                     </span>
-                    {e.location && <span className={s.location}>{e.location}</span>}
+                    {e.location && (
+                      <span className={s.location} title={e.location}>
+                        {shortPlace(e.location, e.meeting)}
+                      </span>
+                    )}
                   </button>
+                  {/* как в виджете: за 15 минут до начала и до конца — сразу в созвон */}
+                  {join && (
+                    <button
+                      className={s.join}
+                      onClick={() => void openExternal(join.url)}
+                      title={t.meeting.joinTitle(join.provider)}
+                    >
+                      <Video size={14} /> {t.meeting.join}
+                    </button>
+                  )}
                 </li>
               );
             })}

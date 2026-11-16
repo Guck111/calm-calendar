@@ -1,0 +1,85 @@
+/* Внизу по центру, над календарём, но под карточкой и меню. Цвета наоборот (как у строк «Отменить»
+   в Google и Outlook): строку видно на любой сетке, текст контрастен в светлой и тёмной теме */
+.region {
+  position: fixed;
+  inset-block-end: 20px;
+  inset-inline: 0;
+  z-index: 9;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: min(520px, calc(100vw - 32px));
+  padding-block: 6px;
+  padding-inline: 16px 6px;
+  border-radius: var(--radius);
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  animation: rise 160ms ease-out;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-inline-end: 8px;
+}
+
+.undo,
+.close {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.undo {
+  padding: 6px 10px;
+  font: inherit;
+  font-weight: 600;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  opacity: 0.7;
+}
+
+.undo:hover,
+.close:hover {
+  background: color-mix(in srgb, var(--surface) 16%, transparent);
+  opacity: 1;
+}
+
+.undo:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--surface);
+  outline-offset: 1px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}

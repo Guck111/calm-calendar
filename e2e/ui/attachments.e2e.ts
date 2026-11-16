@@ -1,6 +1,6 @@
 // Attachments: Google Drive files in the card, attaching one by its link in the form.
 // "Design sync" has the mock agenda doc attached.
-import { test, expect, openApp, eventBlock, dialog } from "./fixtures";
+import { test, expect, openApp, eventBlock, dialog, showMore } from "./fixtures";
 
 test("the card lists the attached files", async ({ page, t }) => {
   await openApp(page);
@@ -55,6 +55,7 @@ test.describe("in Bengali", () => {
   test("the field is translated", async ({ page, t }) => {
     await openApp(page);
     await page.locator("aside").getByRole("button", { name: t.sidebar.create }).click();
+    await showMore(dialog(page), t);
     await expect(dialog(page).getByRole("textbox", { name: t.editor.addAttachment })).toBeVisible();
   });
 });

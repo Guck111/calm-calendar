@@ -62,6 +62,9 @@ export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Dat
   ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
+/** Удаление выбрано: карточка закрывается, событие пропадает с экрана, а в Google уходит,
+ *  когда строка «Отменить» исчезнет (model/undo.ts) */
+export const deleteRequested = createEvent<Change & { event: CalendarEvent }>();
 
 /** одно поле без формы (меню Ctrl+K: Google Meet, цвет); у серии — только это повторение */
 export const eventPatched = createEvent<{ event: CalendarEvent; patch: Partial<EventDraft> }>();
@@ -223,7 +226,7 @@ export const validate = (d: EventDraft): string | null => {
 /** событие, открытое для просмотра (до перехода в правку) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
-  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteFx.done]);
+  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteRequested]);
 
 /** просмотр существующего события или форма правки и создания */
 export const $mode = createStore<"view" | "edit">("view")
@@ -241,12 +244,12 @@ export const $draft = createStore<EventDraft | null>(null)
       ? { ...d, recurrence: result, originalRecurrence: result }
       : d,
   )
-  .reset([editorClosed, saveFx.done, deleteFx.done]);
+  .reset([editorClosed, saveFx.done, deleteRequested]);
 
-/** карточка открыта клавишей Delete: кнопка удаления уже спрашивает подтверждение */
+/** карточка открыта клавишей Delete: кнопка удаления уже в фокусе, Enter удаляет */
 export const $deleteArmed = createStore(false)
   .on(deleteArmed, () => true)
-  .reset([eventOpened, editorClosed, editClicked, duplicateClicked, deleteFx.done]);
+  .reset([eventOpened, editorClosed, editClicked, duplicateClicked, deleteRequested]);
 
 /** черновик копии: открытое событие берём до того, как карточка закроется */
 const duplicated = sample({
@@ -307,18 +310,19 @@ sample({
 /** открыт вопрос, к каким повторениям серии применить сохранение или удаление */
 export const $askScope = createStore<"save" | "delete" | null>(null)
   // не по scopeChosen: ответ ещё нужен, чтобы выбрать сохранение или удаление
-  .reset([saveFx, deleteFx, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
+  .reset([saveFx, deleteRequested, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
 
 /** правило в форме поменяли: тогда правка возможна только для «это и следующие» */
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
-  .on([saveFx.failData, deleteFx.failData, rsvpFx.failData], (_, e) => e.message)
-  .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteFx, duplicated]);
+  .on([saveFx.failData, rsvpFx.failData], (_, e) => e.message)
+  .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteRequested, duplicated]);
 
+// удаление уходит в Google, когда карточка уже закрыта: его ошибка — в полосу над календарём
 export const $busy = sample({
-  source: { save: saveFx.pending, del: deleteFx.pending, rsvp: rsvpFx.pending },
-  fn: ({ save, del, rsvp }) => save || del || rsvp,
+  source: { save: saveFx.pending, rsvp: rsvpFx.pending },
+  fn: ({ save, rsvp }) => save || rsvp,
 });
 
 const $validationError = $draft.map((d) => (d ? validate(d) : null));
@@ -362,10 +366,10 @@ sample({
 
 sample({
   clock: deleteClicked,
-  source: { draft: $draft, busy: $busy },
-  filter: ({ draft, busy }) => Boolean(draft?.id) && !draft?.recurringEventId && !busy,
-  fn: ({ draft }) => ({ draft: draft as EventDraft, scope: "this" as const }),
-  target: deleteFx,
+  source: { draft: $draft, busy: $busy, event: $opened },
+  filter: ({ draft, busy, event }) => Boolean(draft?.id && event) && !draft?.recurringEventId && !busy,
+  fn: ({ draft, event }) => ({ draft: draft as EventDraft, scope: "this" as const, event: event as CalendarEvent }),
+  target: deleteRequested,
 });
 
 sample({
@@ -378,10 +382,10 @@ sample({
 
 sample({
   clock: scopeChosen,
-  source: { ask: $askScope, draft: $draft },
-  filter: ({ ask, draft }) => ask === "delete" && Boolean(draft),
-  fn: ({ draft }, scope) => ({ draft: draft as EventDraft, scope }),
-  target: deleteFx,
+  source: { ask: $askScope, draft: $draft, event: $opened },
+  filter: ({ ask, draft, event }) => ask === "delete" && Boolean(draft && event),
+  fn: ({ draft, event }, scope) => ({ draft: draft as EventDraft, scope, event: event as CalendarEvent }),
+  target: deleteRequested,
 });
 
 sample({ clock: eventMoved, target: moveFx });
@@ -399,7 +403,9 @@ sample({
 
 sample({ clock: eventPatched, fn: ({ event, patch }) => ({ ...fromEvent(event), ...patch }), target: patchFx });
 sample({ clock: patchFx.failData, fn: (e) => t.errors.changeFailed(e.message), target: actionFailed });
-sample({ clock: [saveFx.done, deleteFx.done, moveFx.finally, rsvpFx.done, patchFx.finally], target: reloadRequested });
+// при ошибке удаления событие вернётся на экран после перечитывания
+sample({ clock: deleteFx.failData, fn: (e) => t.errors.deleteFailed(e.message), target: actionFailed });
+sample({ clock: [saveFx.done, deleteFx.finally, moveFx.finally, rsvpFx.done, patchFx.finally], target: reloadRequested });
 patchFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 rsvpFx.done.watch(() => broadcast("events-changed", { from: "main" }));
 moveFx.done.watch(() => broadcast("events-changed", { from: "main" }));

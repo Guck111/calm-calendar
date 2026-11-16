@@ -56,6 +56,28 @@ test.describe("settings", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", /^de/);
   });
 
+  test("options are grouped; the widget and launch with Windows are here too, not only in the tray", async ({ page, t }) => {
+    await openApp(page);
+    await page.getByRole("button", { name: t.common.settings }).click();
+    const settings = page.getByRole("dialog", { name: t.common.settings });
+    const groups = settings.getByRole("group");
+    await expect(groups).toHaveCount(4);
+    await expect(groups.locator(":scope > h3")).toHaveText([
+      t.settings.groupLook,
+      t.settings.groupCalendar,
+      t.settings.groupReminders,
+      t.settings.groupQuick,
+    ]);
+    const look = settings.getByRole("group", { name: t.settings.groupLook });
+    await expect(look.getByRole("radio", { name: t.settings.themes.dark })).toBeVisible();
+    const quick = settings.getByRole("group", { name: t.settings.groupQuick });
+    await expect(quick.getByLabel(t.settings.quickHotkey)).toBeVisible();
+    // they need the app: in the browser they are there but off
+    for (const name of [t.welcome.widget, t.settings.onTop, t.welcome.autostart]) {
+      await expect(quick.getByRole("switch", { name })).toBeDisabled();
+    }
+  });
+
   test("a low window: the dialog scrolls down to the last option", async ({ page, t }) => {
     await page.setViewportSize({ width: 900, height: 540 });
     await openApp(page);
@@ -81,6 +103,20 @@ test.describe("settings", () => {
 });
 
 test.describe("sign out", () => {
+  test("shows on hover or focus of its account, not all the time", async ({ page, t }) => {
+    await openApp(page);
+    const group = page.locator("aside").getByRole("group", { name: "work@example.com" });
+    const button = group.getByRole("button", { name: t.sidebar.signOut, exact: true });
+    const opacity = () => button.evaluate((el) => Number(getComputedStyle(el).opacity));
+    await page.mouse.move(600, 400);
+    await expect.poll(opacity).toBe(0);
+    await group.hover();
+    await expect.poll(opacity).toBe(1);
+    await page.mouse.move(600, 400);
+    await button.focus();
+    await expect.poll(opacity).toBe(1);
+  });
+
   test("asks a second time; Esc and leaving the button take it back", async ({ page, t }) => {
     await openApp(page);
     const group = page.locator("aside").getByRole("group", { name: "work@example.com" });
@@ -114,6 +150,31 @@ test.describe("sign out", () => {
     await expect(group).toHaveCount(0);
     await expect(eventBlock(page, "Team standup")).toHaveCount(0);
     await expect(eventBlock(page, "Dentist")).toBeVisible();
+  });
+});
+
+test.describe("sign in", () => {
+  // the browser tab was closed or got lost: the wait has a way out
+  test("while waiting for the browser: open the page again or cancel", async ({ page, t }) => {
+    await openApp(page);
+    await page.evaluate(() => {
+      (globalThis as unknown as { calmMock: { signIn: string } }).calmMock.signIn = "hang";
+    });
+    const aside = page.locator("aside");
+    await aside.getByRole("button", { name: t.accounts.add }).click();
+    await expect(aside.getByText(t.auth.finishInBrowser)).toBeVisible();
+
+    await aside.getByRole("button", { name: t.auth.reopen }).click();
+    await expect
+      .poll(() => page.evaluate(() => (globalThis as unknown as { calmMock: { reopened: number } }).calmMock.reopened))
+      .toBe(1);
+
+    await aside.getByRole("button", { name: t.common.cancel }).click();
+    await expect(aside.getByRole("button", { name: t.accounts.add })).toBeEnabled();
+    await expect(aside.getByRole("button", { name: t.auth.reopen })).toHaveCount(0);
+    // cancelling is not an error
+    await expect(aside.getByText(t.errors.timeout)).toHaveCount(0);
+    await expect(eventBlock(page, "Team standup")).toBeVisible();
   });
 });
 

@@ -1,6 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { t } from "../shared/i18n";
-import { listEvents } from "../shared/api/calendar";
+import { listEvents, occurrenceStart } from "../shared/api/calendar";
 import { forgetFeeds } from "../shared/api/feeds";
 import { toAppError } from "../shared/api/bridge";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
@@ -44,10 +44,43 @@ export const actionFailed = createEvent<string>();
 /** событие уже передвинуто на экране, ещё до ответа Google */
 export const eventShifted = createEvent<{ key: string; start: Date; end: Date }>();
 
+/** События, которые удалены на экране, но ещё не в Google (пока видна «Отменить»):
+ *  одно событие или повторения серии с этого времени («это и следующие») */
+export type Hidden = { key: string; calendarId: string } & ({ id: string } | { recurringEventId: string; from: Date });
+
+/** Ключ удаления: календарь и id события. Только id мало: у приглашения копии в календарях разных
+ *  аккаунтов — с одним и тем же id */
+export const deleteKey = (calendarId: string, id: string): string => `${calendarId}\u0000${id}`;
+
+export const hides = (h: Hidden, e: CalendarEvent): boolean =>
+  e.calendarId === h.calendarId &&
+  ("id" in h ? e.id === h.id : e.recurringEventId === h.recurringEventId && occurrenceStart(e) >= h.from);
+
+export const eventsHidden = createEvent<Hidden>();
+/** «Отменить»: события возвращаются на экран, прятать их больше не нужно */
+export const eventsRestored = createEvent<{ hidden: Hidden; events: CalendarEvent[] }>();
+/** удаление дошло до Google (или не дошло): дальше список берём как есть */
+export const hidingEnded = createEvent<string>();
+
+const $hidden = createStore<Hidden[]>([])
+  .on(eventsHidden, (list, h) => [...list, h])
+  .on(eventsRestored, (list, { hidden }) => list.filter((h) => h !== hidden))
+  .on(hidingEnded, (list, key) => list.filter((h) => h.key !== key))
+  .reset(signOutFx.finally);
+
+// ответ на устаревший запрос (уже перелистнули дальше) не применяем; спрятанные не показываем
+const loaded = sample({
+  clock: fetchEventsFx.doneData,
+  source: $hidden,
+  filter: (_, r) => r.id === lastRequestId,
+  fn: (hidden, r) => r.events.filter((e) => !hidden.some((h) => hides(h, e))),
+});
+
 export const $events = createStore<CalendarEvent[]>([])
   .on(eventShifted, (list, { key, start, end }) => list.map((e) => (e.key === key ? { ...e, start, end } : e)))
-  // ответ на устаревший запрос (уже перелистнули дальше) не применяем
-  .on(fetchEventsFx.doneData, (state, r) => (r.id === lastRequestId ? r.events : state))
+  .on(loaded, (_, events) => events)
+  .on(eventsHidden, (list, h) => list.filter((e) => !hides(h, e)))
+  .on(eventsRestored, (list, { events }) => [...list, ...events])
   .reset(signOutFx.finally);
 
 /** пересечения событий разных аккаунтов: ключ события → с чем пересекается */

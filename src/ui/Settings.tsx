@@ -11,7 +11,11 @@ import { broadcast, inTauri } from "../shared/api/bus";
 import {
   glassSupported,
   initGlass,
+  readDesktop,
   readSettings,
+  setAutostart,
+  setWidget,
+  type DesktopState,
   setGlass,
   setNotifications,
   setAlerts,
@@ -127,7 +131,7 @@ const FeedsSection = () => {
 
   return (
     <section className={s.section}>
-      <h3>{t.settings.feeds}</h3>
+      <h4>{t.settings.feeds}</h4>
       <small className={s.hint}>{t.settings.feedsText}</small>
       {feeds.length > 0 && (
         <ul className={s.feeds}>
@@ -179,6 +183,8 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   const [alerts, setAlertsState] = useState<AlertMode>("off");
   const [hotkey, setHotkeyState] = useState<string>(DEFAULT_QUICK_HOTKEY);
   const [hotkeyError, setHotkeyError] = useState<string | null>(null);
+  // виджет, поверх окон и автозапуск — те же, что в меню трея; галочки там следуют
+  const [desktop, setDesktop] = useState<DesktopState>({ widget: false, on_top: false, autostart: false });
   const [error, setError] = useState<string | null>(null);
   const reschedule = onReschedule;
   const [secondZone, setSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
@@ -202,6 +208,40 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   };
   // страны по алфавиту языка приложения
   const [regions] = useState(sortedRegions);
+
+  useEffect(() => {
+    void readDesktop().then(setDesktop);
+  }, []);
+
+  const toggleWidget = async (visible: boolean) => {
+    setDesktop((d) => ({ ...d, widget: visible }));
+    try {
+      await setWidget({ visible });
+    } catch {
+      setDesktop((d) => ({ ...d, widget: !visible }));
+      setError(t.errors.settingFailed);
+    }
+  };
+  const toggleOnTop = async (onTop: boolean) => {
+    setDesktop((d) => ({ ...d, on_top: onTop }));
+    try {
+      await setWidget({ onTop });
+    } catch {
+      setDesktop((d) => ({ ...d, on_top: !onTop }));
+      setError(t.errors.settingFailed);
+    }
+  };
+  // автозапуск можно запретить в диспетчере задач: переключатель показывает, что вышло на деле
+  const toggleAutostart = async (enabled: boolean) => {
+    setDesktop((d) => ({ ...d, autostart: enabled }));
+    try {
+      const actual = await setAutostart(enabled);
+      setDesktop((d) => ({ ...d, autostart: actual }));
+    } catch {
+      setDesktop((d) => ({ ...d, autostart: !enabled }));
+      setError(t.errors.settingFailed);
+    }
+  };
 
   useEffect(() => {
     void readSettings().then((st) => {
@@ -311,232 +351,305 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
           </Button>
         </div>
 
-        <section className={s.section}>
-          <h3>{t.settings.theme}</h3>
-          <div className={s.segmented} role="radiogroup" aria-label={t.settings.theme}>
-            {THEMES.map((id) => (
-              <button
-                key={id}
-                role="radio"
-                aria-checked={theme === id}
-                className={cx(s.segment, theme === id && s.active)}
-                onClick={() => pickTheme(id)}
-              >
-                {t.settings.themes[id]}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h3>{t.settings.style}</h3>
-          <div className={s.styles} role="radiogroup" aria-label={t.settings.style}>
-            {STYLES.map((id) => (
-              <button
-                key={id}
-                role="radio"
-                aria-checked={appearance.style === id}
-                className={cx(s.styleCard, appearance.style === id && s.styleActive)}
-                onClick={() => changeAppearance({ style: id })}
-              >
-                {/* образец стиля: те же переменные, что у окна в этом стиле (styles.css) */}
-                <span className={s.preview} data-style-preview={id} aria-hidden>
-                  <span className={s.previewAa}>Aa</span>
-                  <span className={s.previewToday} />
-                  <span className={s.previewEvent} />
-                </span>
-                <span className={s.styleName}>{t.settings.styles[id]}</span>
-              </button>
-            ))}
-          </div>
-          <div className={s.fonts}>
-            <FontSelect
-              label={t.settings.displayFont}
-              value={appearance.display}
-              fonts={DISPLAY_FONTS}
-              styleFont={styleFonts.display}
-              onChange={(display) => changeAppearance({ display })}
-            />
-            <FontSelect
-              label={t.settings.textFont}
-              value={appearance.text}
-              fonts={TEXT_FONTS}
-              styleFont={styleFonts.text}
-              onChange={(text) => changeAppearance({ text })}
-            />
-          </div>
-        </section>
-
-        <section className={s.section}>
-          <h3>{t.settings.language}</h3>
-          <select
-            className={s.select}
-            aria-label={t.settings.language}
-            value={language}
-            onChange={(e) => saveLangSetting(e.target.value as LangSetting)}
-          >
-            <option value="system">{t.settings.systemLanguage}</option>
-            {LANGS.map((id) => (
-              <option key={id} value={id} lang={id}>
-                {langName(id)}
-              </option>
-            ))}
-          </select>
-        </section>
-
-        <section className={s.section}>
-          <label className={s.toggle}>
-            <span>
-              <b>{t.settings.secondZone}</b>
-              <small>{t.settings.secondZoneText}</small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={secondZone.enabled}
-              onChange={(e) => changeSecondZone({ enabled: e.target.checked })}
-            />
-          </label>
-          <TimeZoneSelect
-            className={s.select}
-            aria-label={t.settings.secondZone}
-            value={secondZone.zone}
-            disabled={!secondZone.enabled}
-            onChange={(zone) => changeSecondZone({ zone })}
-          />
-        </section>
-
-        <section className={s.section}>
-          <label className={s.toggle}>
-            <span>
-              <b>{t.settings.weekNumbers}</b>
-              <small>{t.settings.weekNumbersText}</small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={weekNumbers}
-              onChange={(e) => toggleWeekNumbers(e.target.checked)}
-            />
-          </label>
-        </section>
-
-        <section className={s.section}>
-          <h3>{t.settings.holidays}</h3>
-          <small className={s.hint}>{t.settings.holidaysText}</small>
-          <select
-            className={s.select}
-            aria-label={t.settings.holidays}
-            value={holidayRegion ?? ""}
-            onChange={(e) => changeHolidays(e.target.value || null)}
-          >
-            <option value="">{t.settings.holidaysNone}</option>
-            {regions.map((r) => (
-              <option key={r.region} value={r.region}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-        </section>
-
-        <FeedsSection />
-
-        <section className={s.section}>
-          <label className={s.toggle}>
-            <span>
-              <b>{t.settings.glass}</b>
-              <small>
-                {t.settings.glassText} {glassSupported ? t.settings.glassPower : t.settings.glassWindowsOnly}
-              </small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={glass}
-              disabled={!glassSupported}
-              onChange={(e) => void toggleGlass(e.target.checked)}
-            />
-          </label>
-        </section>
-
-        <section className={s.section}>
-          <label className={s.toggle}>
-            <span>
-              <b>{t.settings.notifications}</b>
-              <small>{t.settings.notificationsText}</small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={notify}
-              disabled={!inTauri}
-              onChange={(e) => void toggleNotify(e.target.checked)}
-            />
-          </label>
-          <label className={s.toggle}>
-            <span>
-              <b>{t.settings.privateNotifications}</b>
-              <small>{t.settings.privateText}</small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={privateNotify}
-              disabled={!inTauri || !notify}
-              onChange={(e) => void togglePrivate(e.target.checked)}
-            />
-          </label>
-          {error && <p className={s.error}>{error}</p>}
-        </section>
-
-        <section className={s.section}>
-          <h3>{t.alert.label}</h3>
-          <select
-            className={s.select}
-            aria-label={t.alert.label}
-            value={alerts}
-            disabled={!inTauri}
-            onChange={(e) => void pickAlerts(e.target.value as AlertMode)}
-          >
-            {ALERT_MODES.map((mode) => (
-              <option key={mode} value={mode}>
-                {t.alert.modes[mode]}
-              </option>
-            ))}
-          </select>
-          <small className={s.sectionText}>{t.alert.text}</small>
-        </section>
-
-        <section className={s.section}>
-          <h3>{t.settings.quickHotkey}</h3>
-          <select
-            className={s.select}
-            aria-label={t.settings.quickHotkey}
-            value={hotkey}
-            disabled={!inTauri}
-            onChange={(e) => void pickHotkey(e.target.value)}
-          >
-            <option value={OFF}>{t.settings.hotkeyOff}</option>
-            {QUICK_HOTKEYS.map((h) => (
-              <option key={h} value={h}>
-                {hotkeyLabel(h)}
-              </option>
-            ))}
-          </select>
-          <small className={s.sectionText}>{t.settings.quickHotkeyText}</small>
-          {hotkeyError && <p className={s.error}>{hotkeyError}</p>}
-        </section>
-
-        {inTauri && (
+        <div className={s.group} role="group" aria-labelledby="settings-look">
+          <h3 id="settings-look" className={s.groupTitle}>
+            {t.settings.groupLook}
+          </h3>
           <section className={s.section}>
-            <h3>{t.settings.logs}</h3>
-            <small className={s.sectionText}>{t.settings.logsText}</small>
-            <div>
-              <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
-                {t.settings.openLogs}
-              </Button>
+            <h4>{t.settings.theme}</h4>
+            <div className={s.segmented} role="radiogroup" aria-label={t.settings.theme}>
+              {THEMES.map((id) => (
+                <button
+                  key={id}
+                  role="radio"
+                  aria-checked={theme === id}
+                  className={cx(s.segment, theme === id && s.active)}
+                  onClick={() => pickTheme(id)}
+                >
+                  {t.settings.themes[id]}
+                </button>
+              ))}
             </div>
           </section>
+
+          <section className={s.section}>
+            <h4>{t.settings.style}</h4>
+            <div className={s.styles} role="radiogroup" aria-label={t.settings.style}>
+              {STYLES.map((id) => (
+                <button
+                  key={id}
+                  role="radio"
+                  aria-checked={appearance.style === id}
+                  className={cx(s.styleCard, appearance.style === id && s.styleActive)}
+                  onClick={() => changeAppearance({ style: id })}
+                >
+                  {/* образец стиля: те же переменные, что у окна в этом стиле (styles.css) */}
+                  <span className={s.preview} data-style-preview={id} aria-hidden>
+                    <span className={s.previewAa}>Aa</span>
+                    <span className={s.previewToday} />
+                    <span className={s.previewEvent} />
+                  </span>
+                  <span className={s.styleName}>{t.settings.styles[id]}</span>
+                </button>
+              ))}
+            </div>
+            <div className={s.fonts}>
+              <FontSelect
+                label={t.settings.displayFont}
+                value={appearance.display}
+                fonts={DISPLAY_FONTS}
+                styleFont={styleFonts.display}
+                onChange={(display) => changeAppearance({ display })}
+              />
+              <FontSelect
+                label={t.settings.textFont}
+                value={appearance.text}
+                fonts={TEXT_FONTS}
+                styleFont={styleFonts.text}
+                onChange={(text) => changeAppearance({ text })}
+              />
+            </div>
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.glass}</b>
+                <small>
+                  {t.settings.glassText} {glassSupported ? t.settings.glassPower : t.settings.glassWindowsOnly}
+                </small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={glass}
+                disabled={!glassSupported}
+                onChange={(e) => void toggleGlass(e.target.checked)}
+              />
+            </label>
+          </section>
+        </div>
+
+        <div className={s.group} role="group" aria-labelledby="settings-calendar">
+          <h3 id="settings-calendar" className={s.groupTitle}>
+            {t.settings.groupCalendar}
+          </h3>
+          <section className={s.section}>
+            <h4>{t.settings.language}</h4>
+            <select
+              className={s.select}
+              aria-label={t.settings.language}
+              value={language}
+              onChange={(e) => saveLangSetting(e.target.value as LangSetting)}
+            >
+              <option value="system">{t.settings.systemLanguage}</option>
+              {LANGS.map((id) => (
+                <option key={id} value={id} lang={id}>
+                  {langName(id)}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.secondZone}</b>
+                <small>{t.settings.secondZoneText}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={secondZone.enabled}
+                onChange={(e) => changeSecondZone({ enabled: e.target.checked })}
+              />
+            </label>
+            <TimeZoneSelect
+              className={s.select}
+              aria-label={t.settings.secondZone}
+              value={secondZone.zone}
+              disabled={!secondZone.enabled}
+              onChange={(zone) => changeSecondZone({ zone })}
+            />
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.weekNumbers}</b>
+                <small>{t.settings.weekNumbersText}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={weekNumbers}
+                onChange={(e) => toggleWeekNumbers(e.target.checked)}
+              />
+            </label>
+          </section>
+
+          <section className={s.section}>
+            <h4>{t.settings.holidays}</h4>
+            <small className={s.hint}>{t.settings.holidaysText}</small>
+            <select
+              className={s.select}
+              aria-label={t.settings.holidays}
+              value={holidayRegion ?? ""}
+              onChange={(e) => changeHolidays(e.target.value || null)}
+            >
+              <option value="">{t.settings.holidaysNone}</option>
+              {regions.map((r) => (
+                <option key={r.region} value={r.region}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <FeedsSection />
+        </div>
+
+        <div className={s.group} role="group" aria-labelledby="settings-reminders">
+          <h3 id="settings-reminders" className={s.groupTitle}>
+            {t.settings.groupReminders}
+          </h3>
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.notifications}</b>
+                <small>{t.settings.notificationsText}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={notify}
+                disabled={!inTauri}
+                onChange={(e) => void toggleNotify(e.target.checked)}
+              />
+            </label>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.privateNotifications}</b>
+                <small>{t.settings.privateText}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={privateNotify}
+                disabled={!inTauri || !notify}
+                onChange={(e) => void togglePrivate(e.target.checked)}
+              />
+            </label>
+            {error && <p className={s.error}>{error}</p>}
+          </section>
+
+          <section className={s.section}>
+            <h4>{t.alert.label}</h4>
+            <select
+              className={s.select}
+              aria-label={t.alert.label}
+              value={alerts}
+              disabled={!inTauri}
+              onChange={(e) => void pickAlerts(e.target.value as AlertMode)}
+            >
+              {ALERT_MODES.map((mode) => (
+                <option key={mode} value={mode}>
+                  {t.alert.modes[mode]}
+                </option>
+              ))}
+            </select>
+            <small className={s.sectionText}>{t.alert.text}</small>
+          </section>
+        </div>
+
+        <div className={s.group} role="group" aria-labelledby="settings-quick">
+          <h3 id="settings-quick" className={s.groupTitle}>
+            {t.settings.groupQuick}
+          </h3>
+          <section className={s.section}>
+            <h4>{t.settings.quickHotkey}</h4>
+            <select
+              className={s.select}
+              aria-label={t.settings.quickHotkey}
+              value={hotkey}
+              disabled={!inTauri}
+              onChange={(e) => void pickHotkey(e.target.value)}
+            >
+              <option value={OFF}>{t.settings.hotkeyOff}</option>
+              {QUICK_HOTKEYS.map((h) => (
+                <option key={h} value={h}>
+                  {hotkeyLabel(h)}
+                </option>
+              ))}
+            </select>
+            <small className={s.sectionText}>{t.settings.quickHotkeyText}</small>
+            {hotkeyError && <p className={s.error}>{hotkeyError}</p>}
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.welcome.widget}</b>
+                <small>{t.welcome.widgetHint}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={desktop.widget}
+                disabled={!inTauri}
+                onChange={(e) => void toggleWidget(e.target.checked)}
+              />
+            </label>
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.settings.onTop}</b>
+                <small>{t.settings.onTopText}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={desktop.on_top}
+                disabled={!inTauri}
+                onChange={(e) => void toggleOnTop(e.target.checked)}
+              />
+            </label>
+          </section>
+
+          <section className={s.section}>
+            <label className={s.toggle}>
+              <span>
+                <b>{t.welcome.autostart}</b>
+                <small>{t.welcome.autostartHint}</small>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={desktop.autostart}
+                disabled={!inTauri}
+                onChange={(e) => void toggleAutostart(e.target.checked)}
+              />
+            </label>
+          </section>
+        </div>
+
+        {inTauri && (
+          <div className={s.group} role="group" aria-labelledby="settings-help">
+            <h3 id="settings-help" className={s.groupTitle}>
+              {t.settings.groupHelp}
+            </h3>
+            <section className={s.section}>
+              <h4>{t.settings.logs}</h4>
+              <small className={s.sectionText}>{t.settings.logsText}</small>
+              <div>
+                <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
+                  {t.settings.openLogs}
+                </Button>
+              </div>
+            </section>
+          </div>
         )}
 
         <p className={s.hint}>{t.settings.trayHint}</p>

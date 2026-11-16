@@ -16,6 +16,12 @@
   display: flex;
 }
 
+/* кнопки-значки не сжимаются: при нехватке места уступают поиск, затем заголовок */
+.nav,
+.bar > button {
+  flex: none;
+}
+
 .title {
   margin: 0;
   margin-inline-start: 6px;
@@ -27,6 +33,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* «где я» важнее поля поиска: при нехватке места сначала сужается поиск */
+  flex-shrink: 0;
 }
 
 /* «Неделя 46» после дат */
@@ -83,6 +91,7 @@
   .title {
     min-width: 0;
     font-size: calc(var(--title-size) - 2px);
+    flex-shrink: 1;
   }
 
   .week {

@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
+Last updated: 2026-11-15 (after version 0.11.0: changes from the UX review).
 
 ## Contents
 
@@ -36,19 +36,22 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 ## Google accounts and sign-in
 
 - Sign-in happens in the system browser with OAuth and PKCE; the app never sees the Google password (`src-tauri/src/oauth.rs`).
+- While the app waits for the browser (up to five minutes), the sign-in screen and "Add account" offer "Open the sign-in page again" (the same Google page, for a lost or closed tab) and "Cancel" (stops waiting; not shown as an error) (`src/ui/SignInActions.tsx`).
 - Several Google accounts in one window: "Add account" at the bottom of the sidebar. Calendars are grouped by account, each group has "Sign out".
-- "Sign out" asks a second time ("Sign out?" in red); it goes back after 5 seconds, on Esc or when focus leaves. Signing out revokes the token at Google.
+- "Sign out" shows when the mouse or the focus is on its account (Tab reaches it), so a rare action does not catch the eye all the time. It asks a second time ("Sign out?" in red, shown while asking); it goes back after 5 seconds, on Esc or when focus leaves. Signing out revokes the token at Google.
 - If Google stops accepting an account's sign-in, its group says so with "Sign in again"; the other accounts keep working.
 - Overlaps between accounts: a timed event that overlaps an event of another account gets a red edge, a warning sign and a note in its card ("Overlaps with: …"). All-day events, events marked "free" and the same meeting in both accounts don't count. Travel time counts.
 - Tokens are kept per account by the Rust side; the sign-in of version 0.4 is moved over on the first start.
+- After the first sign-in, a card "What else Calm Calendar can do" in the bottom corner (`src/ui/Welcome.tsx`): switches for the desktop widget, starting with Windows and the hard-to-miss alert for calls (they change the same settings as the tray menu and Settings, and the tray check marks follow, `get_desktop`, `set_widget`, `set_autostart`), a line about quick add from any app with the chosen shortcut and one about the tray agenda. It does not take the focus, Esc closes it only when the focus is in it, and it is shown once (`calm.welcome` in localStorage); Ctrl+K → "What Calm Calendar can do" opens it again.
 
 ## Views
 
 - **Day** and **Week**: hours grid with a line for the current time, all-day events in a strip at the top. Opens at 7:00, or near the current hour when today is on screen in the evening.
 - **Month**: six weeks, up to four events per day and "N more".
-- **Schedule**: four weeks from the chosen day as a list by day; days without events are skipped. Each row: time or "all day", title, repeat and overlap marks, location.
+- **Schedule**: four weeks from the chosen day as a list by day; days without events are skipped. Each row: time or "all day", title, repeat and overlap marks, location. A link in the location shows short: the call service ("Zoom", "Microsoft Teams") or the site, the full text on hover (`shortPlace` in `src/shared/lib/meeting.ts`). From 15 minutes before a call until its end the row has Join, as in the widget.
+- Events that have ended are paler (opacity 0.55) in Day, Week, Month and Schedule, as in the tray agenda.
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
-- Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search, free time, theme, refresh, settings, view switch.
+- Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search (with a magnifier; below 1100 px it folds into the magnifier and opens on Ctrl+F, `/` or a click), free time, refresh, settings, view switch. The icon buttons keep their size; when space runs short the search folds first, then the title is shortened.
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
 - Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).
 - When Google does not answer (no network, Google busy or down: 429 and 5xx), the app tries again by itself after 5 seconds, 15 seconds and a minute, then goes on with the usual refresh. The error or "Offline" banner has a Retry button (`src/model/sync.ts`).
@@ -57,13 +60,13 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location (a click opens it in Google Maps in the browser; a link in the location field opens itself, `src/shared/lib/maps.ts`), guests with their answers, description, overlaps, the repeat rule, and "In Google".
-- The form: title, all day, start and end date and time, time zone, travel time, repeat, calendar, color, location, "Add Google Meet video call", guests, attachments, description.
+- The form: title, all day, start and end date and time, repeat, calendar, location, description (hint "Agenda, links, notes"), "Add Google Meet video call", guests, and "More" with time zone, travel time, color and attachments. "More" is closed for a new event and opens by itself when the event has another zone, travel time, its own color or attachments; the closed line lists what is inside. Save, Cancel and Delete (and the error and the "this event or following" question) stay at the bottom of the form while it scrolls (`src/ui/EventEditor.tsx`).
 - Move an event to another calendar of the same account (Google does not move events between accounts).
-- Delete asks once ("Delete?").
+- Delete works with one click (a recurring event asks "This event" or "This and following"). The event leaves the screen at once; a line at the bottom says "Deleted: …" with Undo, × and Ctrl+Z. The event is deleted in Google only when the line closes (8 seconds, 4 more after the mouse or focus leaves it), when the next move or delete comes, or when the window closes; so Undo brings it back untouched and guests get no emails. A refresh while the line is shown keeps it hidden; "this and following" hides occurrences by their date in the series rule, as Google deletes them. Undo leaves out events of a calendar hidden in the meantime and reloads the list. Signing out while the line is shown first sends the delete, then signs out. Every delete is kept in a journal on disk (`calm.pendingDeletes`) from the moment it is chosen until Google answers; if the app quits before that (Quit in the tray closes it at once), the delete is sent once the sign-in of its own account works again. No network or an expired sign-in keeps it in the journal for the next try; Google refusing it for good (the event is already gone) removes it. A move saved while a delete is pending does not replace the "Deleted" line; Undo of a move also refreshes the widget and the tray agenda; a failed delete goes to the banner and the event comes back (`src/model/undo.ts`, `src/ui/UndoToast.tsx`).
 - Attachments: the card lists the Google Drive files attached to the event, a click opens one in the browser. In the form a Drive file is attached by pasting its link (Docs, Sheets, Slides, Forms or a Drive file; other links are refused), and removed with ×; up to 25. Attachments go to Google only when the list was changed, so editing and dragging keep them, and "this and following" passes them to the new series. Uploading a file from the computer needs a Google Drive permission (stage 3b) (`src/shared/lib/attachments.ts`).
 - Color of a single event: the calendar color or one of Google's 11 event colors (Lavender … Tomato), as on the Google Calendar website. Shown in every view, the card, the widget and the tray agenda; stored in Google (`colorId`), so the website and phones show it too (`src/shared/lib/colors.ts`).
 - "Duplicate" in the card opens the form of a new event with the same title, time, time zone, location, description, travel time and guests. An occurrence of a series is copied as one event; the old video call and the guests' answers are not copied. An event from a read-only calendar (holidays, someone else's calendar) is copied into your first calendar.
-- Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone.
+- Week and Day: drag an event to another time or day, drag its bottom edge to change the length; 30-minute snap on click, 15-minute step when dragging, Esc cancels. The change is saved at once and keeps the event's time zone; the line "Moved: …" appears at the bottom once Google has saved the move, with Undo (also Ctrl+Z); Undo changes only the time and its time zone back, so a color or place changed meanwhile stays. Ctrl+K "Move to tomorrow" and "An hour later" get the same line.
 - Read-only calendars (holidays, other people's calendars) open in the card only.
 
 ## Recurring events
@@ -101,7 +104,7 @@ Last updated: 2026-11-10 (version 0.9.0: styles and fonts).
   "When I'm free (Warsaw, GMT+1): Tue, November 10: 11:00–12:00 and 15:00–18:00".
 - Working hours, the shortest gap (15 minutes to 2 hours) and weekends on or off; the weekend follows the region (Friday and Saturday in Saudi Arabia).
 - All-day events and events marked "free" don't block time; travel time does.
-- Copy puts the text on the clipboard. The options are remembered.
+- Copy puts the text on the clipboard. The options are remembered. With nothing free the panel says why ("No free time left in these hours on the days on screen"), Copy is off and "Show the next days" moves the calendar on.
 
 ## Holidays and week numbers
 
@@ -158,7 +161,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 ## Desktop widget
 
-- Clock, countdown to the next or current event, a month with dots on busy days, the next five events (holidays included), Join for calls, and a quick add field.
+- Clock, countdown to the next or current event (a long title is shortened, the time left never), a month with dots on busy days, the next five events (holidays included), Join for calls, and a quick add field.
 - Arrows switch months, a click on the month name goes back to today; a click on a day or an event opens the calendar there.
 - Drag it by any spot; its place is remembered. Glass effect and theme follow the calendar.
 - Shown, hidden and kept on top from the tray menu. When Windows starts the app, only the widget appears.
@@ -171,12 +174,12 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 ## Look and feel
 
-- Theme: system, light or dark; the widget follows.
+- Theme: system, light or dark, in Settings or from Ctrl+K ("Theme: Dark"); the widget follows. There is no theme button on the toolbar.
 - Style (Settings → Style): Classic, Paper, Obsidian, Showcase, Monochrome. Each style has a light and a dark version and follows the theme; the widget, the tray agenda and the alert follow the style. A style is a set of CSS variables on `<html data-style>` (`src/styles/styles.css`, `src/shared/lib/appearance.ts`); the classic values are in `src/styles/global.css`. In the settings each style has a small preview drawn with its own variables.
 - Fonts (Settings → Style): one font for headings and numbers (period title, day numbers, the widget clock), one for text. "Style default" uses the style's pair: Segoe UI (Classic), Cormorant Garamond + Inter (Paper), Manrope (Obsidian), Unbounded + Onest (Showcase), Geist Mono + Geist (Monochrome). Unbounded and Cormorant Garamond are offered for headings only. The fonts are variable WOFF2 files from `@fontsource-variable` packages (SIL Open Font License 1.1), built into the app; letters a font lacks (Arabic, Devanagari, Bengali, Chinese, Japanese) come from the Windows fonts of that script. The choice is kept per computer, like the theme.
 - Glass effect (on by default): the Windows Acrylic backdrop in the main window and the widget; the main window turns opaque when it loses focus, as Windows does.
 - Right-to-left layout for Arabic: all spacing uses logical CSS properties.
-- The toolbar fits the smallest window size (760 px).
+- The period title keeps its full length in a 1280 px window in every language; when space runs short the search field gets narrower first (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`).
 
 ## Languages and regions
 
@@ -192,28 +195,26 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 
 Gear button in the toolbar. Settings open in a window of their own without a frame, in the middle of the calendar window and above it; it can be dragged by its header (the cursor shows four arrows there) anywhere on the screen, also outside the calendar. The header stays on top while the settings scroll. × or Esc closes it, hiding the calendar to the tray closes it too; each opening starts in the middle again. Second time zone, week numbers and holidays changed there reach the calendar window at once (bus event `display-changed`). In the browser (`npm run dev`) Settings are a dialog over the page, dragged by the header inside the page (`src-tauri/src/settings.rs`, `src/settings/SettingsWindow.tsx`, `src/ui/useDraggable.ts`).
 
-- Theme, language.
-- Second time zone and its zone.
-- Week numbers.
-- Holidays: a country or "Don't show".
-- Glass effect.
-- Event notifications, hide titles in notifications.
-- Hard-to-miss alert: off, calls only, all events.
-- Log: "Open log folder".
+The options are in five groups with titles (`role="group"`):
+
+- **Look**: theme, style, the two fonts, glass effect.
+- **Calendar**: language, second time zone, week numbers, holidays (a country or "Don't show"), calendar subscriptions.
+- **Reminders**: event notifications, hide titles in notifications, hard-to-miss alert (off, calls only, all events).
+- **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
+- **Help** (in the app only): "Open log folder".
 - The dialog scrolls when the window is low.
-- The widget, keeping it on top and starting with Windows live in the tray menu.
 
 ## Keyboard shortcuts
 
-`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
+`←` `→` back and forward, `T` today, `D` `W` `M` `A` Day, Week, Month and Schedule, `N` quick add, `Ctrl+K` command menu, `Ctrl+F` or `/` search, `Ctrl+Z` undoes the last move or delete while its line is shown, `Esc` closes a card, form or dialog, `Enter` in quick add creates and `Ctrl+Enter` opens the form. They work with any keyboard layout.
 
 `?` (or "Keyboard shortcuts" in the command menu) opens the list of all shortcuts in four groups: Calendar, Create, On an event, Anywhere. The quick add shortcut is shown as chosen in Settings, and not at all when it is off. Keys of a combination read left to right in Arabic too. `?` in a text field is just a character (`src/ui/Shortcuts.tsx`, `src/shared/lib/shortcuts.ts`).
 
-Events without the mouse (`src/app/useEventKeys.ts`, `src/shared/lib/spatial.ts`, `src/model/keyboard.ts`): every event block is a button, so Tab reaches it and Enter or Space opens the card. With no event chosen, `↓` picks the first event of the view and `↑` the last. On an event the arrows move to the nearest event on screen in that direction (left and right: the next day, the event closest in time; up and down: the same column first), in Day, Week, Month and Schedule and right to left as well; `←` `→` change the week only when no event is chosen. `E` opens the form of the event, `Ctrl+D` the form of a copy, `Delete` the card with "Click again to delete" already focused (Enter deletes; a series asks "this event or this and following" as usual). When the card or form closes, the focus goes back to the same event.
+Events without the mouse (`src/app/useEventKeys.ts`, `src/shared/lib/spatial.ts`, `src/model/keyboard.ts`): every event block is a button, so Tab reaches it and Enter or Space opens the card. With no event chosen, `↓` picks the first event of the view and `↑` the last. On an event the arrows move to the nearest event on screen in that direction (left and right: the next day, the event closest in time; up and down: the same column first), in Day, Week, Month and Schedule and right to left as well; `←` `→` change the week only when no event is chosen. `E` opens the form of the event, `Ctrl+D` the form of a copy, `Delete` the card with Delete already focused (Enter deletes, Ctrl+Z brings it back; a series asks "this event or this and following" as usual). When the card or form closes, the focus goes back to the same event.
 
 Quick add from anywhere: a shortcut for the whole of Windows (Ctrl+Alt+Space by default; Ctrl+Shift+Space, Alt+Shift+Space or off in Settings) opens a small quick add window over any app, even when the calendar is in the tray. The window appears in the upper third of the screen with the mouse, the same line and preview as in the sidebar; Enter creates and hides it, Ctrl+Enter opens the full form in the main window, Esc or a click elsewhere hides it. At start, if the chosen shortcut is taken by another app, the next free one from the list is used and saved; choosing a taken one in Settings says so and keeps the old one. Until the calendars load the window shows "Loading…" instead of the line (`src-tauri/src/quick.rs`, `src/quick/QuickWindow.tsx`, `src/shared/lib/hotkeys.ts`).
 
-Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 13 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today and the four views. Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`). With an event chosen (the focused event block, or the open card) in a calendar you can change, its name is above the list and its actions come first: Move to tomorrow, An hour later (events with a time), Add Google Meet (events without a call); the 12 colors ("Color: Tomato", "Color: Calendar color") show up when the line matches their name. A series changes only this occurrence, as when dragging; an error goes to the banner.
+Command menu (`Ctrl+K`, also from a text field): one line for a date in words in any of the 13 languages ("nov 20", "fri", "завтра"; the same parser as quick add), "Create …" (the full form filled from the line), "Search for …", New event, Today, the four views, Keyboard shortcuts and "What Calm Calendar can do"; typing a name also finds "Free time" and "Theme: Light / Dark / System". Arrows choose, Enter runs, Esc closes (`src/ui/CommandMenu.tsx`, `src/shared/lib/commands.ts`). With an event chosen (the focused event block, or the open card) in a calendar you can change, its name is above the list and its actions come first: Move to tomorrow, An hour later (events with a time), Add Google Meet (events without a call); the 12 colors ("Color: Tomato", "Color: Calendar color") show up when the line matches their name. A series changes only this occurrence, as when dragging; an error goes to the banner.
 
 ## Errors and the log
 

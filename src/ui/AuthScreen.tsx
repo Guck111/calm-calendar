@@ -14,6 +14,7 @@ import {
   signInClicked,
 } from "../model/auth";
 import { Button } from "./Button";
+import { SignInActions } from "./SignInActions";
 import s from "./AuthScreen.module.css";
 
 const ClientForm = () => {
@@ -94,7 +95,10 @@ const SignIn = () => {
         {signingIn ? t.auth.finishInBrowser : t.auth.signIn}
       </Button>
       {signingIn && (
-        <p className={s.hint}>{t.auth.tabHint}</p>
+        <>
+          <p className={s.hint}>{t.auth.tabHint}</p>
+          <SignInActions center />
+        </>
       )}
       {status?.clientSource === "file" && !signingIn && (
         <button type="button" className={s.link} onClick={() => editClient()}>

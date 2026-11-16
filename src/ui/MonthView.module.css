@@ -174,3 +174,8 @@
   color: var(--text);
   text-decoration: underline;
 }
+
+/* прошедшее — бледнее: взгляд сразу находит, что дальше */
+.past {
+  opacity: 0.55;
+}

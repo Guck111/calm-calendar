@@ -1,5 +1,5 @@
 // The event card and the form, drag and resize in Week.
-import { test, expect, openApp, eventBlock, dialog, rangeText, dayOfBlock, dayNumber, escapeRe } from "./fixtures";
+import { test, expect, openApp, eventBlock, dialog, rangeText, dayOfBlock, dayNumber, escapeRe, undoLine } from "./fixtures";
 import type { Page } from "@playwright/test";
 
 const startsAt = async (page: Page, title: string, day: number, from: [number, number], to: [number, number]) => {
@@ -45,14 +45,46 @@ test.describe("event card", () => {
     await expect(dialog(page)).toContainText("Oak St Clinic");
   });
 
-  test("delete asks once more", async ({ page, t }) => {
+  test("delete at once, Undo brings the event back", async ({ page, t }) => {
     await openApp(page);
     await eventBlock(page, "Spanish class").click();
-    const del = dialog(page).getByRole("button", { name: t.editor.delete });
-    await del.click();
-    await expect(dialog(page).getByRole("button", { name: t.editor.confirmDelete })).toBeVisible();
-    await dialog(page).getByRole("button", { name: t.editor.confirmDelete }).click();
+    await dialog(page).getByRole("button", { name: t.editor.delete }).click();
     await expect(dialog(page)).toBeHidden();
+    await expect(eventBlock(page, "Spanish class")).toHaveCount(0);
+    const toast = undoLine(page);
+    await expect(toast).toContainText(t.editor.undoDeleted("Spanish class"));
+    await toast.getByRole("button", { name: t.editor.undo }).click();
+    await expect(eventBlock(page, "Spanish class")).toBeVisible();
+    await expect(toast.getByRole("button", { name: t.editor.undo })).toHaveCount(0);
+    // nothing reached Google: after a refresh the event is still there
+    await page.getByRole("button", { name: t.toolbar.refresh }).click();
+    await expect(eventBlock(page, "Spanish class")).toBeVisible();
+  });
+
+  test("the Undo line stays while the focus is on it, even when the mouse leaves", async ({ page, t }) => {
+    await openApp(page);
+    await eventBlock(page, "Spanish class").click();
+    await dialog(page).getByRole("button", { name: t.editor.delete }).click();
+    const toast = undoLine(page);
+    const undo = toast.getByRole("button", { name: t.editor.undo });
+    await undo.focus();
+    await toast.hover();
+    await page.mouse.move(10, 10);
+    // the resume delay is 4 s: well past it, the line is still there because Undo has the focus
+    await page.waitForTimeout(5000);
+    await expect(undo).toBeVisible();
+    await undo.click();
+    await expect(eventBlock(page, "Spanish class")).toBeVisible();
+  });
+
+  test("delete goes to Google when the Undo line closes", async ({ page, t }) => {
+    await openApp(page);
+    await eventBlock(page, "Spanish class").click();
+    await dialog(page).getByRole("button", { name: t.editor.delete }).click();
+    const toast = undoLine(page);
+    await toast.getByRole("button", { name: t.common.close }).click();
+    await expect(toast.getByRole("button", { name: t.editor.undo })).toHaveCount(0);
+    await page.getByRole("button", { name: t.toolbar.refresh }).click();
     await expect(eventBlock(page, "Spanish class")).toHaveCount(0);
   });
 });

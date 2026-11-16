@@ -1,5 +1,5 @@
 // Common setup of the interface tests: a fixed clock, the app language and settings in localStorage.
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Locator, type Page } from "@playwright/test";
 import type { Lang } from "../../src/shared/i18n";
 import { en } from "../../src/shared/i18n/en";
 import { ru } from "../../src/shared/i18n/ru";
@@ -59,7 +59,7 @@ export const test = base.extend<Options & { t: typeof en }>({
   storage: [{}, { option: true }],
   t: async ({ lang }, use) => use(DICTS[lang]),
   page: async ({ page, lang, storage }, use) => {
-    await page.addInitScript(setup, { now: NOW, storage: { lang, view: "week", ...storage } });
+    await page.addInitScript(setup, { now: NOW, storage: { lang, view: "week", welcome: true, ...storage } });
     await use(page);
   },
 });
@@ -84,6 +84,19 @@ export const eventBlock = (page: Page, title: string) =>
 
 /** The event card or form */
 export const dialog = (page: Page) => page.getByRole("dialog");
+
+/** "More" in the event form: time zone, travel time, color, attachments */
+export const moreButton = (form: Locator, t: typeof en) =>
+  form.getByRole("button", { name: new RegExp(`^${t.editor.more}`) });
+
+/** opens "More" in the event form if it is closed */
+export const showMore = async (form: Locator, t: typeof en) => {
+  const more = moreButton(form, t);
+  if ((await more.getAttribute("aria-expanded")) === "false") await more.click();
+};
+
+/** the "Moved: … / Deleted: … · Undo" line at the bottom of the main window */
+export const undoLine = (page: Page) => page.locator('[aria-live="polite"][aria-atomic="true"]');
 
 type Stamp = [day: number, hour?: number, minute?: number];
 

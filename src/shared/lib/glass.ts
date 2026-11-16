@@ -53,6 +53,29 @@ export const setPrivateNotifications = async (enabled: boolean): Promise<void> =
   if (inTauri) await invoke("set_private_notifications", { enabled });
 };
 
+/** Виджет на рабочем столе и автозапуск: живут в Rust (окно виджета, реестр или StartupTask) */
+export type DesktopState = { widget: boolean; on_top: boolean; autostart: boolean };
+
+const OFFLINE_DESKTOP: DesktopState = { widget: false, on_top: false, autostart: false };
+
+export const readDesktop = async (): Promise<DesktopState> => {
+  if (!inTauri) return OFFLINE_DESKTOP;
+  try {
+    return await invoke<DesktopState>("get_desktop");
+  } catch {
+    return OFFLINE_DESKTOP;
+  }
+};
+
+/** что не передано, остаётся как было; галочки в меню трея следуют */
+export const setWidget = async (change: { visible?: boolean; onTop?: boolean }): Promise<void> => {
+  if (inTauri) await invoke("set_widget", { visible: change.visible, onTop: change.onTop });
+};
+
+/** Возвращает, что вышло на деле: автозапуск можно запретить в диспетчере задач */
+export const setAutostart = async (enabled: boolean): Promise<boolean> =>
+  inTauri ? invoke<boolean>("set_autostart", { enabled }) : false;
+
 export const setNotifications = async (enabled: boolean): Promise<void> => {
   if (inTauri) await invoke("set_notifications", { enabled });
 };

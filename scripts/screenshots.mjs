@@ -58,7 +58,11 @@ const FAKE_CLOCK = `(() => {
     static now() { return Real.now() + offset; }
   }
   globalThis.Date = FakeDate;
-  try { localStorage.setItem("calm.lang", JSON.stringify("en")); } catch {}
+  try {
+    localStorage.setItem("calm.lang", JSON.stringify("en"));
+    // the "What else Calm Calendar can do" card would cover the calendar in every shot
+    localStorage.setItem("calm.welcome", "true");
+  } catch {}
 })();`;
 
 const cdp = await connect();

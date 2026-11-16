@@ -51,6 +51,16 @@ async fn sign_in(app: AppHandle, auth: State<'_, Auth>) -> Result<String> {
     result
 }
 
+#[tauri::command]
+fn sign_in_reopen(app: AppHandle, auth: State<'_, Auth>) -> Result<()> {
+    auth.reopen_sign_in(&app)
+}
+
+#[tauri::command]
+fn sign_in_cancel(auth: State<'_, Auth>) {
+    auth.cancel_sign_in();
+}
+
 /// account — из какого аккаунта выйти; без него — из всех
 #[tauri::command]
 async fn sign_out(app: AppHandle, auth: State<'_, Auth>, account: Option<String>) -> Result<()> {
@@ -143,6 +153,30 @@ fn set_quick_hotkey(app: AppHandle, hotkey: Option<String>) -> Result<()> {
 #[tauri::command]
 fn get_settings(app: AppHandle) -> config::Settings {
     config::load_settings(&app)
+}
+
+#[tauri::command]
+fn get_desktop(app: AppHandle) -> desktop::DesktopState {
+    desktop::desktop_state(&app)
+}
+
+/// visible, on_top: что поменять; не переданное остаётся как было
+#[tauri::command]
+fn set_widget(app: AppHandle, visible: Option<bool>, on_top: Option<bool>) {
+    let current = config::load_widget(&app);
+    desktop::set_widget(
+        &app,
+        config::WidgetSettings {
+            visible: visible.unwrap_or(current.visible),
+            on_top: on_top.unwrap_or(current.on_top),
+        },
+    );
+}
+
+/// Возвращает, включён ли автозапуск после попытки
+#[tauri::command]
+fn set_autostart(app: AppHandle, enabled: bool) -> bool {
+    desktop::set_launch(&app, enabled)
 }
 
 #[tauri::command]
@@ -307,10 +341,15 @@ pub fn run() {
             auth_status,
             save_client_config,
             sign_in,
+            sign_in_reopen,
+            sign_in_cancel,
             sign_out,
             google_request,
             open_main,
             get_settings,
+            get_desktop,
+            set_widget,
+            set_autostart,
             set_glass,
             set_notifications,
             set_private_notifications,

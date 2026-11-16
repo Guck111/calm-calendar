@@ -2,6 +2,26 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### New
+
+- **What else Calm Calendar can do**: after the first sign-in a small card in the corner turns on the desktop widget, starting with Windows and the hard-to-miss alert for calls right there, and tells about quick add from any app and today's agenda in the tray. It does not take the focus and shows once; Ctrl+K → "What Calm Calendar can do" brings it back.
+- **Undo**: after moving or deleting an event a line at the bottom says "Moved: …" or "Deleted: …" with Undo (or Ctrl+Z). It stays while the mouse is on it. A deleted event leaves the screen at once and is deleted in Google when the line closes, so Undo brings it back untouched and guests get no emails.
+
+### Changed
+
+- **Sign out** next to an account shows only when the mouse or the focus is on that account.
+- **Settings in groups**: Look, Calendar, Reminders, Quick access and Help. The desktop widget, keeping it on top and starting with Windows can now be changed in Settings too, not only in the tray menu.
+- **A calmer toolbar**: the theme button is gone (the theme is in Settings and in Ctrl+K: "Theme: Dark"), Ctrl+K also finds "Free time". The search field has a magnifier and in a narrower window folds into it, so the buttons and the date keep their room.
+- **Free time** with nothing free says why and offers "Show the next days"; Copy is off when there is nothing to copy.
+- **No more cut-off dates and countdowns**: the period title in the toolbar keeps its full length (the search field gets narrower first), and the widget shortens the event title, never "in 11 min".
+- **Past events are paler** in Day, Week, Month and Schedule, so what comes next stands out.
+- **Schedule**: a call link in the place shows as "Zoom", "Microsoft Teams" and so on instead of a long address, and from 15 minutes before a call its row has Join.
+- **The event form is shorter**: time zone, travel time, color and attachments are under "More" (it opens by itself when the event uses one of them). The description moved up, right after the place, with the hint "Agenda, links, notes". Save and Cancel stay at the bottom of the form, also in a low window.
+- **Delete** works with one click; there is no "Click again to delete" any more, Undo takes its place. A recurring event still asks "This event" or "This and following".
+- **Signing in**: while the app waits for the browser, "Open the sign-in page again" brings back a lost or closed Google tab, and "Cancel" stops waiting at once instead of after five minutes.
+
 ## 0.11.0 — 2026-11-13
 
 ### New

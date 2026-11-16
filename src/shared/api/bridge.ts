@@ -35,7 +35,16 @@ const localize = (e: AppError): AppError => {
 // Сборка для автотестов приложения (VITE_CALM_MOCK=1, npm run build:e2e): вход и запросы к Google идут
 // в подставные данные, всё остальное (окна, трей, напоминания) — в настоящий Rust. В обычную сборку не попадает
 const MOCK_IN_APP = import.meta.env.VITE_CALM_MOCK === "1";
-const MOCKED = new Set(["auth_status", "sign_in", "sign_out", "save_client_config", "google_request", "fetch_feed"]);
+const MOCKED = new Set([
+  "auth_status",
+  "sign_in",
+  "sign_in_reopen",
+  "sign_in_cancel",
+  "sign_out",
+  "save_client_config",
+  "google_request",
+  "fetch_feed",
+]);
 
 // в браузере без Tauri (npm run dev) работаем на подставных данных
 const run = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
@@ -54,7 +63,7 @@ const call = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
   } catch (e) {
     const error = toAppError(e);
     // истёкший вход — не сбой: интерфейс сам предложит войти снова
-    if (!LOGGED_IN_RUST.has(cmd) && error.kind !== "not_signed_in") logWarn(`command ${cmd} failed`, error);
+    if (!LOGGED_IN_RUST.has(cmd) && error.kind !== "not_signed_in" && error.kind !== "cancelled") logWarn(`command ${cmd} failed`, error);
     throw localize(error);
   }
 };
@@ -80,6 +89,8 @@ export const saveClientConfig = (clientId: string, clientSecret: string): Promis
 
 /** Вход в ещё один аккаунт: Google даёт выбрать какой. Возвращает его email */
 export const signIn = (): Promise<string> => call<string>("sign_in");
+export const reopenSignIn = (): Promise<void> => call("sign_in_reopen");
+export const cancelSignIn = (): Promise<void> => call("sign_in_cancel");
 
 /** Выход из одного аккаунта, без account — из всех. Сохранённые ответы при этом стираем */
 export const signOut = (account?: string): Promise<void> =>

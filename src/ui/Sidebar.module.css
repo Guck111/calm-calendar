@@ -205,6 +205,25 @@
   text-decoration: underline;
 }
 
+/* редкое и необратимое действие не мозолит глаза: видно, когда мышь или фокус на аккаунте,
+   и всё время, пока спрашивает «Выйти?» */
+.signOut {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.group:hover .signOut,
+.group:focus-within .signOut,
+.signOut.asking {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signOut {
+    transition: none;
+  }
+}
+
 /* календари одного аккаунта */
 .group {
   display: flex;

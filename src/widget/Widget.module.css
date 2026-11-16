@@ -92,11 +92,20 @@
   font-size: 13px;
 }
 
+/* сокращается название, а «через 11 мин» видно всегда */
 .countdownLine {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.countdownLine b {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .countdown b {
@@ -104,6 +113,7 @@
 }
 
 .countdownText {
+  flex: none;
   color: var(--muted);
 }
 

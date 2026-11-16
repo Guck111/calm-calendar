@@ -125,3 +125,73 @@ test("hiding a calendar hides its events", async ({ page }) => {
   await expect(eventBlock(page, "Dentist")).toBeVisible();
   await expect(eventBlock(page, "Yoga")).toHaveCount(0);
 });
+
+// "Now" is Wednesday 9:50: Monday's events and this morning's stand-up (9:30–9:45) are over
+const opacity = (page: Page, selector: string, title: string) =>
+  page.locator(selector).filter({ hasText: title }).first().evaluate((el) => Number(getComputedStyle(el).opacity));
+
+test("past events are dimmed in Week, Month and Schedule", async ({ page }) => {
+  await openApp(page);
+  expect(await opacity(page, "main button[title]", "Brunch with Anna")).toBeLessThan(1);
+  expect(await opacity(page, "main button[title]", "Design sync")).toBe(1);
+
+  await page.keyboard.press("m");
+  expect(await opacity(page, "main button[title]", "Brunch with Anna")).toBeLessThan(1);
+  expect(await opacity(page, "main button[title]", "Dentist")).toBe(1);
+
+  await page.keyboard.press("a");
+  expect(await opacity(page, "main li button", "Team standup")).toBeLessThan(1);
+  expect(await opacity(page, "main li button", "Design sync")).toBe(1);
+});
+
+test("Schedule: a call link in the place reads as the service", async ({ page }) => {
+  await openApp(page);
+  await page.keyboard.press("a");
+  const row = page.locator("main li").filter({ hasText: "Sprint demo" });
+  await expect(row).toContainText("Zoom");
+  await expect(row).not.toContainText("zoom.us/j/");
+});
+
+// The longest labels: Russian, the Schedule tab is the widest. The title is the main "where am I"
+test.describe("nothing important is cut off", () => {
+  test.use({ lang: "ru" });
+
+  test("the period title fits in a 1280 px window", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    for (const key of ["w", "a"]) {
+      await page.keyboard.press(key);
+      const title = page.locator("main header > h2");
+      expect(await title.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+      // and the toolbar itself does not spill over
+      expect(await page.locator("main header").evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("a narrower window: the search folds into a magnifier, the buttons keep their size", async ({ page, t }) => {
+    await page.setViewportSize({ width: 1000, height: 700 });
+    await openApp(page);
+    const header = page.locator("main header");
+    const search = header.getByRole("combobox").or(header.getByRole("searchbox")).or(header.locator("input")).first();
+    expect((await search.boundingBox())!.width).toBeLessThan(40);
+    for (const name of [t.toolbar.freeSlots, t.toolbar.refresh, t.common.settings]) {
+      expect((await header.getByRole("button", { name }).boundingBox())!.width).toBeGreaterThanOrEqual(30);
+    }
+    await page.keyboard.press("Control+f");
+    await expect(search).toBeFocused();
+    await expect.poll(async () => (await search.boundingBox())!.width).toBeGreaterThan(150);
+    expect(await header.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  });
+
+  test("the widget cuts the title, never the time left", async ({ page }) => {
+    await page.setViewportSize({ width: 300, height: 600 });
+    await page.goto("/?window=widget");
+    await expect(page.locator("ul li").first()).toBeVisible();
+    const time = page.locator('[class*="countdownText"]');
+    await expect(time).toBeVisible();
+    expect(await time.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    const box = await time.boundingBox();
+    const line = await page.locator('[class*="countdownLine"]').boundingBox();
+    expect(box!.x + box!.width).toBeLessThanOrEqual(line!.x + line!.width + 0.5);
+  });
+});

@@ -1,8 +1,9 @@
 import { useUnit } from "effector-react";
 import { useEffect, useState } from "react";
 import { locale, t } from "../shared/i18n";
-import { $events } from "../model/events";
-import { $cursor, $now, $view } from "../model/view";
+import { $events, $loadError, $loading } from "../model/events";
+import { freeSlotsRequested } from "../model/free";
+import { $cursor, $now, $view, nextClicked } from "../model/view";
 import { toTimeKey, viewDays } from "../shared/lib/date";
 import { formatFreeSlots, freeSlots, type FreeOptions } from "../shared/lib/free";
 import { readJson, writeJson } from "../shared/lib/storage";
@@ -52,7 +53,8 @@ const copyText = async (text: string): Promise<boolean> => {
 };
 
 const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
-  const [events, view, cursor, now] = useUnit([$events, $view, $cursor, $now]);
+  const [events, view, cursor, now, next, loading] = useUnit([$events, $view, $cursor, $now, nextClicked, $loading]);
+  const loadError = useUnit($loadError);
   const [options, setOptions] = useState(readOptions);
   const [copied, setCopied] = useState(false);
   const change = (patch: Partial<FreeOptions>) => {
@@ -62,7 +64,12 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
     writeJson(KEY, next);
     setCopied(false);
   };
-  const text = formatFreeSlots(freeSlots(events, viewDays(view, cursor), options, now), now);
+  const found = freeSlots(events, viewDays(view, cursor), options, now);
+  const text = formatFreeSlots(found, now);
+  const nothing = !found.length;
+  // пока грузятся события новых дат или они не загрузились, считать по старым нельзя:
+  // неделя выглядела бы свободной
+  const waiting = loading || Boolean(loadError);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -118,9 +125,21 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
           <input type="checkbox" checked={options.weekends} onChange={(e) => change({ weekends: e.target.checked })} />
           {t.free.weekends}
         </label>
-        <textarea className={f.preview} readOnly value={text} rows={8} aria-label={t.free.title} />
+        {/* пусто — не тупик: почему так и куда дальше */}
+        {waiting ? (
+          <p className={f.empty} role="status">
+            {loading ? t.common.loading : loadError}
+          </p>
+        ) : nothing ? (
+          <p className={f.empty} role="status">
+            <b>{t.free.none}</b> {t.free.noneReason}
+          </p>
+        ) : (
+          <textarea className={f.preview} readOnly value={text} rows={8} aria-label={t.free.title} />
+        )}
         <div className={f.actions}>
-          <Button variant="primary" onClick={() => void copyText(text).then(setCopied)}>
+          {nothing && !waiting && <Button onClick={() => next()}>{t.free.showLater}</Button>}
+          <Button variant="primary" disabled={nothing || waiting} onClick={() => void copyText(text).then(setCopied)}>
             {copied ? t.free.copied : t.free.copy}
           </Button>
         </div>
@@ -131,6 +150,8 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
 
 export const FreeSlotsButton = () => {
   const [open, setOpen] = useState(false);
+  // Ctrl+K → «Свободное время»
+  useEffect(() => freeSlotsRequested.watch(() => setOpen(true)), []);
   return (
     <>
       <Button

@@ -128,3 +128,40 @@
     display: none;
   }
 }
+
+/* прошедшее — бледнее: взгляд сразу находит, что дальше */
+.past {
+  opacity: 0.55;
+}
+
+/* строка: само событие и, когда пора, «Подключиться» рядом (кнопка в кнопке недопустима) */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row > .event {
+  flex: 1;
+  min-width: 0;
+}
+
+.join {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--control-radius, 6px);
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.join:hover {
+  filter: brightness(1.08);
+}

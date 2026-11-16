@@ -7,8 +7,9 @@ const now = new Date(2026, 10, 11, 9, 50);
 const kinds = (text: string) => buildCommands(text, now).map((c) => (c.kind === "view" ? `view:${c.view}` : c.kind));
 
 describe("меню команд", () => {
-  it("пустая строка: создать, сегодня, четыре вида и сочетания клавиш", () => {
-    expect(kinds("")).toEqual(["new", "today", "view:day", "view:week", "view:month", "view:agenda", "shortcuts"]);
+  it("пустая строка: создать, сегодня, четыре вида, сочетания клавиш и «Что умеет»", () => {
+    expect(kinds("")).toEqual(["new", "today", "view:day", "view:week", "view:month", "view:agenda", "shortcuts", "welcome"]);
+    expect(commandLabel({ kind: "welcome" })).toBe(t.welcome.command);
   });
 
   it("дата словами — сначала переход к ней", () => {
@@ -58,6 +59,7 @@ describe("меню команд: выбранное событие", () => {
       "view:month",
       "view:agenda",
       "shortcuts",
+      "welcome",
     ]);
   });
 
@@ -79,5 +81,17 @@ describe("меню команд: выбранное событие", () => {
     expect(commandLabel({ kind: "meet" })).toBe(t.editor.addMeet);
     expect(commandLabel({ kind: "color", colorId: "11" })).toBe(t.commands.color("Томат"));
     expect(commandLabel({ kind: "color", colorId: "" })).toBe(t.commands.color(t.editor.calendarColor));
+  });
+});
+
+describe("меню команд: тема и свободное время", () => {
+  it("находятся по названию, но не загромождают пустую строку", () => {
+    expect(kinds("")).not.toContain("theme");
+    expect(kinds("")).not.toContain("free");
+    const dark = buildCommands(t.settings.themes.dark, now);
+    expect(dark).toContainEqual({ kind: "theme", theme: "dark" });
+    expect(commandLabel({ kind: "theme", theme: "dark" })).toBe(`${t.settings.theme}: ${t.settings.themes.dark}`);
+    expect(buildCommands(t.free.title.slice(0, 5), now)).toContainEqual({ kind: "free" });
+    expect(commandLabel({ kind: "free" })).toBe(t.free.title);
   });
 });

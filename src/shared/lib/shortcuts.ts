@@ -43,6 +43,7 @@ export const shortcutGroups = (quickHotkey: string | null): ShortcutGroup[] => {
       title: s.anywhere,
       items: [
         { label: s.commands, keys: [["Ctrl", "K"]] },
+        { label: s.undoLast, keys: [["Ctrl", "Z"]] },
         { label: s.search, keys: [["Ctrl", "F"], ["/"]] },
         { label: s.close, keys: [["Esc"]] },
         { label: s.help, keys: [["?"]] },

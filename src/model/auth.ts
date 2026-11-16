@@ -16,6 +16,12 @@ export const clientEditCancelled = createEvent();
 
 export const fetchStatusFx = createEffect(bridge.getAuthStatus);
 export const signInFx = createEffect<void, string, AppError>(() => bridge.signIn());
+/** вкладка входа потерялась или закрыта: открыть ту же страницу Google ещё раз */
+export const signInReopenClicked = createEvent();
+/** передумал входить: Rust перестаёт ждать браузер, signInFx отклоняется с kind "cancelled" */
+export const signInCancelClicked = createEvent();
+export const reopenSignInFx = createEffect<void, void, AppError>(() => bridge.reopenSignIn());
+export const cancelSignInFx = createEffect<void, void, AppError>(() => bridge.cancelSignIn());
 export const signOutFx = createEffect<string | void, void, AppError>((account) => bridge.signOut(account || undefined));
 export const saveClientFx = createEffect<{ clientId: string; clientSecret: string }, void, AppError>(
   ({ clientId, clientSecret }) => bridge.saveClientConfig(clientId, clientSecret),
@@ -42,14 +48,24 @@ export const $needsClient = sample({
 });
 
 export const $authError = createStore<string | null>(null)
-  .on([signInFx.failData, saveClientFx.failData], (_, e) => e.message)
+  // отмена входа — решение человека, а не ошибка
+  .on(signInFx.failData, (prev, e) => (e.kind === "cancelled" ? prev : e.message))
+  .on(saveClientFx.failData, (_, e) => e.message)
   .reset([signInFx, saveClientFx, clientEditRequested, clientEditCancelled]);
 
 export const $signingIn = signInFx.pending;
 
 sample({ clock: [appStarted, sessionLost], target: fetchStatusFx });
 sample({ clock: signInClicked, filter: signInFx.pending.map((p) => !p), target: signInFx });
-sample({ clock: signOutClicked, target: signOutFx });
+sample({ clock: signInReopenClicked, target: reopenSignInFx });
+sample({ clock: signInCancelClicked, target: cancelSignInFx });
+/** выход придержан: сначала в Google должно уйти ожидающее удаление (model/undo.ts), иначе оно
+ *  потеряется вместе с входом аккаунта */
+export const $signOutHeld = createStore(false);
+/** удаление ушло — придержанный выход продолжается */
+export const signOutResumed = createEvent<string | void>();
+sample({ clock: signOutClicked, filter: $signOutHeld.map((held) => !held), target: signOutFx });
+sample({ clock: signOutResumed, target: signOutFx });
 sample({ clock: clientSubmitted, target: saveClientFx });
 sample({
   clock: [signInFx.finally, signOutFx.finally, saveClientFx.done],

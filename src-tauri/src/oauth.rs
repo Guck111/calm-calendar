@@ -16,7 +16,9 @@ use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::Mutex;
+use std::future::Future;
+use std::sync::Arc;
+use tokio::sync::{Mutex, Notify};
 use url::Url;
 
 const AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -45,6 +47,32 @@ pub struct Auth {
     http: reqwest::Client,
     /// токены доступа по email аккаунта
     tokens: Mutex<HashMap<String, AccessToken>>,
+    /// вход, который сейчас ждёт браузер: его страницу можно открыть снова или отменить
+    pending: std::sync::Mutex<Option<PendingSignIn>>,
+}
+
+struct PendingSignIn {
+    url: String,
+    cancel: Arc<Notify>,
+}
+
+/// Убирает ожидающий вход, чем бы он ни закончился
+struct PendingGuard<'a>(&'a std::sync::Mutex<Option<PendingSignIn>>);
+
+impl Drop for PendingGuard<'_> {
+    fn drop(&mut self) {
+        if let Ok(mut p) = self.0.lock() {
+            *p = None;
+        }
+    }
+}
+
+/// Ждёт код из браузера, пока не выйдет время или человек не нажмёт «Отменить»
+async fn wait_or_cancel<T>(wait: impl Future<Output = Result<T>>, cancel: &Notify, limit: Duration) -> Result<T> {
+    tokio::select! {
+        r = tokio::time::timeout(limit, wait) => r.map_err(|_| Error::Timeout)?,
+        _ = cancel.notified() => Err(Error::Cancelled),
+    }
 }
 
 /// Аккаунт для интерфейса: signed_in false — Google отозвал доступ, нужно войти снова
@@ -228,6 +256,25 @@ impl Auth {
                 .build()
                 .expect("HTTP client"),
             tokens: Mutex::new(HashMap::new()),
+            pending: std::sync::Mutex::new(None),
+        }
+    }
+
+    /// Вкладка входа потерялась: открыть ту же страницу Google ещё раз (тот же state и PKCE)
+    pub fn reopen_sign_in(&self, app: &AppHandle) -> Result<()> {
+        let url = self.pending.lock().ok().and_then(|p| p.as_ref().map(|p| p.url.clone()));
+        let Some(url) = url else { return Ok(()) };
+        app.opener()
+            .open_url(url, None::<&str>)
+            .map_err(|e| Error::Other(format!("Could not open the browser: {e}")))
+    }
+
+    /// Человек передумал: sign_in перестаёт ждать браузер и возвращает Error::Cancelled
+    pub fn cancel_sign_in(&self) {
+        if let Ok(p) = self.pending.lock() {
+            if let Some(p) = p.as_ref() {
+                p.cancel.notify_one();
+            }
         }
     }
 
@@ -303,13 +350,27 @@ impl Auth {
             // экран согласия Google на языке интерфейса, а не браузера
             .append_pair("hl", i18n::current(app).hl());
 
+        let cancel = Arc::new(Notify::new());
+        if let Ok(mut p) = self.pending.lock() {
+            *p = Some(PendingSignIn {
+                url: auth_url.to_string(),
+                cancel: cancel.clone(),
+            });
+        }
+        let guard = PendingGuard(&self.pending);
+
         app.opener()
             .open_url(auth_url.as_str(), None::<&str>)
             .map_err(|e| Error::Other(format!("Could not open the browser: {e}")))?;
 
-        let code = tokio::time::timeout(SIGN_IN_TIMEOUT, wait_for_code(&listener, &state, i18n::current(app)))
-            .await
-            .map_err(|_| Error::Timeout)??;
+        let code = wait_or_cancel(
+            wait_for_code(&listener, &state, i18n::current(app)),
+            &cancel,
+            SIGN_IN_TIMEOUT,
+        )
+        .await?;
+        // код получен: дальше отменять и открывать снова нечего
+        drop(guard);
 
         let tokens = self
             .exchange_code(&client, &code, &verifier, &redirect_uri)
@@ -463,6 +524,32 @@ mod tests {
 
         let code = tokio::time::timeout(Duration::from_secs(2), waiter).await.unwrap().unwrap().unwrap();
         assert_eq!(code, "good");
+    }
+
+    #[tokio::test]
+    async fn sign_in_wait_can_be_cancelled() {
+        let cancel = Notify::new();
+        // «Отменить» нажали раньше, чем ожидание началось: отмена не теряется
+        cancel.notify_one();
+        let never = std::future::pending::<Result<String>>();
+        let r = wait_or_cancel(never, &cancel, Duration::from_secs(5)).await;
+        assert!(matches!(r, Err(Error::Cancelled)));
+    }
+
+    #[tokio::test]
+    async fn sign_in_wait_returns_code_or_times_out() {
+        let cancel = Notify::new();
+        let code = wait_or_cancel(async { Ok("good".to_string()) }, &cancel, Duration::from_secs(5)).await;
+        assert_eq!(code.unwrap(), "good");
+
+        let never = std::future::pending::<Result<String>>();
+        let r = wait_or_cancel(never, &cancel, Duration::from_millis(20)).await;
+        assert!(matches!(r, Err(Error::Timeout)));
+    }
+
+    #[test]
+    fn cancelled_error_reaches_the_interface_as_its_own_kind() {
+        assert_eq!(Error::Cancelled.kind(), "cancelled");
     }
 
     #[test]

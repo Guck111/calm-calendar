@@ -35,7 +35,7 @@ import { TimeZoneSelect } from "./TimeZoneSelect";
 import { describeRule, parseRecurrence } from "../shared/lib/rrule";
 import { RepeatField } from "./RepeatField";
 import { Button, cx } from "./Button";
-import { Close, External, MapPin, Paperclip, Video, Warning } from "./icons";
+import { ChevronRight, Close, External, MapPin, Paperclip, Video, Warning } from "./icons";
 import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
 import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
@@ -68,28 +68,17 @@ const plainText = (html: string): string =>
 type DeleteProps = {
   busy: boolean;
   onConfirm: () => void;
-  resetKey: string;
-  /** у повторения серии подтверждением служит вопрос «только это или это и следующие» */
-  askFirst?: boolean;
-  /** открыто клавишей Delete: кнопка сразу спрашивает и в фокусе, Enter удаляет */
+  /** открыто клавишей Delete: кнопка в фокусе, Enter удаляет */
   armed?: boolean;
 };
 
-const DeleteButton = ({ busy, onConfirm, resetKey, askFirst = true, armed = false }: DeleteProps) => {
-  const [confirm, setConfirm] = useState(armed && askFirst);
-  useEffect(() => setConfirm(armed && askFirst), [resetKey, armed, askFirst]);
-  return (
-    <Button
-      danger
-      variant="ghost"
-      disabled={busy}
-      autoFocus={armed}
-      onClick={() => (confirm || !askFirst ? onConfirm() : setConfirm(true))}
-    >
-      {confirm ? t.editor.confirmDelete : t.editor.delete}
-    </Button>
-  );
-};
+/** Удаляет одним нажатием: вместо «Точно удалить?» после удаления есть «Отменить» (model/undo.ts).
+ *  У повторения серии сначала вопрос «только это или это и следующие» */
+const DeleteButton = ({ busy, onConfirm, armed = false }: DeleteProps) => (
+  <Button danger variant="ghost" disabled={busy} autoFocus={armed} onClick={onConfirm}>
+    {t.editor.delete}
+  </Button>
+);
 
 const GoogleLink = ({ href }: { href?: string }) =>
   href ? (
@@ -348,13 +337,7 @@ const EventDetails = ({ event, editable }: { event: CalendarEvent; editable: boo
             </Button>
           )}
           {editable && (
-            <DeleteButton
-              busy={busy}
-              onConfirm={() => remove()}
-              resetKey={event.key}
-              askFirst={!event.recurring}
-              armed={armed}
-            />
+            <DeleteButton busy={busy} onConfirm={() => remove()} armed={armed} />
           )}
           {editable && (
             <Button
@@ -614,8 +597,17 @@ const GuestList = ({ guests }: { guests: Attendee[] }) => (
   </ul>
 );
 
-/** Форма создания и правки */
+/** У события заполнено одно из редких полей — «Ещё» открыто сразу, чтобы значение не пряталось */
+export const usesMore = (d: EventDraft): boolean =>
+  (!d.allDay && (draftZone(d) !== localTimeZone() || Boolean(d.endTimeZone) || Boolean(d.travelMinutes))) ||
+  Boolean(d.colorId) ||
+  Boolean(d.attachments?.length);
+
+/** Форма создания и правки. Частые поля сверху, описание (заметки) сразу после места; пояс, время в пути,
+ *  цвет и вложения — под «Ещё». Кнопки внизу всегда видны, даже в низком окне */
 const EventForm = () => {
+  // раскрыли или свернули «Ещё» вручную: запоминаем для этого события, пока форма открыта
+  const [toggled, setToggled] = useState<{ key: string; open: boolean } | null>(null);
   const [draft, error, busy, writable, byId, ask, series] = useUnit([
     $draft,
     $editorError,
@@ -641,6 +633,13 @@ const EventForm = () => {
   // правило серии ещё грузится; если не загрузилось, поле не показываем: правка одного повторения работает и без него
   const seriesFailed = Boolean(series?.failed && series.id === draft.recurringEventId);
   const seriesLoading = Boolean(draft.recurringEventId) && draft.originalRecurrence === undefined && !seriesFailed;
+  const formKey = draft.id ?? "new";
+  const more = toggled?.key === formKey ? toggled.open : usesMore(draft);
+  const moreList = [
+    ...(draft.allDay ? [] : [t.editor.timeZone, t.editor.travel]),
+    t.editor.color,
+    ...(draft.attachments ? [t.editor.attachments] : []),
+  ].join(", ");
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -702,16 +701,6 @@ const EventForm = () => {
         )}
       </div>
 
-      {!draft.allDay && (
-        <>
-          <Field label={t.editor.timeZone}>
-            <TimeZoneSelect value={draftZone(draft)} onChange={(timeZone) => change({ timeZone })} />
-          </Field>
-          <LocalTimeNote draft={draft} />
-          <TravelField value={draft.travelMinutes ?? 0} onChange={(travelMinutes) => change({ travelMinutes })} />
-        </>
-      )}
-
       {!seriesFailed && (
         <RepeatField draft={draft} loading={seriesLoading} onChange={(recurrence) => change({ recurrence })} />
       )}
@@ -731,14 +720,17 @@ const EventForm = () => {
         )}
       </Field>
 
-      <ColorField
-        value={draft.colorId ?? ""}
-        calendarColor={eventColor(undefined, byId.get(draft.calendarId))}
-        onChange={(colorId) => change({ colorId })}
-      />
-
       <Field label={t.common.location}>
         <input value={draft.location} onChange={(e) => change({ location: e.target.value })} />
+      </Field>
+
+      <Field label={t.common.description}>
+        <textarea
+          rows={3}
+          value={draft.description}
+          placeholder={t.editor.descriptionHint}
+          onChange={(e) => change({ description: e.target.value })}
+        />
       </Field>
 
       {draft.addMeet !== undefined && (
@@ -750,39 +742,62 @@ const EventForm = () => {
 
       {draft.guests && <GuestsField guests={draft.guests} onChange={(guests) => change({ guests })} />}
 
-      {draft.attachments && (
-        <AttachmentsField files={draft.attachments} onChange={(attachments) => change({ attachments })} />
-      )}
+      <button
+        type="button"
+        className={s.more}
+        aria-expanded={more}
+        aria-controls="event-more"
+        onClick={() => setToggled({ key: formKey, open: !more })}
+      >
+        <span className={cx(s.moreArrow, more && s.moreOpen)} aria-hidden>
+          <ChevronRight size={14} />
+        </span>
+        <span>{t.editor.more}</span>
+        {!more && <span className={s.moreList}>{moreList}</span>}
+      </button>
 
-      <Field label={t.common.description}>
-        <textarea rows={3} value={draft.description} onChange={(e) => change({ description: e.target.value })} />
-      </Field>
-
-      {error && <p className={s.error}>{error}</p>}
-
-      {ask ? (
-        <ScopePrompt kind={ask} />
-      ) : (
-        <div className={s.actions}>
-          {!isNew && (
-            <DeleteButton
-              busy={busy}
-              onConfirm={() => remove()}
-              resetKey={draft.id ?? ""}
-              askFirst={!draft.recurringEventId}
-            />
+      {more && (
+        <div id="event-more" className={s.moreFields}>
+          {!draft.allDay && (
+            <>
+              <Field label={t.editor.timeZone}>
+                <TimeZoneSelect value={draftZone(draft)} onChange={(timeZone) => change({ timeZone })} />
+              </Field>
+              <LocalTimeNote draft={draft} />
+              <TravelField value={draft.travelMinutes ?? 0} onChange={(travelMinutes) => change({ travelMinutes })} />
+            </>
           )}
-          <div className={s.spacer} />
-          {!isNew && (
-            <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
-              {t.common.cancel}
-            </Button>
+          <ColorField
+            value={draft.colorId ?? ""}
+            calendarColor={eventColor(undefined, byId.get(draft.calendarId))}
+            onChange={(colorId) => change({ colorId })}
+          />
+          {draft.attachments && (
+            <AttachmentsField files={draft.attachments} onChange={(attachments) => change({ attachments })} />
           )}
-          <Button variant="primary" type="submit" disabled={busy}>
-            {busy ? t.common.saving : t.common.save}
-          </Button>
         </div>
       )}
+
+      {/* закреплено внизу окна формы: «Сохранить» видно, сколько бы полей ни было открыто */}
+      <div className={s.footer}>
+        {error && <p className={s.error}>{error}</p>}
+        {ask ? (
+          <ScopePrompt kind={ask} />
+        ) : (
+          <div className={s.actions}>
+            {!isNew && <DeleteButton busy={busy} onConfirm={() => remove()} />}
+            <div className={s.spacer} />
+            {!isNew && (
+              <Button variant="ghost" onClick={() => cancel()} disabled={busy}>
+                {t.common.cancel}
+              </Button>
+            )}
+            <Button variant="primary" type="submit" disabled={busy}>
+              {busy ? t.common.saving : t.common.save}
+            </Button>
+          </div>
+        )}
+      </div>
     </form>
   );
 };

@@ -10,6 +10,8 @@ pub enum Error {
     Denied(String),
     #[error("Sign-in timed out")]
     Timeout,
+    #[error("Sign-in cancelled")]
+    Cancelled,
     #[error("Calendar scopes were not granted")]
     MissingScope,
     // интерфейс разбирает «403: текст» и пишет своё сообщение с кодом
@@ -28,6 +30,7 @@ impl Error {
             Error::NotSignedIn => "not_signed_in",
             Error::Denied(_) => "denied",
             Error::Timeout => "timeout",
+            Error::Cancelled => "cancelled",
             Error::MissingScope => "missing_scope",
             Error::Google { .. } => "google",
             Error::Network(_) => "network",

@@ -5,6 +5,7 @@ import { t } from "../i18n";
 import { COLOR_IDS } from "./colors";
 import { formatWeekdayDayMonth, startOfDay, type ViewMode } from "./date";
 import { parseQuick } from "./quick";
+import type { Theme } from "./theme";
 
 export type Command =
   | { kind: "date"; date: Date }
@@ -15,6 +16,11 @@ export type Command =
   | { kind: "view"; view: ViewMode }
   /** окно со списком сочетаний клавиш */
   | { kind: "shortcuts" }
+  /** карточка «Что умеет Calm Calendar» */
+  | { kind: "welcome" }
+  /** найти по названию: свободное время, тема (кнопки темы на панели нет) */
+  | { kind: "free" }
+  | { kind: "theme"; theme: Theme }
   /** действия с выбранным событием */
   | { kind: "tomorrow" }
   | { kind: "later" }
@@ -32,6 +38,13 @@ const STATIC: Command[] = [
   { kind: "today" },
   ...VIEWS.map((view) => ({ kind: "view" as const, view })),
   { kind: "shortcuts" },
+  { kind: "welcome" },
+];
+
+/** только по совпадению с текстом, в пустой строке их нет */
+const FOUND_BY_NAME: Command[] = [
+  { kind: "free" },
+  ...(["light", "dark", "system"] as const).map((theme) => ({ kind: "theme" as const, theme })),
 ];
 
 const COLORS: Command[] = ["", ...COLOR_IDS].map((colorId) => ({ kind: "color" as const, colorId }));
@@ -52,6 +65,12 @@ export const commandLabel = (c: Command): string => {
       return t.toolbar.views[c.view];
     case "shortcuts":
       return t.shortcuts.title;
+    case "free":
+      return t.free.title;
+    case "theme":
+      return `${t.settings.theme}: ${t.settings.themes[c.theme]}`;
+    case "welcome":
+      return t.welcome.command;
     case "tomorrow":
       return t.commands.moveTomorrow;
     case "later":
@@ -85,5 +104,5 @@ export const buildCommands = (input: string, now: Date, subject?: CommandSubject
   found.push({ kind: "create", text }, { kind: "search", text });
   const needle = text.toLocaleLowerCase();
   const matches = (c: Command) => commandLabel(c).toLocaleLowerCase().includes(needle);
-  return [...found, ...[...own, ...(subject ? COLORS : []), ...STATIC].filter(matches)];
+  return [...found, ...[...own, ...(subject ? COLORS : []), ...STATIC, ...FOUND_BY_NAME].filter(matches)];
 };

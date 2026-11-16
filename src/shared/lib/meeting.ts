@@ -58,3 +58,17 @@ export const findMeeting = (e: MeetingSource): Meeting | undefined => {
 export const JOIN_EARLY_MS = 15 * 60_000;
 export const isJoinable = (start: Date, end: Date, now: Date): boolean =>
   now.getTime() >= start.getTime() - JOIN_EARLY_MS && now < end;
+
+/** Место коротко, для строки в списке: ссылка на созвон — название сервиса, другая ссылка — сайт,
+ *  адрес — как есть. Приглашения Zoom и Teams часто кладут в место длинную ссылку с паролем */
+export const shortPlace = (location: string, meeting: Meeting | undefined): string => {
+  const text = location.trim();
+  if (!/^https?:\/\//i.test(text)) return text;
+  const provider = providerOf(text) ?? (meeting && text.startsWith(meeting.url) ? meeting.provider : undefined);
+  if (provider) return provider;
+  try {
+    return new URL(text).hostname;
+  } catch {
+    return text;
+  }
+};
