@@ -59,7 +59,9 @@ export const fetchMonthFx = createEffect<
 });
 
 export const $now = createStore(new Date()).on(minuteTicked, (_, d) => d);
-export const $today = $now.map(startOfDay);
+export const $today = createStore(startOfDay($now.getState()), {
+  updateFilter: (next, previous) => next.getTime() !== previous.getTime(),
+}).on($now, (_, now) => startOfDay(now));
 
 export const $month = createStore(startOfMonth(new Date()))
   .on(monthShifted, (m, step) => addMonths(m, step))

@@ -1,7 +1,7 @@
 // Общая часть разбора строки быстрого создания: вырезание распознанных кусков,
 // метки календаря и места, сборка события из даты, времени и длительности.
 // Словари и шаблоны каждого языка — в quick.ts (русский) и quick-en.ts (английский).
-import { addDays, addMinutes, startOfDay } from "./date";
+import { addDays, addMinutes, MINUTES_IN_DAY, startOfDay } from "./date";
 
 export type QuickCalendar = { id: string; name: string };
 
@@ -97,10 +97,22 @@ export const nextWeekday = (today: Date, index: number, skipToday = false): Date
   return addDays(today, ahead === 0 && skipToday ? 7 : ahead);
 };
 
-/** Дата без года, которая уже прошла, — в следующем году */
+/** Дата без года — ближайшая допустимая. Несуществующая дата с годом недействительна. */
 export const upcomingDate = (today: Date, month: number, day: number, year: number | null): Date => {
-  const d = new Date(year ?? today.getFullYear(), month, day);
-  return year === null && d < today ? new Date(d.getFullYear() + 1, month, day) : d;
+  const atYear = (y: number) => {
+    const date = new Date(y, month, day);
+    return date.getFullYear() === y && date.getMonth() === month && date.getDate() === day ? date : new Date(NaN);
+  };
+  if (year !== null) return atYear(year);
+
+  const currentYear = today.getFullYear();
+  // На границе столетия между високосными годами может пройти восемь лет.
+  const lastYear = currentYear + (month === 1 && day === 29 ? 8 : 1);
+  for (let y = currentYear; y <= lastYear; y++) {
+    const date = atYear(y);
+    if (date >= today) return date;
+  }
+  return new Date(NaN);
 };
 
 const findCalendar = (tag: string, calendars: QuickCalendar[]): string | undefined => {
@@ -153,12 +165,17 @@ export const assemble = (p: Parsed, now: Date): QuickResult => {
     day = addDays(day, 1);
     start = withTime(day, time.h, time.m);
   }
-  let end =
-    time.endH !== undefined
-      ? withTime(day, time.endH, time.endM ?? 0)
-      : addMinutes(start, duration ?? DEFAULT_MINUTES);
-  // «23-1»: конец на следующий день
-  if (end <= start) end = addDays(end, 1);
+  let end: Date;
+  if (time.endH === undefined) {
+    end = addMinutes(start, duration ?? DEFAULT_MINUTES);
+    if (end <= start) end = addDays(end, 1);
+  } else {
+    const endM = time.endM ?? 0;
+    const span = (time.endH - time.h) * 60 + endM - time.m;
+    // «23-1»: конец на следующий день. Сравниваем введённые часы до перевода на летнее время.
+    end = withTime(span <= 0 ? addDays(day, 1) : day, time.endH, endM);
+    if (end <= start) end = addMinutes(start, span > 0 ? span : span + MINUTES_IN_DAY);
+  }
 
   return { title, start, end, allDay: false, calendarId, location };
 };

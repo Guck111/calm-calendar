@@ -24,6 +24,12 @@ import { isColorId } from "../lib/colors";
 export const draftZone = (d: EventDraft): string => d.timeZone ?? localTimeZone();
 import { buildRecurrence, followStart, parseRecurrence, truncateBefore } from "../lib/rrule";
 
+export const draftInstant = (draft: EventDraft, bound: "start" | "end"): Date => {
+  const zone = draftZone(draft);
+  const original = draft.originalTimes?.zone === zone ? draft.originalTimes[bound] : undefined;
+  return fromZoned(draft[`${bound}Date`], draft[`${bound}Time`], zone, original);
+};
+
 /** у списка событий Google указывает и пояс календаря */
 type Page<T> = { items?: T[]; nextPageToken?: string; timeZone?: string };
 
@@ -309,21 +315,19 @@ export const sortByRelevance = (events: CalendarEvent[], now: Date): CalendarEve
 export const draftToBody = (draft: EventDraft) => {
   // дата и время в форме — по часам пояса события; у существующего события это его пояс из Google
   const zone = draftZone(draft);
-  const original = draft.originalTimes?.zone === zone ? draft.originalTimes : undefined;
-  const time = (date: string, timeKey: string, label: string, at?: Date): RawTime | Record<string, string | null> =>
-    draft.allDay
-      ? { date, dateTime: null, timeZone: null }
-      : { dateTime: fromZoned(date, timeKey, zone, at).toISOString(), timeZone: label, date: null };
-
   // в Google конец события на весь день не включительно
   const endDate = draft.allDay ? toDateKey(addDays(fromDateKey(draft.endDate), 1)) : draft.endDate;
+  const time = (bound: "start" | "end", label: string): RawTime | Record<string, string | null> =>
+    draft.allDay
+      ? { date: bound === "start" ? draft.startDate : endDate, dateTime: null, timeZone: null }
+      : { dateTime: draftInstant(draft, bound).toISOString(), timeZone: label, date: null };
 
   return {
     summary: draft.title.trim(),
     location: draft.location.trim(),
     description: draft.description.trim(),
-    start: time(draft.startDate, draft.startTime, zone, original?.start),
-    end: time(endDate, draft.endTime, draft.endTimeZone ?? zone, original?.end),
+    start: time("start", zone),
+    end: time("end", draft.endTimeZone ?? zone),
     // patch сливает объекты: другие скрытые поля события остаются
     ...(draft.travelMinutes !== undefined
       ? { extendedProperties: { private: { [TRAVEL_KEY]: String(draft.travelMinutes) } } }

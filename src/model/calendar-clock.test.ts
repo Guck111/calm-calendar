@@ -4,7 +4,7 @@ import { draftToBody, toCalendarEvent } from "../shared/api/calendar";
 import { formatTime, toDateKey, toTimeKey, viewRange } from "../shared/lib/date";
 import { overlapsDay } from "../shared/lib/layout";
 import { wallClock } from "../shared/lib/tz";
-import { applyChange, fromEvent } from "./editor";
+import { applyChange, fromEvent, validate } from "./editor";
 import { $range, dateSelected, minuteTicked, viewChanged } from "./view";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -34,6 +34,22 @@ it("сохраняет часы UTC внутри отсутствующего л
   const newYork = toTimeKey(wallClock(new Date("2026-03-08T02:30:00Z"), "UTC"));
 
   expect([warsaw, newYork]).toEqual(["02:30", "02:30"]);
+});
+
+it("пропускает правку события, которое пересекает повторяющийся час", () => {
+  const timeZone = "Europe/Warsaw";
+  const event = toCalendarEvent("c", {
+    id: "cross-fall-back",
+    start: { dateTime: "2026-10-25T02:50:00+02:00", timeZone },
+    end: { dateTime: "2026-10-25T02:10:00+01:00", timeZone },
+  });
+  if (!event) throw new Error("Событие должно быть прочитано из Google");
+  const draft = applyChange(fromEvent(event), { title: "Через перевод часов" });
+  expect(draftToBody(draft)).toMatchObject({
+    start: { dateTime: "2026-10-25T00:50:00.000Z" },
+    end: { dateTime: "2026-10-25T01:10:00.000Z" },
+  });
+  expect(validate(draft)).toBeNull();
 });
 
 it("пересчитывает выбранный день и формат времени после смены системного пояса", async () => {

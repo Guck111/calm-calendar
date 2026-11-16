@@ -52,6 +52,7 @@ export const fromZonedParts = (
   y: number, mo: number, d: number, h: number, mi: number, s: number, zone: string, original?: number,
 ): Date => {
   const guess = Date.UTC(y, mo - 1, d, h, mi, s);
+  if (!Number.isFinite(guess)) return new Date(NaN);
   // смещение за сутки до и после: переходов чаще одного в сутки не бывает
   const before = zoneOffset(zone, new Date(guess - DAY));
   const after = zoneOffset(zone, new Date(guess + DAY));

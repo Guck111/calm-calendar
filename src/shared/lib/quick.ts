@@ -50,23 +50,29 @@ export const parseQuick = (
   return PARSERS[phraseLang(text, language)](text, now, calendars);
 };
 
+export const hasValidQuickDate = (r: QuickResult): boolean => !Number.isNaN(r.start.getTime());
+
 /** Черновик формы из разобранной строки */
-export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => ({
-  calendarId: r.calendarId ?? fallbackCalendarId,
-  title: r.title,
-  allDay: r.allDay,
-  startDate: toDateKey(r.start),
-  startTime: toTimeKey(r.start),
-  // в форме последний день события на весь день включительно
-  endDate: toDateKey(r.allDay ? addDays(r.end, -1) : r.end),
-  endTime: toTimeKey(r.end),
-  location: r.location ?? "",
-  description: "",
-  recurrence: [] as string[],
-});
+export const quickToDraft = (r: QuickResult, fallbackCalendarId: string) => {
+  const validDate = hasValidQuickDate(r);
+  return {
+    calendarId: r.calendarId ?? fallbackCalendarId,
+    title: r.title,
+    allDay: r.allDay,
+    startDate: validDate ? toDateKey(r.start) : "",
+    startTime: validDate ? toTimeKey(r.start) : "",
+    // в форме последний день события на весь день включительно
+    endDate: validDate ? toDateKey(r.allDay ? addDays(r.end, -1) : r.end) : "",
+    endTime: validDate ? toTimeKey(r.end) : "",
+    location: r.location ?? "",
+    description: "",
+    recurrence: [] as string[],
+  };
+};
 
 /** «Чт, 5 ноября · 19:00–19:50» для подсказки под строкой */
 export const quickWhen = (r: QuickResult): string => {
+  if (!hasValidQuickDate(r)) return t.errors.checkDateTime;
   const day = formatWeekdayDayMonth(r.start);
   if (r.allDay) return `${day} · ${t.common.allDayLower}`;
   const nextDay = startOfDay(r.end).getTime() !== startOfDay(r.start).getTime();

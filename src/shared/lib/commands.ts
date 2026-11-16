@@ -4,7 +4,7 @@
 import { t } from "../i18n";
 import { COLOR_IDS } from "./colors";
 import { formatWeekdayDayMonth, startOfDay, type ViewMode } from "./date";
-import { parseQuick } from "./quick";
+import { hasValidQuickDate, parseQuick } from "./quick";
 import type { Theme } from "./theme";
 
 export type Command =
@@ -100,7 +100,7 @@ export const buildCommands = (input: string, now: Date, subject?: CommandSubject
   if (!text) return [...own, ...STATIC];
   const found: Command[] = [];
   const parsed = parseQuick(text, now);
-  if (!parsed.title) found.push({ kind: "date", date: startOfDay(parsed.start) });
+  if (!parsed.title && hasValidQuickDate(parsed)) found.push({ kind: "date", date: startOfDay(parsed.start) });
   found.push({ kind: "create", text }, { kind: "search", text });
   const needle = text.toLocaleLowerCase();
   const matches = (c: Command) => commandLabel(c).toLocaleLowerCase().includes(needle);

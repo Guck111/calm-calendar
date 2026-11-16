@@ -20,8 +20,7 @@ export const shiftEvent = (
     const min = addMinutes(e.start, DRAG_STEP);
     return { start: e.start, end: end < min ? min : end };
   }
-  return {
-    start: addMinutes(addDays(e.start, deltaDays), deltaMinutes),
-    end: addMinutes(addDays(e.end, deltaDays), deltaMinutes),
-  };
+  const start = addMinutes(deltaDays === 0 ? e.start : addDays(e.start, deltaDays), deltaMinutes);
+  const duration = (e.end.getTime() - e.start.getTime()) / 60_000;
+  return { start, end: addMinutes(start, duration) };
 };
