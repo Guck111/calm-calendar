@@ -4,6 +4,10 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### Fixed
+
+- **Signing out**: calendars and events of a signed-out account no longer come back when a slow response arrives after sign-out.
+
 ## 0.12.1 — 2026-11-16
 
 ### Fixed
