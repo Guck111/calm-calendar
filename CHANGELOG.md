@@ -4,6 +4,10 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### Fixed
+
+- **Event card**: when the buttons do not fit in one row, they move to a second row instead of scrolling the card sideways.
+
 ## 0.12.2 — 2026-11-16
 
 ### Fixed
