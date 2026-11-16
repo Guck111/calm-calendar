@@ -6,6 +6,7 @@ import { eventOpened } from "../model/editor";
 import {
   $query,
   $results,
+  $searchProblem,
   $searching,
   queryChanged,
   searchClosed,
@@ -22,7 +23,7 @@ const DEBOUNCE_MS = 350;
 
 
 export const Search = () => {
-  const [query, results, searching, byId] = useUnit([$query, $results, $searching, $calendarById]);
+  const [query, results, problem, searching, byId] = useUnit([$query, $results, $searchProblem, $searching, $calendarById]);
   const [change, close, request, openDay, openEvent] = useUnit([
     queryChanged,
     searchClosed,
@@ -83,8 +84,13 @@ export const Search = () => {
       />
       {results !== null && query.trim() && (
         <div className={s.results} role="listbox">
+          {problem && (
+            <div className={s.empty} role="alert">
+              {problem}
+            </div>
+          )}
           {!results.length ? (
-            <div className={s.empty}>{searching ? t.search.searching : t.search.nothing}</div>
+            !problem && <div className={s.empty}>{searching ? t.search.searching : t.search.nothing}</div>
           ) : (
             results.map((e) => (
               <button

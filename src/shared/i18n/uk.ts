@@ -218,6 +218,8 @@ export const uk: Dict = {
     label: "Пошук подій",
     searching: "Шукаю…",
     nothing: "Нічого не знайдено",
+    failed: (message: string) => `Не вдалося виконати пошук: ${message}`,
+    partial: (names: string) => `Не відповіли календарі: ${names}`,
   },
   settings: {
     theme: "Тема",

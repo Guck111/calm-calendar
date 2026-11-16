@@ -211,6 +211,8 @@ export const ar: Dict = {
     label: "البحث في الأحداث",
     searching: "جارٍ البحث…",
     nothing: "لم يُعثر على شيء",
+    failed: (message: string) => `تعذّر البحث: ${message}`,
+    partial: (names: string) => `لم تستجب بعض التقويمات: ${names}`,
   },
   settings: {
     theme: "المظهر",

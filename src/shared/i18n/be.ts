@@ -218,6 +218,8 @@ export const be: Dict = {
     label: "Пошук падзей",
     searching: "Шукаю…",
     nothing: "Нічога не знойдзена",
+    failed: (message: string) => `Не ўдалося выканаць пошук: ${message}`,
+    partial: (names: string) => `Не адказалі календары: ${names}`,
   },
   settings: {
     theme: "Тэма",

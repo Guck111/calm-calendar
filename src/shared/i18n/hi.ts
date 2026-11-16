@@ -190,6 +190,8 @@ export const hi: Dict = {
     label: "इवेंट खोजें",
     searching: "खोज रहे हैं…",
     nothing: "कुछ नहीं मिला",
+    failed: (message: string) => `खोज नहीं हो सकी: ${message}`,
+    partial: (names: string) => `कुछ कैलेंडर ने जवाब नहीं दिया: ${names}`,
   },
   settings: {
     theme: "थीम",

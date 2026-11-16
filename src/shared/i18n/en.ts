@@ -195,6 +195,8 @@ export const en: Dict = {
     label: "Search events",
     searching: "Searching…",
     nothing: "Nothing found",
+    failed: (message: string) => `Couldn't search: ${message}`,
+    partial: (names: string) => `Some calendars didn't respond: ${names}`,
   },
   settings: {
     theme: "Theme",

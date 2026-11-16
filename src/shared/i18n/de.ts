@@ -198,6 +198,8 @@ export const de: Dict = {
     label: "Termine suchen",
     searching: "Suche läuft…",
     nothing: "Nichts gefunden",
+    failed: (message: string) => `Suche fehlgeschlagen: ${message}`,
+    partial: (names: string) => `Einige Kalender haben nicht geantwortet: ${names}`,
   },
   settings: {
     theme: "Design",

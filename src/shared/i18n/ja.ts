@@ -190,6 +190,8 @@ export const ja: Dict = {
     label: "予定を検索",
     searching: "検索中…",
     nothing: "見つかりませんでした",
+    failed: (message: string) => `検索できませんでした: ${message}`,
+    partial: (names: string) => `応答しなかったカレンダー: ${names}`,
   },
   settings: {
     theme: "テーマ",

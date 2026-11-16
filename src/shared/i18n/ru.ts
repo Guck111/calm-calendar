@@ -224,6 +224,8 @@ export const ru = {
     label: "Поиск событий",
     searching: "Ищу…",
     nothing: "Ничего не найдено",
+    failed: (message: string) => `Не удалось выполнить поиск: ${message}`,
+    partial: (names: string) => `Не ответили календари: ${names}`,
   },
   settings: {
     theme: "Тема",

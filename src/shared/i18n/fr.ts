@@ -198,6 +198,8 @@ export const fr: Dict = {
     label: "Rechercher des événements",
     searching: "Recherche…",
     nothing: "Aucun résultat",
+    failed: (message: string) => `Recherche impossible : ${message}`,
+    partial: (names: string) => `Certains agendas n’ont pas répondu : ${names}`,
   },
   settings: {
     theme: "Thème",

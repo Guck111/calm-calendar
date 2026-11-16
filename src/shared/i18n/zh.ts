@@ -190,6 +190,8 @@ export const zh: Dict = {
     label: "搜索日程",
     searching: "正在搜索…",
     nothing: "未找到结果",
+    failed: (message: string) => `无法搜索：${message}`,
+    partial: (names: string) => `部分日历未响应：${names}`,
   },
   settings: {
     theme: "主题",

@@ -198,6 +198,8 @@ export const es: Dict = {
     label: "Buscar eventos",
     searching: "Buscando…",
     nothing: "No se encontró nada",
+    failed: (message: string) => `No se pudo buscar: ${message}`,
+    partial: (names: string) => `Algunos calendarios no respondieron: ${names}`,
   },
   settings: {
     theme: "Tema",

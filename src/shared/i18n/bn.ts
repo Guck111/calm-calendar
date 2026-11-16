@@ -194,6 +194,8 @@ export const bn: Dict = {
     label: "ইভেন্ট খুঁজুন",
     searching: "খোঁজা হচ্ছে…",
     nothing: "কিছু পাওয়া যায়নি",
+    failed: (message: string) => `খোঁজা যায়নি: ${message}`,
+    partial: (names: string) => `কিছু ক্যালেন্ডার সাড়া দেয়নি: ${names}`,
   },
   settings: {
     theme: "থিম",

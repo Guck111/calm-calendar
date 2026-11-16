@@ -204,6 +204,8 @@ export const pt: Dict = {
     label: "Pesquisar eventos",
     searching: "Pesquisando…",
     nothing: "Nada encontrado",
+    failed: (message: string) => `Não foi possível pesquisar: ${message}`,
+    partial: (names: string) => `Algumas agendas não responderam: ${names}`,
   },
   settings: {
     theme: "Tema",
