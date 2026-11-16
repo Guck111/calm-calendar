@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample } from "effector";
+import { combine, createEffect, createEvent, createStore, sample } from "effector";
 import { searchEvents, sortByRelevance } from "../shared/api/calendar";
 import type { AppError, Calendar, CalendarEvent } from "../shared/api/types";
 import { $visibleCalendars } from "./calendars";
@@ -31,10 +31,18 @@ export const $query = createStore("")
   .on(queryChanged, (_, q) => q)
   .reset([searchClosed, signOutFx.finally]);
 
-export const $results = createStore<CalendarEvent[] | null>(null)
-  .on(searchFx.doneData, (state, r) => (r.id === lastId ? r.results : state))
-  .on(queryChanged, (state, q) => (q.trim().length < MIN_LENGTH ? null : state))
+/** results of the latest search together with the text they were found for */
+const $found = createStore<{ query: string; results: CalendarEvent[] } | null>(null)
+  .on(searchFx.done, (state, { params, result }) =>
+    result.id === lastId ? { query: params.query, results: result.results } : state,
+  )
   .reset([searchClosed, signOutFx.finally]);
+
+/** Results only for the text in the input now. While the next search waits for a pause in typing, the previous
+ *  results are not shown under the new text, so Enter can't open an event from them */
+export const $results = combine($found, $query, (found, query) =>
+  found && query.trim().length >= MIN_LENGTH && found.query === query.trim() ? found.results : null,
+);
 
 export const $searching = searchFx.pending;
 
