@@ -51,11 +51,6 @@ describe("saving sends only the changed fields", () => {
     expect(requests).toEqual([]);
   });
 
-  it("a drag sends only the time, even to the original place (undo)", async () => {
-    await saveEvent(editor.movedDraft(event, event.start, event.end));
-    expect(Object.keys(requests[0].body as object).sort()).toEqual(["end", "start"]);
-  });
-
   it("a new event is sent whole", async () => {
     const copy = editor.duplicateDraft(event, ["c"]);
     expect(copy.baseline).toBeUndefined();

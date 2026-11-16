@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { subscribe } from "../shared/api/bus";
 import { isRtl, t } from "../shared/i18n";
 import { fromDateKey } from "../shared/lib/date";
-import { $signedIn, $status, appStarted } from "../model/auth";
-import { $draft, draftOpened } from "../model/editor";
+import { $signedIn, $status, $statusError, appStarted, statusRetryClicked } from "../model/auth";
+import { $editorOpen, draftOpened } from "../model/editor";
 import { quickFocusRequested } from "../model/quick";
 import "../model/reminders";
 import type { EventDraft } from "../shared/api/types";
@@ -160,12 +160,36 @@ const Banner = ({ text }: { text: string }) => {
   );
 };
 
+/** Sign-in status couldn't be read on start: say so and offer to try again instead of a blank window */
+const StatusFailed = ({ message }: { message: string }) => {
+  const retry = useUnit(statusRetryClicked);
+  return (
+    <div className={s.splash}>
+      <div className={s.statusFailed} role="alert">
+        <strong>{t.errors.crashTitle}</strong>
+        <span>{message}</span>
+        <button type="button" className={s.retry} onClick={() => retry()}>
+          {t.sync.retry}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const App = () => {
-  const [status, signedIn, view, draft, loadError, offline] = useUnit([$status, $signedIn, $view, $draft, $loadError, $offlineText]);
-  useAppEffects(signedIn, Boolean(draft));
+  const [status, statusError, signedIn, view, editorOpen, loadError, offline] = useUnit([
+    $status,
+    $statusError,
+    $signedIn,
+    $view,
+    $editorOpen,
+    $loadError,
+    $offlineText,
+  ]);
+  useAppEffects(signedIn, editorOpen);
   useEventKeys(signedIn);
 
-  if (!status) return <div className={s.splash} />;
+  if (!status) return statusError ? <StatusFailed message={statusError} /> : <div className={s.splash} />;
   if (!signedIn) return <AuthScreen />;
 
   return (

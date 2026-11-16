@@ -58,6 +58,7 @@ export const fr: Dict = {
     glassFailed: "Impossible de modifier l’effet verre",
     offline: (when: string) => `Hors ligne. Données du ${when}`,
     otherAccount: "Impossible de déplacer un événement vers un agenda d’un autre compte Google",
+    deleteNotSaved: "Impossible d’enregistrer la suppression sur le disque. Gardez l’app ouverte jusqu’à ce qu’elle parvienne à Google",
     accountsFailed: (emails: string) => `Les agendas de ce compte n’ont pas été chargés : ${emails}`,
   },
   auth: {
@@ -197,6 +198,8 @@ export const fr: Dict = {
     label: "Rechercher des événements",
     searching: "Recherche…",
     nothing: "Aucun résultat",
+    failed: (message: string) => `Recherche impossible : ${message}`,
+    partial: (names: string) => `Certains agendas n’ont pas répondu : ${names}`,
   },
   settings: {
     theme: "Thème",

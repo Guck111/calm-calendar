@@ -58,6 +58,7 @@ export const pt: Dict = {
     glassFailed: "Não foi possível alterar o efeito de vidro",
     offline: (when: string) => `Sem conexão. Dados de ${when}`,
     otherAccount: "Não é possível mover um evento para a agenda de outra conta do Google",
+    deleteNotSaved: "Não foi possível salvar a exclusão no disco. Mantenha o app aberto até ela chegar ao Google",
     accountsFailed: (emails: string) => `Não foi possível carregar as agendas de: ${emails}`,
   },
   auth: {
@@ -203,6 +204,8 @@ export const pt: Dict = {
     label: "Pesquisar eventos",
     searching: "Pesquisando…",
     nothing: "Nada encontrado",
+    failed: (message: string) => `Não foi possível pesquisar: ${message}`,
+    partial: (names: string) => `Algumas agendas não responderam: ${names}`,
   },
   settings: {
     theme: "Tema",

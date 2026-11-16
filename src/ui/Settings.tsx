@@ -2,9 +2,10 @@ import { useEffect, useState, type FormEvent, type PointerEvent as ReactPointerE
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
-import { $feeds, $holidayRegion, $weekNumbers, feedsChanged, holidayRegionChanged, weekNumbersToggled } from "../model/display";
+import { $feeds, $holidayRegion, $weekNumbers, feedAdded, feedRemoved, holidayRegionChanged, weekNumbersToggled } from "../model/display";
 import { downloadFeed, dropFeedCache } from "../shared/api/feeds";
-import { looksLikeUrl, newFeed, sameFeedUrl, type Feed } from "../shared/lib/feeds";
+import { looksLikeUrl, sameFeedUrl, type Feed } from "../shared/lib/feeds";
+import { createChangeTracker } from "../shared/lib/changes";
 import { sortedRegions } from "../shared/lib/holidays";
 import { TimeZoneSelect } from "./TimeZoneSelect";
 import { broadcast, inTauri } from "../shared/api/bus";
@@ -92,12 +93,15 @@ type Props = {
   onHeadDrag?: (e: ReactPointerEvent<HTMLElement>) => void;
 };
 
+/** settings written through Rust, one change counter each */
+type SettingKey = "widget" | "on_top" | "autostart" | "hotkey" | "alerts" | "private" | "notify";
+
 /** second time zone, week numbers, holidays are stored in the calendar window: tell it about the change */
 const displayChanged = () => broadcast("display-changed");
 
 /** .ics calendar subscriptions: the link is checked by downloading, the name comes from the calendar itself */
 const FeedsSection = () => {
-  const [feeds, setFeeds] = useUnit([$feeds, feedsChanged]);
+  const [feeds, addFeed, removeFeed] = useUnit([$feeds, feedAdded, feedRemoved]);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +116,8 @@ const FeedsSection = () => {
     setError(null);
     try {
       const cal = await downloadFeed(link);
-      setFeeds([...feeds, newFeed(link, cal.name ?? "", feeds)]);
+      // subscriptions may have been removed while it downloaded: the model adds to the list as it is now
+      addFeed({ url: link, name: cal.name ?? "" });
       displayChanged();
       setUrl("");
     } catch (err) {
@@ -124,7 +129,7 @@ const FeedsSection = () => {
   };
 
   const remove = (feed: Feed) => {
-    setFeeds(feeds.filter((f) => f.id !== feed.id));
+    removeFeed(feed.id);
     dropFeedCache(feed.id);
     displayChanged();
   };
@@ -209,35 +214,52 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   // countries in the app language's alphabetical order
   const [regions] = useState(sortedRegions);
 
+  // the late failure of an earlier change must not roll back a newer one, the first read — overwrite a change
+  const [changes] = useState(() => createChangeTracker<SettingKey>());
+  const changeStarted = changes.start;
+  const untouched = changes.untouched;
+
   useEffect(() => {
-    void readDesktop().then(setDesktop);
+    void readDesktop().then((read) =>
+      setDesktop((d) => ({
+        widget: untouched("widget") ? read.widget : d.widget,
+        on_top: untouched("on_top") ? read.on_top : d.on_top,
+        autostart: untouched("autostart") ? read.autostart : d.autostart,
+      })),
+    );
   }, []);
 
   const toggleWidget = async (visible: boolean) => {
+    const isLatest = changeStarted("widget");
     setDesktop((d) => ({ ...d, widget: visible }));
     try {
       await setWidget({ visible });
     } catch {
+      if (!isLatest()) return;
       setDesktop((d) => ({ ...d, widget: !visible }));
       setError(t.errors.settingFailed);
     }
   };
   const toggleOnTop = async (onTop: boolean) => {
+    const isLatest = changeStarted("on_top");
     setDesktop((d) => ({ ...d, on_top: onTop }));
     try {
       await setWidget({ onTop });
     } catch {
+      if (!isLatest()) return;
       setDesktop((d) => ({ ...d, on_top: !onTop }));
       setError(t.errors.settingFailed);
     }
   };
   // autostart can be disabled in Task Manager: the toggle shows what actually happened
   const toggleAutostart = async (enabled: boolean) => {
+    const isLatest = changeStarted("autostart");
     setDesktop((d) => ({ ...d, autostart: enabled }));
     try {
       const actual = await setAutostart(enabled);
-      setDesktop((d) => ({ ...d, autostart: actual }));
+      if (isLatest()) setDesktop((d) => ({ ...d, autostart: actual }));
     } catch {
+      if (!isLatest()) return;
       setDesktop((d) => ({ ...d, autostart: !enabled }));
       setError(t.errors.settingFailed);
     }
@@ -245,26 +267,29 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
 
   useEffect(() => {
     void readSettings().then((st) => {
-      setNotify(st.notifications);
-      setPrivateNotify(st.private_notifications);
-      setAlertsState(st.alerts);
-      setHotkeyState(st.quick_hotkey ?? OFF);
+      if (untouched("notify")) setNotify(st.notifications);
+      if (untouched("private")) setPrivateNotify(st.private_notifications);
+      if (untouched("alerts")) setAlertsState(st.alerts);
+      if (untouched("hotkey")) setHotkeyState(st.quick_hotkey ?? OFF);
     });
   }, []);
 
   const pickHotkey = async (value: string) => {
+    const isLatest = changeStarted("hotkey");
     const previous = hotkey;
     setHotkeyState(value);
     setHotkeyError(null);
     try {
       await setQuickHotkey(value === OFF ? null : value);
     } catch {
+      if (!isLatest()) return;
       setHotkeyError(t.settings.hotkeyBusy);
       setHotkeyState(previous);
     }
   };
 
   const pickAlerts = async (mode: AlertMode) => {
+    const isLatest = changeStarted("alerts");
     const previous = alerts;
     setAlertsState(mode);
     setError(null);
@@ -272,28 +297,33 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
       await setAlerts(mode);
       if (mode !== "off") reschedule();
     } catch {
+      if (!isLatest()) return;
       setError(t.errors.settingFailed);
       setAlertsState(previous);
     }
   };
 
   const togglePrivate = async (enabled: boolean) => {
+    const isLatest = changeStarted("private");
     setPrivateNotify(enabled);
     try {
       await setPrivateNotifications(enabled);
     } catch {
+      if (!isLatest()) return;
       setError(t.errors.settingFailed);
       setPrivateNotify(!enabled);
     }
   };
 
   const toggleNotify = async (enabled: boolean) => {
+    const isLatest = changeStarted("notify");
     setNotify(enabled);
     setError(null);
     try {
       await setNotifications(enabled);
       if (enabled) reschedule();
     } catch {
+      if (!isLatest()) return;
       setError(t.errors.notificationsFailed);
       setNotify(!enabled);
     }

@@ -49,4 +49,7 @@ export const $range = combine($view, $cursor, viewRange);
 
 /** current time to the minute: for the "now" line and highlighting today */
 export const $now = createStore(new Date()).on(minuteTicked, (_, d) => d);
-export const $today = $now.map(startOfDay);
+/** start of today; changes only when the day changes, not on every minute tick */
+export const $today = createStore(startOfDay($now.getState()), {
+  updateFilter: (next, previous) => next.getTime() !== previous.getTime(),
+}).on($now, (_, now) => startOfDay(now));

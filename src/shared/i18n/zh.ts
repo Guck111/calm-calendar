@@ -53,6 +53,7 @@ export const zh: Dict = {
     glassFailed: "无法更改玻璃效果",
     offline: (when: string) => `离线中，显示的是 ${when} 的数据`,
     otherAccount: "无法将日程移到另一个 Google 账号的日历中",
+    deleteNotSaved: "无法将删除保存到磁盘。请保持应用打开，直到删除同步到 Google",
     accountsFailed: (emails: string) => `以下账号的日历未能加载：${emails}`,
   },
   auth: {
@@ -189,6 +190,8 @@ export const zh: Dict = {
     label: "搜索日程",
     searching: "正在搜索…",
     nothing: "未找到结果",
+    failed: (message: string) => `无法搜索：${message}`,
+    partial: (names: string) => `部分日历未响应：${names}`,
   },
   settings: {
     theme: "主题",

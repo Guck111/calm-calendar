@@ -69,6 +69,7 @@ export const ar: Dict = {
     glassFailed: "تعذّر تغيير تأثير الزجاج",
     offline: (when: string) => `لا يوجد اتصال. تُعرض بيانات ${when}`,
     otherAccount: "لا يمكن نقل حدث إلى تقويم في حساب Google آخر",
+    deleteNotSaved: "تعذّر حفظ الحذف على القرص. أبقِ التطبيق مفتوحًا حتى يصل إلى Google",
     accountsFailed: (emails: string) => `تعذّر تحميل تقاويم الحساب: ${emails}`,
   },
   auth: {
@@ -210,6 +211,8 @@ export const ar: Dict = {
     label: "البحث في الأحداث",
     searching: "جارٍ البحث…",
     nothing: "لم يُعثر على شيء",
+    failed: (message: string) => `تعذّر البحث: ${message}`,
+    partial: (names: string) => `لم تستجب بعض التقويمات: ${names}`,
   },
   settings: {
     theme: "المظهر",

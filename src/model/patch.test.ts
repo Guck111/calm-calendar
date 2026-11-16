@@ -17,7 +17,7 @@ const dentist = toCalendarEvent("me@example.com\u0000primary", {
 describe("change one field", () => {
   it("the draft of the event with the change goes to Google", async () => {
     const saved: EventDraft[] = [];
-    const scope = fork({ handlers: [[patchFx, (d: EventDraft) => void saved.push(d)]] });
+    const scope = fork({ handlers: [[patchFx, ({ draft }: { draft: EventDraft }) => void saved.push(draft)]] });
     await allSettled(eventPatched, { scope, params: { event: dentist, patch: { addMeet: true } } });
     await allSettled(eventPatched, { scope, params: { event: dentist, patch: { colorId: "" } } });
     expect(saved[0]).toMatchObject({ id: "e1", title: "Dentist", addMeet: true, colorId: "5" });

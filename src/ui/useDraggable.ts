@@ -5,6 +5,22 @@ type Offset = { x: number; y: number };
 /** how much of the window must stay visible so it can be grabbed back */
 const KEEP = 80;
 
+/** a drag gesture ends with one of these */
+const ENDS = ["pointerup", "pointercancel", "lostpointercapture"] as const;
+
+/** Follows the pointer on the handle until the gesture ends: released, cancelled, or the handle lost the pointer
+ *  capture (the window lost focus, the handle was hidden). Returns a function that stops following right away */
+export const followPointer = (handle: EventTarget, onMove: (e: PointerEvent) => void): (() => void) => {
+  const move = (e: Event) => onMove(e as PointerEvent);
+  const stop = () => {
+    handle.removeEventListener("pointermove", move);
+    for (const end of ENDS) handle.removeEventListener(end, stop);
+  };
+  handle.addEventListener("pointermove", move);
+  for (const end of ENDS) handle.addEventListener(end, stop);
+  return stop;
+};
+
 /**
  * Dragging a window by a handle (usually the header). Returns a ref for the window,
  * a handler for the handle and a style with the offset. The window doesn't go past the edge so far
@@ -33,6 +49,10 @@ export const useDraggable = <T extends HTMLElement>() => {
     };
   }, []);
 
+  // the gesture in progress: stopped before the next one and when the window unmounts mid-drag
+  const stopRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopRef.current?.(), []);
+
   // the calendar window was shrunk — bring the settings back into the visible area
   useEffect(() => {
     const onResize = () => setOffset((o) => clamp(o));
@@ -48,15 +68,8 @@ export const useDraggable = <T extends HTMLElement>() => {
     handle.setPointerCapture(e.pointerId);
     const startX = e.clientX - offsetRef.current.x;
     const startY = e.clientY - offsetRef.current.y;
-    const move = (ev: PointerEvent) => setOffset(clamp({ x: ev.clientX - startX, y: ev.clientY - startY }));
-    const up = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", up);
-      handle.removeEventListener("pointercancel", up);
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", up);
-    handle.addEventListener("pointercancel", up);
+    stopRef.current?.();
+    stopRef.current = followPointer(handle, (ev) => setOffset(clamp({ x: ev.clientX - startX, y: ev.clientY - startY })));
   };
 
   const style = offset.x || offset.y ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined;

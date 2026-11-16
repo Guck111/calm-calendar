@@ -11,8 +11,21 @@ export const readJson = <T>(key: string, fallback: T): T => {
 
 export const writeJson = (key: string, value: unknown): void => {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    saveJson(key, value);
   } catch {
     // no space or storage disabled — the setting just won't be remembered
+  }
+};
+
+/** Write that must not fail silently: throws when there is no space or storage is disabled */
+export const saveJson = (key: string, value: unknown): void => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+export const removeJson = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // storage disabled — nothing is stored either
   }
 };
