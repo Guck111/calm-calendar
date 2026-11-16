@@ -130,6 +130,8 @@ export type EventDraft = {
   attachments?: Attachment[];
   /** the attachment list was changed: only then it goes to Google */
   attachmentsChanged?: boolean;
+  /** request body fields (JSON) when the existing event was opened; on save only changed fields are sent */
+  baseline?: Record<string, string>;
 };
 
 /** which series occurrences to affect */

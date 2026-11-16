@@ -38,7 +38,9 @@ pub fn normalize(url: &str) -> Result<url::Url> {
 pub async fn fetch(url: &str) -> Result<String> {
     let url = normalize(url)?;
     let host = url.host_str().unwrap_or("").to_owned();
+    // reqwest puts the whole link into the error text: it goes neither to the log nor to the UI
     let mut resp = http().get(url).send().await.map_err(|e| {
+        let e = e.without_url();
         log::warn!("calendar feed {host}: {e}");
         Error::Network(e.to_string())
     })?;
@@ -51,7 +53,11 @@ pub async fn fetch(url: &str) -> Result<String> {
         return Err(Error::Other("the calendar file is too large".into()));
     }
     let mut body = Vec::new();
-    while let Some(chunk) = resp.chunk().await? {
+    while let Some(chunk) = resp.chunk().await.map_err(|e| {
+        let e = e.without_url();
+        log::warn!("calendar feed {host}: {e}");
+        Error::Network(e.to_string())
+    })? {
         body.extend_from_slice(&chunk);
         if body.len() > MAX_BYTES {
             return Err(Error::Other("the calendar file is too large".into()));

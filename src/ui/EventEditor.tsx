@@ -39,6 +39,7 @@ import { ChevronRight, Close, External, MapPin, Paperclip, Video, Warning } from
 import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
 import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
+import { plainText } from "../shared/lib/plain-text";
 
 const formatWhen = (e: CalendarEvent): string => {
   if (e.allDay) {
@@ -52,18 +53,6 @@ const formatWhen = (e: CalendarEvent): string => {
     : `${formatFullDate(e.start)}, ${formatTime(e.start)} — ${formatFullDate(e.end)}, ${formatTime(e.end)}`;
 };
 
-// Google stores the description either as text or as simple HTML: show it as text
-const plainText = (html: string): string =>
-  html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|div|li)>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .trim();
 
 type DeleteProps = {
   busy: boolean;
@@ -671,7 +660,7 @@ const EventForm = () => {
         <input
           type="date"
           value={draft.startDate}
-          onChange={(e) => e.target.value && change({ startDate: e.target.value })}
+          onChange={(e) => change({ startDate: e.target.value })}
           aria-label={t.editor.startDate}
         />
         {!draft.allDay && (
@@ -679,7 +668,7 @@ const EventForm = () => {
             type="time"
             value={draft.startTime}
             step={300}
-            onChange={(e) => e.target.value && change({ startTime: e.target.value })}
+            onChange={(e) => change({ startTime: e.target.value })}
             aria-label={t.editor.startTime}
           />
         )}
@@ -687,7 +676,7 @@ const EventForm = () => {
         <input
           type="date"
           value={draft.endDate}
-          onChange={(e) => e.target.value && change({ endDate: e.target.value })}
+          onChange={(e) => change({ endDate: e.target.value })}
           aria-label={t.editor.endDate}
         />
         {!draft.allDay && (
@@ -695,7 +684,7 @@ const EventForm = () => {
             type="time"
             value={draft.endTime}
             step={300}
-            onChange={(e) => e.target.value && change({ endTime: e.target.value })}
+            onChange={(e) => change({ endTime: e.target.value })}
             aria-label={t.editor.endTime}
           />
         )}

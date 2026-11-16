@@ -2,6 +2,7 @@ import { createEffect, createEvent, createStore, sample } from "effector";
 import { logError } from "../shared/lib/log";
 import { t } from "../shared/i18n";
 import {
+  bodyBaseline,
   deleteOccurrence,
   draftInstant,
   draftZone,
@@ -54,14 +55,15 @@ export const duplicateClicked = createEvent();
 /** Delete on a selected event: the card opens with the "Press again to delete" button */
 export const deleteArmed = createEvent();
 
-type Change = { draft: EventDraft; scope: Scope };
+/** session — which opening of the form the save belongs to (see $session) */
+type Change = { draft: EventDraft; scope: Scope; session?: number };
 
 export const saveFx = createEffect<Change, void, AppError>(({ draft, scope }) => saveEvent(draft, scope));
 
 /** dragging in the grid: save the new time right away, without the form; for a series — only this occurrence */
 export const eventMoved = createEvent<{ event: CalendarEvent; start: Date; end: Date }>();
 export const moveFx = createEffect<{ event: CalendarEvent; start: Date; end: Date }, void, AppError>(
-  ({ event, start, end }) => saveEvent(fromEvent({ ...event, start, end })),
+  ({ event, start, end }) => saveEvent(movedDraft(event, start, end)),
 );
 export const deleteFx = createEffect<Change, void, AppError>(({ draft, scope }) => deleteOccurrence(draft, scope));
 /** Deletion chosen: the card closes, the event disappears from the screen, and goes to Google
@@ -88,6 +90,19 @@ export const $series = createStore<{ id: string; lines: string[] | null; failed:
 /** Draft from an event. Time in the form follows the event's time zone clock, so that on save
  *  and drag the time zone from Google isn't replaced with the system one */
 export const fromEvent = (e: CalendarEvent, series?: string[] | null): EventDraft => {
+  const draft = eventDraft(e, series);
+  return { ...draft, baseline: bodyBaseline(draft) };
+};
+
+/** Draft of a move in the grid or its undo: only start and end go to Google,
+ *  the other fields stay as they are there now */
+export const movedDraft = (e: CalendarEvent, start: Date, end: Date): EventDraft => {
+  const draft = fromEvent({ ...e, start, end });
+  const { start: _start, end: _end, ...rest } = draft.baseline ?? {};
+  return { ...draft, baseline: rest };
+};
+
+const eventDraft = (e: CalendarEvent, series?: string[] | null): EventDraft => {
   const zone = e.timeZone ?? localTimeZone();
   // all-day event — just dates, it needs no time zone
   const start = e.allDay ? e.start : wallClock(e.start, zone);
@@ -136,6 +151,7 @@ export const duplicateDraft = (e: CalendarEvent, writable: string[]): EventDraft
   delete draft.originalStart;
   delete draft.originalRecurrence;
   delete draft.htmlLink;
+  delete draft.baseline;
   return {
     ...draft,
     calendarId: writable.includes(e.calendarId) ? e.calendarId : (writable[0] ?? e.calendarId),
@@ -206,19 +222,46 @@ export const applyChange = (draft: EventDraft, patch: Partial<EventDraft>): Even
   if (!startChanged) return "allDay" in patch ? followRule(draft, next) : next;
 
   if (next.allDay) {
+    if (!validDate(next.startDate)) return next;
     const span = daysBetween(fromDateKey(draft.startDate), fromDateKey(draft.endDate));
     const start = fromDateKey(next.startDate);
     return followRule(draft, { ...next, endDate: toDateKey(addDays(start, Math.max(0, span))) });
   }
+  // the start is being typed or was cleared: the end stays as is, validate() will show the error
+  if (!validDate(next.startDate) || (!next.allDay && !validTime(next.startTime))) return next;
   const oldStart = combineDateTime(draft.startDate, draft.startTime);
   const oldEnd = combineDateTime(draft.endDate, draft.endTime);
-  const duration = Math.max(15, (oldEnd.getTime() - oldStart.getTime()) / 60_000);
+  const span = (oldEnd.getTime() - oldStart.getTime()) / 60_000;
+  const duration = Number.isFinite(span) ? Math.max(15, span) : 60;
   const end = addMinutes(combineDateTime(next.startDate, next.startTime), duration);
   return followRule(draft, { ...next, endDate: toDateKey(end), endTime: toTimeKey(end) });
 };
 
+/** "2026-02-30" is not a date: Date would quietly turn it into March 2 */
+const validDate = (key: string): boolean => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!m) return false;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+};
+
+const validTime = (key: string): boolean => {
+  const m = /^(\d{2}):(\d{2})$/.exec(key);
+  return Boolean(m && +m[1] <= 23 && +m[2] <= 59);
+};
+
+/** the time zone clock never shows this time (the hour skipped when switching to summer time) */
+const skippedTime = (d: EventDraft, bound: "start" | "end"): boolean => {
+  // the form shows both start and end by the clock of the draft time zone
+  const wall = wallClock(draftInstant(d, bound), draftZone(d));
+  return toDateKey(wall) !== d[`${bound}Date`] || toTimeKey(wall) !== d[`${bound}Time`];
+};
+
 export const validate = (d: EventDraft): string | null => {
   if (!d.calendarId) return t.errors.noWritableCalendar;
+  if (!validDate(d.startDate) || !validDate(d.endDate)) return t.errors.checkDateTime;
+  if (!d.allDay && (!validTime(d.startTime) || !validTime(d.endTime))) return t.errors.checkDateTime;
+  if (!d.allDay && (skippedTime(d, "start") || skippedTime(d, "end"))) return t.errors.checkDateTime;
   const start = d.allDay ? fromDateKey(d.startDate) : draftInstant(d, "start");
   const end = d.allDay ? fromDateKey(d.endDate) : draftInstant(d, "end");
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return t.errors.checkDateTime;
@@ -226,10 +269,33 @@ export const validate = (d: EventDraft): string | null => {
   return null;
 };
 
+/** Which opening of the card it is. A save that was still running when the card closed
+ *  must not close the next opened event or new draft when it finishes */
+const $session = createStore(0);
+const savedHere = sample({
+  clock: saveFx.done,
+  source: $session,
+  filter: (session, { params }) => params.session === undefined || params.session === session,
+});
+const failedHere = sample({
+  clock: saveFx.fail,
+  source: $session,
+  filter: (session, { params }) => params.session === undefined || params.session === session,
+  fn: (_, { error }) => error,
+});
+// the card of that save is already closed: its error goes to the bar above the calendar
+sample({
+  clock: saveFx.fail,
+  source: $session,
+  filter: (session, { params }) => params.session !== undefined && params.session !== session,
+  fn: (_, { error }) => t.errors.changeFailed(error.message),
+  target: actionFailed,
+});
+
 /** event opened for viewing (before switching to edit) */
 export const $opened = createStore<CalendarEvent | null>(null)
   .on(eventOpened, (_, e) => e)
-  .reset([slotClicked, createClicked, draftOpened, editorClosed, saveFx.done, deleteRequested]);
+  .reset([slotClicked, createClicked, draftOpened, editorClosed, savedHere, deleteRequested]);
 
 /** viewing an existing event or the edit/create form */
 export const $mode = createStore<"view" | "edit">("view")
@@ -247,7 +313,7 @@ export const $draft = createStore<EventDraft | null>(null)
       ? { ...d, recurrence: result, originalRecurrence: result }
       : d,
   )
-  .reset([editorClosed, saveFx.done, deleteRequested]);
+  .reset([editorClosed, savedHere, deleteRequested]);
 
 /** card opened with the Delete key: the delete button is already focused, Enter deletes */
 export const $deleteArmed = createStore(false)
@@ -274,6 +340,7 @@ sample({
 $opened.on(rsvpFx.done, (e, { params }) => (e && e.key === params.event.key ? withResponse(e, params.status) : e));
 $opened.reset(duplicated);
 $mode.on(duplicated, () => "edit");
+$session.on([eventOpened, slotClicked, createClicked, draftOpened, editorClosed, duplicated], (n) => n + 1);
 
 sample({
   clock: eventOpened,
@@ -312,14 +379,15 @@ sample({
 
 /** the question of which series occurrences to apply save or delete to is open */
 export const $askScope = createStore<"save" | "delete" | null>(null)
-  // not via scopeChosen: the answer is still needed to pick save or delete
-  .reset([saveFx, deleteRequested, scopeCancelled, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
+  // not via scopeChosen: the answer is still needed to pick save or delete.
+  // A change in the form withdraws the question: Save checks the form again
+  .reset([saveFx, deleteRequested, scopeCancelled, draftChanged, eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, duplicated]);
 
 /** the rule in the form was changed: then editing is possible only for "this and following" */
 export const $recurrenceEdited = $draft.map((d) => (d ? recurrenceEdited(d) : false));
 
 export const $editorError = createStore<string | null>(null)
-  .on([saveFx.failData, rsvpFx.failData], (_, e) => e.message)
+  .on([failedHere, rsvpFx.failData], (_, e) => e.message)
   .reset([eventOpened, slotClicked, createClicked, draftOpened, editClicked, editCancelled, editorClosed, saveFx, deleteRequested, duplicated]);
 
 // deletion goes to Google when the card is already closed: its error goes to the bar above the calendar
@@ -353,9 +421,9 @@ sample({
 
 sample({
   clock: saveClicked,
-  source: { draft: $draft, ok: $canSave },
+  source: { draft: $draft, ok: $canSave, session: $session },
   filter: ({ draft, ok }) => ok && !draft?.recurringEventId,
-  fn: ({ draft }) => ({ draft: draft as EventDraft, scope: "this" as const }),
+  fn: ({ draft, session }) => ({ draft: draft as EventDraft, scope: "this" as const, session }),
   target: saveFx,
 });
 
@@ -375,11 +443,12 @@ sample({
   target: deleteRequested,
 });
 
+// the draft is checked again: the question doesn't let an invalid form through
 sample({
   clock: scopeChosen,
-  source: { ask: $askScope, draft: $draft },
-  filter: ({ ask, draft }) => ask === "save" && Boolean(draft),
-  fn: ({ draft }, scope) => ({ draft: draft as EventDraft, scope }),
+  source: { ask: $askScope, draft: $draft, ok: $canSave, session: $session },
+  filter: ({ ask, draft, ok }) => ask === "save" && Boolean(draft) && ok,
+  fn: ({ draft, session }, scope) => ({ draft: draft as EventDraft, scope, session }),
   target: saveFx,
 });
 

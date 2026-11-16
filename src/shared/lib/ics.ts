@@ -171,8 +171,12 @@ export const parseTime = (
   if (!m) return null;
   const [, y, mo, d, h, mi, s, z] = m;
   const base = { y: Number(y), mo: Number(mo), d: Number(d) };
+  // «20260230» is not a date: Date would quietly turn it into March 2
+  if (base.mo < 1 || base.mo > 12 || base.d < 1 || base.d > new Date(Date.UTC(base.y, base.mo, 0)).getUTCDate()) return null;
   if (h === undefined || params.VALUE === "DATE") return base;
   const time = { h: Number(h), mi: Number(mi), s: Number(s ?? 0) };
+  // a leap second (60) is allowed by RFC 5545
+  if (time.h > 23 || time.mi > 59 || time.s > 60) return null;
   if (z) return { ...base, time, utc: true };
   const zone = zoneOf(params.TZID);
   if (zone) return { ...base, time, zone };

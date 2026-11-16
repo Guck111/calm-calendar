@@ -92,7 +92,7 @@ describe("event attachments", () => {
   it("attachments of someone else's meeting are left alone", async () => {
     const theirs = event({ organizer: { email: "boss@example.com" } });
     expect(fromEvent(theirs).attachments).toBeUndefined();
-    await saveEvent(fromEvent(theirs));
+    await saveEvent({ ...fromEvent(theirs), title: "Новое" });
     expect(call("PATCH")?.[4]).not.toHaveProperty("attachments");
   });
 

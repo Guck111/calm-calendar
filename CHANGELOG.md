@@ -4,6 +4,15 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### Fixed
+
+- **Editing an event** sends Google only the fields you changed, so a new title saved from an open form no longer brings back an old time that was changed in Google meanwhile. Moving an event sends only its time.
+- **The event form** no longer saves the old date or time when a field was cleared, and does not accept a date that does not exist or a time skipped by the switch to summer time: it asks to check the date and time. Changing a field while "This event / This and following" is shown hides the question, so the form is checked again.
+- **Closing the form while it saves** no longer closes the next event you open when the save finishes; if that save fails, the message shows above the calendar.
+- **Quick add** with a time the clock does not have ("25:30") asks to check the time instead of creating an all-day event.
+- **Calendar subscriptions (.ics)**: an impossible date like 30 February is skipped instead of moving to March; a failed download no longer writes the private link to the log.
+- **Event descriptions**: text in angle brackets like "a < b > c" is shown as typed.
+
 ## 0.12.1 — 2026-11-16
 
 ### Fixed

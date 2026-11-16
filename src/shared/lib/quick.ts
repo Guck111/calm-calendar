@@ -47,8 +47,14 @@ export const parseQuick = (
   language: Lang = uiLang,
 ): QuickResult => {
   const text = normalizeInput(input);
-  return PARSERS[phraseLang(text, language)](text, now, calendars);
+  const result = PARSERS[phraseLang(text, language)](text, now, calendars);
+  // «в 25:30» is not dropped quietly turning the event into an all-day one: the hint asks to check the time
+  return impossibleClock(text) ? { ...result, start: new Date(NaN), end: new Date(NaN) } : result;
 };
+
+/** a time written with a colon that the clock doesn't have: «25:30», «9:75» */
+const impossibleClock = (text: string): boolean =>
+  [...text.matchAll(/(?<!\d)(\d{1,2}):(\d{2})(?!\d)/g)].some((m) => Number(m[1]) > 23 || Number(m[2]) > 59);
 
 export const hasValidQuickDate = (r: QuickResult): boolean => !Number.isNaN(r.start.getTime());
 
