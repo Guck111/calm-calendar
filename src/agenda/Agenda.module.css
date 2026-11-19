@@ -69,7 +69,7 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: minmax(96px, max-content) minmax(0, 1fr);
   align-items: baseline;
   gap: 8px;
   padding: 5px 6px;
