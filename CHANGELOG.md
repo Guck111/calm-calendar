@@ -4,6 +4,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+## 0.12.4 — 2026-11-19
+
 ### Fixed
 
 - Tray agenda: a long 12-hour time like "10:00 AM–10:30 AM" no longer runs into the event title.
