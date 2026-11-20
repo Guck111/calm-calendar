@@ -36,27 +36,27 @@ Expected rating: 3+ / Everyone.
 
 **Short description** (shown in some places instead of the full description):
 
-> A calm, ad-free calendar for Windows. Your Google Calendar by day, week, month or as a list, with a desktop widget, quick add from any app and reminders that are hard to miss.
+> Your Google Calendar as an ad-free Windows app: day, week, month and list views, a desktop widget, quick add from any app and reminders that are hard to miss.
 
 **Description:**
 
-> Calm Calendar is a quiet, fast and ad-free calendar for Windows that works with your Google Calendar.
+> Calm Calendar puts your Google Calendar on the Windows desktop, with no ads and no browser tab to keep open.
 >
-> See your plans by day, week or month, or as a schedule list. Drag events to move them or change their length, and undo with Ctrl+Z. Keep several Google accounts in one window: events that clash between them are marked.
+> See your plans by day, week or month, or as a list of the next four weeks. Drag an event to move it or change its length, and Ctrl+Z puts it back. Several Google accounts fit in one window, and when events from two accounts clash, both are marked in red.
 >
-> Add events in plain words: "tomorrow 7pm gym 50 min #personal" creates the event in the right calendar at the right time. Press Ctrl+Alt+Space in any app to add one without opening the calendar.
+> Type events the way you would say them: "tomorrow 7pm gym 50 min #personal" becomes a 50-minute event at 7 pm tomorrow in your Personal calendar. Ctrl+Alt+Space opens the same line over any app, so you don't have to switch to the calendar.
 >
-> Join a call with one button from the event, the desktop widget, the tray or the reminder. Google Calendar reminders arrive as Windows notifications, and if you want, a small window on top of everything appears a minute before the start.
+> Calls get a Join button in the event, the desktop widget, the tray and the reminder. Google Calendar reminders arrive as Windows notifications. If notifications are easy to ignore, turn on a small window that appears over everything a minute before the start.
 >
-> The desktop widget shows a clock, a countdown to your next event, a month and your upcoming events. A click on the tray icon shows today and tomorrow.
+> The desktop widget shows a clock, a countdown to your next event, the month and what comes next. Click the tray icon to see today and tomorrow.
 >
-> Repeating events, guests and replies to invitations, a second time zone, travel time, public holidays of 76 countries and .ics subscriptions are all there. Copy your free time as text and send it in a messenger.
+> Also there: repeating events, guests and replies to invitations, a second time zone, travel time, public holidays for 76 countries and .ics subscriptions. When someone asks when you're free, copy your free slots as text and paste them into the chat.
 >
-> Pick one of five styles, each with a light and a dark version, choose your fonts and work from the keyboard: press ? to see every shortcut.
+> Five styles, each in light and dark, and fonts you choose. Most things work from the keyboard; press ? for the full list.
 >
-> Private by design: Calm Calendar has no servers of its own, no ads, no tracking and no analytics. Your calendar data goes only between your PC and Google. When you are offline, the app shows the schedule it loaded last.
+> Calm Calendar has no servers of its own and sends no analytics: your calendar data goes only between your PC and Google. Offline, it shows the schedule it loaded last.
 >
-> Requires a Google account. The interface is available in 13 languages: English, Spanish, French, Portuguese, German, Russian, Ukrainian, Belarusian, Japanese, Chinese, Hindi, Arabic and Bengali, and quick add understands each of them.
+> Requires a Google account. The interface and quick add work in 13 languages: English, Spanish, French, Portuguese, German, Russian, Ukrainian, Belarusian, Japanese, Chinese, Hindi, Arabic and Bengali.
 
 **Product features** (one per line, up to 20):
 
@@ -74,11 +74,11 @@ Expected rating: 3+ / Everyone.
 - Second time zone and a time zone for each event
 - Public holidays of 76 countries and week numbers
 - Subscriptions to .ics calendars
-- Copy your free time as text for a messenger
+- Copy your free slots as text to paste into a chat
 - Five styles in light and dark, your own fonts, glass effect
 - Keyboard shortcuts and a command menu (Ctrl+K)
 - Works offline with the last loaded schedule
-- No ads, no tracking, no servers of ours
+- No ads and no analytics
 - Interface and quick add in 13 languages, including Arabic written right to left
 
 **Search terms** (up to 7):
@@ -99,27 +99,27 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> Спокойный календарь для Windows без рекламы. Ваш Google Календарь по дням, неделям, месяцам и списком, виджет на рабочем столе, быстрое создание из любого приложения и напоминания, которые трудно пропустить.
+> Google Календарь на рабочем столе Windows, без рекламы: день, неделя, месяц и список, виджет, быстрое создание из любой программы и напоминания, которые трудно пропустить.
 
 **Description:**
 
-> Calm Calendar: тихий, быстрый календарь для Windows без рекламы, который работает с вашим Google Календарём.
+> Calm Calendar переносит ваш Google Календарь на рабочий стол Windows: без рекламы и без вкладки браузера, которую надо держать открытой.
 >
-> Смотрите планы на день, неделю, месяц или списком. Перетаскивайте события, чтобы перенести их или изменить длительность, а Ctrl+Z отменит действие. Несколько аккаунтов Google работают в одном окне, и пересечения событий между ними отмечены.
+> Планы видны по дням, неделям, месяцам или списком на четыре недели вперёд. Событие можно перетащить на другое время или растянуть, а Ctrl+Z вернёт его обратно. Несколько аккаунтов Google помещаются в одно окно, и если события из разных аккаунтов накладываются друг на друга, оба помечаются красным.
 >
-> Создавайте события обычными словами: «завтра 19:00 английский 50 мин #личное», и событие появится в нужном календаре в нужное время. Ctrl+Alt+Space в любом приложении добавит событие, не открывая календарь.
+> События пишутся так, как вы сказали бы их вслух: «завтра 19:00 английский 50 мин #личное» станет событием на 50 минут завтра в 19:00 в календаре «Личное». Ctrl+Alt+Space открывает ту же строку поверх любой программы, переключаться на календарь не нужно.
 >
-> Подключайтесь к звонку одной кнопкой из события, виджета, трея или напоминания. Напоминания Google Календаря приходят уведомлениями Windows, а по желанию за минуту до начала поверх всех окон появится небольшое окно, которое трудно пропустить.
+> У звонков есть кнопка «Подключиться» в событии, виджете, трее и напоминании. Напоминания Google Календаря приходят уведомлениями Windows. Если уведомления легко пропустить, включите небольшое окно, которое появится поверх всех окон за минуту до начала.
 >
-> Виджет на рабочем столе показывает часы, отсчёт до следующего события, месяц и ближайшие дела. Щелчок по значку в трее покажет дела на сегодня и завтра.
+> Виджет на рабочем столе показывает часы, отсчёт до следующего события, месяц и ближайшие дела. Щелчок по значку в трее покажет сегодня и завтра.
 >
-> Повторяющиеся события, гости и ответы на приглашения, второй часовой пояс, время в дороге, праздники 76 стран и подписки на календари .ics уже на месте. Свободное время можно скопировать текстом и отправить в мессенджер.
+> Ещё есть повторяющиеся события, гости и ответы на приглашения, второй часовой пояс, время в дороге, праздники 76 стран и подписки на календари .ics. Когда спрашивают, когда вы свободны, скопируйте свободные окна текстом и вставьте в чат.
 >
-> Выберите один из пяти стилей, у каждого есть светлый и тёмный вариант, подберите шрифты и работайте с клавиатуры: клавиша ? покажет все сочетания.
+> Пять стилей, у каждого светлый и тёмный вариант, и шрифты на ваш выбор. Большинство действий доступно с клавиатуры, полный список откроется по клавише ?.
 >
-> Конфиденциальность по умолчанию: у Calm Calendar нет своих серверов, рекламы, слежки и аналитики. Данные календаря передаются только между вашим компьютером и Google. Без сети приложение показывает последнее загруженное расписание.
+> У Calm Calendar нет своих серверов, и он не отправляет никакой аналитики: данные календаря идут только между вашим компьютером и Google. Без сети приложение показывает последнее загруженное расписание.
 >
-> Нужен аккаунт Google. Интерфейс на 13 языках: русском, украинском, белорусском, английском, испанском, французском, португальском, немецком, японском, китайском, хинди, арабском и бенгальском, и быстрое создание понимает каждый из них.
+> Нужен аккаунт Google. Интерфейс и быстрое создание работают на 13 языках: русском, украинском, белорусском, английском, испанском, французском, португальском, немецком, японском, китайском, хинди, арабском и бенгальском.
 
 **Product features:**
 
@@ -137,11 +137,11 @@ Expected rating: 3+ / Everyone.
 - Второй часовой пояс и свой пояс у каждого события
 - Праздники 76 стран и номера недель
 - Подписки на календари .ics
-- Свободное время текстом для мессенджера
+- Свободные окна текстом, чтобы вставить в чат
 - Пять стилей в светлом и тёмном вариантах, свои шрифты, эффект стекла
 - Сочетания клавиш и меню команд (Ctrl+K)
 - Работа без сети по последним загруженным данным
-- Без рекламы, слежки и своих серверов
+- Без рекламы и аналитики
 - Интерфейс и быстрое создание на 13 языках, включая арабский справа налево
 
 **Search terms:** `календарь`, `google календарь`, `виджет`, `планировщик`, `расписание`, `напоминания`, `ежедневник`
