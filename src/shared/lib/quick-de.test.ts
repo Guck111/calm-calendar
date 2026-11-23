@@ -39,7 +39,7 @@ describe("quick add in German", () => {
     expect(de("Mi 20 Uhr Training").start).toEqual(at(4, 20));
     expect(de("nächsten Mittwoch Review")).toMatchObject({ title: "Review", allDay: true, start: at(11, 0) });
     expect(de("am Samstag Geburtstag von Lena")).toMatchObject({ title: "Geburtstag von Lena", allDay: true, start: at(7, 0) });
-    expect(de("so wie besprochen")).toMatchObject({ title: "so wie besprochen", allDay: true, start: at(4, 0) });
+    expect(de("so wie besprochen")).toMatchObject({ title: "So wie besprochen", allDay: true, start: at(4, 0) });
   });
 
   it("Daten; ein vergangenes Datum ohne Jahr ist im nächsten Jahr", () => {

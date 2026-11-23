@@ -263,6 +263,7 @@ export const bn: Dict = {
     forward: "সামনে",
     refresh: "রিফ্রেশ",
     view: "ভিউ",
+    sidebar: "সাইড প্যানেল",
   },
   widget: {
     openDay: "ক্যালেন্ডারে দিনটি খুলুন",
@@ -305,6 +306,12 @@ export const bn: Dict = {
     trayHint: "টাস্কবারের কোণে ক্যালেন্ডার আইকনে ক্লিক করুন।",
     done: "হয়ে গেছে",
     command: "Calm Calendar কী পারে",
+  },
+  rating: {
+    title: "Calm Calendar ভালো লাগছে?",
+    text: "Microsoft Store-এ রেটিং অন্যদের অ্যাপটি খুঁজে পেতে সাহায্য করে। এতে কয়েক সেকেন্ড লাগে।",
+    rate: "Store-এ রেটিং দিন",
+    later: "এখন নয়",
   },
   shortcuts: {
     title: "কিবোর্ড শর্টকাট",

@@ -287,6 +287,7 @@ export const uk: Dict = {
     forward: "Уперед",
     refresh: "Оновити",
     view: "Вигляд",
+    sidebar: "Бічна панель",
   },
   widget: {
     openDay: "Відкрити день у календарі",
@@ -329,6 +330,12 @@ export const uk: Dict = {
     trayHint: "Клацніть значок календаря в куті панелі завдань.",
     done: "Готово",
     command: "Що вміє Calm Calendar",
+  },
+  rating: {
+    title: "Подобається Calm Calendar?",
+    text: "Оцінка в Microsoft Store допомагає іншим знайти застосунок. Це займе кілька секунд.",
+    rate: "Оцінити в Store",
+    later: "Не зараз",
   },
   shortcuts: {
     title: "Поєднання клавіш",

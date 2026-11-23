@@ -28,6 +28,7 @@ import { EventEditor } from "../ui/EventEditor";
 import { CommandMenu } from "../ui/CommandMenu";
 import { UndoToast } from "../ui/UndoToast";
 import { Welcome } from "../ui/Welcome";
+import { RateCard } from "../ui/RateCard";
 import { Shortcuts } from "../ui/Shortcuts";
 import { MonthView } from "../ui/MonthView";
 import { ScheduleView } from "../ui/ScheduleView";
@@ -203,6 +204,7 @@ export const App = () => {
       <EventEditor />
       <UndoToast />
       <Welcome />
+      <RateCard />
       <CommandMenu />
       <Shortcuts />
     </div>

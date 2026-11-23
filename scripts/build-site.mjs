@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = join(ROOT, "site");
 const BASE_URL = "https://calmcalendar.co.uk";
+const STORE_URL = "https://apps.microsoft.com/detail/9N5HZ8P1QRMW";
 const VERSION = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")).version;
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -101,6 +102,7 @@ const jsonLd = (lang, s) => {
       availableLanguage: CODES.map((l) => LANGS[l].hreflang),
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      installUrl: STORE_URL,
       downloadUrl: "https://github.com/Guck111/calm-calendar/releases/latest",
       image: `${BASE_URL}/icon-512.png`,
       screenshot: ["week", "month", "quick-add", "widget"].map((n) => `${BASE_URL}/screenshot-${n}.png`),
@@ -128,6 +130,7 @@ const write = (html, lang, s, file = "") => {
     .replaceAll("{{OG_LOCALE}}", info.locale)
     .replaceAll("{{ROOT}}", lang === "en" ? "" : "../")
     .replaceAll("{{SELF_HOME}}", "./")
+    .replaceAll("{{STORE_URL}}", STORE_URL)
     .replaceAll("{{HREFLANG_LINKS}}", hreflangLinks(file))
     .replaceAll("{{LANG_SWITCH_LINKS}}", langSwitch(lang, file));
   for (const [key, value] of Object.entries(s)) html = html.replaceAll(`{{${key}}}`, value);

@@ -4,6 +4,17 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### New
+
+- **Hide the side panel**: a button at the start of the toolbar hides the panel with the mini month and the calendar list, so the calendar takes the whole window. The choice is remembered. While the panel is hidden, "+" on the toolbar creates an event and N brings the panel back for quick add.
+- **A rating in Microsoft Store**: in the Store version, after two weeks of use a small card in the corner asks once to rate the app. "Rate in Store" opens the Store's own dialog, "Not now" closes the card, and it does not come back either way.
+
+### Changed
+
+- **A narrow window** no longer cuts the toolbar or the dates in its title: the four views become one menu, and in the narrowest window the side panel folds away and opens over the calendar by its button.
+- **The event card opens next to its event** instead of the middle of the window, and the calendar around it stays visible. The form for editing still opens in the middle.
+- **Quick add** starts the title with a capital letter: "tomorrow 7pm dinner with Ola" becomes "Dinner with Ola". Names and words like "iPhone" stay as you typed them.
+
 ## 0.12.4 — 2026-11-19
 
 ### Fixed

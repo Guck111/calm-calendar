@@ -267,6 +267,7 @@ export const fr: Dict = {
     forward: "Suivant",
     refresh: "Actualiser",
     view: "Affichage",
+    sidebar: "Panneau latéral",
   },
   widget: {
     openDay: "Ouvrir le jour dans l’agenda",
@@ -309,6 +310,12 @@ export const fr: Dict = {
     trayHint: "Cliquez sur l'icône du calendrier dans le coin de la barre des tâches.",
     done: "Terminé",
     command: "Ce que sait faire Calm Calendar",
+  },
+  rating: {
+    title: "Vous aimez Calm Calendar ?",
+    text: "Une note dans le Microsoft Store aide d'autres personnes à trouver l'application. Cela prend quelques secondes.",
+    rate: "Noter dans le Store",
+    later: "Pas maintenant",
   },
   shortcuts: {
     title: "Raccourcis clavier",

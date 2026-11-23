@@ -264,6 +264,7 @@ export const en: Dict = {
     forward: "Forward",
     refresh: "Refresh",
     view: "View",
+    sidebar: "Side panel",
   },
   widget: {
     openDay: "Open the day in the calendar",
@@ -306,6 +307,12 @@ export const en: Dict = {
     trayHint: "Click the calendar icon in the corner of the taskbar.",
     done: "Done",
     command: "What Calm Calendar can do",
+  },
+  rating: {
+    title: "Enjoying Calm Calendar?",
+    text: "A rating in Microsoft Store helps other people find the app. It takes a few seconds.",
+    rate: "Rate in Store",
+    later: "Not now",
   },
   shortcuts: {
     title: "Keyboard shortcuts",

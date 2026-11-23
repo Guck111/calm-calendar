@@ -5,12 +5,12 @@ import { test, expect, openApp, eventBlock, rangeText, dayOfBlock, dayNumber, es
 
 const EXAMPLES: Record<Lang, { text: string; title: string }> = {
   en: { text: "tomorrow 7pm English class 50 min", title: "English class" },
-  ru: { text: "завтра 19:00 английский 50 мин", title: "английский" },
-  uk: { text: "завтра 19:00 англійська 50 хв", title: "англійська" },
-  be: { text: "заўтра 19:00 англійская 50 хв", title: "англійская" },
-  es: { text: "mañana a las 19:00 clase de inglés 50 min", title: "clase de inglés" },
-  fr: { text: "demain 19h cours d'anglais 50 min", title: "cours d'anglais" },
-  pt: { text: "amanhã 19h aula de inglês 50 min", title: "aula de inglês" },
+  ru: { text: "завтра 19:00 английский 50 мин", title: "Английский" },
+  uk: { text: "завтра 19:00 англійська 50 хв", title: "Англійська" },
+  be: { text: "заўтра 19:00 англійская 50 хв", title: "Англійская" },
+  es: { text: "mañana a las 19:00 clase de inglés 50 min", title: "Clase de inglés" },
+  fr: { text: "demain 19h cours d'anglais 50 min", title: "Cours d'anglais" },
+  pt: { text: "amanhã 19h aula de inglês 50 min", title: "Aula de inglês" },
   de: { text: "morgen 19 Uhr Englischkurs 50 min", title: "Englischkurs" },
   ja: { text: "明日19時 英会話 50分", title: "英会話" },
   zh: { text: "明天晚上7点 英语课 50分钟", title: "英语课" },
@@ -58,13 +58,13 @@ test("quick add: a click on the preview creates the event; a Russian phrase in t
   await openApp(page);
   const input = page.getByRole("textbox", { name: t.quick.label });
   await input.fill("занятие спортом в 12:00, 14");
-  const preview = page.getByRole("button", { name: /занятие спортом/ });
+  const preview = page.getByRole("button", { name: /Занятие спортом/ });
   await expect(preview).toContainText("14 November · 12:00–13:00");
   // the hint says that a click creates too
   await expect(preview).toContainText(t.quick.keys);
   await preview.click();
   await expect(input).toHaveValue("");
-  const block = eventBlock(page, "занятие спортом");
+  const block = eventBlock(page, "Занятие спортом");
   const range = await rangeText(page, 14, [12, 0], [13, 0]);
   await expect(block).toHaveAttribute("title", new RegExp(`^${escapeRe(range)} `));
   expect(await dayOfBlock(page, block)).toBe(await dayNumber(page, 14));

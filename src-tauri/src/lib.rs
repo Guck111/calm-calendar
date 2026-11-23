@@ -10,6 +10,7 @@ mod oauth;
 mod quick;
 mod reminders;
 mod settings;
+mod store;
 #[cfg(windows)]
 mod toast;
 
@@ -97,6 +98,18 @@ fn log_message(window: tauri::Window, level: String, message: String) {
 #[tauri::command]
 fn open_logs(app: AppHandle) -> Result<()> {
     logging::open_folder(&app)
+}
+
+/// Whether the app was installed from Microsoft Store: only that build asks for a rating
+#[tauri::command]
+async fn store_rating_available() -> bool {
+    store::is_store_build()
+}
+
+/// The Store's "Rate and review" dialog over the main window
+#[tauri::command]
+fn request_store_rating(app: AppHandle) {
+    store::request_rating(&app);
 }
 
 /// Open the main window from the widget or the tray agenda, on the needed day if necessary ("2026-11-04")
@@ -366,7 +379,9 @@ pub fn run() {
             close_settings,
             set_quick_hotkey,
             log_message,
-            open_logs
+            open_logs,
+            store_rating_available,
+            request_store_rating
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

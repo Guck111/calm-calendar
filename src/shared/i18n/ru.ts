@@ -293,6 +293,7 @@ export const ru = {
     forward: "Вперёд",
     refresh: "Обновить",
     view: "Вид",
+    sidebar: "Боковая панель",
   },
   widget: {
     openDay: "Открыть день в календаре",
@@ -335,6 +336,12 @@ export const ru = {
     trayHint: "Щёлкни значок календаря в углу панели задач.",
     done: "Готово",
     command: "Что умеет Calm Calendar",
+  },
+  rating: {
+    title: "Нравится Calm Calendar?",
+    text: "Оценка в Microsoft Store помогает другим найти приложение. Это займёт несколько секунд.",
+    rate: "Оценить в Store",
+    later: "Не сейчас",
   },
   shortcuts: {
     title: "Сочетания клавиш",

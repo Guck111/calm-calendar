@@ -257,6 +257,7 @@ export const zh: Dict = {
     forward: "下一页",
     refresh: "刷新",
     view: "视图",
+    sidebar: "侧边栏",
   },
   widget: {
     openDay: "在日历中打开这一天",
@@ -299,6 +300,12 @@ export const zh: Dict = {
     trayHint: "点击任务栏角落的日历图标。",
     done: "完成",
     command: "Calm Calendar 能做什么",
+  },
+  rating: {
+    title: "喜欢 Calm Calendar 吗？",
+    text: "在 Microsoft Store 中评分可以帮助更多人发现这款应用，只需几秒钟。",
+    rate: "去 Store 评分",
+    later: "暂不",
   },
   shortcuts: {
     title: "键盘快捷键",

@@ -278,6 +278,7 @@ export const ar: Dict = {
     forward: "التالي",
     refresh: "تحديث",
     view: "العرض",
+    sidebar: "اللوحة الجانبية",
   },
   widget: {
     openDay: "فتح اليوم في التقويم",
@@ -320,6 +321,12 @@ export const ar: Dict = {
     trayHint: "انقر أيقونة التقويم في زاوية شريط المهام.",
     done: "تم",
     command: "ما يستطيعه Calm Calendar",
+  },
+  rating: {
+    title: "هل يعجبك Calm Calendar؟",
+    text: "تقييمك في Microsoft Store يساعد الآخرين في العثور على التطبيق. يستغرق ذلك بضع ثوانٍ.",
+    rate: "قيّم في Store",
+    later: "ليس الآن",
   },
   shortcuts: {
     title: "اختصارات لوحة المفاتيح",

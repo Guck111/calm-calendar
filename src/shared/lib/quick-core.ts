@@ -140,6 +140,14 @@ export const cleanTitle = (text: string, prepositions: string): string =>
     .replace(new RegExp(`\\s+(?:${prepositions})$`, "iu"), "")
     .trim();
 
+/** «ужин с Олей» → «Ужин с Олей»; a first word with its own capitals («iPhone») is left as typed */
+export const capitalizeTitle = (title: string, locale: string): string => {
+  const firstWord = title.split(" ", 1)[0];
+  if (firstWord !== firstWord.toLocaleLowerCase(locale)) return title;
+  const first = [...title][0] ?? "";
+  return first.toLocaleUpperCase(locale) + title.slice(first.length);
+};
+
 const DEFAULT_MINUTES = 60;
 
 export type Parsed = {

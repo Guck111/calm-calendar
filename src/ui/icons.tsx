@@ -33,6 +33,20 @@ export const Refresh = ({ size = 16 }: P) => (
   </svg>
 );
 
+/** the side panel: a window with a strip at the start edge */
+export const Panel = ({ size = 16 }: P) => (
+  <svg {...base(size)} data-rtl-flip="">
+    <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2" />
+    <path d="M6 2.75v10.5" />
+  </svg>
+);
+
+export const ChevronDown = ({ size = 12 }: P) => (
+  <svg {...base(size)}>
+    <path d="M3.5 6 8 10.5 12.5 6" />
+  </svg>
+);
+
 export const Plus = ({ size = 16 }: P) => (
   <svg {...base(size)}>
     <path d="M8 3v10M3 8h10" />

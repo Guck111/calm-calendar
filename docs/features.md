@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-16 (edge cases of the form, quick add and .ics subscriptions).
+Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build).
 
 ## Contents
 
@@ -52,6 +52,8 @@ Last updated: 2026-11-16 (edge cases of the form, quick add and .ics subscriptio
 - Events that have ended are paler (opacity 0.55) in Day, Week, Month and Schedule, as in the tray agenda.
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
 - Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search (with a magnifier; below 1100 px it folds into the magnifier and opens on Ctrl+F, `/` or a click), free time, refresh, settings, view switch. The icon buttons keep their size; when space runs short the search folds first, then the title is shortened.
+- The side panel button at the start of the toolbar hides and shows the side panel (Create, quick add, the mini month, calendars). In a wide window the choice is remembered (`calm.sidebar` in localStorage); at 960 px and narrower the panel is folded and the button pulls it out over the calendar, where Esc or a click outside folds it back. While the panel is hidden the toolbar has a "+" button for a new event, and `N` brings the panel back with the cursor in quick add (`src/model/sidebar.ts`, `src/ui/Sidebar.tsx`).
+- At 1100 px and narrower the four view tabs become one button with a menu (Day, Week, Month, Schedule with their keys; arrows, Enter and Esc work in it), so the toolbar fits down to the smallest window of 760 px with the period title whole (`src/ui/ViewMenu.tsx`).
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
 - Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).
 - When Google does not answer (no network, Google busy or down: 429 and 5xx), the app tries again by itself after 5 seconds, 15 seconds and a minute, then goes on with the usual refresh. The error or "Offline" banner has a Retry button (`src/model/sync.ts`).
@@ -60,6 +62,7 @@ Last updated: 2026-11-16 (edge cases of the form, quick add and .ics subscriptio
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location (a click opens it in Google Maps in the browser; a link in the location field opens itself, `src/shared/lib/maps.ts`), guests with their answers, description, overlaps, the repeat rule, and "In Google".
+- The card opens next to its event, not in the middle of the window: after the event in reading direction (before it in Arabic), on the other side when there is no room, under or over a wide event; it never leaves the window and the calendar around it is not dimmed. With no room at any side, or when the event is not on screen (opened from search on another week), it opens in the middle as before. "Edit" moves to the form in the middle of the window (`src/shared/lib/beside.ts`, `src/ui/useBeside.ts`).
 - The form: title, all day, start and end date and time, repeat, calendar, location, description (hint "Agenda, links, notes"), "Add Google Meet video call", guests, and "More" with time zone, travel time, color and attachments. "More" is closed for a new event and opens by itself when the event has another zone, travel time, its own color or attachments; the closed line lists what is inside. Save, Cancel and Delete (and the error and the "this event or following" question) stay at the bottom of the form while it scrolls (`src/ui/EventEditor.tsx`).
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Saving an existing event sends Google only the fields changed in the form (start and end always together); with nothing changed no request goes out. So a change made in Google while the form was open stays, unless the same field was changed here too. A move in the grid, its Undo and Ctrl+K changes send only their own fields (`changedFields` and `patchEvent` in `src/shared/api/calendar.ts`).
@@ -129,6 +132,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 - Length: "50 min", "2h", "1.5 hours", "half an hour"; one hour by default; no time means all day.
 - `#work` picks a calendar by the start of its name, `@Gdynia` sets the location (`@Office_Gdynia` for a name with a space).
 - Digits of any script (Arabic-Indic, Devanagari, Bengali, full width) are understood.
+- The title starts with a capital letter: "tomorrow 7pm dinner with Ola" becomes "Dinner with Ola". Only the first letter changes; a first word with capitals of its own ("iPhone repair") stays as typed (`capitalizeTitle` in `src/shared/lib/quick-core.ts`).
 
 | Language | Example |
 |---|---|
@@ -181,7 +185,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 - Fonts (Settings → Style): one font for headings and numbers (period title, day numbers, the widget clock), one for text. "Style default" uses the style's pair: Segoe UI (Classic), Cormorant Garamond + Inter (Paper), Manrope (Obsidian), Unbounded + Onest (Showcase), Geist Mono + Geist (Monochrome). Unbounded and Cormorant Garamond are offered for headings only. The fonts are variable WOFF2 files from `@fontsource-variable` packages (SIL Open Font License 1.1), built into the app; letters a font lacks (Arabic, Devanagari, Bengali, Chinese, Japanese) come from the Windows fonts of that script. The choice is kept per computer, like the theme.
 - Glass effect (on by default): the Windows Acrylic backdrop in the main window and the widget; the main window turns opaque when it loses focus, as Windows does.
 - Right-to-left layout for Arabic: all spacing uses logical CSS properties.
-- The period title keeps its full length in a 1280 px window in every language; when space runs short the search field gets narrower first (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`).
+- The period title keeps its full length in every language down to the smallest window (760 px): the search field folds into a magnifier and the view tabs into a menu at 1100 px, the side panel folds away at 960 px (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`, `src/model/sidebar.ts`).
 
 ## Languages and regions
 
@@ -233,6 +237,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 
 - Installers for Windows (`.exe`, `.msi`) on GitHub Releases, and the Microsoft Store: https://apps.microsoft.com/detail/9N5HZ8P1QRMW (MSIX package, `docs/msix.md`). The website's main button leads to the Store page.
 - Starts with Windows if enabled in the tray menu (through a StartupTask in the Store package).
+- Rating in Microsoft Store, the Store build only (a package signed by the Store; the installers from GitHub never ask): two weeks after the first day of use a card "Enjoying Calm Calendar?" shows in the bottom corner of the main window, without taking the focus and not while the first-start card is open. "Rate in Store" opens the Store's own rating dialog over the window (`StoreContext.RequestRateAndReviewAppAsync`; when Windows refuses it, the app's review page in the Store app), "Not now" or the cross closes the card. After either answer it never shows again (`calm.rating` in localStorage: the first day and the answer). Nothing is sent anywhere by the app itself (`src/model/rating.ts`, `src/ui/RateCard.tsx`, `src-tauri/src/store.rs`). Not checked yet in a package installed from the Store: the dialog needs a Store-signed install.
 - What changed in each version: `CHANGELOG.md`.
 
 ## Not there yet
