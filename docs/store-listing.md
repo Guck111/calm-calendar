@@ -87,13 +87,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Settings in sections, with the app version and a "What's new" link
-> - "Write to us" in Settings → Help: a form for a suggestion, a problem or a question
-> - Hide the side panel and give the calendar the whole window
-> - The event card opens next to its event
-> - Quick add starts the title with a capital letter
-> - A narrow window no longer cuts the toolbar
-> - Fixes for the toolbar with the side panel open
+> - "What's new" under the app version in Settings opens the notes of your version.
+> - With the side panel open, the search and the view buttons no longer run off the edge of the window.
+> - In a narrow window the pulled-out side panel is no longer see-through with the glass effect or the Obsidian style.
 
 **Copyright and trademark info:** © 2026 Hushwhale
 
@@ -154,13 +150,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Настройки по разделам, с версией приложения и ссылкой «Что нового»
-> - «Написать нам» в Настройки → Помощь: форма для предложения, проблемы или вопроса
-> - Боковую панель можно скрыть, и календарь займёт всё окно
-> - Карточка события открывается рядом с ним
-> - Быстрое добавление пишет название с заглавной буквы
-> - Узкое окно больше не обрезает панель инструментов
-> - Исправления панели инструментов при открытой боковой панели
+> - «Что нового» под версией приложения в настройках открывает изменения вашей версии.
+> - При открытой боковой панели поиск и выбор вида больше не уходят за край окна.
+> - В узком окне выдвинутая боковая панель больше не просвечивает со стеклянным эффектом и стилем Obsidian.
 
 ## Ukrainian (uk-ua)
 
@@ -217,13 +209,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Налаштування за розділами, з версією застосунку та посиланням «Що нового»
-> - «Написати нам» у Налаштування → Допомога: форма для пропозиції, проблеми чи запитання
-> - Бічну панель можна сховати, і календар займе все вікно
-> - Картка події відкривається поруч із нею
-> - Швидке додавання пише назву з великої літери
-> - Вузьке вікно більше не обрізає панель інструментів
-> - Виправлення панелі інструментів при відкритій бічній панелі
+> - «Що нового» під версією застосунку в налаштуваннях відкриває зміни вашої версії.
+> - Коли бічна панель відкрита, пошук і вибір вигляду більше не виходять за край вікна.
+> - У вузькому вікні висунута бічна панель більше не просвічується зі скляним ефектом і стилем Obsidian.
 
 ## Belarusian (be-by)
 
@@ -280,13 +268,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Налады па раздзелах, з версіяй праграмы і спасылкай «Што новага»
-> - «Напісаць нам» у Налады → Дапамога: форма для прапановы, праблемы ці пытання
-> - Бакавую панэль можна схаваць, і каляндар зойме ўсё акно
-> - Картка падзеі адкрываецца побач з ёй
-> - Хуткае даданне піша назву з вялікай літары
-> - Вузкае акно больш не абразае панэль інструментаў
-> - Выпраўленні панэлі інструментаў пры адкрытай бакавой панэлі
+> - «Што новага» пад версіяй праграмы ў наладах адкрывае змены вашай версіі.
+> - Калі бакавая панэль адкрытая, пошук і выбар выгляду больш не выходзяць за край акна.
+> - У вузкім акне высунутая бакавая панэль больш не прасвечвае са шкляным эфектам і стылем Obsidian.
 
 ## Spanish (es-es)
 
@@ -343,13 +327,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Ajustes por secciones, con la versión de la app y un enlace a «Novedades»
-> - «Escríbenos» en Ajustes → Ayuda: un formulario para una sugerencia, un problema o una pregunta
-> - Oculta el panel lateral y el calendario ocupa toda la ventana
-> - La tarjeta del evento se abre junto al evento
-> - El añadido rápido empieza el título con mayúscula
-> - En una ventana estrecha la barra de herramientas ya no se corta
-> - Correcciones de la barra de herramientas con el panel lateral abierto
+> - «Novedades», bajo la versión de la app en Ajustes, abre los cambios de tu versión.
+> - Con el panel lateral abierto, la búsqueda y las vistas ya no se salen del borde de la ventana.
+> - En una ventana estrecha, el panel lateral desplegado ya no es transparente con el efecto cristal o el estilo Obsidian.
 
 ## French (fr-fr)
 
@@ -406,13 +386,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Paramètres par sections, avec la version de l'app et un lien « Nouveautés »
-> - « Nous écrire » dans Paramètres → Aide : un formulaire pour une suggestion, un problème ou une question
-> - Masquez le panneau latéral pour que le calendrier occupe toute la fenêtre
-> - La fiche d'un événement s'ouvre à côté de lui
-> - L'ajout rapide commence le titre par une majuscule
-> - Une fenêtre étroite ne coupe plus la barre d'outils
-> - Corrections de la barre d'outils quand le panneau latéral est ouvert
+> - « Nouveautés », sous la version de l'app dans Paramètres, ouvre les changements de votre version.
+> - Avec le panneau latéral ouvert, la recherche et les vues ne dépassent plus du bord de la fenêtre.
+> - Dans une fenêtre étroite, le panneau latéral déployé n'est plus transparent avec l'effet verre ou le style Obsidian.
 
 ## Portuguese, Brazil (pt-br)
 
@@ -469,13 +445,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Configurações em seções, com a versão do app e um link para "Novidades"
-> - "Fale conosco" em Configurações → Ajuda: um formulário para sugestão, problema ou pergunta
-> - Oculte o painel lateral e o calendário ocupa a janela inteira
-> - O cartão do evento abre ao lado do evento
-> - A adição rápida começa o título com letra maiúscula
-> - Uma janela estreita não corta mais a barra de ferramentas
-> - Correções da barra de ferramentas com o painel lateral aberto
+> - "Novidades", abaixo da versão do app em Configurações, abre as mudanças da sua versão.
+> - Com o painel lateral aberto, a busca e as visualizações não passam mais da borda da janela.
+> - Em uma janela estreita, o painel lateral aberto sobre o calendário não fica mais transparente com o efeito vidro ou o estilo Obsidian.
 
 ## German (de-de)
 
@@ -532,13 +504,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - Einstellungen in Abschnitten, mit der App-Version und einem Link zu „Neuigkeiten“
-> - „Schreib uns“ unter Einstellungen → Hilfe: ein Formular für einen Vorschlag, ein Problem oder eine Frage
-> - Seitenleiste ausblenden, damit der Kalender das ganze Fenster nutzt
-> - Die Terminkarte öffnet sich neben dem Termin
-> - Schnelles Hinzufügen beginnt den Titel mit einem Großbuchstaben
-> - Ein schmales Fenster schneidet die Symbolleiste nicht mehr ab
-> - Korrekturen an der Symbolleiste bei geöffneter Seitenleiste
+> - „Neuigkeiten“ unter der App-Version in den Einstellungen zeigt die Änderungen deiner Version.
+> - Bei geöffneter Seitenleiste ragen Suche und Ansichten nicht mehr über den Fensterrand hinaus.
+> - In einem schmalen Fenster ist die ausgeklappte Seitenleiste mit Glaseffekt oder dem Stil Obsidian nicht mehr durchsichtig.
 
 ## Japanese (ja-jp)
 
@@ -595,13 +563,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - 設定をセクションに分け、アプリのバージョンと「新機能」へのリンクを追加
-> - 設定 → ヘルプに「お問い合わせ」：提案、問題、質問のためのフォーム
-> - サイドパネルを隠して、カレンダーをウィンドウいっぱいに表示
-> - 予定のカードがその予定の横に開くように
-> - クイック追加でタイトルの先頭を大文字に
-> - 狭いウィンドウでもツールバーが切れないように
-> - サイドパネルを開いたときのツールバーを修正
+> - 設定のアプリバージョンの下にある「新機能」から、お使いのバージョンの変更点を開けます。
+> - サイドパネルを開いたときに、検索と表示の切り替えがウィンドウの端からはみ出さなくなりました。
+> - 狭いウィンドウで引き出したサイドパネルが、ガラス効果や Obsidian スタイルで透けなくなりました。
 
 ## Chinese, Simplified (zh-cn)
 
@@ -658,13 +622,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - 设置按分区整理，显示应用版本和“更新内容”链接
-> - 设置 → 帮助中新增“联系我们”：提交建议、问题或疑问的表单
-> - 可隐藏侧边栏，让日历占满整个窗口
-> - 日程卡片在日程旁边打开
-> - 快速添加的标题首字母自动大写
-> - 窄窗口不再截断工具栏
-> - 修复侧边栏打开时的工具栏问题
+> - 设置中应用版本下方的“更新内容”可打开当前版本的更新说明。
+> - 侧边栏打开时，搜索和视图切换不再超出窗口边缘。
+> - 在窄窗口中，拉出的侧边栏在玻璃效果或 Obsidian 风格下不再透明。
 
 ## Hindi (hi-in)
 
@@ -721,13 +681,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - सेटिंग अब अलग-अलग हिस्सों में, ऐप के संस्करण और "नया क्या है" लिंक के साथ
-> - सेटिंग → सहायता में "हमें लिखें": सुझाव, समस्या या सवाल के लिए फ़ॉर्म
-> - साइड पैनल छिपाएँ और कैलेंडर पूरी विंडो में दिखेगा
-> - इवेंट का कार्ड उसी इवेंट के पास खुलता है
-> - क्विक ऐड शीर्षक को बड़े अक्षर से शुरू करता है
-> - संकरी विंडो में टूलबार अब नहीं कटता
-> - साइड पैनल खुला होने पर टूलबार की गड़बड़ियाँ ठीक की गईं
+> - सेटिंग में ऐप संस्करण के नीचे "नया क्या है" आपके संस्करण के बदलाव खोलता है।
+> - साइड पैनल खुला होने पर खोज और व्यू बटन अब विंडो के किनारे से बाहर नहीं जाते।
+> - संकरी विंडो में बाहर खींचा गया साइड पैनल अब ग्लास इफ़ेक्ट या Obsidian स्टाइल में पारदर्शी नहीं दिखता।
 
 ## Arabic (ar-sa)
 
@@ -784,13 +740,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - الإعدادات مقسّمة إلى أقسام، مع إصدار التطبيق ورابط «ما الجديد»
-> - «راسلنا» في الإعدادات ← المساعدة: نموذج لاقتراح أو مشكلة أو سؤال
-> - أخفِ اللوحة الجانبية ليشغل التقويم النافذة كلها
-> - تُفتح بطاقة الحدث بجوار الحدث نفسه
-> - الإضافة السريعة تبدأ العنوان بحرف كبير
-> - النافذة الضيقة لم تعد تقطع شريط الأدوات
-> - إصلاحات لشريط الأدوات عندما تكون اللوحة الجانبية مفتوحة
+> - «ما الجديد» تحت إصدار التطبيق في الإعدادات يفتح تغييرات إصدارك.
+> - عندما تكون اللوحة الجانبية مفتوحة، لم يعد البحث وأزرار العرض يتجاوزان حافة النافذة.
+> - في النافذة الضيقة، لم تعد اللوحة الجانبية المسحوبة شفافة مع تأثير الزجاج أو نمط Obsidian.
 
 ## Bengali (bn-bd)
 
@@ -847,13 +799,9 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> - সেটিংস এখন বিভাগে ভাগ করা, অ্যাপের সংস্করণ আর "নতুন কী" লিংকসহ
-> - সেটিংস → সহায়তায় "আমাদের লিখুন": পরামর্শ, সমস্যা বা প্রশ্নের জন্য ফর্ম
-> - পাশের প্যানেল লুকিয়ে ক্যালেন্ডারকে পুরো উইন্ডো দিন
-> - ইভেন্টের কার্ড ইভেন্টের পাশেই খোলে
-> - দ্রুত যোগ করায় শিরোনাম বড় হাতের অক্ষরে শুরু হয়
-> - সরু উইন্ডোতে টুলবার আর কেটে যায় না
-> - পাশের প্যানেল খোলা থাকলে টুলবারের সমস্যা ঠিক করা হয়েছে
+> - সেটিংসে অ্যাপের সংস্করণের নিচে "নতুন কী" আপনার সংস্করণের পরিবর্তনগুলো খোলে।
+> - পাশের প্যানেল খোলা থাকলে খোঁজা আর ভিউ বোতাম আর উইন্ডোর কিনারা ছাড়িয়ে যায় না।
+> - সরু উইন্ডোতে টেনে আনা পাশের প্যানেল কাচের ইফেক্ট বা Obsidian স্টাইলে আর স্বচ্ছ দেখায় না।
 
 ## Screenshots
 
