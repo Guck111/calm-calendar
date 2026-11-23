@@ -33,6 +33,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  /* next to a label of two lines the keys keep their own height */
+  align-items: flex-start;
   gap: 6px;
   margin: 0;
 }

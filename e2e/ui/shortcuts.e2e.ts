@@ -35,3 +35,17 @@ test.describe("in Russian", () => {
     await expect(page.getByRole("dialog", { name: t.shortcuts.title })).toContainText(t.shortcuts.onEvent);
   });
 });
+
+test("the list keeps its content off the edges of its window", async ({ page, t }) => {
+  await openApp(page);
+  await page.keyboard.press("Shift+Slash");
+  const list = page.getByRole("dialog", { name: t.shortcuts.title });
+  const box = (await list.boundingBox())!;
+  const first = (await list.getByRole("heading", { level: 3 }).first().boundingBox())!;
+  expect(first.x - box.x).toBeGreaterThanOrEqual(16);
+  const groups = (await list.locator("section").last().boundingBox())!;
+  expect(box.x + box.width - (groups.x + groups.width)).toBeGreaterThanOrEqual(16);
+  const bottom = Math.max(...(await Promise.all((await list.locator("section").all()).map(async (s) => { const b = (await s.boundingBox())!; return b.y + b.height; }))));
+  expect(box.y + box.height - bottom).toBeGreaterThanOrEqual(16);
+  expect(box.y + box.height - bottom).toBeLessThanOrEqual(32);
+});

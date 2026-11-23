@@ -11,6 +11,7 @@ import { copyText } from "../shared/lib/clipboard";
 import { Button } from "./Button";
 import { Clock, Close } from "./icons";
 import s from "./Settings.module.css";
+import p from "./Popup.module.css";
 import f from "./FreeSlots.module.css";
 
 const KEY = "calm.freeSlots";
@@ -63,15 +64,15 @@ const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
   }, [onClose]);
 
   return (
-    <div className={s.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={s.dialog} role="dialog" aria-modal="true" aria-label={t.free.title}>
-        <div className={s.head}>
+    <div className={p.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={p.dialog} role="dialog" aria-modal="true" aria-label={t.free.title}>
+        <div className={p.head}>
           <h2>{t.free.title}</h2>
           <Button variant="ghost" icon onClick={onClose} aria-label={t.common.close}>
             <Close />
           </Button>
         </div>
-        <p className={s.hint}>{t.free.hint}</p>
+        <p className={p.hint}>{t.free.hint}</p>
         <div className={f.row}>
           <label className={f.field}>
             <span>{t.free.hours}</span>
