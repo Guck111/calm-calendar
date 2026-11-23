@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window; the "What's new" link in Settings and its page on the website).
+Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window, and the pulled-out side panel is opaque; the "What's new" link in Settings and its page on the website).
 
 ## Contents
 
@@ -52,7 +52,7 @@ Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, 
 - Events that have ended are paler (opacity 0.55) in Day, Week, Month and Schedule, as in the tray agenda.
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
 - Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search (with a magnifier; when the calendar panel (the window without the side panel) is 1160 px or narrower it folds into the magnifier and opens on Ctrl+F, `/` or a click), free time, refresh, settings, view switch. The icon buttons keep their size; when space runs short the search folds first, then the title is shortened.
-- The side panel button at the start of the toolbar hides and shows the side panel (Create, quick add, the mini month, calendars). In a wide window the choice is remembered (`calm.sidebar` in localStorage); at 960 px and narrower the panel is folded and the button pulls it out over the calendar, where Esc or a click outside folds it back. While the panel is hidden the toolbar has a "+" button for a new event, and `N` brings the panel back with the cursor in quick add (`src/model/sidebar.ts`, `src/ui/Sidebar.tsx`).
+- The side panel button at the start of the toolbar hides and shows the side panel (Create, quick add, the mini month, calendars). In a wide window the choice is remembered (`calm.sidebar` in localStorage); at 960 px and narrower the panel is folded and the button pulls it out over the calendar (on an opaque background, even with glass or Obsidian), where Esc or a click outside folds it back. While the panel is hidden the toolbar has a "+" button for a new event, and `N` brings the panel back with the cursor in quick add (`src/model/sidebar.ts`, `src/ui/Sidebar.tsx`).
 - When the calendar panel is 1160 px or narrower (the side panel is not counted: CSS container queries on `main`) the four view tabs become one button with a menu (Day, Week, Month, Schedule with their keys; arrows, Enter and Esc work in it), so the toolbar fits down to the smallest window of 760 px with the period title whole (`src/ui/ViewMenu.tsx`).
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
 - Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).

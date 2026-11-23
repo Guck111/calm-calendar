@@ -11,6 +11,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 ### Fixed
 
 - With the side panel open, the buttons at the top right no longer run off the edge: the search and the view tabs now fold by the width of the calendar itself, not of the whole window.
+- In a narrow window the side panel pulled out over the calendar is no longer see-through with the glass effect or the Obsidian style.
 
 ## 0.13.0 — 2026-11-23
 

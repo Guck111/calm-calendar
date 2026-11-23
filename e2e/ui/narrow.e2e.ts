@@ -51,6 +51,15 @@ test.describe("narrow window", () => {
     await expect(panel).toBeHidden();
   });
 
+  test("760 px with glass: the pulled-out panel is not see-through", async ({ page, t }) => {
+    await page.setViewportSize({ width: 760, height: 600 });
+    await openApp(page);
+    await page.evaluate(() => Object.assign(document.documentElement.dataset, { glass: "", focused: "" }));
+    await page.getByRole("button", { name: t.toolbar.sidebar }).click();
+    const background = await page.locator("aside").evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(background).toMatch(/^rgb\(/);
+  });
+
   test("760 px: N pulls the side panel out with the cursor in quick add", async ({ page, t }) => {
     await page.setViewportSize({ width: 760, height: 600 });
     await openApp(page);
