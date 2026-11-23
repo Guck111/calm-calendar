@@ -3,7 +3,7 @@
 // Each language has its own parser in quick-xx.ts; the shared part is in quick-core.ts.
 import { lang as uiLang, t, type Lang } from "../i18n";
 import { addDays, formatTime, formatWeekdayDayMonth, startOfDay, toDateKey, toTimeKey } from "./date";
-import { normalizeInput, type QuickCalendar, type QuickResult } from "./quick-core";
+import { capitalizeTitle, normalizeInput, type QuickCalendar, type QuickResult } from "./quick-core";
 import { parseQuickEn } from "./quick-en";
 import { parseQuickRu } from "./quick-ru";
 import { parseQuickUk } from "./quick-uk";
@@ -47,7 +47,9 @@ export const parseQuick = (
   language: Lang = uiLang,
 ): QuickResult => {
   const text = normalizeInput(input);
-  const result = PARSERS[phraseLang(text, language)](text, now, calendars);
+  const phraseLanguage = phraseLang(text, language);
+  const parsed = PARSERS[phraseLanguage](text, now, calendars);
+  const result = { ...parsed, title: capitalizeTitle(parsed.title, phraseLanguage) };
   // «в 25:30» is not dropped quietly turning the event into an all-day one: the hint asks to check the time
   return impossibleClock(text) ? { ...result, start: new Date(NaN), end: new Date(NaN) } : result;
 };

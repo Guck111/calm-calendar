@@ -38,18 +38,18 @@ describe("language of the phrase", () => {
 
   it("a Russian phrase with the English interface", () => {
     const r = parseQuick("занятие спортом в 12:00", now, [], "en");
-    expect(r).toMatchObject({ title: "занятие спортом", start: at(11, 12), end: at(11, 13) });
+    expect(r).toMatchObject({ title: "Занятие спортом", start: at(11, 12), end: at(11, 13) });
   });
 });
 
 describe("day of the month alone (Russian)", () => {
   it("«, 14» at the end, «14-го», «14 числа»", () => {
     expect(parseQuick("занятие спортом в 12:00, 14", now, [], "ru")).toMatchObject({
-      title: "занятие спортом",
+      title: "Занятие спортом",
       start: at(14, 12),
     });
-    expect(parseQuick("врач 14-го в 9:00", now, [], "ru")).toMatchObject({ title: "врач", start: at(14, 9) });
-    expect(parseQuick("стрижка 20 числа", now, [], "ru")).toMatchObject({ title: "стрижка", allDay: true, start: at(20, 0) });
+    expect(parseQuick("врач 14-го в 9:00", now, [], "ru")).toMatchObject({ title: "Врач", start: at(14, 9) });
+    expect(parseQuick("стрижка 20 числа", now, [], "ru")).toMatchObject({ title: "Стрижка", allDay: true, start: at(20, 0) });
   });
 
   it("a day already gone is in the next month", () => {
@@ -57,7 +57,7 @@ describe("day of the month alone (Russian)", () => {
   });
 
   it("numbers inside the title stay", () => {
-    expect(parseQuick("купить 2 билета", now, [], "ru").title).toBe("купить 2 билета");
-    expect(parseQuick("встреча, 2 человека", now, [], "ru").title).toBe("встреча, 2 человека");
+    expect(parseQuick("купить 2 билета", now, [], "ru").title).toBe("Купить 2 билета");
+    expect(parseQuick("встреча, 2 человека", now, [], "ru").title).toBe("Встреча, 2 человека");
   });
 });

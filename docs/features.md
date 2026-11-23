@@ -129,6 +129,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 - Length: "50 min", "2h", "1.5 hours", "half an hour"; one hour by default; no time means all day.
 - `#work` picks a calendar by the start of its name, `@Gdynia` sets the location (`@Office_Gdynia` for a name with a space).
 - Digits of any script (Arabic-Indic, Devanagari, Bengali, full width) are understood.
+- The title starts with a capital letter: "tomorrow 7pm dinner with Ola" becomes "Dinner with Ola". Only the first letter changes; a first word with capitals of its own ("iPhone repair") stays as typed (`capitalizeTitle` in `src/shared/lib/quick-core.ts`).
 
 | Language | Example |
 |---|---|

@@ -13,13 +13,13 @@ const uk = (text: string) => parseQuick(text, now, calendars, "uk");
 describe("quick add in Ukrainian", () => {
   it("tomorrow, time and duration", () => {
     expect(uk("завтра 19:00 англійська 50 хв")).toMatchObject({
-      title: "англійська",
+      title: "Англійська",
       allDay: false,
       start: at(5, 19),
       end: at(5, 19, 50),
     });
     expect(uk("завтра о 9 стендап #роб @Офіс_Поділ півгодини")).toMatchObject({
-      title: "стендап",
+      title: "Стендап",
       calendarId: "work",
       location: "Офіс Поділ",
       start: at(5, 9),
@@ -28,19 +28,19 @@ describe("quick add in Ukrainian", () => {
   });
 
   it("parts of the day and ranges", () => {
-    expect(uk("у п'ятницю о 7 вечора вечеря")).toMatchObject({ title: "вечеря", start: at(6, 19) });
+    expect(uk("у п'ятницю о 7 вечора вечеря")).toMatchObject({ title: "Вечеря", start: at(6, 19) });
     expect(uk("в п’ятницю об 11 лікар").start).toEqual(at(6, 11));
-    expect(uk("дзвінок з 14 до 15:30")).toMatchObject({ title: "дзвінок", start: at(5, 14), end: at(5, 15, 30) });
-    expect(uk("сьогодні 19-21 кіно")).toMatchObject({ title: "кіно", start: at(4, 19), end: at(4, 21) });
+    expect(uk("дзвінок з 14 до 15:30")).toMatchObject({ title: "Дзвінок", start: at(5, 14), end: at(5, 15, 30) });
+    expect(uk("сьогодні 19-21 кіно")).toMatchObject({ title: "Кіно", start: at(4, 19), end: at(4, 21) });
   });
 
   it("weekdays, dates and numbers", () => {
     expect(uk("ср о 20 тренування").start).toEqual(at(4, 20));
-    expect(uk("нд день народження Тараса")).toMatchObject({ title: "день народження Тараса", allDay: true, start: at(8, 0) });
+    expect(uk("нд день народження Тараса")).toMatchObject({ title: "День народження Тараса", allDay: true, start: at(8, 0) });
     expect(uk("5 грудня 10:00 лікар").start).toEqual(at(5, 10, 0, 11));
-    expect(uk("12.11 стрижка")).toMatchObject({ title: "стрижка", allDay: true, start: at(12, 0) });
+    expect(uk("12.11 стрижка")).toMatchObject({ title: "Стрижка", allDay: true, start: at(12, 0) });
     expect(uk("через 3 дні 12:00 обід").start).toEqual(at(7, 12));
-    expect(uk("пт 18 кіно")).toMatchObject({ title: "кіно", start: at(6, 18) });
+    expect(uk("пт 18 кіно")).toMatchObject({ title: "Кіно", start: at(6, 18) });
     expect(uk("урок завтра 10:00 1,5 години").end).toEqual(at(5, 11, 30));
   });
 });
