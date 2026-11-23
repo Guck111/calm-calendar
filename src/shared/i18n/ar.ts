@@ -259,6 +259,7 @@ export const ar: Dict = {
     groupQuick: "الوصول السريع",
     groupHelp: "المساعدة",
     version: (v: string) => `الإصدار ${v}`,
+    whatsNew: "ما الجديد",
     feedback: "راسلنا",
     feedbackText: "اقتراح أو مشكلة أو سؤال: تُفتح الرسالة في تطبيق البريد لديك. يُضاف إليها إصدار التطبيق ومعلومات النظام لتسهيل المساعدة.",
     feedbackKinds: { idea: "اقتراح", problem: "مشكلة", question: "سؤال" },

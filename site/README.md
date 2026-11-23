@@ -27,6 +27,7 @@ The pages are built from HTML fragments in `i18n/docs/` (see Languages below); t
 |---|---|
 | `i18n/docs/privacy.<lang>.html` | `privacy.html`, `<lang>/privacy.html` — required by Google verification and the Microsoft Store |
 | `i18n/docs/terms.<lang>.html` | `terms.html`, `<lang>/terms.html` — optional "Terms of service link" in Google Branding |
+| `CHANGELOG.md` in the repository root | `whats-new.html` — what changed in each released version, English only |
 
 The English versions are authoritative: every translation says so at the top, with a link to the English page. `/privacy.html` and `/terms.html` must keep their addresses, because they are registered with Google OAuth and the Microsoft Store.
 
@@ -48,5 +49,6 @@ Every page exists in all 13 app languages: English at the root (`index.html`, `p
 - After any change run `node scripts/build-site.mjs`: it writes all pages and `sitemap.xml`, and fails if a key is missing or a translation's date differs from the English one.
 - When the English policy or terms change, update all 13 fragments and the date in each.
 - Each page gets its own title and description, `canonical`, `hreflang` links to every version, and `og:locale`; the home page also gets JSON-LD (`SoftwareApplication` + `FAQPage`) in its language; its `installUrl` is the Microsoft Store page (`STORE_URL` in the script, the same address as the Store button), `downloadUrl` is the installers on GitHub. The sitemap lists every version with its alternates.
+- "What's new" (`whats-new.html`) is built from the released sections of `CHANGELOG.md` (`scripts/lib/changelog.mjs`); "Unreleased" is left out. It exists in English only, so its `hreflang` is `en` and its language links lead to the home pages; the footer of every page links to it. Each version is a section with the id `v<version>`: the app's Settings link to `whats-new.html#v<version>`, so the address and the ids must stay. The page changes with every release: run the build after the version bump, as for `softwareVersion`.
 - The English home page shows a small link to the visitor's browser language when a translation exists; there is no automatic redirect, so search engines index every version.
 - A new language: add it to `LANGS` in `scripts/build-site.mjs`, add `i18n/<lang>.json` and `i18n/docs/{privacy,terms}.<lang>.html`, and add the folder to the copy loop in `.github/workflows/pages.yml`.

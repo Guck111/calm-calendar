@@ -49,7 +49,8 @@ import {
 } from "../shared/lib/appearance";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
-import { APP_VERSION } from "../shared/lib/version";
+import { APP_VERSION, WHATS_NEW_URL } from "../shared/lib/version";
+import { openExternal } from "../shared/api/open";
 import { Bell, Bolt, CalendarDays, Close, Contrast, Help } from "./icons";
 import { FeedbackForm } from "./FeedbackForm";
 import { useDraggable } from "./useDraggable";
@@ -468,7 +469,12 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
               );
             })}
           </div>
-          <small className={s.version}>{t.settings.version(APP_VERSION)}</small>
+          <div className={s.version}>
+            <small>{t.settings.version(APP_VERSION)}</small>
+            <button type="button" className={s.whatsNew} onClick={() => void openExternal(WHATS_NEW_URL)}>
+              {t.settings.whatsNew}
+            </button>
+          </div>
           </div>
 
           <div className={s.content}>

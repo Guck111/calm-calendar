@@ -248,6 +248,7 @@ export const fr: Dict = {
     groupQuick: "Accès rapide",
     groupHelp: "Aide",
     version: (v: string) => `Version ${v}`,
+    whatsNew: "Nouveautés",
     feedback: "Nous écrire",
     feedbackText: "Une suggestion, un problème ou une question : le message s'ouvre dans votre application de messagerie. La version de l'application et des informations sur le système y sont ajoutées pour faciliter l'aide.",
     feedbackKinds: { idea: "Suggestion", problem: "Problème", question: "Question" },

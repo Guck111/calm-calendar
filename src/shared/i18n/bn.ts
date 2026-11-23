@@ -244,6 +244,7 @@ export const bn: Dict = {
     groupQuick: "দ্রুত অ্যাক্সেস",
     groupHelp: "সহায়তা",
     version: (v: string) => `সংস্করণ ${v}`,
+    whatsNew: "নতুন কী",
     feedback: "আমাদের লিখুন",
     feedbackText: "পরামর্শ, সমস্যা বা প্রশ্ন: বার্তাটি আপনার মেইল অ্যাপে খুলবে। সাহায্য সহজ করতে এতে অ্যাপের সংস্করণ ও সিস্টেমের তথ্য যোগ হয়।",
     feedbackKinds: { idea: "পরামর্শ", problem: "সমস্যা", question: "প্রশ্ন" },

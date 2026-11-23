@@ -1,11 +1,13 @@
 // Builds the website in every language:
 // - home page from site/templates/index.html + site/i18n/<lang>.json
 // - Privacy Policy and Terms of Use from site/templates/doc.html + site/i18n/docs/<doc>.<lang>.html
+// - "What's new" (site/whats-new.html, English only) from CHANGELOG.md; the app links to its "#v<version>"
 // English goes to site/*.html, other languages to site/<lang>/*.html; plus site/sitemap.xml with hreflang alternates.
 // Run after editing a template, i18n/*.json or i18n/docs/*: node scripts/build-site.mjs
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { releasesHtml, releasesOf } from "./lib/changelog.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = join(ROOT, "site");
@@ -32,6 +34,7 @@ const LANGS = {
 };
 const CODES = Object.keys(LANGS);
 const DOCS = ["privacy", "terms"];
+const WHATS_NEW = "whats-new.html";
 
 const homeTemplate = readFileSync(join(SITE, "templates", "index.html"), "utf8");
 const docTemplate = readFileSync(join(SITE, "templates", "doc.html"), "utf8");
@@ -120,8 +123,9 @@ const jsonLd = (lang, s) => {
   return JSON.stringify(data, null, 2).replace(/</g, "\\u003c").replace(/^/gm, "  ");
 };
 
-// fills the slots every page shares, checks nothing is left unresolved, writes the file
-const write = (html, lang, s, file = "") => {
+// fills the slots every page shares, checks nothing is left unresolved, writes the file.
+// A page without translations passes its own alternates and language links
+const write = (html, lang, s, file = "", { alternates = hreflangLinks(file), languages = langSwitch(lang, file) } = {}) => {
   const info = LANGS[lang];
   html = html
     .replaceAll("{{HTML_LANG}}", info.hreflang)
@@ -131,8 +135,8 @@ const write = (html, lang, s, file = "") => {
     .replaceAll("{{ROOT}}", lang === "en" ? "" : "../")
     .replaceAll("{{SELF_HOME}}", "./")
     .replaceAll("{{STORE_URL}}", STORE_URL)
-    .replaceAll("{{HREFLANG_LINKS}}", hreflangLinks(file))
-    .replaceAll("{{LANG_SWITCH_LINKS}}", langSwitch(lang, file));
+    .replaceAll("{{HREFLANG_LINKS}}", alternates)
+    .replaceAll("{{LANG_SWITCH_LINKS}}", languages);
   for (const [key, value] of Object.entries(s)) html = html.replaceAll(`{{${key}}}`, value);
   html = html.replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n"); // collapse blank lines left by empty slots
 
@@ -170,10 +174,33 @@ for (const lang of CODES) {
         .replaceAll("{{DOC_DESCRIPTION}}", s[`${doc}_description`])
         .replaceAll("{{CURRENT_privacy}}", doc === "privacy" ? ' aria-current="page"' : "")
         .replaceAll("{{CURRENT_terms}}", doc === "terms" ? ' aria-current="page"' : "")
+        .replaceAll("{{CURRENT_whats_new}}", "")
         .replaceAll("{{DOC_BODY}}", body.replace(/^(?=.)/gm, "      ")),
       lang, s, file);
   }
 }
+
+// "What's new": the released versions of CHANGELOG.md, English only. Its language links lead to the home pages
+const releases = releasesOf(readFileSync(join(ROOT, "CHANGELOG.md"), "utf8"));
+const whatsNewBody = `<header class="doc-head" id="top">
+  <h1>What's new in Calm Calendar</h1>
+  <p class="doc-meta">What changed in each version of the app, newest first.</p>
+</header>
+
+${releasesHtml(releases)}`;
+write(
+  docTemplate
+    .replaceAll("{{DOC_TITLE}}", "What's new")
+    .replaceAll("{{DOC_DESCRIPTION}}", "What changed in each version of Calm Calendar for Windows: new features, changes and fixes.")
+    .replaceAll("{{CURRENT_privacy}}", "")
+    .replaceAll("{{CURRENT_terms}}", "")
+    .replaceAll("{{CURRENT_whats_new}}", ' aria-current="page"')
+    .replaceAll("{{DOC_BODY}}", whatsNewBody.replace(/^(?=.)/gm, "      ")),
+  "en", en, WHATS_NEW,
+  {
+    alternates: ["en", "x-default"].map((code) => `  <link rel="alternate" hreflang="${code}" href="${pageUrl("en", WHATS_NEW)}">`).join("\n"),
+    languages: langSwitch("en", ""),
+  });
 
 // sitemap: every language version of a page lists all its alternates
 const sitemapEntries = (file, lastmod) => {
@@ -185,6 +212,10 @@ const sitemapEntries = (file, lastmod) => {
 writeFileSync(join(SITE, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${[sitemapEntries("", TODAY), ...DOCS.map((d) => sitemapEntries(`${d}.html`, docDates[d]))].join("\n")}
+  <url>
+    <loc>${pageUrl("en", WHATS_NEW)}</loc>
+    <lastmod>${releases[0].date}</lastmod>
+  </url>
 </urlset>
 `);
 console.log("wrote site/sitemap.xml");
