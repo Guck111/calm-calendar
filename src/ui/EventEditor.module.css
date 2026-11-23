@@ -25,6 +25,16 @@
   animation: rise 0.14s ease-out;
 }
 
+/* the card next to its event: the calendar around it stays in view */
+.clear {
+  background: none;
+  animation: none;
+}
+
+.beside {
+  position: fixed;
+}
+
 .head {
   display: flex;
   align-items: center;

@@ -6,6 +6,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### Changed
 
+- **The event card opens next to its event** instead of the middle of the window, and the calendar around it stays visible. The form for editing still opens in the middle.
 - **Quick add** starts the title with a capital letter: "tomorrow 7pm dinner with Ola" becomes "Dinner with Ola". Names and words like "iPhone" stay as you typed them.
 
 ## 0.12.4 — 2026-11-19

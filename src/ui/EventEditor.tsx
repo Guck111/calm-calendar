@@ -41,6 +41,7 @@ import { MAX_ATTACHMENTS, parseDriveLink } from "../shared/lib/attachments";
 import { COLOR_IDS, EVENT_COLORS, eventColor } from "../shared/lib/colors";
 import s from "./EventEditor.module.css";
 import { plainText } from "../shared/lib/plain-text";
+import { useBeside } from "./useBeside";
 
 const formatWhen = (e: CalendarEvent): string => {
   if (e.allDay) {
@@ -826,21 +827,25 @@ export const EventEditor = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, mode, opened, ask, close, cancel, cancelScope]);
 
+  const viewed = mode === "view" ? opened : null;
+  const { card, place } = useBeside(draft && viewed ? viewed.key : null);
+
   if (!draft) return null;
 
   const calendar = byId.get(draft.calendarId);
   const editable = !opened || writable.some((c) => c.id === opened.calendarId);
 
   return (
-    <div className={s.backdrop} onMouseDown={(e) => e.target === e.currentTarget && close()}>
+    <div className={cx(s.backdrop, place !== null && s.clear)} onMouseDown={(e) => e.target === e.currentTarget && close()}>
       <div
-        className={s.dialog}
+        ref={card}
+        className={cx(s.dialog, place !== null && s.beside)}
         role="dialog"
         aria-modal="true"
         aria-label={draft.id ? t.common.event : t.common.newEvent}
-        style={{ "--c": eventColor(mode === "view" && opened ? opened : draft, calendar) } as CSSProperties}
+        style={{ "--c": eventColor(viewed ?? draft, calendar), ...place } as CSSProperties}
       >
-        {mode === "view" && opened ? <EventDetails event={opened} editable={editable} /> : <EventForm />}
+        {viewed ? <EventDetails event={viewed} editable={editable} /> : <EventForm />}
       </div>
     </div>
   );

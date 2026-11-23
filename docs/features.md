@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-16 (edge cases of the form, quick add and .ics subscriptions).
+Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event).
 
 ## Contents
 
@@ -60,6 +60,7 @@ Last updated: 2026-11-16 (edge cases of the form, quick add and .ics subscriptio
 
 - Create: the "Create" button, a click on an empty slot (Week, Day: that half hour; Month: 9:00 that day), quick add, or the widget.
 - The event card shows the time, the time in the event's own zone if it differs, Join for calls, the calendar (and account when there are several), travel time, location (a click opens it in Google Maps in the browser; a link in the location field opens itself, `src/shared/lib/maps.ts`), guests with their answers, description, overlaps, the repeat rule, and "In Google".
+- The card opens next to its event, not in the middle of the window: after the event in reading direction (before it in Arabic), on the other side when there is no room, under or over a wide event; it never leaves the window and the calendar around it is not dimmed. With no room at any side, or when the event is not on screen (opened from search on another week), it opens in the middle as before. "Edit" moves to the form in the middle of the window (`src/shared/lib/beside.ts`, `src/ui/useBeside.ts`).
 - The form: title, all day, start and end date and time, repeat, calendar, location, description (hint "Agenda, links, notes"), "Add Google Meet video call", guests, and "More" with time zone, travel time, color and attachments. "More" is closed for a new event and opens by itself when the event has another zone, travel time, its own color or attachments; the closed line lists what is inside. Save, Cancel and Delete (and the error and the "this event or following" question) stay at the bottom of the form while it scrolls (`src/ui/EventEditor.tsx`).
 - Move an event to another calendar of the same account (Google does not move events between accounts).
 - Saving an existing event sends Google only the fields changed in the form (start and end always together); with nothing changed no request goes out. So a change made in Google while the form was open stays, unless the same field was changed here too. A move in the grid, its Undo and Ctrl+K changes send only their own fields (`changedFields` and `patchEvent` in `src/shared/api/calendar.ts`).
