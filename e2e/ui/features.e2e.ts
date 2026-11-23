@@ -187,3 +187,28 @@ test.describe("free time", () => {
     await expect(free).toBeVisible();
   });
 });
+
+test("free time: the window keeps its content off its edges and is no taller than the content", async ({ page, t }) => {
+  await openApp(page);
+  await page.getByRole("button", { name: t.toolbar.freeSlots }).click();
+  const free = page.getByRole("dialog", { name: t.free.title });
+  const box = (await free.boundingBox())!;
+  const inset = async (inner: ReturnType<typeof free.locator>) => {
+    const i = (await inner.boundingBox())!;
+    return { left: i.x - box.x, right: box.x + box.width - (i.x + i.width), top: i.y - box.y, bottom: box.y + box.height - (i.y + i.height) };
+  };
+  const text = await inset(free.getByRole("textbox", { name: t.free.title }));
+  expect(text.left).toBeGreaterThanOrEqual(16);
+  expect(text.right).toBeGreaterThanOrEqual(16);
+  expect((await inset(free.getByText(t.free.hint))).left).toBeGreaterThanOrEqual(16);
+  expect((await inset(free.getByRole("heading", { name: t.free.title }))).top).toBeGreaterThanOrEqual(12);
+  // "Copy" is the last thing in the window: a margin under it, not half a window of nothing
+  const copy = await inset(free.getByRole("button", { name: t.free.copy }));
+  expect(copy.right).toBeGreaterThanOrEqual(16);
+  expect(copy.bottom).toBeGreaterThanOrEqual(16);
+  expect(copy.bottom).toBeLessThanOrEqual(32);
+  // the fields stand apart from each other
+  const weekends = (await free.getByLabel(t.free.weekends).boundingBox())!;
+  const length = (await free.getByLabel(t.free.minLength).boundingBox())!;
+  expect(weekends.y - (length.y + length.height)).toBeGreaterThanOrEqual(10);
+});

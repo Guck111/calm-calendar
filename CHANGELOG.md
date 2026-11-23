@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### Fixed
+
+- "Free time" and the list of keyboard shortcuts have their margins back: since 0.13.0 their content was pressed against the edges of the window, and "Free time" was half empty.
+
 ## 0.14.0 — 2026-11-23
 
 ### New

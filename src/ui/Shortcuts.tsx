@@ -8,7 +8,7 @@ import { readSettings } from "../shared/lib/glass";
 import { shortcutGroups } from "../shared/lib/shortcuts";
 import { Button } from "./Button";
 import { Close } from "./icons";
-import s from "./Settings.module.css";
+import p from "./Popup.module.css";
 import k from "./Shortcuts.module.css";
 
 const isTyping = (target: EventTarget | null) =>
@@ -24,9 +24,9 @@ const ShortcutsDialog = ({ onClose }: { onClose: () => void }) => {
   }, [onClose]);
 
   return (
-    <div className={s.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`${s.dialog} ${k.dialog}`} role="dialog" aria-modal="true" aria-label={t.shortcuts.title}>
-        <div className={s.head}>
+    <div className={p.backdrop} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={`${p.dialog} ${k.dialog}`} role="dialog" aria-modal="true" aria-label={t.shortcuts.title}>
+        <div className={p.head}>
           <h2>{t.shortcuts.title}</h2>
           <Button variant="ghost" icon onClick={onClose} aria-label={t.common.close} autoFocus>
             <Close />
