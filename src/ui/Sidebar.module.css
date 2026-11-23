@@ -13,7 +13,62 @@
   overflow-y: auto;
 }
 
+.hidden {
+  display: none;
+}
+
+/* narrow window: the panel is pulled out over the calendar instead of taking its width */
+.over {
+  position: fixed;
+  inset-block: var(--shell-gap);
+  inset-inline-start: var(--shell-gap);
+  z-index: 6;
+  box-shadow: var(--shadow);
+  animation: slide 0.14s ease-out;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.28);
+  animation: dim 0.12s ease-out;
+}
+
+@keyframes slide {
+  from {
+    opacity: 0;
+    translate: -12px 0;
+  }
+}
+
+[dir="rtl"] .over {
+  animation-name: slide-rtl;
+}
+
+@keyframes slide-rtl {
+  from {
+    opacity: 0;
+    translate: 12px 0;
+  }
+}
+
+@keyframes dim {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .over,
+  .scrim {
+    animation: none;
+  }
+}
+
 .create {
+  /* a low window scrolls the panel, it does not squeeze the button */
+  flex: none;
   margin-bottom: -6px;
   height: 40px;
   align-self: flex-start;

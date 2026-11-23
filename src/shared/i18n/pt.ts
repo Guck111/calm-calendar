@@ -273,6 +273,7 @@ export const pt: Dict = {
     forward: "Avançar",
     refresh: "Atualizar",
     view: "Visualização",
+    sidebar: "Painel lateral",
   },
   widget: {
     openDay: "Abrir o dia na agenda",

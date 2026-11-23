@@ -259,6 +259,7 @@ export const ja: Dict = {
     forward: "次へ",
     refresh: "更新",
     view: "表示",
+    sidebar: "サイドパネル",
   },
   widget: {
     openDay: "カレンダーでこの日を開く",

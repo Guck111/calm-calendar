@@ -278,6 +278,7 @@ export const ar: Dict = {
     forward: "التالي",
     refresh: "تحديث",
     view: "العرض",
+    sidebar: "اللوحة الجانبية",
   },
   widget: {
     openDay: "فتح اليوم في التقويم",

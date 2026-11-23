@@ -293,6 +293,7 @@ export const ru = {
     forward: "Вперёд",
     refresh: "Обновить",
     view: "Вид",
+    sidebar: "Боковая панель",
   },
   widget: {
     openDay: "Открыть день в календаре",

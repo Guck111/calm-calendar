@@ -263,6 +263,7 @@ export const bn: Dict = {
     forward: "সামনে",
     refresh: "রিফ্রেশ",
     view: "ভিউ",
+    sidebar: "সাইড প্যানেল",
   },
   widget: {
     openDay: "ক্যালেন্ডারে দিনটি খুলুন",

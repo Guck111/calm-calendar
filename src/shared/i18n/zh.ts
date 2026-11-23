@@ -257,6 +257,7 @@ export const zh: Dict = {
     forward: "下一页",
     refresh: "刷新",
     view: "视图",
+    sidebar: "侧边栏",
   },
   widget: {
     openDay: "在日历中打开这一天",

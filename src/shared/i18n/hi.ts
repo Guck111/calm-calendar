@@ -259,6 +259,7 @@ export const hi: Dict = {
     forward: "आगे",
     refresh: "रीफ़्रेश करें",
     view: "व्यू",
+    sidebar: "साइड पैनल",
   },
   widget: {
     openDay: "कैलेंडर में यह दिन खोलें",

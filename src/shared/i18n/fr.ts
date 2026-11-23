@@ -267,6 +267,7 @@ export const fr: Dict = {
     forward: "Suivant",
     refresh: "Actualiser",
     view: "Affichage",
+    sidebar: "Panneau latéral",
   },
   widget: {
     openDay: "Ouvrir le jour dans l’agenda",

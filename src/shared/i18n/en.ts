@@ -264,6 +264,7 @@ export const en: Dict = {
     forward: "Forward",
     refresh: "Refresh",
     view: "View",
+    sidebar: "Side panel",
   },
   widget: {
     openDay: "Open the day in the calendar",

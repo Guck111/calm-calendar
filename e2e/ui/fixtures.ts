@@ -69,9 +69,9 @@ export { expect };
 /** Open the calendar and wait until the mock events are on screen */
 export const openApp = async (page: Page, path = "/") => {
   await page.goto(path);
-  await expect(page.getByRole("tablist")).toBeVisible();
-  // calendars are loaded: their switches are in the sidebar
-  await expect(page.locator("aside input[type=checkbox]").first()).toBeVisible();
+  await expect(page.locator("main header")).toBeVisible();
+  // calendars are loaded: their switches are in the sidebar (folded away in a narrow window)
+  await expect(page.locator("aside input[type=checkbox]").first()).toBeAttached();
   // events are loaded (Week and Day): a block in a day column
   if (await page.locator('main [class*="column"]').count()) {
     await expect(page.locator('main [class*="column"] button').first()).toBeVisible();

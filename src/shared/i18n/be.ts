@@ -287,6 +287,7 @@ export const be: Dict = {
     forward: "Наперад",
     refresh: "Абнавіць",
     view: "Від",
+    sidebar: "Бакавая панэль",
   },
   widget: {
     openDay: "Адкрыць дзень у календары",

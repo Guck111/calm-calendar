@@ -287,6 +287,7 @@ export const uk: Dict = {
     forward: "Уперед",
     refresh: "Оновити",
     view: "Вигляд",
+    sidebar: "Бічна панель",
   },
   widget: {
     openDay: "Відкрити день у календарі",

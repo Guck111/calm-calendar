@@ -6,6 +6,7 @@ import type { Calendar } from "../shared/api/types";
 import { $calendarsWithVisibility, $writableCalendars, calendarToggled } from "../model/calendars";
 import { createClicked, draftOpened } from "../model/editor";
 import { quickCreateFx, quickFocusRequested } from "../model/quick";
+import { $sidebar, sidebarClosed } from "../model/sidebar";
 import { QuickAdd, type QuickAddHandle } from "./QuickAdd";
 import { SignInActions } from "./SignInActions";
 import { $cursor, $range, $today, $view, dateSelected } from "../model/view";
@@ -196,7 +197,8 @@ const AddAccount = () => {
 const SidebarQuickAdd = () => {
   const [writable, create, expand] = useUnit([$writableCalendars, quickCreateFx, draftOpened]);
   const ref = useRef<QuickAddHandle>(null);
-  useEffect(() => quickFocusRequested.watch(() => ref.current?.focus()), []);
+  // on the next frame: a hidden side panel is shown first
+  useEffect(() => quickFocusRequested.watch(() => requestAnimationFrame(() => ref.current?.focus())), []);
   return (
     <QuickAdd
       ref={ref}
@@ -210,16 +212,28 @@ const SidebarQuickAdd = () => {
 };
 
 export const Sidebar = () => {
-  const create = useUnit(createClicked);
+  const [create, { shown, over }, close] = useUnit([createClicked, $sidebar, sidebarClosed]);
+  const pulledOut = shown && over;
+
+  useEffect(() => {
+    if (!pulledOut) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pulledOut, close]);
+
   return (
-    <aside className={s.sidebar}>
-      <Button variant="primary" className={s.create} onClick={() => create()} title={t.common.newEvent}>
-        <Plus /> {t.sidebar.create}
-      </Button>
-      <SidebarQuickAdd />
-      <MiniMonth />
-      <CalendarList />
-      <AddAccount />
-    </aside>
+    <>
+      {pulledOut && <div className={s.scrim} onMouseDown={() => close()} />}
+      <aside id="sidebar" className={cx(s.sidebar, !shown && s.hidden, over && s.over)}>
+        <Button variant="primary" className={s.create} onClick={() => create()} title={t.common.newEvent}>
+          <Plus /> {t.sidebar.create}
+        </Button>
+        <SidebarQuickAdd />
+        <MiniMonth />
+        <CalendarList />
+        <AddAccount />
+      </aside>
+    </>
   );
 };
