@@ -101,6 +101,24 @@ test.describe("narrow window", () => {
   });
 });
 
+// the user's case: a wide window, but with the side panel the calendar itself is narrow
+test.describe("the toolbar follows the calendar panel, not the window", () => {
+  test.use({ lang: "ru" });
+
+  test("1320 px: with the side panel the views are a menu, without it they are tabs", async ({ page, t }) => {
+    await page.setViewportSize({ width: 1320, height: 800 });
+    await openApp(page);
+    await expect(page.locator("aside")).toBeVisible();
+    await expect(page.getByRole("tablist")).toBeHidden();
+    await expectToolbarFits(page);
+
+    await page.getByRole("button", { name: t.toolbar.sidebar }).click();
+    await expect(page.locator("aside")).toBeHidden();
+    await expect(page.getByRole("tablist")).toBeVisible();
+    await expectToolbarFits(page);
+  });
+});
+
 test("wide window: the button hides the side panel, the choice survives a restart, + creates", async ({ page, t }) => {
   await openApp(page);
   await expect(page.getByRole("tablist")).toBeVisible();
