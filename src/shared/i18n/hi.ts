@@ -240,6 +240,7 @@ export const hi: Dict = {
     groupQuick: "झटपट पहुँच",
     groupHelp: "सहायता",
     version: (v: string) => `संस्करण ${v}`,
+    whatsNew: "नया क्या है",
     feedback: "हमें लिखें",
     feedbackText: "सुझाव, समस्या या सवाल: संदेश आपके मेल ऐप में खुलेगा। मदद आसान हो, इसलिए उसमें ऐप का संस्करण और सिस्टम की जानकारी जुड़ जाती है।",
     feedbackKinds: { idea: "सुझाव", problem: "समस्या", question: "सवाल" },

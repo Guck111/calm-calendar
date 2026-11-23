@@ -240,6 +240,7 @@ export const ja: Dict = {
     groupQuick: "クイック アクセス",
     groupHelp: "ヘルプ",
     version: (v: string) => `バージョン ${v}`,
+    whatsNew: "新機能",
     feedback: "お問い合わせ",
     feedbackText: "ご提案、不具合、ご質問をお送りください。メッセージはお使いのメールアプリで開きます。対応しやすいよう、アプリのバージョンとシステム情報が追加されます。",
     feedbackKinds: { idea: "提案", problem: "不具合", question: "質問" },

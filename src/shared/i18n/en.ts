@@ -245,6 +245,7 @@ export const en: Dict = {
     groupQuick: "Quick access",
     groupHelp: "Help",
     version: (v: string) => `Version ${v}`,
+    whatsNew: "What's new",
     feedback: "Write to us",
     feedbackText: "A suggestion, a problem or a question: the message opens in your mail app. The app version and system details are added so it is easier to help.",
     feedbackKinds: { idea: "Suggestion", problem: "Problem", question: "Question" },
