@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version and the feedback form).
+Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window, capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version and the feedback form).
 
 ## Contents
 
@@ -51,9 +51,9 @@ Last updated: 2026-11-23 (capital letter in quick add, the event card next to it
 - **Schedule**: four weeks from the chosen day as a list by day; days without events are skipped. Each row: time or "all day", title, repeat and overlap marks, location. A link in the location shows short: the call service ("Zoom", "Microsoft Teams") or the site, the full text on hover (`shortPlace` in `src/shared/lib/meeting.ts`). From 15 minutes before a call until its end the row has Join, as in the widget.
 - Events that have ended are paler (opacity 0.55) in Day, Week, Month and Schedule, as in the tray agenda.
 - Mini month in the sidebar: picks a day, shows the range on screen, has its own month arrows.
-- Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search (with a magnifier; below 1100 px it folds into the magnifier and opens on Ctrl+F, `/` or a click), free time, refresh, settings, view switch. The icon buttons keep their size; when space runs short the search folds first, then the title is shortened.
+- Toolbar: Today, back and forward, the period title (with the week number when week numbers are on), search (with a magnifier; when the calendar panel (the window without the side panel) is 1160 px or narrower it folds into the magnifier and opens on Ctrl+F, `/` or a click), free time, refresh, settings, view switch. The icon buttons keep their size; when space runs short the search folds first, then the title is shortened.
 - The side panel button at the start of the toolbar hides and shows the side panel (Create, quick add, the mini month, calendars). In a wide window the choice is remembered (`calm.sidebar` in localStorage); at 960 px and narrower the panel is folded and the button pulls it out over the calendar, where Esc or a click outside folds it back. While the panel is hidden the toolbar has a "+" button for a new event, and `N` brings the panel back with the cursor in quick add (`src/model/sidebar.ts`, `src/ui/Sidebar.tsx`).
-- At 1100 px and narrower the four view tabs become one button with a menu (Day, Week, Month, Schedule with their keys; arrows, Enter and Esc work in it), so the toolbar fits down to the smallest window of 760 px with the period title whole (`src/ui/ViewMenu.tsx`).
+- When the calendar panel is 1160 px or narrower (the side panel is not counted: CSS container queries on `main`) the four view tabs become one button with a menu (Day, Week, Month, Schedule with their keys; arrows, Enter and Esc work in it), so the toolbar fits down to the smallest window of 760 px with the period title whole (`src/ui/ViewMenu.tsx`).
 - Calendars can be shown or hidden one by one; colors come from Google. The choice is remembered in the app.
 - Data refreshes every 5 minutes, when the window comes back to the front, and with the refresh button. The bottom of the sidebar says when the calendar was last loaded from Google ("Updated 10:42"; with the date if it was not today).
 - When Google does not answer (no network, Google busy or down: 429 and 5xx), the app tries again by itself after 5 seconds, 15 seconds and a minute, then goes on with the usual refresh. The error or "Offline" banner has a Retry button (`src/model/sync.ts`).
@@ -185,7 +185,7 @@ A field under the "Create" button and in the widget; `N` focuses it. One line, a
 - Fonts (Settings → Style): one font for headings and numbers (period title, day numbers, the widget clock), one for text. "Style default" uses the style's pair: Segoe UI (Classic), Cormorant Garamond + Inter (Paper), Manrope (Obsidian), Unbounded + Onest (Showcase), Geist Mono + Geist (Monochrome). Unbounded and Cormorant Garamond are offered for headings only. The fonts are variable WOFF2 files from `@fontsource-variable` packages (SIL Open Font License 1.1), built into the app; letters a font lacks (Arabic, Devanagari, Bengali, Chinese, Japanese) come from the Windows fonts of that script. The choice is kept per computer, like the theme.
 - Glass effect (on by default): the Windows Acrylic backdrop in the main window and the widget; the main window turns opaque when it loses focus, as Windows does.
 - Right-to-left layout for Arabic: all spacing uses logical CSS properties.
-- The period title keeps its full length in every language down to the smallest window (760 px): the search field folds into a magnifier and the view tabs into a menu at 1100 px, the side panel folds away at 960 px (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`, `src/model/sidebar.ts`).
+- The period title keeps its full length in every language down to the smallest window (760 px): the search field folds into a magnifier and the view tabs into a menu when the calendar panel is 1160 px or narrower, the side panel folds away at 960 px (`src/ui/Toolbar.module.css`, `src/ui/Search.module.css`, `src/model/sidebar.ts`).
 
 ## Languages and regions
 

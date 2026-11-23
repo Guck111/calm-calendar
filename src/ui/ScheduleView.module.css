@@ -114,7 +114,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 720px) {
+@container main (max-width: 720px) {
   .day {
     grid-template-columns: minmax(0, 1fr);
     gap: 4px;

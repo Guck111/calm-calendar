@@ -94,8 +94,8 @@
   font-size: 13px;
 }
 
-/* very narrow window: the field is a magnifier icon, expands when focused (Ctrl+F, /, click) */
-@media (max-width: 1100px) {
+/* narrow panel: the field is a magnifier icon, expands when focused (Ctrl+F, /, click) */
+@container main (max-width: 1160px) {
   .search {
     flex: 0 0 34px;
     min-width: 34px;
