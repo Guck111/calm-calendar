@@ -4,6 +4,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+## 0.13.0 — 2026-11-23
+
 ### New
 
 - **Write to us**: Settings → Help has a form for a suggestion, a problem or a question. It opens a ready letter in your mail app, with the app version added, so you see everything before sending; "Copy the text" is there for a web mailbox.
