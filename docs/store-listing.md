@@ -87,9 +87,15 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> First Microsoft Store release.
+> - Settings in sections, with the app version and a "What's new" link
+> - "Write to us" in Settings → Help: a form for a suggestion, a problem or a question
+> - Hide the side panel and give the calendar the whole window
+> - The event card opens next to its event
+> - Quick add starts the title with a capital letter
+> - A narrow window no longer cuts the toolbar
+> - Fixes for the toolbar with the side panel open
 
-**Copyright and trademark info:** © 2026 Arseni
+**Copyright and trademark info:** © 2026 Hushwhale
 
 **Additional license terms:** https://calmcalendar.co.uk/terms.html
 
@@ -148,7 +154,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Первый выпуск в Microsoft Store.
+> - Настройки по разделам, с версией приложения и ссылкой «Что нового»
+> - «Написать нам» в Настройки → Помощь: форма для предложения, проблемы или вопроса
+> - Боковую панель можно скрыть, и календарь займёт всё окно
+> - Карточка события открывается рядом с ним
+> - Быстрое добавление пишет название с заглавной буквы
+> - Узкое окно больше не обрезает панель инструментов
+> - Исправления панели инструментов при открытой боковой панели
 
 ## Ukrainian (uk-ua)
 
@@ -205,7 +217,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Перший випуск у Microsoft Store.
+> - Налаштування за розділами, з версією застосунку та посиланням «Що нового»
+> - «Написати нам» у Налаштування → Допомога: форма для пропозиції, проблеми чи запитання
+> - Бічну панель можна сховати, і календар займе все вікно
+> - Картка події відкривається поруч із нею
+> - Швидке додавання пише назву з великої літери
+> - Вузьке вікно більше не обрізає панель інструментів
+> - Виправлення панелі інструментів при відкритій бічній панелі
 
 ## Belarusian (be-by)
 
@@ -262,7 +280,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Першы выпуск у Microsoft Store.
+> - Налады па раздзелах, з версіяй праграмы і спасылкай «Што новага»
+> - «Напісаць нам» у Налады → Дапамога: форма для прапановы, праблемы ці пытання
+> - Бакавую панэль можна схаваць, і каляндар зойме ўсё акно
+> - Картка падзеі адкрываецца побач з ёй
+> - Хуткае даданне піша назву з вялікай літары
+> - Вузкае акно больш не абразае панэль інструментаў
+> - Выпраўленні панэлі інструментаў пры адкрытай бакавой панэлі
 
 ## Spanish (es-es)
 
@@ -319,7 +343,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Primera versión en Microsoft Store.
+> - Ajustes por secciones, con la versión de la app y un enlace a «Novedades»
+> - «Escríbenos» en Ajustes → Ayuda: un formulario para una sugerencia, un problema o una pregunta
+> - Oculta el panel lateral y el calendario ocupa toda la ventana
+> - La tarjeta del evento se abre junto al evento
+> - El añadido rápido empieza el título con mayúscula
+> - En una ventana estrecha la barra de herramientas ya no se corta
+> - Correcciones de la barra de herramientas con el panel lateral abierto
 
 ## French (fr-fr)
 
@@ -376,7 +406,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Première version sur le Microsoft Store.
+> - Paramètres par sections, avec la version de l'app et un lien « Nouveautés »
+> - « Nous écrire » dans Paramètres → Aide : un formulaire pour une suggestion, un problème ou une question
+> - Masquez le panneau latéral pour que le calendrier occupe toute la fenêtre
+> - La fiche d'un événement s'ouvre à côté de lui
+> - L'ajout rapide commence le titre par une majuscule
+> - Une fenêtre étroite ne coupe plus la barre d'outils
+> - Corrections de la barre d'outils quand le panneau latéral est ouvert
 
 ## Portuguese, Brazil (pt-br)
 
@@ -433,7 +469,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Primeira versão na Microsoft Store.
+> - Configurações em seções, com a versão do app e um link para "Novidades"
+> - "Fale conosco" em Configurações → Ajuda: um formulário para sugestão, problema ou pergunta
+> - Oculte o painel lateral e o calendário ocupa a janela inteira
+> - O cartão do evento abre ao lado do evento
+> - A adição rápida começa o título com letra maiúscula
+> - Uma janela estreita não corta mais a barra de ferramentas
+> - Correções da barra de ferramentas com o painel lateral aberto
 
 ## German (de-de)
 
@@ -490,7 +532,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Erste Version im Microsoft Store.
+> - Einstellungen in Abschnitten, mit der App-Version und einem Link zu „Neuigkeiten“
+> - „Schreib uns“ unter Einstellungen → Hilfe: ein Formular für einen Vorschlag, ein Problem oder eine Frage
+> - Seitenleiste ausblenden, damit der Kalender das ganze Fenster nutzt
+> - Die Terminkarte öffnet sich neben dem Termin
+> - Schnelles Hinzufügen beginnt den Titel mit einem Großbuchstaben
+> - Ein schmales Fenster schneidet die Symbolleiste nicht mehr ab
+> - Korrekturen an der Symbolleiste bei geöffneter Seitenleiste
 
 ## Japanese (ja-jp)
 
@@ -547,7 +595,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Microsoft Store での最初のリリースです。
+> - 設定をセクションに分け、アプリのバージョンと「新機能」へのリンクを追加
+> - 設定 → ヘルプに「お問い合わせ」：提案、問題、質問のためのフォーム
+> - サイドパネルを隠して、カレンダーをウィンドウいっぱいに表示
+> - 予定のカードがその予定の横に開くように
+> - クイック追加でタイトルの先頭を大文字に
+> - 狭いウィンドウでもツールバーが切れないように
+> - サイドパネルを開いたときのツールバーを修正
 
 ## Chinese, Simplified (zh-cn)
 
@@ -604,7 +658,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> 首次在 Microsoft Store 发布。
+> - 设置按分区整理，显示应用版本和“更新内容”链接
+> - 设置 → 帮助中新增“联系我们”：提交建议、问题或疑问的表单
+> - 可隐藏侧边栏，让日历占满整个窗口
+> - 日程卡片在日程旁边打开
+> - 快速添加的标题首字母自动大写
+> - 窄窗口不再截断工具栏
+> - 修复侧边栏打开时的工具栏问题
 
 ## Hindi (hi-in)
 
@@ -661,7 +721,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Microsoft Store पर पहली रिलीज़।
+> - सेटिंग अब अलग-अलग हिस्सों में, ऐप के संस्करण और "नया क्या है" लिंक के साथ
+> - सेटिंग → सहायता में "हमें लिखें": सुझाव, समस्या या सवाल के लिए फ़ॉर्म
+> - साइड पैनल छिपाएँ और कैलेंडर पूरी विंडो में दिखेगा
+> - इवेंट का कार्ड उसी इवेंट के पास खुलता है
+> - क्विक ऐड शीर्षक को बड़े अक्षर से शुरू करता है
+> - संकरी विंडो में टूलबार अब नहीं कटता
+> - साइड पैनल खुला होने पर टूलबार की गड़बड़ियाँ ठीक की गईं
 
 ## Arabic (ar-sa)
 
@@ -718,7 +784,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> أول إصدار في Microsoft Store.
+> - الإعدادات مقسّمة إلى أقسام، مع إصدار التطبيق ورابط «ما الجديد»
+> - «راسلنا» في الإعدادات ← المساعدة: نموذج لاقتراح أو مشكلة أو سؤال
+> - أخفِ اللوحة الجانبية ليشغل التقويم النافذة كلها
+> - تُفتح بطاقة الحدث بجوار الحدث نفسه
+> - الإضافة السريعة تبدأ العنوان بحرف كبير
+> - النافذة الضيقة لم تعد تقطع شريط الأدوات
+> - إصلاحات لشريط الأدوات عندما تكون اللوحة الجانبية مفتوحة
 
 ## Bengali (bn-bd)
 
@@ -775,7 +847,13 @@ Expected rating: 3+ / Everyone.
 
 **What's new in this version:**
 
-> Microsoft Store-এ প্রথম রিলিজ।
+> - সেটিংস এখন বিভাগে ভাগ করা, অ্যাপের সংস্করণ আর "নতুন কী" লিংকসহ
+> - সেটিংস → সহায়তায় "আমাদের লিখুন": পরামর্শ, সমস্যা বা প্রশ্নের জন্য ফর্ম
+> - পাশের প্যানেল লুকিয়ে ক্যালেন্ডারকে পুরো উইন্ডো দিন
+> - ইভেন্টের কার্ড ইভেন্টের পাশেই খোলে
+> - দ্রুত যোগ করায় শিরোনাম বড় হাতের অক্ষরে শুরু হয়
+> - সরু উইন্ডোতে টুলবার আর কেটে যায় না
+> - পাশের প্যানেল খোলা থাকলে টুলবারের সমস্যা ঠিক করা হয়েছে
 
 ## Screenshots
 
