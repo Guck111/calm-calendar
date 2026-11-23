@@ -6,8 +6,9 @@ use crate::desktop;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 
 pub const SETTINGS: &str = "settings";
-/// size in logical pixels; on a short screen the window is shorter, the content scrolls
-const SIZE: (f64, f64) = (440.0, 760.0);
+/// size in logical pixels: the list of sections and one open section;
+/// on a short screen the window is shorter, the section scrolls
+const SIZE: (f64, f64) = (720.0, 560.0);
 
 pub fn show(app: &AppHandle) {
     if let Some(w) = app.get_webview_window(SETTINGS) {

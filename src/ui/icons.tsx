@@ -47,6 +47,41 @@ export const ChevronDown = ({ size = 12 }: P) => (
   </svg>
 );
 
+/** settings sections */
+export const Contrast = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <circle cx="8" cy="8" r="6" />
+    <path d="M8 2v12M8 5.2h5.2M8 8h6M8 10.8h5.2" />
+  </svg>
+);
+
+export const CalendarDays = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <rect x="2" y="3" width="12" height="11" rx="2" />
+    <path d="M2 6.6h12M5.4 1.6v2.8M10.6 1.6v2.8" />
+  </svg>
+);
+
+export const Bell = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <path d="M4 11V7.4a4 4 0 0 1 8 0V11l1.2 1.4H2.8L4 11Z" />
+    <path d="M6.6 14.2a1.6 1.6 0 0 0 2.8 0" />
+  </svg>
+);
+
+export const Bolt = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <path d="M9 1.8 3.6 9H8l-1 5.2L12.4 7H8l1-5.2Z" />
+  </svg>
+);
+
+export const Help = ({ size = 16 }: P) => (
+  <svg {...base(size)}>
+    <circle cx="8" cy="8" r="6" />
+    <path d="M6.3 6.4a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M8 11.5v.1" />
+  </svg>
+);
+
 export const Plus = ({ size = 16 }: P) => (
   <svg {...base(size)}>
     <path d="M8 3v10M3 8h10" />

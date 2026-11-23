@@ -7,6 +7,7 @@ import { $cursor, $now, $view, nextClicked } from "../model/view";
 import { toTimeKey, viewDays } from "../shared/lib/date";
 import { formatFreeSlots, freeSlots, type FreeOptions } from "../shared/lib/free";
 import { readJson, writeJson } from "../shared/lib/storage";
+import { copyText } from "../shared/lib/clipboard";
 import { Button } from "./Button";
 import { Clock, Close } from "./icons";
 import s from "./Settings.module.css";
@@ -35,22 +36,6 @@ const minutesOf = (key: string): number => {
   return h * 60 + m;
 };
 const timeKeyOf = (minutes: number): string => toTimeKey(new Date(2000, 0, 1, 0, minutes));
-
-/** Copy to clipboard: the Tauri window and the browser have the Clipboard API, the fallback is via selection */
-const copyText = async (text: string): Promise<boolean> => {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = text;
-    document.body.append(area);
-    area.select();
-    const ok = document.execCommand("copy");
-    area.remove();
-    return ok;
-  }
-};
 
 const FreeSlotsDialog = ({ onClose }: { onClose: () => void }) => {
   const [events, view, cursor, now, next, loading] = useUnit([$events, $view, $cursor, $now, nextClicked, $loading]);

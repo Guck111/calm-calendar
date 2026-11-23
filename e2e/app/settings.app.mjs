@@ -31,6 +31,31 @@ test("the gear opens Settings in a separate window", async () => {
   await browser.$('[role=dialog][aria-label="Settings"]').waitForExist({ timeout: 15_000 });
 });
 
+test("the window has the list of sections, the app version and, under Help, the form and the log folder", async () => {
+  const { browser } = app;
+  await switchToWindow(browser, "settings");
+  const seen = await browser.execute(() => ({
+    tabs: [...document.querySelectorAll("[role=tablist] [role=tab]")].map((el) => el.textContent?.trim()),
+    width: window.innerWidth,
+    version: document.body.textContent?.match(/Version \d+\.\d+\.\d+/)?.[0] ?? null,
+  }));
+  assert.deepEqual(seen.tabs, ["Look", "Calendar", "Reminders", "Quick access", "Help"]);
+  assert.equal(seen.width, 720);
+  assert.match(seen.version ?? "", /^Version \d+\.\d+\.\d+$/);
+
+  await browser.execute(() =>
+    [...document.querySelectorAll("[role=tab]")].find((el) => el.textContent?.trim() === "Help")?.click(),
+  );
+  const help = await browser.execute(() => {
+    const open = [...document.querySelectorAll("[role=tabpanel]")].filter((el) => !el.hidden);
+    return { count: open.length, text: open[0]?.textContent ?? "" };
+  });
+  assert.equal(help.count, 1);
+  assert.match(help.text, /Write to us/);
+  assert.match(help.text, /support@calmcalendar\.co\.uk/);
+  assert.match(help.text, /Open log folder/);
+});
+
 test("week numbers turned on in Settings appear in the main window", async () => {
   const { browser } = app;
   await switchToWindow(browser, "settings");

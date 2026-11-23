@@ -1,5 +1,5 @@
 // Time zones, guests, travel time, free time.
-import { test, expect, openApp, eventBlock, dialog, blockOn, showMore } from "./fixtures";
+import { test, expect, openApp, openSettings, eventBlock, dialog, blockOn, showMore } from "./fixtures";
 import type { Page } from "@playwright/test";
 import type { en } from "../../src/shared/i18n/en";
 
@@ -58,8 +58,7 @@ test.describe("time zones", () => {
     await openApp(page);
     const secondHours = page.locator('main [class*="secondHours"]');
     await expect(secondHours).toHaveCount(0);
-    await page.getByRole("button", { name: t.common.settings }).click();
-    const settings = page.getByRole("dialog", { name: t.common.settings });
+    const settings = await openSettings(page, t, "groupCalendar");
     await settings.getByRole("switch", { name: t.settings.secondZone }).check();
     const zones = settings.getByLabel(t.settings.secondZone, { exact: true });
     // Intl may call it Asia/Calcutta

@@ -1,4 +1,11 @@
-import { useEffect, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import { LANGS, langName, readLangSetting, saveLangSetting, t, type LangSetting } from "../shared/i18n";
 import { useUnit } from "effector-react";
 import { $secondZoneSetting, secondZoneChanged } from "../model/zones";
@@ -42,12 +49,49 @@ import {
 } from "../shared/lib/appearance";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
-import { Close } from "./icons";
+import { APP_VERSION } from "../shared/lib/version";
+import { Bell, Bolt, CalendarDays, Close, Contrast, Help } from "./icons";
+import { FeedbackForm } from "./FeedbackForm";
 import { useDraggable } from "./useDraggable";
 import s from "./Settings.module.css";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
 const ALERT_MODES: AlertMode[] = ["off", "calls", "all"];
+/** Sections of the settings: the list at the start edge, one of them open next to it */
+const SECTIONS = ["look", "calendar", "reminders", "quick", "help"] as const;
+type SectionId = (typeof SECTIONS)[number];
+
+const SECTION_ICON: Record<SectionId, typeof Help> = {
+  look: Contrast,
+  calendar: CalendarDays,
+  reminders: Bell,
+  quick: Bolt,
+  help: Help,
+};
+
+const sectionName = (id: SectionId): string =>
+  ({
+    look: t.settings.groupLook,
+    calendar: t.settings.groupCalendar,
+    reminders: t.settings.groupReminders,
+    quick: t.settings.groupQuick,
+    help: t.settings.groupHelp,
+  })[id];
+
+/** Options of one section. A closed one stays mounted, so what was typed in it is kept */
+const Pane = ({ id, current, children }: { id: SectionId; current: SectionId; children: ReactNode }) => (
+  <div
+    id={`settings-panel-${id}`}
+    className={s.group}
+    role="tabpanel"
+    aria-labelledby={`settings-tab-${id}`}
+    hidden={id !== current}
+  >
+    <h3 className={s.groupTitle}>{sectionName(id)}</h3>
+    {children}
+  </div>
+);
+
 /** list value for a disabled hotkey */
 const OFF = "off";
 
@@ -191,6 +235,20 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   // widget, always on top and autostart — the same as in the tray menu; the checkboxes there follow
   const [desktop, setDesktop] = useState<DesktopState>({ widget: false, on_top: false, autostart: false });
   const [error, setError] = useState<string | null>(null);
+  const [section, setSection] = useState<SectionId>("look");
+  const openSection = (id: SectionId) => {
+    setSection(id);
+    setError(null);
+  };
+  // up and down move along the list and open the section at once
+  const onSectionKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = SECTIONS[(SECTIONS.indexOf(section) + step + SECTIONS.length) % SECTIONS.length];
+    openSection(next);
+    e.currentTarget.querySelector<HTMLElement>(`#settings-tab-${next}`)?.focus();
+  };
   const reschedule = onReschedule;
   const [secondZone, setSecondZone] = useUnit([$secondZoneSetting, secondZoneChanged]);
   const [weekNumbers, setWeekNumbers, holidayRegion, setHolidays] = useUnit([
@@ -381,10 +439,40 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
           </Button>
         </div>
 
-        <div className={s.group} role="group" aria-labelledby="settings-look">
-          <h3 id="settings-look" className={s.groupTitle}>
-            {t.settings.groupLook}
-          </h3>
+        <div className={s.body}>
+          <div className={s.side}>
+          <div
+            className={s.nav}
+            role="tablist"
+            aria-orientation="vertical"
+            aria-label={t.common.settings}
+            onKeyDown={onSectionKey}
+          >
+            {SECTIONS.map((id) => {
+              const Icon = SECTION_ICON[id];
+              return (
+                <button
+                  key={id}
+                  id={`settings-tab-${id}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={section === id}
+                  aria-controls={`settings-panel-${id}`}
+                  tabIndex={section === id ? 0 : -1}
+                  className={cx(s.navItem, section === id && s.navActive)}
+                  onClick={() => openSection(id)}
+                >
+                  <Icon />
+                  <span>{sectionName(id)}</span>
+                </button>
+              );
+            })}
+          </div>
+          <small className={s.version}>{t.settings.version(APP_VERSION)}</small>
+          </div>
+
+          <div className={s.content}>
+          <Pane id="look" current={section}>
           <section className={s.section}>
             <h4>{t.settings.theme}</h4>
             <div className={s.segmented} role="radiogroup" aria-label={t.settings.theme}>
@@ -458,12 +546,9 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
               />
             </label>
           </section>
-        </div>
+          </Pane>
 
-        <div className={s.group} role="group" aria-labelledby="settings-calendar">
-          <h3 id="settings-calendar" className={s.groupTitle}>
-            {t.settings.groupCalendar}
-          </h3>
+          <Pane id="calendar" current={section}>
           <section className={s.section}>
             <h4>{t.settings.language}</h4>
             <select
@@ -537,12 +622,9 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
           </section>
 
           <FeedsSection />
-        </div>
+          </Pane>
 
-        <div className={s.group} role="group" aria-labelledby="settings-reminders">
-          <h3 id="settings-reminders" className={s.groupTitle}>
-            {t.settings.groupReminders}
-          </h3>
+          <Pane id="reminders" current={section}>
           <section className={s.section}>
             <label className={s.toggle}>
               <span>
@@ -570,7 +652,6 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
                 onChange={(e) => void togglePrivate(e.target.checked)}
               />
             </label>
-            {error && <p className={s.error}>{error}</p>}
           </section>
 
           <section className={s.section}>
@@ -590,12 +671,9 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
             </select>
             <small className={s.sectionText}>{t.alert.text}</small>
           </section>
-        </div>
+          </Pane>
 
-        <div className={s.group} role="group" aria-labelledby="settings-quick">
-          <h3 id="settings-quick" className={s.groupTitle}>
-            {t.settings.groupQuick}
-          </h3>
+          <Pane id="quick" current={section}>
           <section className={s.section}>
             <h4>{t.settings.quickHotkey}</h4>
             <select
@@ -663,26 +741,28 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
               />
             </label>
           </section>
-        </div>
+          <p className={s.hint}>{t.settings.trayHint}</p>
+          </Pane>
 
-        {inTauri && (
-          <div className={s.group} role="group" aria-labelledby="settings-help">
-            <h3 id="settings-help" className={s.groupTitle}>
-              {t.settings.groupHelp}
-            </h3>
-            <section className={s.section}>
-              <h4>{t.settings.logs}</h4>
-              <small className={s.sectionText}>{t.settings.logsText}</small>
-              <div>
-                <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
-                  {t.settings.openLogs}
-                </Button>
-              </div>
-            </section>
+          <Pane id="help" current={section}>
+            <FeedbackForm />
+            {/* the log is written by the app: the browser has none */}
+            {inTauri && (
+              <section className={s.section}>
+                <h4>{t.settings.logs}</h4>
+                <small className={s.sectionText}>{t.settings.logsText}</small>
+                <div>
+                  <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
+                    {t.settings.openLogs}
+                  </Button>
+                </div>
+              </section>
+            )}
+          </Pane>
+
+          {error && <p className={s.error}>{error}</p>}
           </div>
-        )}
-
-        <p className={s.hint}>{t.settings.trayHint}</p>
+        </div>
       </div>
     </div>
   );
