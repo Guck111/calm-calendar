@@ -1,6 +1,6 @@
 <header class="doc-head" id="top">
   <h1>Politique de confidentialité de Calm Calendar</h1>
-  <p class="doc-meta">Date d’entrée en vigueur : <time datetime="2026-11-11">11 novembre 2026</time></p>
+  <p class="doc-meta">Date d’entrée en vigueur : <time datetime="2026-11-23">23 novembre 2026</time></p>
   <p class="doc-note">Ceci est une traduction. En cas de divergence avec la <a href="../privacy.html" hreflang="en">version anglaise</a>, la version anglaise prévaut.</p>
 </header>
 
@@ -29,6 +29,7 @@
 <section aria-labelledby="data-accessed">
   <h2 id="data-accessed">Données auxquelles l’application accède</h2>
   <p>Lorsque vous vous connectez avec Google, il vous est demandé d’accorder à Calm Calendar les autorisations suivantes. L’application utilise chacune uniquement pour la fonction décrite.</p>
+  <p>Les deux autorisations d’agenda sont obligatoires. Les trois marquées « facultatif » sont des cases distinctes sur la page de connexion de Google : vous pouvez en laisser une décochée et le reste de l’application fonctionne. L’application ne redemande une autorisation facultative que lorsque vous utilisez la fonction qui en a besoin.</p>
   <div class="table-wrap">
     <table>
       <caption class="visually-hidden">Autorisations Google demandées par Calm Calendar et utilisation de chacune</caption>
@@ -51,10 +52,22 @@
           <th scope="row"><code>openid</code>, <code>email</code><strong>L’adresse e-mail de votre compte Google</strong></th>
           <td>Indique avec quel compte vous êtes connecté.</td>
         </tr>
+        <tr>
+          <th scope="row"><code>tasks</code><strong>Créer, modifier, organiser et supprimer toutes vos tâches (facultatif)</strong></th>
+          <td>Affiche vos listes et vos tâches Google Tasks dans le panneau latéral et à leur jour dans l’agenda ; crée, modifie, termine et supprime une tâche lorsque vous le faites dans l’application.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>drive.file</code><strong>Afficher, modifier, créer et supprimer uniquement les fichiers Google Drive que vous utilisez avec cette application (facultatif)</strong></th>
+          <td>Importe dans votre Google Drive un fichier que vous choisissez sur votre ordinateur lorsque vous le joignez à un événement ; donne aux invités de cet événement un accès en lecture au fichier uniquement si vous l’indiquez à l’enregistrement ; place le fichier dans la corbeille de Drive si vous le retirez avant d’enregistrer l’événement. L’application ne peut ni voir ni modifier aucun autre fichier de votre Drive.</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>calendar.events.freebusy</code><strong>Voir les disponibilités dans les agendas Google auxquels vous avez accès (facultatif)</strong></th>
+          <td>Indique si les invités d’un événement que vous modifiez sont occupés à cette heure et propose des créneaux où tout le monde est libre. Google ne renvoie que les plages occupées, jamais les titres ni les détails des événements. Ces informations sont affichées tant que le formulaire de l’événement est ouvert et ne sont pas enregistrées.</td>
+        </tr>
       </tbody>
     </table>
   </div>
-  <p>L’application n’accède ni à votre Gmail, ni à vos contacts, ni à Google Drive, ni à aucune autre donnée Google, et ne modifie pas vos agendas sauf si vous créez, modifiez, déplacez ou supprimez vous-même un événement.</p>
+  <p>L’application n’accède ni à votre Gmail, ni à vos contacts, ni à aucun fichier de votre Google Drive autre que ceux que vous avez importés via l’application, ni à aucune autre donnée Google. Elle ne modifie pas vos agendas, vos tâches ou vos fichiers sauf si vous le faites vous-même dans l’application.</p>
 </section>
 
 <section aria-labelledby="data-use">
@@ -66,11 +79,14 @@
   <h2 id="data-storage">Où les données sont stockées</h2>
   <p>Tout le traitement se fait sur votre ordinateur. Calm Calendar communique directement avec les serveurs de Google (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) via des connexions HTTPS chiffrées. Rien n’est envoyé à nous ni à aucun autre tiers.</p>
   <p>Si vous ajoutez un abonnement à un calendrier par lien (Paramètres → Abonnements à des calendriers), l’application télécharge aussi ce fichier .ics directement depuis l’adresse saisie ; ce site voit une demande de téléchargement ordinaire venant de votre ordinateur. Un clic sur le lieu d’un événement ouvre Google Maps dans votre navigateur avec ce lieu en recherche.</p>
+  <p>Un fichier que vous joignez à un événement va directement de votre ordinateur à votre Google Drive. L’application n’en conserve aucune copie.</p>
   <p>L’application conserve sur votre ordinateur :</p>
   <ul>
     <li><strong>Jeton de connexion.</strong> Le jeton d’actualisation Google est stocké dans le Gestionnaire d’identification Windows, protégé par votre compte Windows. Le jeton d’accès à courte durée de vie est conservé uniquement en mémoire pendant que l’application fonctionne.</li>
     <li><strong>Les adresses e-mail des comptes</strong>, pour indiquer quels comptes sont connectés.</li>
     <li><strong>Les données d’agenda chargées récemment.</strong> Les dernières listes d’agendas et les derniers événements reçus de Google sont enregistrés dans le stockage local de l’application, afin que votre agenda et le widget affichent votre planning hors ligne. Au plus les 80 réponses les plus récentes sont conservées ; les plus anciennes sont supprimées automatiquement.</li>
+    <li><strong>Tâches.</strong> Les listes de tâches et les tâches reçues de Google sont enregistrées dans le même stockage local afin d’être affichées hors connexion.</li>
+    <li><strong>Autorisations accordées.</strong> Les autorisations facultatives accordées par chaque compte, pour que l’application sache quelles fonctions afficher.</li>
     <li><strong>Les abonnements à des calendriers.</strong> Les liens que vous ajoutez et la dernière copie téléchargée de chaque calendrier, pour l’afficher hors ligne. Supprimer un abonnement supprime sa copie.</li>
     <li><strong>Les paramètres</strong>, comme le thème, la langue, la position du widget et les agendas affichés.</li>
     <li><strong>Fichier journal.</strong> Un journal technique dans <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> enregistre les démarrages de l’application, les connexions, les déconnexions et les erreurs, afin de pouvoir analyser les problèmes. Il ne contient ni titres ni descriptions d’événements, ni jetons ; les adresses e-mail sont réduites à la première lettre et au domaine (<code>a***@gmail.com</code>). Jusqu’à cinq fichiers de 1&nbsp;Mo sont conservés, les plus anciens étant supprimés automatiquement. Le journal ne quitte jamais votre ordinateur de lui-même : nous ne le voyons que si vous le joignez à un e-mail au support (Paramètres → « Ouvrir le dossier du journal »).</li>
@@ -84,7 +100,7 @@
     <li><strong>Chiffrement en transit.</strong> Toutes les communications avec Google passent par HTTPS (TLS). L’application n’a aucune autre destination réseau et aucun serveur à nous entre les deux.</li>
     <li><strong>Connexion sécurisée.</strong> Vous vous connectez dans votre navigateur habituel, sur la page de Google elle-même : l’application ne voit donc jamais votre mot de passe Google. La connexion utilise le flux de code d’autorisation OAuth 2.0 pour applications de bureau avec PKCE (RFC 7636) et une vérification aléatoire du paramètre <code>state</code>, et reçoit la réponse uniquement sur une adresse locale temporaire (<code>127.0.0.1</code>) fermée à la fin de la connexion.</li>
     <li><strong>Jeton de connexion protégé.</strong> Le jeton d’actualisation à longue durée de vie est stocké uniquement dans le Gestionnaire d’identification Windows, qui le chiffre avec des clés liées à votre compte Windows (Windows Data Protection API). Il n’est jamais écrit dans un fichier en clair, dans le journal ou dans les paramètres. Le jeton d’accès à courte durée de vie est conservé uniquement en mémoire.</li>
-    <li><strong>Moindre privilège.</strong> L’application demande uniquement les autorisations Google listées ci-dessus, rien pour Gmail, Drive ou les contacts.</li>
+    <li><strong>Moindre privilège.</strong> L’application ne demande que les autorisations Google indiquées ci-dessus, dont trois sont facultatives. L’autorisation Drive est la plus restreinte que propose Google : elle ne couvre que les fichiers importés par l’application elle-même. Rien n’est demandé pour Gmail ni pour les contacts.</li>
     <li><strong>Fenêtre de l’application restreinte.</strong> L’interface de l’application fonctionne sous une Content Security Policy stricte : elle ne peut charger que ses propres fichiers et ne peut ni effectuer de requêtes réseau ni charger de code distant. Seule la partie native de l’application communique avec Google, et uniquement avec les trois hôtes Google cités plus haut.</li>
     <li><strong>Cache local.</strong> Les données d’agenda chargées récemment sont conservées dans le stockage privé de l’application, dans votre profil utilisateur Windows : les autres utilisateurs Windows du même ordinateur ne peuvent donc pas les lire par défaut. L’application n’ajoute pas son propre chiffrement à ce cache ; pour vous protéger d’une personne ayant un accès physique à votre ordinateur, nous vous recommandons d’activer le chiffrement de l’appareil Windows (BitLocker). Le cache est supprimé lorsque vous vous déconnectez.</li>
     <li><strong>Aucun accès de notre part.</strong> Nous n’exploitons aucun serveur et ne recevons aucune donnée : il n’existe donc de notre côté aucune base de données d’utilisateurs qui pourrait être consultée ou fuiter, et personne chez Calm Calendar ne peut lire votre agenda.</li>
@@ -100,6 +116,7 @@
     <li><strong>Déconnectez-vous</strong> dans l’application (le bouton à côté du compte dans la barre latérale). Cela révoque l’accès de l’application chez Google, supprime le jeton du Gestionnaire d’identification Windows et efface de votre ordinateur l’adresse e-mail et les données d’agenda enregistrées. Vos agendas eux-mêmes restent dans votre compte Google.</li>
     <li><strong>Retirez l’accès</strong> à tout moment depuis votre compte Google : <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
     <li><strong>Désinstallez</strong> l’application pour supprimer ses paramètres. Si vous l’avez installée depuis le Microsoft Store, Windows supprime les données locales de l’application avec elle. Pour les autres installations, vous pouvez aussi supprimer les dossiers <code>%APPDATA%\com.arseni.calmcalendar</code> et <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> (ce dernier contient le journal).</li>
+    <li><strong>Tâches et fichiers importés.</strong> La déconnexion supprime aussi de votre ordinateur les tâches enregistrées. Vos tâches restent dans Google Tasks et les fichiers que vous avez importés restent dans votre Google Drive : supprimez-les là-bas si vous n’en avez plus besoin.</li>
   </ul>
 </section>
 

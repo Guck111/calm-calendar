@@ -58,7 +58,7 @@
     <article class="wrap prose">
       <header class="doc-head" id="top">
         <h1>Política de Privacidade do Calm Calendar</h1>
-        <p class="doc-meta">Data de vigência: <time datetime="2026-11-11">11 de novembro de 2026</time></p>
+        <p class="doc-meta">Data de vigência: <time datetime="2026-11-23">23 de novembro de 2026</time></p>
         <p class="doc-note">Esta é uma tradução. Em caso de divergência com a <a href="../privacy.html" hreflang="en">versão em inglês</a>, prevalece a versão em inglês.</p>
       </header>
 
@@ -87,6 +87,7 @@
       <section aria-labelledby="data-accessed">
         <h2 id="data-accessed">Dados que o app acessa</h2>
         <p>Ao fazer login com o Google, você será solicitado a conceder ao Calm Calendar as permissões abaixo. O app usa cada uma apenas para o recurso descrito.</p>
+        <p>As duas permissões de agenda são obrigatórias. As três marcadas como “opcional” são caixas separadas na página de login do Google: você pode deixar qualquer uma desmarcada e o restante do aplicativo funciona. O aplicativo volta a pedir uma permissão opcional apenas quando você usa o recurso que precisa dela.</p>
         <div class="table-wrap">
           <table>
             <caption class="visually-hidden">Permissões do Google solicitadas pelo Calm Calendar e como cada uma é usada</caption>
@@ -109,10 +110,22 @@
                 <th scope="row"><code>openid</code>, <code>email</code><strong>O endereço de e-mail da sua Conta do Google</strong></th>
                 <td>Mostra com qual conta você está conectado.</td>
               </tr>
+              <tr>
+                <th scope="row"><code>tasks</code><strong>Criar, editar, organizar e excluir todas as suas tarefas (opcional)</strong></th>
+                <td>Mostra suas listas e tarefas do Google Tarefas no painel lateral e no dia delas na agenda; cria, edita, conclui e exclui uma tarefa quando você faz isso no aplicativo.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>drive.file</code><strong>Ver, editar, criar e excluir apenas os arquivos do Google Drive que você usa com este aplicativo (opcional)</strong></th>
+                <td>Envia para o seu Google Drive um arquivo que você escolhe no computador quando o anexa a um evento; dá aos convidados desse evento acesso de leitura ao arquivo somente se você indicar isso ao salvar; move o arquivo para a lixeira do Drive se você o remover antes de salvar o evento. O aplicativo não pode ver nem alterar nenhum outro arquivo do seu Drive.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>calendar.events.freebusy</code><strong>Ver a disponibilidade nas agendas do Google a que você tem acesso (opcional)</strong></th>
+                <td>Mostra se os convidados de um evento que você está editando estão ocupados naquele horário e sugere horários em que todos estão livres. O Google retorna apenas os intervalos ocupados, nunca os títulos nem os detalhes dos eventos. Essas informações são exibidas enquanto o formulário do evento está aberto e não são salvas.</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p>O app não acessa seu Gmail, contatos, Google Drive ou quaisquer outros dados do Google, e não altera suas agendas a menos que você mesmo crie, edite, mova ou exclua um evento.</p>
+        <p>O aplicativo não acessa o seu Gmail, os seus contatos, nenhum arquivo do seu Google Drive além dos que você enviou pelo aplicativo, nem qualquer outro dado do Google. Ele não altera suas agendas, tarefas ou arquivos, a menos que você mesmo faça isso no aplicativo.</p>
       </section>
 
       <section aria-labelledby="data-use">
@@ -124,11 +137,14 @@
         <h2 id="data-storage">Onde os dados são armazenados</h2>
         <p>Todo o processamento acontece no seu computador. O Calm Calendar se comunica diretamente com os servidores do Google (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) por conexões HTTPS criptografadas. Nada é enviado para nós ou para terceiros.</p>
         <p>Se você adicionar uma assinatura de agenda por link (Configurações → Assinaturas de calendários), o app também baixa esse arquivo .ics diretamente do endereço informado; esse site vê uma solicitação comum de download vinda do seu computador. Um clique no local de um evento abre o Google Maps no navegador com esse local na busca.</p>
+        <p>Um arquivo que você anexa a um evento vai do seu computador diretamente para o seu Google Drive. O aplicativo não guarda nenhuma cópia.</p>
         <p>O app mantém no seu computador:</p>
         <ul>
           <li><strong>Token de login.</strong> O token de atualização do Google é guardado no Gerenciador de Credenciais do Windows, protegido pela sua conta do Windows. O token de acesso de curta duração fica apenas na memória enquanto o app está aberto.</li>
           <li><strong>E-mails das contas</strong>, para mostrar quais contas estão conectadas.</li>
           <li><strong>Dados da agenda carregados recentemente.</strong> As listas de agendas e os eventos mais recentes recebidos do Google ficam salvos no armazenamento local do app, para que a agenda e o widget continuem mostrando seus compromissos offline. São mantidas no máximo as 80 respostas mais recentes; as mais antigas são removidas automaticamente.</li>
+          <li><strong>Tarefas.</strong> As listas de tarefas e as tarefas recebidas do Google são salvas no mesmo armazenamento local para serem exibidas off-line.</li>
+          <li><strong>Permissões concedidas.</strong> Quais permissões opcionais cada conta concedeu, para que o aplicativo saiba quais recursos mostrar.</li>
           <li><strong>Assinaturas de calendários.</strong> Os links que você adiciona e a última cópia baixada de cada agenda, para exibi-la offline. Remover uma assinatura exclui a cópia.</li>
           <li><strong>Configurações</strong>, como tema, idioma, posição do widget e quais agendas são exibidas.</li>
           <li><strong>Arquivo de log.</strong> Um log técnico em <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> registra inicializações do app, logins, saídas e erros, para que problemas possam ser investigados. Ele não contém títulos nem descrições de eventos nem tokens; os endereços de e-mail são abreviados para a primeira letra e o domínio (<code>a***@gmail.com</code>). São mantidos até cinco arquivos de 1&nbsp;MB; os mais antigos são excluídos automaticamente. O log nunca sai do seu computador sozinho: só o vemos se você anexá-lo a um e-mail para o suporte (Configurações → “Abrir pasta de log”).</li>
@@ -142,7 +158,7 @@
           <li><strong>Criptografia em trânsito.</strong> Toda a comunicação com o Google usa HTTPS (TLS). O app não tem nenhum outro destino na rede nem servidores nossos no meio do caminho.</li>
           <li><strong>Login seguro.</strong> Você faz login no seu navegador comum, na própria página do Google, então o app nunca vê sua senha do Google. O login usa o fluxo de código de autorização do OAuth 2.0 para apps de desktop com PKCE (RFC 7636) e uma verificação aleatória de <code>state</code>, e recebe a resposta apenas em um endereço local temporário (<code>127.0.0.1</code>) que é fechado ao final do login.</li>
           <li><strong>Token de login protegido.</strong> O token de atualização de longa duração é guardado apenas no Gerenciador de Credenciais do Windows, que o criptografa com chaves ligadas à sua conta do Windows (Windows Data Protection API). Ele nunca é gravado em arquivo comum, no log ou nas configurações. O token de acesso de curta duração fica apenas na memória.</li>
-          <li><strong>Privilégio mínimo.</strong> O app solicita apenas as permissões do Google listadas acima, nada para Gmail, Drive ou contatos.</li>
+          <li><strong>Privilégio mínimo.</strong> O aplicativo solicita apenas as permissões do Google listadas acima, e três delas são opcionais. A permissão do Drive é a mais restrita que o Google oferece: abrange apenas os arquivos que o próprio aplicativo enviou. Nada é solicitado para o Gmail nem para os contatos.</li>
           <li><strong>Janela do app restrita.</strong> A interface do app roda sob uma Content Security Policy rígida: só pode carregar os próprios arquivos e não pode fazer solicitações de rede nem carregar código remoto. Apenas a parte nativa do app se comunica com o Google, e apenas com os três hosts do Google citados acima.</li>
           <li><strong>Cache local.</strong> Os dados da agenda carregados recentemente ficam no armazenamento privado do app dentro do seu perfil de usuário do Windows, então outros usuários do Windows no mesmo computador não conseguem lê-los por padrão. O app não adiciona criptografia própria a esse cache; para se proteger de alguém com acesso físico ao seu computador, recomendamos ativar a criptografia de dispositivo do Windows (BitLocker). O cache é excluído quando você sai da conta.</li>
           <li><strong>Sem acesso da nossa parte.</strong> Não temos servidores e não recebemos dados, então não existe do nosso lado um banco de dados de usuários que possa ser acessado ou vazado, e ninguém no Calm Calendar pode ler sua agenda.</li>
@@ -158,6 +174,7 @@
           <li><strong>Saia da conta</strong> no app (o botão ao lado da conta na barra lateral). Isso revoga o acesso do app no Google, exclui o token do Gerenciador de Credenciais do Windows e apaga do seu computador o e-mail e os dados da agenda salvos. Suas agendas continuam na sua Conta do Google.</li>
           <li><strong>Remova o acesso</strong> a qualquer momento na sua Conta do Google: <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
           <li><strong>Desinstale</strong> o app para remover as configurações. Se você o instalou pela Microsoft Store, o Windows remove os dados locais do app junto com ele. Em outras instalações, você também pode excluir as pastas <code>%APPDATA%\com.arseni.calmcalendar</code> e <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> (a segunda guarda o log).</li>
+          <li><strong>Tarefas e arquivos enviados.</strong> Ao sair, as tarefas salvas também são excluídas do seu computador. Suas tarefas continuam no Google Tarefas e os arquivos que você enviou continuam no seu Google Drive: exclua-os lá se não precisar mais deles.</li>
         </ul>
       </section>
 
