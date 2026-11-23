@@ -13,6 +13,7 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 
 pub const MAIN: &str = "main";
 pub const WIDGET: &str = "widget";
+const DEV_IDENTIFIER_SUFFIX: &str = ".dev";
 /// prominent reminder of an event start
 pub const ALERT: &str = "alert";
 /// agenda for today and tomorrow on a click on the tray icon
@@ -214,7 +215,7 @@ pub fn show_alert(app: &AppHandle) {
         return;
     }
     let built = tauri::WebviewWindowBuilder::new(app, ALERT, tauri::WebviewUrl::App("index.html?window=alert".into()))
-        .title("Calm Calendar")
+        .title(app_title(app))
         // the window fits its height to the content by itself, like the widget
         .inner_size(460.0, 180.0)
         .resizable(false)
@@ -306,7 +307,7 @@ fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
         Some(w) => w,
         None => {
             let built = tauri::WebviewWindowBuilder::new(app, AGENDA, tauri::WebviewUrl::App("index.html?window=agenda".into()))
-                .title("Calm Calendar")
+                .title(app_title(app))
                 .inner_size(AGENDA_SIZE.0, AGENDA_SIZE.1)
                 .resizable(false)
                 .decorations(false)
@@ -338,7 +339,26 @@ fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
     let _ = w.set_focus();
 }
 
+pub fn app_title(app: &AppHandle) -> String {
+    title_for(&app.config().identifier)
+}
+
+fn title_for(identifier: &str) -> String {
+    if identifier.ends_with(DEV_IDENTIFIER_SUFFIX) { "Calm Calendar Dev" } else { "Calm Calendar" }.to_owned()
+}
+
+fn mark_config_windows(app: &AppHandle) {
+    let title = app_title(app);
+    if let Some(w) = window(app, MAIN) {
+        let _ = w.set_title(&title);
+    }
+    if let Some(w) = window(app, WIDGET) {
+        let _ = w.set_title(&format!("{title} widget"));
+    }
+}
+
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
+    mark_config_windows(app);
     let hidden = std::env::args().any(|a| a == HIDDEN_ARG) || autostart::launched_at_startup();
     if !hidden {
         show_main(app, None);
@@ -421,7 +441,7 @@ fn on_menu(app: &AppHandle, id: &str) {
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let menu = build_menu(app)?;
     let mut tray = TrayIconBuilder::with_id(TRAY)
-        .tooltip("Calm Calendar")
+        .tooltip(app_title(app))
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| on_menu(app, event.id().as_ref()))
@@ -442,4 +462,25 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     }
     tray.build(app)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn identifier(config: &str) -> String {
+        let config: serde_json::Value = serde_json::from_str(config).unwrap();
+        config["identifier"].as_str().unwrap().to_owned()
+    }
+
+    #[test]
+    fn dev_build_windows_say_dev() {
+        assert_eq!(title_for(&identifier(include_str!("../tauri.dev.conf.json"))), "Calm Calendar Dev");
+    }
+
+    #[test]
+    fn release_windows_keep_the_app_name() {
+        assert_eq!(title_for(&identifier(include_str!("../tauri.conf.json"))), "Calm Calendar");
+        assert_eq!(title_for(&identifier(include_str!("../tauri.e2e.conf.json"))), "Calm Calendar");
+    }
 }
