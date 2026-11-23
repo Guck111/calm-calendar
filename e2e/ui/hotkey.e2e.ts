@@ -1,11 +1,11 @@
 // The global quick add shortcut: the choice in Settings and the small quick add window it opens
 // (?window=quick; the shortcut itself is registered by Rust and checked in the app tests).
-import { test, expect, openApp } from "./fixtures";
+import { test, expect, openApp, openSettings } from "./fixtures";
 
 test("Settings: the shortcut for quick add from anywhere, Ctrl+Alt+Space by default", async ({ page, t }) => {
   await openApp(page);
-  await page.getByRole("button", { name: t.common.settings }).click();
-  const select = page.getByRole("combobox", { name: t.settings.quickHotkey });
+  const settings = await openSettings(page, t, "groupQuick");
+  const select = settings.getByRole("combobox", { name: t.settings.quickHotkey });
   await expect(select).toHaveValue("ctrl+alt+space");
   await expect(select.locator("option")).toContainText([t.settings.hotkeyOff, "Ctrl+Alt+Space", "Ctrl+Shift+Space"]);
 });

@@ -8,18 +8,17 @@
   background: rgba(0, 0, 0, 0.28);
 }
 
+/* the header, then the list of sections and the open section side by side */
 .dialog {
-  width: min(440px, 100%);
-  /* in a short window settings scroll instead of going past the edge */
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
+  width: min(720px, 100%);
+  /* in a short window the open section scrolls instead of going past the edge */
+  height: min(560px, calc(100vh - 48px));
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 18px 20px 20px;
   border-radius: 14px;
   background: var(--surface);
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 /* separate settings window: the panel fills the whole window */
@@ -39,32 +38,74 @@
 .window .dialog {
   width: 100%;
   height: 100%;
-  max-height: none;
-  padding-top: 0;
   border-radius: 0;
   box-shadow: none;
 }
 
-/* the header stays on top while scrolling: the window can always be dragged by it */
-.window .head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  margin: 0 -20px -10px;
-  padding: 18px 20px 10px;
-  background: var(--surface);
-}
-
-/* settings are dragged by the header */
+/* settings are dragged by the header; it stays in place while a section scrolls */
 .head {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: -18px -20px 0;
-  padding: 18px 20px 0;
+  padding: 14px 14px 10px 20px;
   cursor: move;
   user-select: none;
   touch-action: none;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.nav {
+  flex: none;
+  width: 196px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 10px 14px;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  text-align: start;
+}
+
+.navItem svg {
+  flex: none;
+}
+
+.navItem:hover {
+  background: var(--surface-2);
+}
+
+.navActive,
+.navActive:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 2px 22px 22px 12px;
+  border-inline-start: 1px solid var(--border);
 }
 
 .head button {
@@ -93,24 +134,21 @@
   color: var(--text-2);
 }
 
-/* settings group: the heading is larger and quieter, sections inside — as before */
+/* the options of one section */
 .group {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-block-start: 14px;
-  border-block-start: 1px solid var(--border);
+  gap: 18px;
 }
 
-.group:first-of-type {
-  padding-block-start: 0;
-  border-block-start: 0;
+.group[hidden] {
+  display: none;
 }
 
 /* no uppercase or letter spacing: they break the lettering in Arabic, Devanagari and Bengali */
 .groupTitle {
   margin: 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }

@@ -2,13 +2,10 @@
 // The mock feed (src/shared/api/mock.ts): "Morning yoga" on Mondays and Wednesdays at 7:00 at "Studio 5, Main Street 12",
 // "Football: City vs United" on Saturday; a link with "broken" is a web page, not a calendar.
 import type { Page } from "@playwright/test";
-import { test, expect, openApp, eventBlock, dialog } from "./fixtures";
+import { test, expect, openApp, openSettings as openSection, eventBlock, dialog } from "./fixtures";
 import type { en } from "../../src/shared/i18n/en";
 
-const openSettings = async (page: Page, t: typeof en) => {
-  await page.getByRole("button", { name: t.common.settings }).click();
-  return page.getByRole("dialog", { name: t.common.settings });
-};
+const openSettings = (page: Page, t: typeof en) => openSection(page, t, "groupCalendar");
 
 /** remember the links the page opens in the browser instead of opening them */
 const catchOpened = (page: Page) =>

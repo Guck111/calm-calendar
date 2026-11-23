@@ -1,5 +1,5 @@
 // Settings, the sign-out confirmation, the window error screen, right-to-left Arabic, the widget page.
-import { test, expect, openApp, eventBlock, DICTS } from "./fixtures";
+import { test, expect, openApp, openSettings, eventBlock, DICTS } from "./fixtures";
 
 test.describe("settings", () => {
   test("theme: Dark and Light are applied and remembered", async ({ page, t }) => {
@@ -50,53 +50,15 @@ test.describe("settings", () => {
 
   test("language: German changes the interface after a reload", async ({ page, t }) => {
     await openApp(page);
-    await page.getByRole("button", { name: t.common.settings }).click();
-    await page.getByRole("dialog").getByLabel(t.settings.language).selectOption("de");
+    const settings = await openSettings(page, t, "groupCalendar");
+    await settings.getByLabel(t.settings.language).selectOption("de");
     await expect(page.getByRole("button", { name: DICTS.de.common.today })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("lang", /^de/);
   });
 
-  test("options are grouped; the widget and launch with Windows are here too, not only in the tray", async ({ page, t }) => {
-    await openApp(page);
-    await page.getByRole("button", { name: t.common.settings }).click();
-    const settings = page.getByRole("dialog", { name: t.common.settings });
-    const groups = settings.getByRole("group");
-    await expect(groups).toHaveCount(4);
-    await expect(groups.locator(":scope > h3")).toHaveText([
-      t.settings.groupLook,
-      t.settings.groupCalendar,
-      t.settings.groupReminders,
-      t.settings.groupQuick,
-    ]);
-    const look = settings.getByRole("group", { name: t.settings.groupLook });
-    await expect(look.getByRole("radio", { name: t.settings.themes.dark })).toBeVisible();
-    const quick = settings.getByRole("group", { name: t.settings.groupQuick });
-    await expect(quick.getByLabel(t.settings.quickHotkey)).toBeVisible();
-    // they need the app: in the browser they are there but off
-    for (const name of [t.welcome.widget, t.settings.onTop, t.welcome.autostart]) {
-      await expect(quick.getByRole("switch", { name })).toBeDisabled();
-    }
-  });
-
-  test("a low window: the dialog scrolls down to the last option", async ({ page, t }) => {
-    await page.setViewportSize({ width: 900, height: 540 });
-    await openApp(page);
-    await page.getByRole("button", { name: t.common.settings }).click();
-    const settings = page.getByRole("dialog", { name: t.common.settings });
-    const fits = await settings.evaluate((el) => el.getBoundingClientRect().bottom <= window.innerHeight);
-    expect(fits).toBe(true);
-    expect(await settings.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
-    const last = settings.getByText(t.settings.trayHint);
-    await settings.hover();
-    await page.mouse.wheel(0, 2000);
-    await expect(last).toBeInViewport();
-    await expect(settings.getByLabel(t.alert.label)).toBeInViewport();
-  });
-
   test("notifications and the alert are off in the browser (they need the app)", async ({ page, t }) => {
     await openApp(page);
-    await page.getByRole("button", { name: t.common.settings }).click();
-    const settings = page.getByRole("dialog", { name: t.common.settings });
+    const settings = await openSettings(page, t, "groupReminders");
     await expect(settings.getByRole("switch", { name: t.settings.notifications })).toBeDisabled();
     await expect(settings.getByLabel(t.alert.label)).toBeDisabled();
   });

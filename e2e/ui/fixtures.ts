@@ -166,4 +166,14 @@ export const dayNumber = (page: Page, day: number): Promise<string> =>
     return formatDayNumber(new Date(2026, 10, d)) as string;
   }, day);
 
+type SettingsSection = "groupLook" | "groupCalendar" | "groupReminders" | "groupQuick" | "groupHelp";
+
+/** Opens Settings (the gear) on one of its sections; without a section it is the first one, Look */
+export const openSettings = async (page: Page, t: typeof en, section?: SettingsSection) => {
+  await page.getByRole("button", { name: t.common.settings }).click();
+  const settings = page.getByRole("dialog", { name: t.common.settings });
+  if (section) await settings.getByRole("tab", { name: t.settings[section] }).click();
+  return settings;
+};
+
 export const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

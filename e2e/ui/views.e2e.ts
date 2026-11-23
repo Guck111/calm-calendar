@@ -1,12 +1,9 @@
 // Month and Schedule views, week numbers, holidays, search.
-import { test, expect, openApp, eventBlock, dialog } from "./fixtures";
+import { test, expect, openApp, openSettings as openSection, eventBlock, dialog } from "./fixtures";
 import type { Page } from "@playwright/test";
 import type { en } from "../../src/shared/i18n/en";
 
-const openSettings = async (page: Page, t: typeof en) => {
-  await page.getByRole("button", { name: t.common.settings }).click();
-  return page.getByRole("dialog", { name: t.common.settings });
-};
+const openSettings = (page: Page, t: typeof en) => openSection(page, t, "groupCalendar");
 
 test("view switch: buttons and keys D, W, M, A", async ({ page, t }) => {
   await openApp(page);

@@ -11,6 +11,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ### Changed
 
+- **Settings in sections**: the list of sections is on the left (Look, Calendar, Reminders, Quick access, Help) and the options of the chosen one on the right, so nothing has to be scrolled through. The window is wider and lower.
 - **A narrow window** no longer cuts the toolbar or the dates in its title: the four views become one menu, and in the narrowest window the side panel folds away and opens over the calendar by its button.
 - **The event card opens next to its event** instead of the middle of the window, and the calendar around it stays visible. The form for editing still opens in the middle.
 - **Quick add** starts the title with a capital letter: "tomorrow 7pm dinner with Ola" becomes "Dinner with Ola". Names and words like "iPhone" stay as you typed them.
