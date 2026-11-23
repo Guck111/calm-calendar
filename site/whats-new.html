@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What's new — Calm Calendar</title>
+  <meta name="description" content="What changed in each version of Calm Calendar for Windows: new features, changes and fixes.">
+  <link rel="canonical" href="https://calmcalendar.co.uk/whats-new.html">
+  <link rel="alternate" hreflang="en" href="https://calmcalendar.co.uk/whats-new.html">
+  <link rel="alternate" hreflang="x-default" href="https://calmcalendar.co.uk/whats-new.html">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F3F7FB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#33383F" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="What's new — Calm Calendar">
+  <meta property="og:description" content="What changed in each version of Calm Calendar for Windows: new features, changes and fixes.">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:url" content="https://calmcalendar.co.uk/whats-new.html">
+  <meta property="og:site_name" content="Calm Calendar">
+  <meta property="og:image" content="https://calmcalendar.co.uk/icon-512.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./" aria-label="Calm Calendar, home">
+        <img src="icon.png" width="32" height="32" alt="">
+        <span>Calm Calendar</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="./#features">Features</a></li>
+          <li><a href="privacy.html">Privacy</a></li>
+          <li><a href="terms.html">Terms</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="doc">
+    <article class="wrap prose">
+      <header class="doc-head" id="top">
+        <h1>What's new in Calm Calendar</h1>
+        <p class="doc-meta">What changed in each version of the app, newest first.</p>
+      </header>
+
+      <section class="release" id="v0.13.0">
+        <h2>0.13.0 <time datetime="2026-11-23">23 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Write to us</strong>: Settings → Help has a form for a suggestion, a problem or a question. It opens a ready letter in your mail app, with the app version added, so you see everything before sending; &quot;Copy the text&quot; is there for a web mailbox.</li>
+          <li><strong>Hide the side panel</strong>: a button at the start of the toolbar hides the panel with the mini month and the calendar list, so the calendar takes the whole window. The choice is remembered. While the panel is hidden, &quot;+&quot; on the toolbar creates an event and N brings the panel back for quick add.</li>
+          <li><strong>A rating in Microsoft Store</strong>: in the Store version, after two weeks of use a small card in the corner asks once to rate the app. &quot;Rate in Store&quot; opens the Store's own dialog, &quot;Not now&quot; closes the card, and it does not come back either way.</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li><strong>Settings in sections</strong>: the list of sections is on the left (Look, Calendar, Reminders, Quick access, Help) and the options of the chosen one on the right, so nothing has to be scrolled through. The window is wider and lower.</li>
+          <li><strong>The app version</strong> is shown in Settings, under the list of sections.</li>
+          <li><strong>A narrow window</strong> no longer cuts the toolbar or the dates in its title: the four views become one menu, and in the narrowest window the side panel folds away and opens over the calendar by its button.</li>
+          <li><strong>The event card opens next to its event</strong> instead of the middle of the window, and the calendar around it stays visible. The form for editing still opens in the middle.</li>
+          <li><strong>Quick add</strong> starts the title with a capital letter: &quot;tomorrow 7pm dinner with Ola&quot; becomes &quot;Dinner with Ola&quot;. Names and words like &quot;iPhone&quot; stay as you typed them.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.12.4">
+        <h2>0.12.4 <time datetime="2026-11-19">19 November 2026</time></h2>
+        <h3>Fixed</h3>
+        <ul>
+          <li>Tray agenda: a long 12-hour time like &quot;10:00 AM–10:30 AM&quot; no longer runs into the event title.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.12.3">
+        <h2>0.12.3 <time datetime="2026-11-16">16 November 2026</time></h2>
+        <h3>Fixed</h3>
+        <ul>
+          <li><strong>Event card</strong>: when the buttons do not fit in one row, they move to a second row instead of scrolling the card sideways.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.12.2">
+        <h2>0.12.2 <time datetime="2026-11-16">16 November 2026</time></h2>
+        <h3>Fixed</h3>
+        <ul>
+          <li><strong>Editing an event</strong> sends Google only the fields you changed, so a new title saved from an open form no longer brings back an old time that was changed in Google meanwhile.</li>
+          <li><strong>The event form</strong> no longer saves the old date or time when a field was cleared, and does not accept a date that does not exist or a time skipped by the switch to summer time: it asks to check the date and time. Changing a field while &quot;This event / This and following&quot; is shown hides the question, so the form is checked again.</li>
+          <li><strong>Quick add</strong> with a time the clock does not have (&quot;25:30&quot;) asks to check the time instead of creating an all-day event.</li>
+          <li><strong>Calendar subscriptions (.ics)</strong>: an impossible date like 30 February is skipped instead of moving to March; a failed download no longer writes the private link to the log.</li>
+          <li><strong>Event descriptions</strong>: text in angle brackets like &quot;a &lt; b &gt; c&quot; is shown as typed.</li>
+          <li><strong>Signing out</strong>: calendars and events of a signed-out account no longer come back when a slow response arrives after sign-out.</li>
+          <li><strong>Paging through weeks</strong>: a late error from a week you already left no longer covers the week on screen or starts a needless retry.</li>
+          <li><strong>Widget and tray agenda</strong>: the list of upcoming events and the dots on the month no longer fall back to older data when two refreshes finish out of order.</li>
+          <li><strong>Event form</strong>: closing the form while it saves and opening another event no longer closes the new form; an error of the earlier save shows in the bar above the calendar.</li>
+          <li><strong>Quick changes</strong>: changing an event's color or video meeting and then dragging it right away no longer puts the old color back; dragging and Ctrl+K changes now send only the fields they change.</li>
+          <li><strong>Recurring meetings in two accounts</strong>: opening the same invitation in one account and then in another no longer fills the form with the repeat rule of the first copy.</li>
+          <li><strong>Search</strong>: results of the previous text no longer show under a new one while the next search waits, and Enter no longer opens an event from them.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.12.1">
+        <h2>0.12.1 <time datetime="2026-11-16">16 November 2026</time></h2>
+        <h3>Fixed</h3>
+        <ul>
+          <li><strong>Clock changes and time zones</strong>: events keep their dates and times around the switch to and from summer time — on the day of the change they stand in the right rows, moving or editing one keeps its length, and all-day events no longer lose a day. After Windows changes its time zone the calendar shows the right day and time format without a restart.</li>
+          <li><strong>Recurring Google events</strong>: &quot;This and following&quot; splits a series in the right place when the series uses another time zone, extra dates or a week starting on Sunday, and a biweekly series keeps its rhythm after the split.</li>
+          <li><strong>Calendar subscriptions (.ics)</strong>: repeating events follow the calendar's own time zone, yearly events on a fixed day of the month show in every year, and long series show their later dates instead of stopping early.</li>
+          <li><strong>Quick add</strong> picks the next real date for &quot;29 February&quot; and no longer accepts a date that does not exist.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.12.0">
+        <h2>0.12.0 <time datetime="2026-11-16">16 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>What else Calm Calendar can do</strong>: after the first sign-in a small card in the corner turns on the desktop widget, starting with Windows and the hard-to-miss alert for calls right there, and tells about quick add from any app and today's agenda in the tray. It does not take the focus and shows once; Ctrl+K → &quot;What Calm Calendar can do&quot; brings it back.</li>
+          <li><strong>Undo</strong>: after moving or deleting an event a line at the bottom says &quot;Moved: …&quot; or &quot;Deleted: …&quot; with Undo (or Ctrl+Z). It stays while the mouse is on it. A deleted event leaves the screen at once and is deleted in Google when the line closes, so Undo brings it back untouched and guests get no emails.</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li><strong>Sign out</strong> next to an account shows only when the mouse or the focus is on that account.</li>
+          <li><strong>Settings in groups</strong>: Look, Calendar, Reminders, Quick access and Help. The desktop widget, keeping it on top and starting with Windows can now be changed in Settings too, not only in the tray menu.</li>
+          <li><strong>A calmer toolbar</strong>: the theme button is gone (the theme is in Settings and in Ctrl+K: &quot;Theme: Dark&quot;), Ctrl+K also finds &quot;Free time&quot;. The search field has a magnifier and in a narrower window folds into it, so the buttons and the date keep their room.</li>
+          <li><strong>Free time</strong> with nothing free says why and offers &quot;Show the next days&quot;; Copy is off when there is nothing to copy.</li>
+          <li><strong>No more cut-off dates and countdowns</strong>: the period title in the toolbar keeps its full length (the search field gets narrower first), and the widget shortens the event title, never &quot;in 11 min&quot;.</li>
+          <li><strong>Past events are paler</strong> in Day, Week, Month and Schedule, so what comes next stands out.</li>
+          <li><strong>Schedule</strong>: a call link in the place shows as &quot;Zoom&quot;, &quot;Microsoft Teams&quot; and so on instead of a long address, and from 15 minutes before a call its row has Join.</li>
+          <li><strong>The event form is shorter</strong>: time zone, travel time, color and attachments are under &quot;More&quot; (it opens by itself when the event uses one of them). The description moved up, right after the place, with the hint &quot;Agenda, links, notes&quot;. Save and Cancel stay at the bottom of the form, also in a low window.</li>
+          <li><strong>Delete</strong> works with one click; there is no &quot;Click again to delete&quot; any more, Undo takes its place. A recurring event still asks &quot;This event&quot; or &quot;This and following&quot;.</li>
+          <li><strong>Signing in</strong>: while the app waits for the browser, &quot;Open the sign-in page again&quot; brings back a lost or closed Google tab, and &quot;Cancel&quot; stops waiting at once instead of after five minutes.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.11.0">
+        <h2>0.11.0 <time datetime="2026-11-13">13 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Ukrainian and Belarusian</strong>: the interface, the tray menu and quick add now speak Українська and Беларуская (Settings → Language, or it follows Windows). Quick add tells Russian, Ukrainian and Belarusian phrases apart by their letters, so &quot;заўтра 19:00 кава&quot; works with any interface language.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.10.0">
+        <h2>0.10.0 <time datetime="2026-11-11">11 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Calendar subscriptions</strong>: add a calendar by its .ics link in Settings — a class schedule, sports fixtures, a calendar from Outlook. It is shown in its own group, read only, also in the widget and offline.</li>
+          <li><strong>Location on the map</strong>: click the location in the event card to open it in Google Maps.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.9.1">
+        <h2>0.9.1 <time datetime="2026-11-11">11 November 2026</time></h2>
+        <h3>Changed</h3>
+        <ul>
+          <li>Settings open in a window of their own: drag it by its header anywhere on the screen, also outside the calendar.</li>
+          <li>The country list of Holidays in Settings is in alphabetical order; the country of Windows is no longer put first.</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+          <li>The circle around today's date in the month view and the mini calendar is now centered on the number.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.9.0">
+        <h2>0.9.0 <time datetime="2026-11-10">10 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Styles</strong>: besides the classic look there are four new ones in Settings → Style: Paper (warm paper, serif headings), Obsidian (glass with a champagne accent), Showcase (floating panels, solid event colors) and Monochrome (black and white, monospaced digits, one signal color). Each has a light and a dark version and follows the Theme setting; the widget and the tray agenda follow the style.</li>
+          <li><strong>Fonts</strong>: pick the font for headings and numbers and the font for text, or keep the style's own. Inter, Manrope, Onest, Geist, Geist Mono, Unbounded and Cormorant Garamond are built into the app and work offline; Segoe UI is the Windows font.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.8.0">
+        <h2>0.8.0 <time datetime="2026-11-10">10 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Quick add from anywhere</strong>: press Ctrl+Alt+Space in any app, type &quot;fri 18 call with Ola&quot;, Enter. Works even when the calendar is in the tray. The shortcut can be changed or turned off in Settings; if another app already uses it, the next free one is taken.</li>
+          <li><strong>Events without the mouse</strong>: ↓ or ↑ picks an event, the arrows move to the nearest event on screen, Enter opens it, E edits, Ctrl+D duplicates, Delete asks in the card and Enter deletes.</li>
+          <li><strong>Command menu on an event</strong>: choose an event and press Ctrl+K to move it to tomorrow, an hour later, add Google Meet or change its color (&quot;tomato&quot;).</li>
+          <li><strong>All keyboard shortcuts in one list</strong>: press ? (or &quot;Keyboard shortcuts&quot; in the Ctrl+K menu).</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li>The hint under quick add says that a click on it also creates the event.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.7.1">
+        <h2>0.7.1 <time datetime="2026-11-10">10 November 2026</time></h2>
+        <h3>Fixed</h3>
+        <ul>
+          <li><strong>Quick add</strong>: click the preview to create the event (Enter still works).</li>
+          <li><strong>Quick add</strong> understands a phrase in another language than the interface: &quot;занятие спортом в 12:00&quot; works with the English interface.</li>
+          <li><strong>Quick add</strong> in Russian: a day of the month alone, &quot;14-го&quot;, &quot;14 числа&quot; or &quot;, 14&quot; at the end.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.7.0">
+        <h2>0.7.0 <time datetime="2026-11-10">10 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Add Google Meet</strong>: a switch in the event form creates a video call when the event is saved.</li>
+          <li><strong>Duplicate</strong> an event from its card, then change what differs.</li>
+          <li><strong>Event colors</strong>: give one event its own color, one of the 11 colors of Google Calendar.</li>
+          <li><strong>Answer invitations</strong> from the event card: yes, no or maybe.</li>
+          <li>The sidebar shows <strong>when the calendar was last updated</strong> from Google.</li>
+          <li><strong>Attachments</strong>: see the Google Drive files of an event in its card, and attach one by pasting its link.</li>
+          <li><strong>Command menu</strong> on Ctrl+K: go to a date written in words, create an event, search or switch the view without the mouse.</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li>When Google does not answer, the app tries again by itself, and the error banner has a <strong>Retry</strong> button.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.6.0">
+        <h2>0.6.0 <time datetime="2026-11-10">10 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Schedule view</strong> (key A): four weeks as a list by day.</li>
+          <li><strong>Week numbers</strong> in the mini calendar, the Month view and the week title (Settings).</li>
+          <li><strong>Holidays</strong> of 76 countries in the calendar, the widget and the tray agenda (Settings). No new Google permissions are needed.</li>
+          <li><strong>Free time</strong>: the gaps between your events in working hours as text for a messenger, with Copy (clock button in the toolbar).</li>
+          <li><strong>Guests</strong>: invite people by email from the event form, see who is going; Google emails them the invitation, changes and cancellation.</li>
+          <li><strong>Travel time</strong> before an event: a field in the form, a hatched strip in the calendar, counted as busy.</li>
+          <li>A meeting that two of your accounts are invited to is shown once, and its card says where else it is.</li>
+          <li><strong>Log</strong> for support: Settings → &quot;Open log folder&quot;. It has no event titles, passwords or full email addresses.</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li>&quot;Sign out&quot; next to an account asks a second time.</li>
+          <li>The toolbar fits the smallest window size.</li>
+          <li>If a window fails to draw, it offers to restart instead of showing a blank page.</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+          <li>Settings could not be scrolled in a low window, so the last options were out of reach.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.5.0">
+        <h2>0.5.0 <time datetime="2026-11-09">9 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Several Google accounts in one window.</strong> Calendars are grouped by account, each with &quot;Sign out&quot;; &quot;Add account&quot; at the bottom of the sidebar. Events that overlap an event of another account are marked red. Your existing sign-in moves over by itself.</li>
+          <li><strong>Recurring events</strong>: create them with presets or your own rule (interval, weekdays, &quot;2nd Tuesday&quot;, an end date or a number of times); edit or delete &quot;this event&quot; or &quot;this and following&quot;.</li>
+          <li><strong>Time zones</strong>: a time zone field in the event form with &quot;your time&quot; below it, and an optional second time zone column in Week and Day. Events keep their Google time zone when edited or dragged.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.4.0">
+        <h2>0.4.0 <time datetime="2026-11-09">9 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li><strong>Join button</strong> for Google Meet, Zoom, Teams and other video calls: in the event card, the widget and the reminder notification.</li>
+          <li><strong>Hard-to-miss alert</strong> (optional): a small window over everything a minute before a meeting, with Join, Snooze 5 min and Dismiss.</li>
+          <li><strong>Tray agenda</strong>: today's and tomorrow's events on a left click of the tray icon.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.3.0">
+        <h2>0.3.0 <time datetime="2026-11-08">8 November 2026</time></h2>
+        <h3>New</h3>
+        <ul>
+          <li>The interface and quick add in nine more languages: Spanish, French, Portuguese, German, Japanese, Chinese (Simplified), Hindi, Arabic (right to left) and Bengali.</li>
+        </ul>
+      </section>
+
+      <section class="release" id="v0.2.0">
+        <h2>0.2.0 <time datetime="2026-11-08">8 November 2026</time></h2>
+        <p>The first public version.</p>
+        <ul>
+          <li>Google Calendar in a Windows app: day, week and month views, create, edit, move and delete events, drag to change the time, search.</li>
+          <li>Quick add from one line in English and Russian.</li>
+          <li>Desktop widget with a clock, a countdown, the month and the next events.</li>
+          <li>Reminders as Windows notifications, a tray icon, start with Windows.</li>
+          <li>Light and dark themes and a glass effect.</li>
+          <li>Works offline from the last loaded data.</li>
+          <li>English and Russian interface; the language follows Windows.</li>
+          <li>A package for the Microsoft Store.</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© 2026 Arseni</p>
+      <nav aria-label="Footer">
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms of Use</a></li>
+          <li><a href="whats-new.html" hreflang="en" aria-current="page">What's new</a></li>
+          <li><a href="mailto:support@calmcalendar.co.uk">support@calmcalendar.co.uk</a></li>
+          <li><a href="https://github.com/Guck111/calm-calendar">GitHub</a></li>
+        </ul>
+      </nav>
+      <nav class="lang-switch" aria-label="Choose language">
+        <ul>
+          <li><a href="./" lang="en" hreflang="en" aria-current="page">English</a></li>
+          <li><a href="es/" lang="es" hreflang="es">Español</a></li>
+          <li><a href="pt/" lang="pt" hreflang="pt">Português</a></li>
+          <li><a href="fr/" lang="fr" hreflang="fr">Français</a></li>
+          <li><a href="de/" lang="de" hreflang="de">Deutsch</a></li>
+          <li><a href="ru/" lang="ru" hreflang="ru">Русский</a></li>
+          <li><a href="uk/" lang="uk" hreflang="uk">Українська</a></li>
+          <li><a href="be/" lang="be" hreflang="be">Беларуская</a></li>
+          <li><a href="zh/" lang="zh-Hans" hreflang="zh-Hans">中文（简体）</a></li>
+          <li><a href="ja/" lang="ja" hreflang="ja">日本語</a></li>
+          <li><a href="hi/" lang="hi" hreflang="hi">हिन्दी</a></li>
+          <li><a href="bn/" lang="bn" hreflang="bn">বাংলা</a></li>
+          <li><a href="ar/" lang="ar" hreflang="ar" dir="rtl">العربية</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

@@ -31,7 +31,6 @@ const CALENDAR_SCOPES: [&str; 2] = [
 ];
 const ID_SCOPES: [&str; 2] = ["openid", "email"];
 
-const KEYRING_SERVICE: &str = "com.arseni.calmcalendar";
 /// the single token of versions before 0.5; moved under a key with the email
 const LEGACY_KEYRING_USER: &str = "google-refresh-token";
 const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
@@ -45,6 +44,8 @@ struct AccessToken {
 
 pub struct Auth {
     http: reqwest::Client,
+    /// password store service: the app identifier, so a dev build keeps its sign-ins apart from the installed app
+    keyring_service: String,
     /// access tokens by account email
     tokens: Mutex<HashMap<String, AccessToken>>,
     /// sign-in currently waiting for the browser: its page can be opened again or cancelled
@@ -110,18 +111,18 @@ fn keyring_user(email: &str) -> String {
     format!("{LEGACY_KEYRING_USER}:{}", email.to_ascii_lowercase())
 }
 
-fn keyring_entry(user: &str) -> Result<keyring::Entry> {
-    Ok(keyring::Entry::new(KEYRING_SERVICE, user)?)
+fn keyring_entry(service: &str, user: &str) -> Result<keyring::Entry> {
+    Ok(keyring::Entry::new(service, user)?)
 }
 
-fn stored_refresh_token(email: &str) -> Option<String> {
-    keyring_entry(&keyring_user(email)).ok()?.get_password().ok()
+fn stored_refresh_token(service: &str, email: &str) -> Option<String> {
+    keyring_entry(service, &keyring_user(email)).ok()?.get_password().ok()
 }
 
-fn delete_refresh_token(email: &str) {
-    let Ok(entry) = keyring_entry(&keyring_user(email)) else { return };
+fn delete_refresh_token(service: &str, email: &str) {
+    let Ok(entry) = keyring_entry(service, &keyring_user(email)) else { return };
     // the old version's entry with the same token is removed too: otherwise sign-out would be incomplete
-    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(LEGACY_KEYRING_USER)) {
+    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(service, LEGACY_KEYRING_USER)) {
         if legacy.get_password().is_ok_and(|old| old == token) {
             let _ = legacy.delete_credential();
         }
@@ -136,10 +137,11 @@ pub fn migrate_legacy(app: &AppHandle) {
     if config::load_accounts(app).is_some() {
         return;
     }
-    let token = keyring_entry(LEGACY_KEYRING_USER).ok().and_then(|e| e.get_password().ok());
+    let service = &app.config().identifier;
+    let token = keyring_entry(service, LEGACY_KEYRING_USER).ok().and_then(|e| e.get_password().ok());
     let mut accounts = Vec::new();
     if let (Some(email), Some(token)) = (config::legacy_email(app), token) {
-        if keyring_entry(&keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok() {
+        if keyring_entry(service, &keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok() {
             accounts.push(Account { email });
         }
     }
@@ -249,8 +251,9 @@ async fn wait_for_code(listener: &TcpListener, expected_state: &str, lang: Lang)
 }
 
 impl Auth {
-    pub fn new() -> Self {
+    pub fn new(keyring_service: impl Into<String>) -> Self {
         Self {
+            keyring_service: keyring_service.into(),
             http: reqwest::Client::builder()
                 .timeout(Duration::from_secs(30))
                 .build()
@@ -288,7 +291,7 @@ impl Auth {
             .unwrap_or_default()
             .into_iter()
             .map(|a| AccountStatus {
-                signed_in: stored_refresh_token(&a.email).is_some(),
+                signed_in: stored_refresh_token(&self.keyring_service, &a.email).is_some(),
                 email: a.email,
             })
             .collect()
@@ -308,7 +311,7 @@ impl Auth {
         if err.error == "invalid_grant" {
             // the token was revoked or expired — a new sign-in to this account is needed; the account stays in the list
             if let Some(email) = account {
-                delete_refresh_token(email);
+                delete_refresh_token(&self.keyring_service, email);
             }
             return Err(Error::NotSignedIn);
         }
@@ -390,7 +393,7 @@ impl Auth {
             .as_deref()
             .and_then(email_from_id_token)
             .ok_or_else(|| Error::Other("Google did not return the account email".into()))?;
-        keyring_entry(&keyring_user(&email))?.set_password(&refresh)?;
+        keyring_entry(&self.keyring_service, &keyring_user(&email))?.set_password(&refresh)?;
 
         let accounts = config::with_account(config::load_accounts(app).unwrap_or_default(), &email);
         config::save_accounts(app, &accounts)?;
@@ -434,7 +437,7 @@ impl Auth {
                 return Ok(t.value.clone());
             }
         }
-        let refresh = stored_refresh_token(account).ok_or(Error::NotSignedIn)?;
+        let refresh = stored_refresh_token(&self.keyring_service, account).ok_or(Error::NotSignedIn)?;
         let client = config::client(app)?;
         let tokens = self
             .post_token(
@@ -470,7 +473,7 @@ impl Auth {
             None => all.clone(),
         };
         for a in &leaving {
-            if let Some(refresh) = stored_refresh_token(&a.email) {
+            if let Some(refresh) = stored_refresh_token(&self.keyring_service, &a.email) {
                 // revoke access at Google; a network error is not considered fatal
                 let _ = self
                     .http
@@ -479,7 +482,7 @@ impl Auth {
                     .send()
                     .await;
             }
-            delete_refresh_token(&a.email);
+            delete_refresh_token(&self.keyring_service, &a.email);
             self.forget_access_token(&a.email).await;
         }
         let rest = leaving.iter().fold(all, |list, a| config::without_account(list, &a.email));
@@ -499,6 +502,24 @@ mod tests {
             Some("a@b.com")
         );
         assert_eq!(email_from_id_token("broken"), None);
+    }
+
+    fn identifier(config: &str) -> String {
+        let config: serde_json::Value = serde_json::from_str(config).unwrap();
+        config["identifier"].as_str().unwrap().to_owned()
+    }
+
+    #[test]
+    fn release_reads_sign_ins_saved_by_earlier_versions() {
+        assert_eq!(identifier(include_str!("../tauri.conf.json")), "com.arseni.calmcalendar");
+    }
+
+    #[test]
+    fn dev_build_keeps_sign_ins_apart_from_the_installed_app() {
+        assert_ne!(
+            identifier(include_str!("../tauri.dev.conf.json")),
+            identifier(include_str!("../tauri.conf.json"))
+        );
     }
 
     #[test]

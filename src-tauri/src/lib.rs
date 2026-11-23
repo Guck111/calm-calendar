@@ -303,7 +303,6 @@ pub fn run() {
             MacosLauncher::LaunchAgent,
             Some(vec![desktop::HIDDEN_ARG]),
         ))
-        .manage(Auth::new())
         .manage(reminders::Reminders::default())
         .manage(desktop::TrayItems::default())
         .manage(desktop::AgendaHidden::default())
@@ -314,6 +313,7 @@ pub fn run() {
                 std::env::consts::OS,
                 std::env::consts::ARCH
             );
+            app.manage(Auth::new(app.config().identifier.clone()));
             // the old version's sign-in (single account) moves into the account list
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;

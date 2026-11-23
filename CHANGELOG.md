@@ -4,6 +4,10 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 
 ## Unreleased
 
+### New
+
+- **What's new**: a link under the app version in Settings opens what changed in your version, on a new page of the website with the notes of every version.
+
 ### Fixed
 
 - With the side panel open, the buttons at the top right no longer run off the edge: the search and the view tabs now fold by the width of the calendar itself, not of the whole window.

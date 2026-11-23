@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window, capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version and the feedback form).
+Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window; the "What's new" link in Settings and its page on the website).
 
 ## Contents
 
@@ -211,7 +211,7 @@ The sections:
 - **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
 - **Help**: "Write to us" and, in the app only, "Open log folder". "Write to us" is a form for a suggestion, a problem or a question: the kind, the text, "Open in mail" and "Copy the text". "Open in mail" opens a letter to support@calmcalendar.co.uk in the user's own mail app (`mailto:`), with the subject "Calm Calendar 0.12.4: Problem" and, under the text, the app version, where it was installed from (Microsoft Store or installer), the interface language and the WebView2 and Windows line. The app sends nothing itself: the user sees the whole letter and sends it. A text too long for a link (about 1900 characters after encoding) is put on the clipboard, and the letter opens with "(Paste the copied text here: Ctrl+V)" in its place. "Copy the text" copies the whole letter for a web mailbox and shows the address. The text stays in the form after sending (`src/ui/FeedbackForm.tsx`, `src/shared/lib/feedback.ts`).
 - In a low window the open section scrolls.
-- Under the list of sections: the app version ("Version 0.12.4"), the same number as in `package.json`, `tauri.conf.json` and `Cargo.toml`; it can be selected and copied (`src/shared/lib/version.ts`).
+- Under the list of sections: the app version ("Version 0.12.4"), the same number as in `package.json`, `tauri.conf.json` and `Cargo.toml`; it can be selected and copied (`src/shared/lib/version.ts`). Under it, "What's new" opens this version's notes in the browser: `https://calmcalendar.co.uk/whats-new.html#v<version>`. The page is built from `CHANGELOG.md` with the website (`scripts/build-site.mjs`, `scripts/lib/changelog.mjs`), in English only.
 
 ## Keyboard shortcuts
 
@@ -241,7 +241,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 - Installers for Windows (`.exe`, `.msi`) on GitHub Releases, and the Microsoft Store: https://apps.microsoft.com/detail/9N5HZ8P1QRMW (MSIX package, `docs/msix.md`). The website's main button leads to the Store page.
 - Starts with Windows if enabled in the tray menu (through a StartupTask in the Store package).
 - Rating in Microsoft Store, the Store build only (a package signed by the Store; the installers from GitHub never ask): two weeks after the first day of use a card "Enjoying Calm Calendar?" shows in the bottom corner of the main window, without taking the focus and not while the first-start card is open. "Rate in Store" opens the Store's own rating dialog over the window (`StoreContext.RequestRateAndReviewAppAsync`; when Windows refuses it, the app's review page in the Store app), "Not now" or the cross closes the card. After either answer it never shows again (`calm.rating` in localStorage: the first day and the answer). Nothing is sent anywhere by the app itself (`src/model/rating.ts`, `src/ui/RateCard.tsx`, `src-tauri/src/store.rs`). Not checked yet in a package installed from the Store: the dialog needs a Store-signed install.
-- What changed in each version: `CHANGELOG.md`.
+- What changed in each version: `CHANGELOG.md`; for users, the "What's new" page of the website (https://calmcalendar.co.uk/whats-new.html) and the link to it in Settings.
 
 ## Not there yet
 

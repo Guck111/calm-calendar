@@ -66,6 +66,28 @@ test("the app version stands under the list of sections, whatever section is ope
   await expect(line).toBeVisible();
 });
 
+test("What's new under the version opens this version's notes on the website", async ({ page, t }) => {
+  await openApp(page);
+  await page.evaluate(() => {
+    const w = window as unknown as { opened: string[] };
+    w.opened = [];
+    window.open = (url?: string | URL) => {
+      w.opened.push(String(url));
+      return null;
+    };
+  });
+  const settings = await openSettings(page, t);
+  const version = await page.evaluate(async () => {
+    const path = "/src/shared/lib/version.ts";
+    return (await import(/* @vite-ignore */ path)).APP_VERSION as string;
+  });
+  await settings.getByRole("button", { name: t.settings.whatsNew }).click();
+  const opened = () => page.evaluate(() => (window as unknown as { opened: string[] }).opened);
+  await expect.poll(opened).toEqual([`https://calmcalendar.co.uk/whats-new.html#v${version}`]);
+  // Settings stay open
+  await expect(settings).toBeVisible();
+});
+
 test("arrow keys move between sections", async ({ page, t }) => {
   await openApp(page);
   const settings = await openSettings(page, t);

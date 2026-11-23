@@ -238,6 +238,7 @@ export const zh: Dict = {
     groupQuick: "快速访问",
     groupHelp: "帮助",
     version: (v: string) => `版本 ${v}`,
+    whatsNew: "更新内容",
     feedback: "联系我们",
     feedbackText: "建议、问题或疑问：邮件会在你的邮件应用中打开。其中会附上应用版本和系统信息，方便我们提供帮助。",
     feedbackKinds: { idea: "建议", problem: "问题", question: "疑问" },
