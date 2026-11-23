@@ -19,7 +19,7 @@ pub fn show(app: &AppHandle) {
     }
     let main = app.get_webview_window(desktop::MAIN);
     let builder = tauri::WebviewWindowBuilder::new(app, SETTINGS, tauri::WebviewUrl::App("index.html?window=settings".into()))
-        .title("Calm Calendar")
+        .title(crate::desktop::app_title(app))
         .inner_size(SIZE.0, height(main.as_ref()))
         .resizable(false)
         .maximizable(false)

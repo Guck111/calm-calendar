@@ -90,7 +90,7 @@ pub fn show(app: &AppHandle) {
         Some(w) => w,
         None => {
             let built = tauri::WebviewWindowBuilder::new(app, QUICK, tauri::WebviewUrl::App("index.html?window=quick".into()))
-                .title("Calm Calendar")
+                .title(crate::desktop::app_title(app))
                 .inner_size(SIZE.0, SIZE.1)
                 .resizable(false)
                 .decorations(false)

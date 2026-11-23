@@ -92,6 +92,8 @@ npm run tauri dev      # development mode
 npm run tauri build    # installers in src-tauri\target\release\bundle\
 ```
 
+`npm run dev:app` runs the app as `com.arseni.calmcalendar.dev`, with its own settings folder, web view data and Credential Manager entries. It runs next to the installed app and signs in through its own Google client from `%APPDATA%\com.arseni.calmcalendar.dev\google-client.json`, so development sign-ins stay out of the release client's statistics. A build without the CLI: `npm run build`, then in `src-tauri` `TAURI_CONFIG='{"identifier":"com.arseni.calmcalendar.dev"}' cargo build --features tauri/custom-protocol`.
+
 ### UI development in the browser
 
 `npm run dev` serves the interface at http://localhost:1420 with mock calendars and events (`src/shared/api/mock.ts`). Open `/?window=widget` to see the widget. Mock data is not included in the app build.
