@@ -7,15 +7,14 @@
 [![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)](https://github.com/Guck111/calm-calendar/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**[⬇ Download for Windows](https://github.com/Guck111/calm-calendar/releases/latest)** · **[Website](https://calmcalendar.co.uk)** · **[What's new](CHANGELOG.md)** · **[All features](docs/features.md)**
+**[⬇ Get it from Microsoft Store](https://apps.microsoft.com/detail/9N5HZ8P1QRMW)** · **[Installer on GitHub](https://github.com/Guck111/calm-calendar/releases/latest)** · **[Website](https://calmcalendar.co.uk)** · **[What's new](CHANGELOG.md)** · **[All features](docs/features.md)**
 
 ![Calm Calendar week view with Google Calendar events on Windows](site/screenshot-week.png)
 
 ## Download and install
 
-1. Open the [latest release](https://github.com/Guck111/calm-calendar/releases/latest).
-2. Download `Calm.Calendar_…_x64-setup.exe` (or the `.msi`) and run it.
-3. Click "Sign in with Google" — sign-in happens in your browser, no setup needed.
+1. Install it from the [Microsoft Store](https://apps.microsoft.com/detail/9N5HZ8P1QRMW), or download `Calm.Calendar_…_x64-setup.exe` (or the `.msi`) from the [latest release](https://github.com/Guck111/calm-calendar/releases/latest) and run it.
+2. Click "Sign in with Google" — sign-in happens in your browser, no setup needed.
 
 The app is free, has no ads and no account of its own. Your events go straight between your computer and Google; nothing is sent to us. Details: [privacy policy](https://calmcalendar.co.uk/privacy.html).
 
@@ -158,10 +157,6 @@ src-tauri/src/
 assets/
   icon.png      source for the app icons (npx tauri icon assets/icon.png)
 ```
-
-### Next
-
-- Microsoft Store release (MSIX) after the app passes Google verification.
 
 ## License
 

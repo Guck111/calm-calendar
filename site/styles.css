@@ -215,25 +215,6 @@ code {
 }
 .btn-secondary:hover { color: var(--text); border-color: var(--accent); }
 
-.btn[aria-disabled="true"] {
-  background: var(--surface);
-  color: var(--text-muted);
-  border-color: var(--border);
-  cursor: not-allowed;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: var(--icon-bg);
-  color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  white-space: nowrap;
-}
-
 /* ---------- hero ---------- */
 
 .hero { padding-block: 4rem 3rem; text-align: center; }
@@ -262,7 +243,6 @@ code {
   justify-content: center;
   gap: 0.75rem 1rem;
 }
-.cta-store { display: inline-flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
 
 .shot {
   margin: 3rem auto 0;

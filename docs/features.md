@@ -231,7 +231,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 
 ## Installation and updates
 
-- Installers for Windows (`.exe`, `.msi`) on GitHub Releases, and an MSIX package for the Microsoft Store (`docs/msix.md`).
+- Installers for Windows (`.exe`, `.msi`) on GitHub Releases, and the Microsoft Store: https://apps.microsoft.com/detail/9N5HZ8P1QRMW (MSIX package, `docs/msix.md`). The website's main button leads to the Store page.
 - Starts with Windows if enabled in the tray menu (through a StartupTask in the Store package).
 - What changed in each version: `CHANGELOG.md`.
 
