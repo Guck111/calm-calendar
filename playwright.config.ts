@@ -23,7 +23,8 @@ export default defineConfig({
     // the mock data and the fixed clock are in this zone; dates and week start follow the app language
     timezoneId: "Europe/Warsaw",
     locale: "en-GB",
-    viewport: { width: 1280, height: 800 },
+    // wide enough for the view tabs next to the side panel (the toolbar folds at a 1160 px calendar panel)
+    viewport: { width: 1440, height: 800 },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

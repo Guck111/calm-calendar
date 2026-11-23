@@ -24,6 +24,8 @@
   inset-inline-start: var(--shell-gap);
   z-index: 6;
   box-shadow: var(--shadow);
+  /* the same tint, but the calendar under it must not show through (glass, Obsidian) */
+  background: linear-gradient(var(--chrome), var(--chrome)) var(--surface);
   animation: slide 0.14s ease-out;
 }
 

@@ -14,6 +14,8 @@
   flex-direction: column;
   border-radius: var(--panel-radius);
   box-shadow: var(--panel-shadow);
+  /* the toolbar and views adapt to the panel width, not the window: the sidebar takes its share */
+  container: main / inline-size;
 }
 
 .view {

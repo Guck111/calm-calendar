@@ -51,6 +51,15 @@ test.describe("narrow window", () => {
     await expect(panel).toBeHidden();
   });
 
+  test("760 px with glass: the pulled-out panel is not see-through", async ({ page, t }) => {
+    await page.setViewportSize({ width: 760, height: 600 });
+    await openApp(page);
+    await page.evaluate(() => Object.assign(document.documentElement.dataset, { glass: "", focused: "" }));
+    await page.getByRole("button", { name: t.toolbar.sidebar }).click();
+    const background = await page.locator("aside").evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(background).toMatch(/^rgb\(/);
+  });
+
   test("760 px: N pulls the side panel out with the cursor in quick add", async ({ page, t }) => {
     await page.setViewportSize({ width: 760, height: 600 });
     await openApp(page);
@@ -98,6 +107,24 @@ test.describe("narrow window", () => {
     await page.keyboard.press("Escape");
     await expect(menu).toBeHidden();
     await expect(menuButton).toContainText(t.toolbar.views.month);
+  });
+});
+
+// the user's case: a wide window, but with the side panel the calendar itself is narrow
+test.describe("the toolbar follows the calendar panel, not the window", () => {
+  test.use({ lang: "ru" });
+
+  test("1320 px: with the side panel the views are a menu, without it they are tabs", async ({ page, t }) => {
+    await page.setViewportSize({ width: 1320, height: 800 });
+    await openApp(page);
+    await expect(page.locator("aside")).toBeVisible();
+    await expect(page.getByRole("tablist")).toBeHidden();
+    await expectToolbarFits(page);
+
+    await page.getByRole("button", { name: t.toolbar.sidebar }).click();
+    await expect(page.locator("aside")).toBeHidden();
+    await expect(page.getByRole("tablist")).toBeVisible();
+    await expectToolbarFits(page);
   });
 });
 
