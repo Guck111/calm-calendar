@@ -308,6 +308,12 @@ export const en: Dict = {
     done: "Done",
     command: "What Calm Calendar can do",
   },
+  rating: {
+    title: "Enjoying Calm Calendar?",
+    text: "A rating in Microsoft Store helps other people find the app. It takes a few seconds.",
+    rate: "Rate in Store",
+    later: "Not now",
+  },
   shortcuts: {
     title: "Keyboard shortcuts",
     calendar: "Calendar",

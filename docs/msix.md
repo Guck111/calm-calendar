@@ -39,6 +39,12 @@ Start-Process "shell:AppsFolder\CalmCalendar.Dev_nfw2ntm5m5jmm!com.arseni.calmca
 
 Verified in the package: the tray item turns the task on (`State = Enabled`), nothing is written to `Run`, a normal launch still opens the main window. If the user disabled the app in Task Manager → Startup apps, `RequestEnableAsync` returns `DisabledByUser` and the tray check mark goes back off.
 
+## Rating dialog
+
+`src-tauri/src/store.rs` asks for a rating only in a package signed by the Store (`Package::Current().SignatureKind() == Store`), so a package registered with `-Register` and the installers from GitHub never show the card. The dialog is `StoreContext.RequestRateAndReviewAppAsync`: it has to be called on the thread of the window, and a desktop app first names the owner window through `IInitializeWithWindow` (Microsoft Learn: "Request ratings and reviews for your app"). If the call or the dialog fails, the review page opens in the Store app (`ms-windows-store://review/?ProductId=9N5HZ8P1QRMW`).
+
+To check after a release reaches the Store: install from the Store, set `calm.rating` in the main window's localStorage to `{"since":"2026-01-01","answered":false}` (WebView2 developer tools are off in release builds, so either wait two weeks or check in a Store flight build), restart, press "Rate in Store".
+
 ## Release build
 
 The `release` workflow builds the MSIX next to the `.exe` and `.msi` when the repository has these variables (Settings → Secrets and variables → Actions → Variables), all taken from Partner Center → Product identity:

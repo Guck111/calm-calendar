@@ -303,6 +303,12 @@ export const ja: Dict = {
     done: "完了",
     command: "Calm Calendar でできること",
   },
+  rating: {
+    title: "Calm Calendar はいかがですか？",
+    text: "Microsoft Store での評価は、ほかの人がこのアプリを見つける助けになります。数秒で終わります。",
+    rate: "Store で評価する",
+    later: "今はしない",
+  },
   shortcuts: {
     title: "キーボードショートカット",
     calendar: "カレンダー",

@@ -40,8 +40,8 @@ log = "0.4"
 keyring = { version = "3", features = ["windows-native"] }
 # rounded corners and no border for the widget window (DWM)
 windows-sys = { version = "0.61", features = ["Win32_Globalization", "Win32_Graphics_Dwm", "Win32_System_LibraryLoader"] }
-# autostart of the MSIX build via StartupTask, notifications with a "Join" button
-windows = { version = "0.62", features = ["ApplicationModel", "ApplicationModel_Activation", "Foundation", "Data_Xml_Dom", "UI_Notifications"] }
+# autostart of the MSIX build via StartupTask, notifications with a "Join" button, the Store rating dialog
+windows = { version = "0.62", features = ["ApplicationModel", "ApplicationModel_Activation", "Foundation", "Data_Xml_Dom", "UI_Notifications", "Services_Store", "Win32_Foundation", "Win32_UI_Shell"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 keyring = { version = "3", features = ["apple-native"] }

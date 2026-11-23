@@ -301,6 +301,12 @@ export const zh: Dict = {
     done: "完成",
     command: "Calm Calendar 能做什么",
   },
+  rating: {
+    title: "喜欢 Calm Calendar 吗？",
+    text: "在 Microsoft Store 中评分可以帮助更多人发现这款应用，只需几秒钟。",
+    rate: "去 Store 评分",
+    later: "暂不",
+  },
   shortcuts: {
     title: "键盘快捷键",
     calendar: "日历",

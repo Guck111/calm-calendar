@@ -331,6 +331,12 @@ export const be: Dict = {
     done: "Гатова",
     command: "Што ўмее Calm Calendar",
   },
+  rating: {
+    title: "Падабаецца Calm Calendar?",
+    text: "Ацэнка ў Microsoft Store дапамагае іншым знайсці праграму. Гэта зойме некалькі секунд.",
+    rate: "Ацаніць у Store",
+    later: "Не цяпер",
+  },
   shortcuts: {
     title: "Спалучэнні клавіш",
     calendar: "Каляндар",

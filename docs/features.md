@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window).
+Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build).
 
 ## Contents
 
@@ -237,6 +237,7 @@ Command menu (`Ctrl+K`, also from a text field): one line for a date in words in
 
 - Installers for Windows (`.exe`, `.msi`) on GitHub Releases, and the Microsoft Store: https://apps.microsoft.com/detail/9N5HZ8P1QRMW (MSIX package, `docs/msix.md`). The website's main button leads to the Store page.
 - Starts with Windows if enabled in the tray menu (through a StartupTask in the Store package).
+- Rating in Microsoft Store, the Store build only (a package signed by the Store; the installers from GitHub never ask): two weeks after the first day of use a card "Enjoying Calm Calendar?" shows in the bottom corner of the main window, without taking the focus and not while the first-start card is open. "Rate in Store" opens the Store's own rating dialog over the window (`StoreContext.RequestRateAndReviewAppAsync`; when Windows refuses it, the app's review page in the Store app), "Not now" or the cross closes the card. After either answer it never shows again (`calm.rating` in localStorage: the first day and the answer). Nothing is sent anywhere by the app itself (`src/model/rating.ts`, `src/ui/RateCard.tsx`, `src-tauri/src/store.rs`). Not checked yet in a package installed from the Store: the dialog needs a Store-signed install.
 - What changed in each version: `CHANGELOG.md`.
 
 ## Not there yet

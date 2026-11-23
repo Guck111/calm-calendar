@@ -331,6 +331,12 @@ export const uk: Dict = {
     done: "Готово",
     command: "Що вміє Calm Calendar",
   },
+  rating: {
+    title: "Подобається Calm Calendar?",
+    text: "Оцінка в Microsoft Store допомагає іншим знайти застосунок. Це займе кілька секунд.",
+    rate: "Оцінити в Store",
+    later: "Не зараз",
+  },
   shortcuts: {
     title: "Поєднання клавіш",
     calendar: "Календар",

@@ -7,6 +7,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 ### New
 
 - **Hide the side panel**: a button at the start of the toolbar hides the panel with the mini month and the calendar list, so the calendar takes the whole window. The choice is remembered. While the panel is hidden, "+" on the toolbar creates an event and N brings the panel back for quick add.
+- **A rating in Microsoft Store**: in the Store version, after two weeks of use a small card in the corner asks once to rate the app. "Rate in Store" opens the Store's own dialog, "Not now" closes the card, and it does not come back either way.
 
 ### Changed
 

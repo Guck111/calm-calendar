@@ -303,6 +303,12 @@ export const hi: Dict = {
     done: "हो गया",
     command: "Calm Calendar क्या कर सकता है",
   },
+  rating: {
+    title: "Calm Calendar पसंद आ रहा है?",
+    text: "Microsoft Store में रेटिंग से दूसरों को यह ऐप ढूँढने में मदद मिलती है। इसमें कुछ ही सेकंड लगते हैं।",
+    rate: "Store में रेटिंग दें",
+    later: "अभी नहीं",
+  },
   shortcuts: {
     title: "कीबोर्ड शॉर्टकट",
     calendar: "कैलेंडर",

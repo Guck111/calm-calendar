@@ -337,6 +337,12 @@ export const ru = {
     done: "Готово",
     command: "Что умеет Calm Calendar",
   },
+  rating: {
+    title: "Нравится Calm Calendar?",
+    text: "Оценка в Microsoft Store помогает другим найти приложение. Это займёт несколько секунд.",
+    rate: "Оценить в Store",
+    later: "Не сейчас",
+  },
   shortcuts: {
     title: "Сочетания клавиш",
     calendar: "Календарь",
