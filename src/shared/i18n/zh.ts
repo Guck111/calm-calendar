@@ -237,6 +237,7 @@ export const zh: Dict = {
     groupReminders: "提醒",
     groupQuick: "快速访问",
     groupHelp: "帮助",
+    version: (v: string) => `版本 ${v}`,
     onTop: "小组件始终置顶",
     onTopText: "否则会被其他窗口遮住。",
     hotkeyOff: "关闭",

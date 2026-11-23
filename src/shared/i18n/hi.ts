@@ -239,6 +239,7 @@ export const hi: Dict = {
     groupReminders: "रिमाइंडर",
     groupQuick: "झटपट पहुँच",
     groupHelp: "सहायता",
+    version: (v: string) => `संस्करण ${v}`,
     onTop: "विजेट हमेशा ऊपर रखें",
     onTopText: "नहीं तो दूसरी विंडो इसे ढक देती हैं।",
     hotkeyOff: "बंद",

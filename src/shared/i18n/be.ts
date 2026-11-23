@@ -267,6 +267,7 @@ export const be: Dict = {
     groupReminders: "Напаміны",
     groupQuick: "Хуткі доступ",
     groupHelp: "Дапамога",
+    version: (v: string) => `Версія ${v}`,
     onTop: "Віджэт паверх вокнаў",
     onTopText: "Інакш іншыя вокны яго закрываюць.",
     hotkeyOff: "Выключана",

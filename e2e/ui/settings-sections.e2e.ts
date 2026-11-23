@@ -50,6 +50,22 @@ test("Quick access: the shortcut, the widget and launch with Windows, with the n
   await expect(quick).toContainText(t.settings.trayHint);
 });
 
+test("the app version stands under the list of sections, whatever section is open", async ({ page, t }) => {
+  await openApp(page);
+  const settings = await openSettings(page, t);
+  const version = await page.evaluate(async () => {
+    const path = "/src/shared/lib/version.ts";
+    return (await import(/* @vite-ignore */ path)).APP_VERSION as string;
+  });
+  expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+  const line = settings.getByText(t.settings.version(version), { exact: true });
+  await expect(line).toBeVisible();
+  const list = (await settings.getByRole("tablist").boundingBox())!;
+  expect((await line.boundingBox())!.y).toBeGreaterThanOrEqual(list.y + list.height);
+  await settings.getByRole("tab", { name: t.settings.groupCalendar }).click();
+  await expect(line).toBeVisible();
+});
+
 test("arrow keys move between sections", async ({ page, t }) => {
   await openApp(page);
   const settings = await openSettings(page, t);

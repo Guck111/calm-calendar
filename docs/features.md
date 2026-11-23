@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections).
+Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version).
 
 ## Contents
 
@@ -211,6 +211,7 @@ The sections:
 - **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
 - **Help** (in the app only): "Open log folder".
 - In a low window the open section scrolls.
+- Under the list of sections: the app version ("Version 0.12.4"), the same number as in `package.json`, `tauri.conf.json` and `Cargo.toml`; it can be selected and copied (`src/shared/lib/version.ts`).
 
 ## Keyboard shortcuts
 

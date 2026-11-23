@@ -267,6 +267,7 @@ export const uk: Dict = {
     groupReminders: "Нагадування",
     groupQuick: "Швидкий доступ",
     groupHelp: "Допомога",
+    version: (v: string) => `Версія ${v}`,
     onTop: "Віджет поверх вікон",
     onTopText: "Інакше інші вікна його закривають.",
     hotkeyOff: "Вимкнено",

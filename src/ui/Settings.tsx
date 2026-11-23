@@ -49,6 +49,7 @@ import {
 } from "../shared/lib/appearance";
 import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
+import { APP_VERSION } from "../shared/lib/version";
 import { Bell, Bolt, CalendarDays, Close, Contrast, Help } from "./icons";
 import { useDraggable } from "./useDraggable";
 import s from "./Settings.module.css";
@@ -442,6 +443,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
         </div>
 
         <div className={s.body}>
+          <div className={s.side}>
           <div
             className={s.nav}
             role="tablist"
@@ -468,6 +470,8 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
                 </button>
               );
             })}
+          </div>
+          <small className={s.version}>{t.settings.version(APP_VERSION)}</small>
           </div>
 
           <div className={s.content}>

@@ -243,6 +243,7 @@ export const bn: Dict = {
     groupReminders: "রিমাইন্ডার",
     groupQuick: "দ্রুত অ্যাক্সেস",
     groupHelp: "সহায়তা",
+    version: (v: string) => `সংস্করণ ${v}`,
     onTop: "উইজেট সব উইন্ডোর ওপরে রাখুন",
     onTopText: "নইলে অন্য উইন্ডো এটিকে ঢেকে দেয়।",
     hotkeyOff: "বন্ধ",

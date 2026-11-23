@@ -244,6 +244,7 @@ export const en: Dict = {
     groupReminders: "Reminders",
     groupQuick: "Quick access",
     groupHelp: "Help",
+    version: (v: string) => `Version ${v}`,
     onTop: "Keep the widget on top",
     onTopText: "Otherwise other windows cover it.",
     hotkeyOff: "Off",

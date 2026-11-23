@@ -239,6 +239,7 @@ export const ja: Dict = {
     groupReminders: "通知",
     groupQuick: "クイック アクセス",
     groupHelp: "ヘルプ",
+    version: (v: string) => `バージョン ${v}`,
     onTop: "ウィジェットを常に手前に表示",
     onTopText: "オフのときは他のウィンドウに隠れます。",
     hotkeyOff: "オフ",

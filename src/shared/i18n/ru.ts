@@ -273,6 +273,7 @@ export const ru = {
     groupReminders: "Напоминания",
     groupQuick: "Быстрый доступ",
     groupHelp: "Помощь",
+    version: (v: string) => `Версия ${v}`,
     onTop: "Виджет поверх окон",
     onTopText: "Иначе другие окна его закрывают.",
     hotkeyOff: "Выключено",

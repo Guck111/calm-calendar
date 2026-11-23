@@ -258,6 +258,7 @@ export const ar: Dict = {
     groupReminders: "التذكيرات",
     groupQuick: "الوصول السريع",
     groupHelp: "المساعدة",
+    version: (v: string) => `الإصدار ${v}`,
     onTop: "إبقاء الأداة فوق النوافذ",
     onTopText: "وإلا فستغطيها النوافذ الأخرى.",
     hotkeyOff: "متوقف",
