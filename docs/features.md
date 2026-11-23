@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version).
+Last updated: 2026-11-23 (capital letter in quick add, the event card next to its event, the side panel button and the view menu for a narrow window, the rating card in the Store build, Settings in sections with the app version and the feedback form).
 
 ## Contents
 
@@ -209,7 +209,7 @@ The sections:
 - **Calendar**: language, second time zone, week numbers, holidays (a country or "Don't show"), calendar subscriptions.
 - **Reminders**: event notifications, hide titles in notifications, hard-to-miss alert (off, calls only, all events).
 - **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
-- **Help** (in the app only): "Open log folder".
+- **Help**: "Write to us" and, in the app only, "Open log folder". "Write to us" is a form for a suggestion, a problem or a question: the kind, the text, "Open in mail" and "Copy the text". "Open in mail" opens a letter to support@calmcalendar.co.uk in the user's own mail app (`mailto:`), with the subject "Calm Calendar 0.12.4: Problem" and, under the text, the app version, where it was installed from (Microsoft Store or installer), the interface language and the WebView2 and Windows line. The app sends nothing itself: the user sees the whole letter and sends it. A text too long for a link (about 1900 characters after encoding) is put on the clipboard, and the letter opens with "(Paste the copied text here: Ctrl+V)" in its place. "Copy the text" copies the whole letter for a web mailbox and shows the address. The text stays in the form after sending (`src/ui/FeedbackForm.tsx`, `src/shared/lib/feedback.ts`).
 - In a low window the open section scrolls.
 - Under the list of sections: the app version ("Version 0.12.4"), the same number as in `package.json`, `tauri.conf.json` and `Cargo.toml`; it can be selected and copied (`src/shared/lib/version.ts`).
 

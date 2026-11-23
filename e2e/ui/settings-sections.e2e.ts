@@ -5,12 +5,12 @@ test("sections are listed on the left; the first one, Look, is open", async ({ p
   await openApp(page);
   const settings = await openSettings(page, t);
   const tabs = settings.getByRole("tablist", { name: t.common.settings }).getByRole("tab");
-  // Help has only the log folder so far, and that needs the app
   await expect(tabs).toHaveText([
     t.settings.groupLook,
     t.settings.groupCalendar,
     t.settings.groupReminders,
     t.settings.groupQuick,
+    t.settings.groupHelp,
   ]);
   await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
   const look = settings.getByRole("tabpanel", { name: t.settings.groupLook });
@@ -77,7 +77,8 @@ test("arrow keys move between sections", async ({ page, t }) => {
   await expect(settings.getByLabel(t.settings.language)).toBeVisible();
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
-  await expect(tab(t.settings.groupQuick)).toHaveAttribute("aria-selected", "true");
+  // from the first section up is the last one
+  await expect(tab(t.settings.groupHelp)).toHaveAttribute("aria-selected", "true");
   // the calendar behind the dialog does not page on these keys
   await page.keyboard.press("Escape");
   await expect(settings).toBeHidden();
@@ -122,7 +123,7 @@ test.describe("right to left", () => {
 test("the Settings window of the app has the same sections", async ({ page, t }) => {
   await page.goto("/?window=settings");
   const settings = page.getByRole("dialog", { name: t.common.settings });
-  await expect(settings.getByRole("tab")).toHaveCount(4);
+  await expect(settings.getByRole("tab")).toHaveCount(5);
   await settings.getByRole("tab", { name: t.settings.groupReminders }).click();
   await expect(settings.getByRole("switch", { name: t.settings.notifications })).toBeVisible();
   // the window is filled edge to edge

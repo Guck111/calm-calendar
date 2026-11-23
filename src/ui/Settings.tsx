@@ -51,6 +51,7 @@ import { Button, cx } from "./Button";
 import { openLogsFolder } from "../shared/lib/log";
 import { APP_VERSION } from "../shared/lib/version";
 import { Bell, Bolt, CalendarDays, Close, Contrast, Help } from "./icons";
+import { FeedbackForm } from "./FeedbackForm";
 import { useDraggable } from "./useDraggable";
 import s from "./Settings.module.css";
 
@@ -76,9 +77,6 @@ const sectionName = (id: SectionId): string =>
     quick: t.settings.groupQuick,
     help: t.settings.groupHelp,
   })[id];
-
-/** Help has only the log folder, and that needs the app */
-const shownSections = (): SectionId[] => SECTIONS.filter((id) => id !== "help" || inTauri);
 
 /** Options of one section. A closed one stays mounted, so what was typed in it is kept */
 const Pane = ({ id, current, children }: { id: SectionId; current: SectionId; children: ReactNode }) => (
@@ -238,7 +236,6 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
   const [desktop, setDesktop] = useState<DesktopState>({ widget: false, on_top: false, autostart: false });
   const [error, setError] = useState<string | null>(null);
   const [section, setSection] = useState<SectionId>("look");
-  const [sections] = useState(shownSections);
   const openSection = (id: SectionId) => {
     setSection(id);
     setError(null);
@@ -248,7 +245,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
     const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const next = sections[(sections.indexOf(section) + step + sections.length) % sections.length];
+    const next = SECTIONS[(SECTIONS.indexOf(section) + step + SECTIONS.length) % SECTIONS.length];
     openSection(next);
     e.currentTarget.querySelector<HTMLElement>(`#settings-tab-${next}`)?.focus();
   };
@@ -451,7 +448,7 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
             aria-label={t.common.settings}
             onKeyDown={onSectionKey}
           >
-            {sections.map((id) => {
+            {SECTIONS.map((id) => {
               const Icon = SECTION_ICON[id];
               return (
                 <button
@@ -747,19 +744,21 @@ export const SettingsDialog = ({ onClose, onReschedule, onHeadDrag }: Props) => 
           <p className={s.hint}>{t.settings.trayHint}</p>
           </Pane>
 
-          {sections.includes("help") && (
-            <Pane id="help" current={section}>
-            <section className={s.section}>
-              <h4>{t.settings.logs}</h4>
-              <small className={s.sectionText}>{t.settings.logsText}</small>
-              <div>
-                <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
-                  {t.settings.openLogs}
-                </Button>
-              </div>
-            </section>
-            </Pane>
-          )}
+          <Pane id="help" current={section}>
+            <FeedbackForm />
+            {/* the log is written by the app: the browser has none */}
+            {inTauri && (
+              <section className={s.section}>
+                <h4>{t.settings.logs}</h4>
+                <small className={s.sectionText}>{t.settings.logsText}</small>
+                <div>
+                  <Button onClick={() => void openLogsFolder().catch(() => setError(t.errors.settingFailed))}>
+                    {t.settings.openLogs}
+                  </Button>
+                </div>
+              </section>
+            )}
+          </Pane>
 
           {error && <p className={s.error}>{error}</p>}
           </div>

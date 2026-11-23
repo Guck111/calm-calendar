@@ -394,6 +394,39 @@
   line-height: 1.35;
 }
 
+/* feedback: a letter to support */
+.message {
+  min-height: 96px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.message:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.feedbackActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* for those who write from a web mailbox: can be selected and copied */
+.supportEmail {
+  margin-inline-start: auto;
+  font-size: 12.5px;
+  color: var(--text-3);
+  user-select: text;
+}
+
 /* .ics calendar subscriptions */
 .feeds {
   margin: 0;
