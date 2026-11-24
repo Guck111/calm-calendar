@@ -10,9 +10,11 @@
     "!src/**/*.d.ts",
     "!src/shared/i18n/!(index).ts",
     "!src/shared/api/mock.ts",
-    "!src/shared/api/types.ts"
+    "!src/shared/api/types.ts",
+    "!src/shared/lib/glass.ts",
+    "!src/shared/lib/clipboard.ts"
   ],
-  "ignoreStatic": true,
+  "ignoreStatic": false,
   "reporters": ["clear-text", "progress", "html", "json"],
   "htmlReporter": { "fileName": "reports/mutation/index.html" },
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
