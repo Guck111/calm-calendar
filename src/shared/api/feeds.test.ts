@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { t } from "../i18n";
 import { FEED_ACCOUNT, FEEDS_KEY } from "../lib/feeds";
-import { calendarRef } from "./calendar";
+import { calendarRef, searchEvents } from "./calendar";
 import { downloadFeed, dropFeedCache, forgetFeeds, isCalendarText, listFeedEvents, searchFeedEvents } from "./feeds";
 
 const fetchFeed = vi.hoisted(() => vi.fn());
@@ -76,7 +76,7 @@ describe("subscription events", () => {
   });
 
   it("a deleted subscription has no events and nothing is downloaded", async () => {
-    stored.set(FEEDS_KEY, "[]");
+    stored.set(FEEDS_KEY, JSON.stringify([{ id: "other", url: URL, name: "Other", color: "#8e63ce" }]));
     expect(await listFeedEvents(CALENDAR, range)).toEqual([]);
     expect(fetchFeed).not.toHaveBeenCalled();
   });
@@ -180,6 +180,13 @@ describe("subscription search", () => {
     expect(await found("кубка")).toEqual(["Матч"]);
     expect(await found("а", 1)).toEqual(["Йога"]);
     expect(await found("бассейн")).toEqual([]);
+  });
+
+  it("the app searches a subscription two years around now, without Google", async () => {
+    fetchFeed.mockResolvedValue(ics(vevent("old", "Йога давно", 4), vevent("new", "Йога сейчас", 7)).replace("DTSTART:20261104", "DTSTART:20231104").replace("DTEND:20261104", "DTEND:20231104"));
+    const now = new Date(Date.UTC(2026, 10, 10));
+    expect((await searchEvents(CALENDAR, "йога", now)).map((e) => e.title)).toEqual(["Йога сейчас"]);
+    expect((await searchEvents(CALENDAR, "йога", new Date(Date.UTC(2025, 5, 1)))).map((e) => e.title)).toEqual(["Йога давно", "Йога сейчас"]);
   });
 
   it("an empty query finds nothing and downloads nothing", async () => {

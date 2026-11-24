@@ -74,6 +74,8 @@ describe("errors from Rust", () => {
   it("a Google error without a status code and other errors keep their text", async () => {
     failWith({ kind: "google", message: "connection reset" });
     expect(await caught(googleRequest("me@x", "GET", "/p"))).toEqual({ kind: "google", message: "connection reset" });
+    failWith({ kind: "google", message: "HTTP 403: Forbidden" });
+    expect(await caught(googleRequest("me@x", "GET", "/p"))).toEqual({ kind: "google", message: "HTTP 403: Forbidden" });
     failWith({ kind: "other", message: "403: not from Google" });
     expect(await caught(getAuthStatus())).toEqual({ kind: "other", message: "403: not from Google" });
     failWith(new Error("disk full"));

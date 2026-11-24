@@ -81,6 +81,7 @@ describe("request body", () => {
     expect(draftToBody(draft({ colorId: "5" }))).toHaveProperty("colorId", "5");
     expect(draftToBody(draft({ colorId: "", id: "e" }))).toHaveProperty("colorId", null);
     expect(draftToBody(draft({ colorId: "" }))).not.toHaveProperty("colorId");
+    expect(draftToBody(draft({ id: "e" }))).not.toHaveProperty("colorId");
   });
 
   it("a new video meeting gets a fresh request id, with or without crypto.randomUUID", () => {
@@ -90,6 +91,8 @@ describe("request body", () => {
     const first = requestId();
     expect(first.conferenceSolutionKey).toEqual({ type: "hangoutsMeet" });
     expect(first.requestId).not.toBe(requestId().requestId);
+    vi.stubGlobal("crypto", { randomUUID: () => "uuid-1" });
+    expect(requestId().requestId).toBe("uuid-1");
     vi.stubGlobal("crypto", {});
     expect(requestId().requestId).toMatch(/^[0-9a-z]+-[0-9a-z]+$/);
     vi.stubGlobal("crypto", undefined);
@@ -293,6 +296,8 @@ describe("'this and following'", () => {
     const counted = master({ recurrence: ["RRULE:FREQ=DAILY;COUNT=5"] });
     google(counted);
     await saveEvent(occurrence(counted, "2026-11-11", { originalStart: undefined }), "following");
+    google(series);
+    await saveEvent(occurrence(series), "following");
     expect(requests().some(([, path]) => String(path).endsWith("/instances"))).toBe(false);
   });
 
@@ -321,6 +326,14 @@ describe("'this and following'", () => {
     const { summary: _title, description: _d, location: _l, colorId: _c, attachments: _a, attendees: _g, ...settings } = shared;
     expect(plan.create).toMatchObject(settings);
     expect(plan.create.extendedProperties).toEqual({ private: { other: "1", calmTravelMinutes: "10" }, shared: { s: "2" } });
+
+    const untouched = planFollowing(occurrence(series), series, 0);
+    expect(untouched.kind === "split" && untouched.create).toMatchObject({
+      colorId: "2",
+      attachments: shared.attachments,
+      attendees: shared.attendees,
+      extendedProperties: { private: { other: "1" }, shared: { s: "2" } },
+    });
 
     const bare = master();
     const plain = planFollowing(occurrence(bare, "2026-11-11", { travelMinutes: 10 }), bare, 0);

@@ -30,6 +30,17 @@ describe("saved responses in storage", () => {
     expect((await freshCache()).recall("a")).toEqual({ at: 10, body: { items: [1] } });
   });
 
+  it("over the limit the oldest responses go first, not the first written", async () => {
+    vi.stubGlobal("localStorage", storageWith());
+    const cache = await freshCache();
+    for (let i = 0; i < 79; i++) cache.remember(`k${i}`, i, 100 + i);
+    cache.remember("stale", "old", 1);
+    cache.remember("fresh", "new", 500);
+    expect(cache.recall("stale")).toBeUndefined();
+    expect(cache.recall("k0")?.body).toBe(0);
+    expect(cache.recall("fresh")?.body).toBe("new");
+  });
+
   it("broken saved data counts as empty", async () => {
     stored.set(KEY, "{not json");
     vi.stubGlobal("localStorage", storageWith());
