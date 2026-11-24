@@ -36,3 +36,8 @@ docs/todo.md
 test-results
 playwright-report
 e2e/.drivers
+
+# Mutation testing: StrykerJS reports and temp sandboxes, cargo-mutants output
+reports
+.stryker-tmp
+src-tauri/mutants.out*
