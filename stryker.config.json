@@ -12,7 +12,7 @@
     "!src/shared/api/mock.ts",
     "!src/shared/api/types.ts"
   ],
-  "ignoreStatic": true,
+  "ignoreStatic": false,
   "reporters": ["clear-text", "progress", "html", "json"],
   "htmlReporter": { "fileName": "reports/mutation/index.html" },
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
