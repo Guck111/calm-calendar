@@ -140,6 +140,18 @@ npm run test:app                                                     # main wind
 
 Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.
 
+#### Mutation tests
+
+They check the unit tests themselves: small bugs (mutants) are planted in the code one at a time, and a mutant the tests do not notice points to a gap.
+
+```powershell
+npm run test:mutation -- --incremental   # StrykerJS on src/**/*.ts; report in reports/mutation/index.html
+cargo install cargo-mutants --locked     # once
+cd src-tauri; cargo mutants -j 2          # Rust; report in src-tauri/mutants.out
+```
+
+What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out). In CI (`mutation` workflow): on a pull request, TypeScript in incremental mode with a minimum score and Rust on the changed lines only, (a report, not blocking yet); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
+
 ### Project layout
 
 ```

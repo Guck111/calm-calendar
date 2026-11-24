@@ -1,0 +1,9 @@
+exclude_globs = [
+  "src/main.rs",
+  "src/lib.rs",
+  "src/autostart.rs",
+  "src/desktop.rs",
+  "src/quick.rs",
+  "src/settings.rs",
+]
+profile = "mutants"

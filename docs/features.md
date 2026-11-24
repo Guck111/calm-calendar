@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window, and the pulled-out side panel is opaque; the "What's new" link in Settings and its page on the website).
+Last updated: 2026-11-24 (mutation tests of the unit tests: StrykerJS and cargo-mutants).
 
 ## Contents
 
@@ -252,3 +252,4 @@ Planned next: Google Tasks, attaching a file from the computer through Google Dr
 - Unit tests (`npm test`, `cargo test`).
 - Interface tests in Chrome on mock data with a fixed clock, on every push (`e2e/ui`, README → Checks).
 - Tests of the real app on Windows under tauri-driver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, run by hand).
+- Mutation tests of the unit tests: StrykerJS for TypeScript, cargo-mutants for Rust; on pull requests and weekly (README → Mutation tests).
