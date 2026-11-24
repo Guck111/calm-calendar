@@ -64,7 +64,7 @@ const ev = (key: string, calendarId: string, account: string, h = 9, over: Parti
   allDay: false, recurring: false, ...over,
 });
 /** retries after a failure would load again and again: in these tests a failure stays a failure */
-const noRetry = [retryFx, async () => { throw new Error("no retries in tests"); }] as const;
+const noRetry: [typeof retryFx, () => Promise<never>] = [retryFx, async () => { throw new Error("no retries in tests"); }];
 const signedIn: AuthStatus = { clientSource: "file", accounts: [{ email: "me@x", signedIn: true }] };
 const watch = (scope: Scope, unit: Parameters<typeof createWatch>[0]["unit"]) => {
   const fn = vi.fn();
@@ -118,7 +118,7 @@ describe("loading events from several calendars", () => {
 });
 
 describe("what the events store shows", () => {
-  const load = (scope: Scope, events: CalendarEvent[], id = 1) =>
+  const load = (scope: Scope, id = 1) =>
     allSettled(fetchEventsFx, { scope, params: { calendars: [], range, id } });
   const scopeWith = (events: CalendarEvent[]) =>
     fork({ handlers: [noRetry, [fetchEventsFx, ({ id }: { id: number }) => ({ events, failed: [], lost: false, id })], [signOutFx, async () => undefined]] });
@@ -129,10 +129,10 @@ describe("what the events store shows", () => {
   it("an event deleted on screen stays hidden in a new load until restored, only in its own calendar", async () => {
     const scope = scopeWith([a, copy]);
     await allSettled(eventsHidden, { scope, params: hidden });
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($events).map((e) => e.key)).toEqual(["a-copy"]);
     await allSettled(eventsRestored, { scope, params: { hidden, events: [a] } });
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($events).map((e) => e.key)).toEqual(["a", "a-copy"]);
   });
 
@@ -143,7 +143,7 @@ describe("what the events store shows", () => {
     await allSettled(eventsHidden, { scope, params: hidden });
     await allSettled(eventsHidden, { scope, params: other });
     await allSettled(eventsRestored, { scope, params: { hidden, events: [a] } });
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($events).map((e) => e.key)).toEqual(["a"]);
   });
 
@@ -151,17 +151,17 @@ describe("what the events store shows", () => {
     const scope = scopeWith([a]);
     await allSettled(eventsHidden, { scope, params: hidden });
     await allSettled(hidingEnded, { scope, params: "other" });
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($events)).toEqual([]);
     await allSettled(hidingEnded, { scope, params: "del" });
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($events)).toEqual([a]);
   });
 
   it("a moved event changes only itself, overlaps between accounts are found", async () => {
     const work = ev("w", "work", "work@x", 9);
     const scope = scopeWith([a, work]);
-    await load(scope, []);
+    await load(scope);
     expect(scope.getState($conflicts).get("a")?.map((e) => e.key)).toEqual(["w"]);
     const start = new Date(2026, 10, 10, 14);
     const end = new Date(2026, 10, 10, 15);
@@ -171,7 +171,7 @@ describe("what the events store shows", () => {
 
   it("sign-out makes any answer on the way stale", async () => {
     const scope = scopeWith([]);
-    await load(scope, [], 5);
+    await load(scope, 5);
     await allSettled(signOutFx, { scope, params: undefined });
     expect(scope.getState($eventsRequestId)).toBe(6);
   });
@@ -247,7 +247,7 @@ describe("what starts a load", () => {
 
   it("signing in loads calendars, then events; paging, reload and refresh load again", async () => {
     const calendarsFx = vi.fn(async () => ({ calendars: [personal], failed: [], lost: [] }));
-    const eventsFx = vi.fn(async ({ id }: { id: number }) => ({ events: [], failed: [], lost: false, id }));
+    const eventsFx = vi.fn(async ({ id }: { id: number; calendars: Calendar[] }) => ({ events: [], failed: [], lost: false, id }));
     const scope = fork({ handlers: [noRetry, [fetchStatusFx, async () => signedIn], [fetchCalendarsFx, calendarsFx], [fetchEventsFx, eventsFx]] });
     await allSettled(fetchStatusFx, { scope });
     expect(calendarsFx).toHaveBeenCalledWith({ accounts: ["me@x"], id: 1 });
