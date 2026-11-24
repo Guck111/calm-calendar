@@ -20,6 +20,17 @@ describe("keyboard shortcuts list", () => {
     }
   });
 
+  it("every variant of every action has keys, and no key is blank", () => {
+    for (const hotkey of ["ctrl+alt+space", null]) {
+      for (const item of shortcutGroups(hotkey).flatMap((g) => g.items)) {
+        for (const variant of item.keys) {
+          expect(variant.length).toBeGreaterThan(0);
+          for (const key of variant) expect(key.trim()).not.toBe("");
+        }
+      }
+    }
+  });
+
   it("the main keys are there", () => {
     expect(keysOf("ctrl+alt+space")).toEqual(expect.arrayContaining(["Ctrl", "K", "E", "Delete", "?", "T", "N"]));
   });
