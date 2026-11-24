@@ -2,6 +2,12 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### Fixed
+
+- Quick add understands an hour right after the day when the title starts like a unit of time: "tomorrow 9 hockey", "fri 18 theatre", «завтра 9 чай с Олей», «завтра о 9 гра». Before, such an event became all-day with the number left in the title.
+
 ## 0.14.1 — 2026-11-23
 
 ### Fixed

@@ -111,7 +111,7 @@ const parseTime = (cut: Cut): TimeRange | null => {
     if (validTime(h, m)) return { h, m };
   }
   // «о 7 вечора», «об 11»
-  const short = cut.take(re(`(?:о|об)\\s+(\\d{1,2})(?:\\s*${PART})?(?!\\s*(?:хв|год|г${R}))`));
+  const short = cut.take(re(`(?:о|об)\\s+(\\d{1,2})(?:\\s*${PART})?(?!\\s*(?:хв(?:илин[аиу]?)?|год(?:ин[аиу]?)?|г)${R})`));
   if (short) {
     const h = toHour(Number(short[1]), short[2]);
     if (validTime(h, 0)) return { h, m: 0 };
@@ -137,7 +137,7 @@ const DAY_WORDS = [
   "\\d{1,2}\\.\\d{1,2}(?:\\.\\d{4})?",
 ].join("|");
 const BARE_HOUR = new RegExp(
-  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:хв|м${R}|г${R}|год|дн|тиж))`,
+  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:хв(?:илин[аиу]?)?|м|г|год(?:ин[аиу]?)?|дн(?:і|ів)|день|тиж(?:день|ні|нів))${R})`,
   "iu",
 );
 
