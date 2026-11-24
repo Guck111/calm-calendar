@@ -6,4 +6,20 @@ exclude_globs = [
   "src/quick.rs",
   "src/settings.rs",
 ]
+
+# Functions that only pass data between the tested logic and the running app (AppHandle), the Google API,
+# the Windows password store or notifications: unit tests can't call them. Also code for other systems
+# (cfg(not(windows))), which a Windows build never compiles. Matched against the mutant name:
+# "replace <fn> -> ..." or "... in <fn>"
+exclude_re = [
+  '^src/config\.rs:.*(replace|in) (config_dir|build_client|file_client|client_source|client|save_client|load_accounts|save_accounts|legacy_email|load_widget|save_widget|load_settings|save_settings)( |$)',
+  '^src/google\.rs:.*(replace|in) (google_error|request)( |$)',
+  '^src/i18n\.rs:.*(replace|in) (system_lang|current)( |$)',
+  '^src/logging\.rs:.*(replace|in) (plugin|install_panic_hook|open_folder)( |$)',
+  '^src/oauth\.rs:.*(replace|in) (keyring_entry|stored_refresh_token|delete_refresh_token|migrate_legacy|Auth::(new|reopen_sign_in|http|accounts|post_token|sign_in|exchange_code|access_token|sign_out))( |$)',
+  '^src/reminders\.rs:.*(replace|in) (now_ms|Reminders::fire_due|show_with_link|demo_alert|start)( |$)',
+  '^src/store\.rs:.*(replace|in) (is_store_build|request_rating|dialog::.*)( |$)',
+  '^src/toast\.rs:.*(replace|in) (app_id|show_with_link)( |$)',
+]
+
 profile = "mutants"
