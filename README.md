@@ -106,10 +106,10 @@ npm run tauri build    # installers in src-tauri\target\release\bundle\
 
 ### Releases
 
-Every push to `main` runs tests only (the `ci` workflow). Installers come from the `release` workflow:
+`main` takes changes only through pull requests, and only when the `test` (`ci` workflow) and `ts` (`mutation` workflow) checks are green: direct pushes, force pushes and deleting the branch are blocked by the "main: pull requests only" ruleset. Installers come from the `release` workflow:
 
-1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
-2. Commit and tag: `git tag v0.9.0` and `git push origin main v0.9.0`.
+1. On a branch, bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
+2. Open a pull request, merge it once the checks are green, then tag the merge commit on `main`: `git switch main`, `git pull`, `git tag v0.9.0`, `git push origin v0.9.0`.
 3. In 10–15 minutes a release with `.exe` and `.msi` appears under Releases.
 
 To build without a tag: Actions → release → Run workflow. The installers will be in that run's Artifacts.
@@ -150,7 +150,7 @@ cargo install cargo-mutants --locked     # once
 cd src-tauri; cargo mutants -j 2          # Rust; report in src-tauri/mutants.out
 ```
 
-What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out). In CI (`mutation` workflow): on a pull request, TypeScript in incremental mode with a minimum score and Rust on the changed lines only, (a report, not blocking yet); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
+What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out). In CI (`mutation` workflow): on every pull request, TypeScript in incremental mode with a minimum score (a required check for `main`) and Rust on the changed lines only (a report, not blocking yet); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
 
 ### Project layout
 
