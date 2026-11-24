@@ -146,6 +146,7 @@ They check the unit tests themselves: small bugs (mutants) are planted in the co
 
 ```powershell
 npm run test:mutation -- --incremental   # StrykerJS on src/**/*.ts; report in reports/mutation/index.html
+npm run test:mutation -- --incremental --concurrency 2   # with little free memory: 2 test processes, about 1.5 GB
 cargo install cargo-mutants --locked     # once
 cd src-tauri; cargo mutants -j 2          # Rust; report in src-tauri/mutants.out
 ```
