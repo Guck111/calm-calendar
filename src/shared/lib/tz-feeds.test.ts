@@ -71,11 +71,11 @@ describe("subscriptions by link", () => {
   });
 
   it("a new subscription is trimmed, named and colored in rotation", () => {
-    expect(newFeed(" https://cal.example.com/x.ics ", "  ", [], "id1")).toEqual({
-      id: "id1", url: "https://cal.example.com/x.ics", name: "cal.example.com", color: FEED_COLORS[0],
+    expect(newFeed(" https://cal.example.com/x.ics ", "  ", [], "00000000-0000-0000-0000-000000000001")).toEqual({
+      id: "00000000-0000-0000-0000-000000000001", url: "https://cal.example.com/x.ics", name: "cal.example.com", color: FEED_COLORS[0],
     });
-    expect(newFeed("https://a.b", " Mine ", [feed], "id2")).toMatchObject({ name: "Mine", color: FEED_COLORS[1] });
-    expect(newFeed("https://a.b", "x", Array(FEED_COLORS.length).fill(feed), "id3").color).toBe(FEED_COLORS[0]);
+    expect(newFeed("https://a.b", " Mine ", [feed], "00000000-0000-0000-0000-000000000002")).toMatchObject({ name: "Mine", color: FEED_COLORS[1] });
+    expect(newFeed("https://a.b", "x", Array(FEED_COLORS.length).fill(feed), "00000000-0000-0000-0000-000000000003").color).toBe(FEED_COLORS[0]);
   });
 
   it("a subscription is a read-only calendar of its own", () => {
