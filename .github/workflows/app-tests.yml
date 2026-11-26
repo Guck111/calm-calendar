@@ -64,6 +64,8 @@ jobs:
           Start-Sleep -Seconds 20
           $alive = -not $app.HasExited
           if ($alive) { Stop-Process -Id $app.Id -Force; "still running after 20 s" } else { "exited with code $($app.ExitCode)" }
+          # its WebView2 processes outlive it and would hold the app's WebView2 data for the next start
+          Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force
           Get-Content "$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs\calm-calendar.log" -ErrorAction SilentlyContinue
           if (-not $alive) { exit 1 }
 
