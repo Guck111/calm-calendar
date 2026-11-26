@@ -128,18 +128,17 @@ cargo clippy --all-targets -- -D warnings   # Rust lints; CI fails on any warnin
 
 `npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 13 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.
 
-#### App tests (tauri-driver)
+#### App tests (Edge WebDriver)
 
-The real app on Windows, without Google: a debug build where sign-in and Google requests go to the mock data, with its own identifier `com.arseni.calmcalendar.e2e`, so the installed app, its settings and its sign-in are not touched.
+The real app on Windows, without Google: a debug build where sign-in and Google requests go to the mock data, with its own identifier `com.arseni.calmcalendar.e2e`, so the installed app, its settings and its sign-in are not touched. The tests start the app with the WebView2 remote debugging port 9339 open and attach Edge WebDriver to it. WebView2 ignores the port in an app that runs as administrator, so run the tests from a normal (not elevated) terminal; CI, where everything runs as administrator, sets the port in the machine policy.
 
 ```powershell
-cargo install tauri-driver --locked                                  # once
 powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1    # Edge WebDriver for the installed WebView2, again after WebView2 updates
 npm run build:app-e2e                                                # debug build with mock data
 npm run test:app                                                     # main window, widget, alert, tray agenda, log, first-start card, widget and launch switches, Ctrl+Z
 ```
 
-Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.
+Tests are in `e2e/app/*.app.mjs`. In CI (`app-tests` workflow): on pull requests that change the app, every Monday, and by hand (Actions → app-tests → Run workflow); on a failure the test app's log is saved as the `app-log` artifact. The tests open windows and take focus, so locally run them when the computer is free.
 
 #### Mutation tests
 

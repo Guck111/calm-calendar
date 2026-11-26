@@ -3,7 +3,7 @@
 // a shortcut taken by another app is only a warning in the log.
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CONFIG_DIR, readLog, resetAppData, startApp, switchToWindow, useEnglish } from "./driver.mjs";
 
@@ -35,7 +35,9 @@ test("the window was built without errors; a shortcut from the list is registere
   const log = readLog();
   assert.doesNotMatch(log, /quick add window:/);
   assert.doesNotMatch(log, /every shortcut is taken/);
-  // Ctrl+Alt+Space may be taken by another app: then the next free one is saved in the settings
-  const settings = JSON.parse(readFileSync(join(CONFIG_DIR, "settings.json"), "utf8"));
+  // Ctrl+Alt+Space may be taken by another app: then the next free one is saved in the settings.
+  // Free: nothing is saved, the settings file may not be there yet
+  const file = join(CONFIG_DIR, "settings.json");
+  const settings = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : { quick_hotkey: "ctrl+alt+space" };
   assert.ok(["ctrl+alt+space", "ctrl+shift+space", "alt+shift+space"].includes(settings.quick_hotkey));
 });

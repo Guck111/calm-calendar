@@ -1,5 +1,5 @@
 # Downloads Microsoft Edge WebDriver of the same version as the installed WebView2 runtime, for the app tests
-# (tauri-driver drives the app through it). Result: e2e\.drivers\msedgedriver.exe
+# (the app tests attach it to the app's WebView2). Result: e2e\.drivers\msedgedriver.exe
 # Usage: powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1
 $ErrorActionPreference = "Stop"
 

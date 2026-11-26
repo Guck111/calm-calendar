@@ -1,7 +1,11 @@
-// Starts the real app (debug build with mock data, npm run build:app-e2e) under tauri-driver and
-// msedgedriver, and gives a WebdriverIO session. The app has its own identifier
-// (com.arseni.calmcalendar.e2e): its settings, WebView data and log are apart from the installed app,
-// and it never talks to Google.
+// Starts the real app (debug build with mock data, npm run build:app-e2e) with its WebView2 remote
+// debugging port open, attaches msedgedriver to it and gives a WebdriverIO session. The app has its
+// own identifier (com.arseni.calmcalendar.e2e): its settings, WebView data and log are apart from
+// the installed app, and it never talks to Google.
+//
+// The port comes from WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. WebView2 ignores that variable in an
+// app that runs as administrator (GitHub's Windows runners do), so CI also sets the same flag in the
+// machine policy HKLM\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments.
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { connect } from "node:net";
@@ -11,20 +15,44 @@ import { remote } from "webdriverio";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const APP = join(ROOT, "src-tauri", "target", "debug", "calm-calendar.exe");
-const NATIVE_DRIVER = join(ROOT, "e2e", ".drivers", "msedgedriver.exe");
+const EDGE_DRIVER = join(ROOT, "e2e", ".drivers", "msedgedriver.exe");
 const IDENTIFIER = "com.arseni.calmcalendar.e2e";
-const PORT = 4444;
+const DRIVER_PORT = 4444;
+const DEBUG_PORT = 9339;
+/** CALM_DRIVER_LOG: a file for msedgedriver's verbose log (CI keeps it when the tests fail) */
+const DRIVER_LOG = process.env.CALM_DRIVER_LOG;
 
 export const CONFIG_DIR = join(process.env.APPDATA ?? "", IDENTIFIER);
 export const DATA_DIR = join(process.env.LOCALAPPDATA ?? "", IDENTIFIER);
 export const LOG_FILE = join(DATA_DIR, "logs", "calm-calendar.log");
 
-const portOpen = () =>
+const portOpen = (port) =>
   new Promise((done) => {
-    const socket = connect(PORT, "127.0.0.1");
+    const socket = connect(port, "127.0.0.1");
     socket.once("connect", () => (socket.end(), done(true)));
     socket.once("error", () => done(false));
   });
+
+const waitFor = async (check, what, timeout = 30_000) => {
+  const deadline = Date.now() + timeout;
+  while (!(await check())) {
+    if (Date.now() > deadline) throw new Error(what);
+    await sleep(200);
+  }
+};
+
+/** Every window of the app is on its page, none is about:blank (the DevTools target list) */
+const pagesLoaded = async () => {
+  const targets = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/list`)
+    .then((r) => r.json())
+    .catch(() => []);
+  const pages = targets.filter((t) => t.type === "page");
+  return pages.length > 0 && pages.every((t) => t.url.startsWith("http"));
+};
+
+/** The app with its WebView2 processes: they outlive it otherwise and hold its WebView2 data */
+const killTree = (pid) =>
+  new Promise((done) => spawn("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore" }).once("exit", done));
 
 /** Settings, WebView storage and log of the test app start empty. Only the test app's own folders */
 export const resetAppData = ({ widget = false } = {}) => {
@@ -38,29 +66,53 @@ export const resetAppData = ({ widget = false } = {}) => {
 export const startApp = async (env = {}) => {
   for (const [file, hint] of [
     [APP, "npm run build:app-e2e"],
-    [NATIVE_DRIVER, "powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1"],
+    [EDGE_DRIVER, "powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1"],
   ]) {
     if (!existsSync(file)) throw new Error(`${file} is missing. Run: ${hint}`);
   }
-  const driver = spawn("tauri-driver", ["--port", String(PORT), "--native-driver", NATIVE_DRIVER], {
-    env: { ...process.env, ...env },
-    stdio: ["ignore", "ignore", "inherit"],
+  if (await portOpen(DEBUG_PORT)) throw new Error(`port ${DEBUG_PORT} is taken: is another test app still running?`);
+
+  const app = spawn(APP, [], {
+    env: { ...process.env, ...env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${DEBUG_PORT}` },
+    stdio: "ignore",
   });
-  for (let i = 0; !(await portOpen()); i++) {
-    if (i > 50) throw new Error("tauri-driver did not start");
-    await sleep(200);
-  }
-  const browser = await remote({
-    hostname: "127.0.0.1",
-    port: PORT,
-    logLevel: "warn",
-    capabilities: { browserName: "wry", "tauri:options": { application: APP } },
+  const driverArgs = [`--port=${DRIVER_PORT}`, ...(DRIVER_LOG ? ["--verbose", "--append-log", `--log-path=${DRIVER_LOG}`] : [])];
+  const driver = spawn(EDGE_DRIVER, driverArgs, { stdio: ["ignore", "ignore", "inherit"] });
+  const kill = async () => {
+    driver.kill();
+    await killTree(app.pid);
+    await waitFor(async () => !(await portOpen(DEBUG_PORT)), "the test app did not stop", 10_000);
+  };
+
+  const session = async () => {
+    await waitFor(
+      async () => app.exitCode === null && (await portOpen(DEBUG_PORT)),
+      `the app opened no remote debugging port ${DEBUG_PORT} (exit code ${app.exitCode})`,
+    );
+    // a window the driver attaches to while it is still about:blank never loads the app's page
+    await waitFor(pagesLoaded, "the app's windows did not load their pages");
+    await waitFor(() => portOpen(DRIVER_PORT), "msedgedriver did not start");
+    return remote({
+      hostname: "127.0.0.1",
+      port: DRIVER_PORT,
+      logLevel: "warn",
+      connectionRetryCount: 1,
+      capabilities: {
+        browserName: "webview2",
+        "ms:edgeOptions": { debuggerAddress: `127.0.0.1:${DEBUG_PORT}` },
+        // over WebDriver BiDi a window loaded before the driver attached stays about:blank to it
+        "wdio:enforceWebDriverClassic": true,
+      },
+    });
+  };
+  // a driver or app left running keeps the test process alive for good: stop them when the session can't start
+  const browser = await session().catch(async (e) => {
+    await kill();
+    throw e;
   });
   const stop = async () => {
     await browser.deleteSession().catch(() => {});
-    driver.kill();
-    // the app may outlive the session for a moment: wait until its files are free
-    await sleep(1000);
+    await kill();
   };
   return { browser, stop };
 };
@@ -68,16 +120,21 @@ export const startApp = async (env = {}) => {
 /** Switch to one of the app's windows: "main", "widget", "alert" or "agenda" (the ?window= of its page) */
 export const switchToWindow = async (browser, kind, timeout = 20_000) => {
   const deadline = Date.now() + timeout;
+  let seen = [];
   while (Date.now() < deadline) {
+    seen = [];
     for (const handle of await browser.getWindowHandles()) {
       await browser.switchToWindow(handle);
-      const url = await browser.getUrl();
-      const found = new URL(url).searchParams.get("window") ?? "main";
+      const url = new URL(await browser.getUrl());
+      seen.push(url.href);
+      // a window that has not loaded the app's page yet is still about:blank
+      if (!url.protocol.startsWith("http")) continue;
+      const found = url.searchParams.get("window") ?? "main";
       if (found === kind) return handle;
     }
     await sleep(500);
   }
-  throw new Error(`no "${kind}" window`);
+  throw new Error(`no "${kind}" window among ${seen.join(", ")}`);
 };
 
 /** English interface in the current window: the language is in localStorage, shared by all windows */

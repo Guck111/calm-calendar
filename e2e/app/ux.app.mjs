@@ -9,16 +9,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CONFIG_DIR, resetAppData, startApp, switchToWindow, useEnglish, waitForText } from "./driver.mjs";
 
-const RUN_KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+// the autostart plugin writes the machine's Run key when the app runs as administrator (CI), the user's otherwise
+const RUN_KEYS = ["HKCU", "HKLM"].map((root) => `${root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`);
 
-/** the Run key value of the app, or null */
-const runEntry = () => {
+const query = (key) => {
   try {
-    return execFileSync("reg", ["query", RUN_KEY, "/v", "Calm Calendar"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return execFileSync("reg", ["query", key, "/v", "Calm Calendar"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   } catch {
     return null;
   }
 };
+
+/** the Run key value of the app, or null */
+const runEntry = () => RUN_KEYS.map(query).find((entry) => entry !== null) ?? null;
 
 const widgetSettings = () => {
   const file = join(CONFIG_DIR, "widget.json");
@@ -50,7 +53,8 @@ before(async () => {
 after(async () => {
   await app?.stop();
   // whatever happened, the test app leaves no launch entry behind
-  if (!hadRunEntry && runEntry() !== null) execFileSync("reg", ["delete", RUN_KEY, "/v", "Calm Calendar", "/f"]);
+  if (hadRunEntry) return;
+  for (const key of RUN_KEYS.filter((k) => query(k) !== null)) execFileSync("reg", ["delete", key, "/v", "Calm Calendar", "/f"]);
 });
 
 test("first start: the card shows the real state and turns the widget on", async () => {

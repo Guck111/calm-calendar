@@ -251,5 +251,5 @@ Planned next: Google Tasks, attaching a file from the computer through Google Dr
 
 - Unit tests (`npm test`, `cargo test`).
 - Interface tests in Chrome on mock data with a fixed clock, on every push (`e2e/ui`, README → Checks).
-- Tests of the real app on Windows under tauri-driver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, run by hand).
+- Tests of the real app on Windows under Edge WebDriver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, on pull requests that change the app and weekly).
 - Mutation tests of the unit tests: StrykerJS for TypeScript, cargo-mutants for Rust; on pull requests and weekly; a surviving Rust mutant in a pull request's changed lines fails the check (README → Mutation tests).
