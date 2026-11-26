@@ -41,6 +41,15 @@ const waitFor = async (check, what, timeout = 30_000) => {
   }
 };
 
+/** Every window of the app is on its page, none is about:blank (the DevTools target list) */
+const pagesLoaded = async () => {
+  const targets = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/list`)
+    .then((r) => r.json())
+    .catch(() => []);
+  const pages = targets.filter((t) => t.type === "page");
+  return pages.length > 0 && pages.every((t) => t.url.startsWith("http"));
+};
+
 /** The app with its WebView2 processes: they outlive it otherwise and hold its WebView2 data */
 const killTree = (pid) =>
   new Promise((done) => spawn("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore" }).once("exit", done));
@@ -80,6 +89,8 @@ export const startApp = async (env = {}) => {
       async () => app.exitCode === null && (await portOpen(DEBUG_PORT)),
       `the app opened no remote debugging port ${DEBUG_PORT} (exit code ${app.exitCode})`,
     );
+    // a window the driver attaches to while it is still about:blank never loads the app's page
+    await waitFor(pagesLoaded, "the app's windows did not load their pages");
     await waitFor(() => portOpen(DRIVER_PORT), "msedgedriver did not start");
     return remote({
       hostname: "127.0.0.1",
@@ -107,8 +118,10 @@ export const switchToWindow = async (browser, kind, timeout = 20_000) => {
   while (Date.now() < deadline) {
     for (const handle of await browser.getWindowHandles()) {
       await browser.switchToWindow(handle);
-      const url = await browser.getUrl();
-      const found = new URL(url).searchParams.get("window") ?? "main";
+      const url = new URL(await browser.getUrl());
+      // a window that has not loaded the app's page yet is still about:blank
+      if (!url.protocol.startsWith("http")) continue;
+      const found = url.searchParams.get("window") ?? "main";
       if (found === kind) return handle;
     }
     await sleep(500);
