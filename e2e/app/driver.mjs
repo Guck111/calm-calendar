@@ -46,15 +46,23 @@ export const startApp = async (env = {}) => {
     env: { ...process.env, ...env },
     stdio: ["ignore", "ignore", "inherit"],
   });
-  for (let i = 0; !(await portOpen()); i++) {
-    if (i > 50) throw new Error("tauri-driver did not start");
-    await sleep(200);
-  }
-  const browser = await remote({
-    hostname: "127.0.0.1",
-    port: PORT,
-    logLevel: "warn",
-    capabilities: { browserName: "wry", "tauri:options": { application: APP } },
+  // a driver left running keeps the test process alive for good: stop it when the session can't start
+  const session = async () => {
+    for (let i = 0; !(await portOpen()); i++) {
+      if (i > 50) throw new Error("tauri-driver did not start");
+      await sleep(200);
+    }
+    return remote({
+      hostname: "127.0.0.1",
+      port: PORT,
+      logLevel: "warn",
+      connectionRetryCount: 1,
+      capabilities: { browserName: "wry", "tauri:options": { application: APP } },
+    });
+  };
+  const browser = await session().catch((e) => {
+    driver.kill();
+    throw e;
   });
   const stop = async () => {
     await browser.deleteSession().catch(() => {});

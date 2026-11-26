@@ -56,15 +56,27 @@ jobs:
       - name: Build the test app
         run: npm run build:app-e2e
 
+      # the built app has to start and keep running on its own, otherwise the driver can't reach its window
+      - name: Start the test app
+        shell: pwsh
+        run: |
+          $app = Start-Process src-tauri\target\debug\calm-calendar.exe -PassThru
+          Start-Sleep -Seconds 20
+          $alive = -not $app.HasExited
+          if ($alive) { Stop-Process -Id $app.Id -Force; "still running after 20 s" } else { "exited with code $($app.ExitCode)" }
+          Get-Content "$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs\calm-calendar.log" -ErrorAction SilentlyContinue
+          if (-not $alive) { exit 1 }
+
       - name: App tests
+        timeout-minutes: 30
         run: npm run test:app
 
-      # the test app's own log: what the Rust side saw when a test failed
-      - if: failure()
+      # the test app's own log: what the Rust side saw when a test failed or hung
+      - if: failure() || cancelled()
         shell: pwsh
         run: Add-Content $env:GITHUB_ENV "APP_LOG=$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs"
 
-      - if: failure()
+      - if: failure() || cancelled()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: app-log
