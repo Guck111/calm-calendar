@@ -21,7 +21,6 @@ use oauth::Auth;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::{AppHandle, Manager, State, WindowEvent};
-use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::StateFlags;
 
 #[derive(Serialize)]
@@ -292,10 +291,6 @@ pub fn run() {
                 .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK, settings::SETTINGS])
                 .build(),
         )
-        .plugin(tauri_plugin_autostart::init(
-            MacosLauncher::LaunchAgent,
-            Some(vec![windowing::HIDDEN_ARG]),
-        ))
         .manage(reminders::Reminders::default())
         .manage(desktop::TrayItems::default())
         .manage(desktop::AgendaHidden::default())
@@ -307,6 +302,7 @@ pub fn run() {
                 std::env::consts::ARCH
             );
             app.manage(Auth::new(app.config().identifier.clone()));
+            autostart::setup(app.handle());
             // the old version's sign-in (single account) moves into the account list
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
