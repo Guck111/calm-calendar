@@ -171,6 +171,16 @@ mod tests {
         assert!(text.contains("BEGIN:VCALENDAR"));
     }
 
+    proptest::proptest! {
+        /// whatever the person pastes, only a web link is ever downloaded
+        #[test]
+        fn only_web_links_pass(link in "(webcal|WEBCAL|https?|file|ftp|javascript|data)?:?/{0,3}\\PC{0,30}") {
+            if let Ok(url) = normalize(&link) {
+                proptest::prop_assert!(matches!(url.scheme(), "http" | "https"));
+            }
+        }
+    }
+
     #[test]
     fn other_schemes_and_garbage_are_refused() {
         assert!(normalize("file:///C:/secret.ics").is_err());

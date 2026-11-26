@@ -60,3 +60,6 @@ strip = true
 [profile.mutants]
 inherits = "test"
 debug = "none"
+
+[dev-dependencies]
+proptest = "1"
