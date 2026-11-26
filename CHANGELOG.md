@@ -10,6 +10,7 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - An event with a time zone Windows doesn't know (one newer than the system's time zone data) now opens and is shown in its calendar's time zone. Before, its card did not open.
 - Month view in languages whose week starts on Sunday: an event over several days shows its title again at the start of each week row. Before, the title showed again on Monday, in the middle of the row.
 - A screen reader tells apart the lists of a custom repeat rule: "Repeat", "Repeat period" and "Monthly on". Before, all three were called "Repeat".
+- "Start with Windows" turned on while the app ran as administrator now starts it only for you. Before, it started the app for everyone who signs in to the computer.
 
 ## 0.14.1 — 2026-11-23
 

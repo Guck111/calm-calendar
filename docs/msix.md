@@ -35,7 +35,7 @@ Start-Process "shell:AppsFolder\CalmCalendar.Dev_nfw2ntm5m5jmm!com.arseni.calmca
 
 ## Autostart
 
-`src-tauri/src/autostart.rs` picks the mechanism at runtime: inside a package (`Package::Current()` succeeds) the tray item drives the `CalmCalendarStartup` startup task, otherwise the `Run` key through the plugin. A startup task cannot pass `--hidden`, so the packaged build checks `AppInstance::GetActivatedEventArgs()` for `ActivationKind::StartupTask` and then shows only the widget.
+`src-tauri/src/autostart.rs` picks the mechanism at runtime: inside a package (`Package::Current()` succeeds) the tray item drives the `CalmCalendarStartup` startup task, otherwise the current user's `Run` key through `auto-launch` (never the machine's key, even when the app runs as administrator). A startup task cannot pass `--hidden`, so the packaged build checks `AppInstance::GetActivatedEventArgs()` for `ActivationKind::StartupTask` and then shows only the widget.
 
 Verified in the package: the tray item turns the task on (`State = Enabled`), nothing is written to `Run`, a normal launch still opens the main window. If the user disabled the app in Task Manager → Startup apps, `RequestEnableAsync` returns `DisabledByUser` and the tray check mark goes back off.
 

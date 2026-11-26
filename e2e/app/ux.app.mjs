@@ -9,8 +9,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CONFIG_DIR, resetAppData, startApp, switchToWindow, useEnglish, waitForText } from "./driver.mjs";
 
-// the autostart plugin writes the machine's Run key when the app runs as administrator (CI), the user's otherwise
-const RUN_KEYS = ["HKCU", "HKLM"].map((root) => `${root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`);
+// the app writes only the user's Run key, even as administrator (CI): the machine's key would start it for everyone
+const [USER_RUN, MACHINE_RUN] = ["HKCU", "HKLM"].map((root) => `${root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`);
+const RUN_KEYS = [USER_RUN, MACHINE_RUN];
 
 const query = (key) => {
   try {
@@ -106,7 +107,8 @@ test("Settings → Quick access: launch with Windows writes and removes the Run 
   assert.equal((await switchState(browser, "Start with Windows")).checked, false);
   await flip(browser, "Start with Windows");
   await browser.waitUntil(async () => runEntry() !== null, { timeout: 5_000, timeoutMsg: "no Run entry" });
-  assert.match(runEntry(), /calm-calendar\.exe/i);
+  assert.match(query(USER_RUN) ?? "", /calm-calendar\.exe.*--hidden/i);
+  assert.equal(query(MACHINE_RUN), null, "the launch entry is the user's, not the machine's");
   assert.equal((await switchState(browser, "Start with Windows")).checked, true);
   await flip(browser, "Start with Windows");
   await browser.waitUntil(async () => runEntry() === null, { timeout: 5_000, timeoutMsg: "the Run entry stayed" });
