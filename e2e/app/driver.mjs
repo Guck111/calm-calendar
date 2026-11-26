@@ -11,7 +11,8 @@ import { remote } from "webdriverio";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const APP = join(ROOT, "src-tauri", "target", "debug", "calm-calendar.exe");
-const NATIVE_DRIVER = join(ROOT, "e2e", ".drivers", "msedgedriver.exe");
+/** CALM_NATIVE_DRIVER: another driver binary, e.g. a wrapper that writes msedgedriver's verbose log in CI */
+const NATIVE_DRIVER = process.env.CALM_NATIVE_DRIVER ?? join(ROOT, "e2e", ".drivers", "msedgedriver.exe");
 const IDENTIFIER = "com.arseni.calmcalendar.e2e";
 const PORT = 4444;
 

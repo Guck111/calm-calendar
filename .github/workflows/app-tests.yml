@@ -67,9 +67,24 @@ jobs:
           Get-Content "$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs\calm-calendar.log" -ErrorAction SilentlyContinue
           if (-not $alive) { exit 1 }
 
+      # msedgedriver writes a verbose log next to the test results: how it starts the app and waits for its WebView2
+      - name: Verbose Edge WebDriver
+        shell: pwsh
+        run: |
+          $wrapper = Join-Path $env:RUNNER_TEMP "msedgedriver-verbose.cmd"
+          $driver = Resolve-Path e2e\.drivers\msedgedriver.exe
+          Set-Content $wrapper "@`"$driver`" %* --verbose `"--log-path=$env:RUNNER_TEMP\msedgedriver.log`""
+          Add-Content $env:GITHUB_ENV "CALM_NATIVE_DRIVER=$wrapper"
+
       - name: App tests
         timeout-minutes: 30
         run: npm run test:app
+
+      - if: failure() || cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: msedgedriver-log
+          path: ${{ runner.temp }}/msedgedriver.log
 
       # the test app's own log: what the Rust side saw when a test failed or hung
       - if: failure() || cancelled()
