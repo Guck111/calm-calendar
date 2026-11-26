@@ -124,6 +124,8 @@ export const pt: Dict = {
   },
   repeat: {
     label: "Repetir",
+    period: "Período de repetição",
+    monthlyBy: "Todo mês no",
     none: "Não se repete",
     custom: "Personalizar…",
     special: "Repetição personalizada no Google",
