@@ -126,7 +126,7 @@ cargo clippy --all-targets -- -D warnings   # Rust lints; CI fails on any warnin
 
 Property tests run inside `npm test` and `cargo test`: they feed hundreds of random inputs to the day layout, dates, dragging, recurrence rules, quick add, .ics reading (`src/shared/lib/properties.test.ts`, fast-check) and to the Google API path and feed link checks (proptest in `google.rs`, `feeds.rs`). On a failure fast-check prints the seed and the smallest failing input.
 
-Component tests (`src/ui/*.test.tsx`) render single React components in jsdom with Testing Library and check them the way a person uses them: roles, names, clicks, keys. They are also part of `npm test`; a component with such tests is added to the Stryker `mutate` list.
+Component tests (`src/ui/*.test.tsx`) render single React components in jsdom with Testing Library and check them the way a person uses them: roles, names, clicks, keys. They are also part of `npm test`; a component with such tests is added to the Stryker `mutate` list. A component that reads the model (the event card and form, the week and month grids) runs in its own effector scope from `src/ui/app-scope.test-utils.tsx`: accounts, calendars and events are what the test gives, nothing comes from the demo data.
 
 #### Interface tests (Playwright)
 

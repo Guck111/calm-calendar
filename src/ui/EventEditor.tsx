@@ -445,16 +445,12 @@ const GuestsField = ({ guests, onChange }: { guests: Attendee[]; onChange: (gues
   const [bad, setBad] = useState(false);
   const add = () => {
     const emails = text.split(/[\s,;]+/).filter(Boolean);
-    if (!emails.length) return true;
-    if (!emails.every((e) => EMAIL.test(e))) {
-      setBad(true);
-      return false;
-    }
+    if (!emails.length) return;
+    if (!emails.every((e) => EMAIL.test(e))) return setBad(true);
     const known = new Set(guests.map((g) => g.email.toLowerCase()));
     const fresh = emails.filter((e) => !known.has(e.toLowerCase())).map((email) => ({ email }));
     onChange([...guests, ...fresh]);
     setText("");
-    return true;
   };
   return (
     <div className={s.field}>
