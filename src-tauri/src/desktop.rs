@@ -254,12 +254,12 @@ pub fn alerts_changed(app: &AppHandle, empty: bool) {
 pub struct AgendaHidden(Mutex<Option<std::time::Instant>>);
 
 pub fn hide_agenda(app: &AppHandle) {
-    if let Some(w) = window(app, AGENDA) {
-        if w.is_visible().unwrap_or(false) {
-            let _ = w.hide();
-            if let Ok(mut at) = app.state::<AgendaHidden>().0.lock() {
-                *at = Some(std::time::Instant::now());
-            }
+    if let Some(w) = window(app, AGENDA)
+        && w.is_visible().unwrap_or(false)
+    {
+        let _ = w.hide();
+        if let Ok(mut at) = app.state::<AgendaHidden>().0.lock() {
+            *at = Some(std::time::Instant::now());
         }
     }
 }

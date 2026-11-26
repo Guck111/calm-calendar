@@ -151,10 +151,10 @@ fn stored_refresh_token(service: &str, email: &str) -> Option<String> {
 fn delete_refresh_token(service: &str, email: &str) {
     let Ok(entry) = keyring_entry(service, &keyring_user(email)) else { return };
     // the old version's entry with the same token is removed too: otherwise sign-out would be incomplete
-    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(service, LEGACY_KEYRING_USER)) {
-        if legacy.get_password().is_ok_and(|old| old == token) {
-            let _ = legacy.delete_credential();
-        }
+    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(service, LEGACY_KEYRING_USER))
+        && legacy.get_password().is_ok_and(|old| old == token)
+    {
+        let _ = legacy.delete_credential();
     }
     let _ = entry.delete_credential();
 }
@@ -169,10 +169,10 @@ pub fn migrate_legacy(app: &AppHandle) {
     let service = &app.config().identifier;
     let token = keyring_entry(service, LEGACY_KEYRING_USER).ok().and_then(|e| e.get_password().ok());
     let mut accounts = Vec::new();
-    if let (Some(email), Some(token)) = (config::legacy_email(app), token) {
-        if keyring_entry(service, &keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok() {
-            accounts.push(Account { email });
-        }
+    if let (Some(email), Some(token)) = (config::legacy_email(app), token)
+        && keyring_entry(service, &keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok()
+    {
+        accounts.push(Account { email });
     }
     let _ = config::save_accounts(app, &accounts);
 }
@@ -303,10 +303,10 @@ impl Auth {
 
     /// The person changed their mind: sign_in stops waiting for the browser and returns Error::Cancelled
     pub fn cancel_sign_in(&self) {
-        if let Ok(p) = self.pending.lock() {
-            if let Some(p) = p.as_ref() {
-                p.cancel.notify_one();
-            }
+        if let Ok(p) = self.pending.lock()
+            && let Some(p) = p.as_ref()
+        {
+            p.cancel.notify_one();
         }
     }
 
