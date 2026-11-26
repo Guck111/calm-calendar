@@ -147,6 +147,8 @@ export const uk: Dict = {
   },
   repeat: {
     label: "Повтор",
+    period: "Період повтору",
+    monthlyBy: "Щомісяця за",
     none: "Не повторюється",
     custom: "Налаштувати…",
     special: "Особливий повтор, налаштований у Google",

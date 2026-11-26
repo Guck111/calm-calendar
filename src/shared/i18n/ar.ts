@@ -135,6 +135,8 @@ export const ar: Dict = {
   },
   repeat: {
     label: "التكرار",
+    period: "فترة التكرار",
+    monthlyBy: "شهريًا في",
     none: "لا يتكرر",
     custom: "تخصيص…",
     special: "تكرار مخصّص في Google",

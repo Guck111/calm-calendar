@@ -147,6 +147,8 @@ export const ru = {
   },
   repeat: {
     label: "Повтор",
+    period: "Период повтора",
+    monthlyBy: "Каждый месяц по",
     none: "Не повторяется",
     custom: "Настроить…",
     special: "Особый повтор, настроенный в Google",

@@ -120,6 +120,8 @@ export const bn: Dict = {
   },
   repeat: {
     label: "পুনরাবৃত্তি",
+    period: "পুনরাবৃত্তির সময়কাল",
+    monthlyBy: "প্রতি মাসে",
     none: "পুনরাবৃত্তি হয় না",
     custom: "নিজের মতো…",
     special: "Google-এ সেট করা বিশেষ পুনরাবৃত্তি",

@@ -29,7 +29,7 @@ const draft = (recurrence: string[] = [], over: Partial<EventDraft> = {}): Event
 const show = (d: EventDraft, loading = false) => {
   const onChange = vi.fn();
   const view = render(<RepeatField draft={d} loading={loading} onChange={onChange} />);
-  return { onChange, select: screen.getAllByRole("combobox", { name: "Repeat" })[0] as HTMLSelectElement, ...view };
+  return { onChange, select: screen.getByRole("combobox", { name: "Repeat" }) as HTMLSelectElement, ...view };
 };
 
 describe("repeat field", () => {
@@ -116,11 +116,11 @@ describe("custom repeat", () => {
 
   it("days are only for weekly; going back to weekly starts from the event's day", () => {
     const { onChange, rerender } = custom();
-    fireEvent.change(screen.getAllByRole("combobox", { name: "Repeat" })[1], { target: { value: "DAILY" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Repeat period" }), { target: { value: "DAILY" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=DAILY;INTERVAL=2"]);
     rerender(<RepeatField draft={draft(["RRULE:FREQ=DAILY;INTERVAL=2"])} loading={false} onChange={onChange} />);
     expect(screen.queryByRole("group", { name: "Days of the week" })).toBeNull();
-    fireEvent.change(screen.getAllByRole("combobox", { name: "Repeat" })[1], { target: { value: "WEEKLY" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Repeat period" }), { target: { value: "WEEKLY" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE"]);
   });
 
@@ -184,18 +184,27 @@ describe("custom repeat", () => {
 
   it("switching to monthly can repeat on the nth weekday", () => {
     const { onChange, rerender } = custom();
-    const freq = screen.getAllByRole("combobox", { name: "Repeat" })[1];
+    const freq = screen.getByRole("combobox", { name: "Repeat period" });
     fireEvent.change(freq, { target: { value: "MONTHLY" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=MONTHLY;INTERVAL=2"]);
     rerender(<RepeatField draft={draft(["RRULE:FREQ=MONTHLY;INTERVAL=2"])} loading={false} onChange={onChange} />);
-    const variant = screen.getAllByRole("combobox", { name: "Repeat" })[2] as HTMLSelectElement;
+    const variant = screen.getByRole("combobox", { name: "Monthly on" }) as HTMLSelectElement;
     expect(variant.value).toBe("day");
     fireEvent.change(variant, { target: { value: "nth" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=MONTHLY;INTERVAL=2;BYDAY=1WE"]);
     rerender(<RepeatField draft={draft(["RRULE:FREQ=MONTHLY;INTERVAL=2;BYDAY=1WE"])} loading={false} onChange={onChange} />);
-    const nth = screen.getAllByRole("combobox", { name: "Repeat" })[2] as HTMLSelectElement;
+    const nth = screen.getByRole("combobox", { name: "Monthly on" }) as HTMLSelectElement;
     expect(nth.value).toBe("nth");
     fireEvent.change(nth, { target: { value: "day" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=MONTHLY;INTERVAL=2"]);
+  });
+});
+
+describe("names of the repeat lists", () => {
+  it("a custom monthly rule has three lists, each with its own name for a screen reader", () => {
+    show(draft(["RRULE:FREQ=MONTHLY;INTERVAL=2"]));
+    fireEvent.change(screen.getByRole("combobox", { name: "Repeat" }), { target: { value: "custom" } });
+    const names = screen.getAllByRole("combobox").map((c) => c.getAttribute("aria-label") ?? c.closest("label")?.firstChild?.textContent);
+    expect(names).toEqual(["Repeat", "Repeat period", "Monthly on"]);
   });
 });

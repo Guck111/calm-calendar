@@ -119,6 +119,8 @@ export const zh: Dict = {
   },
   repeat: {
     label: "重复",
+    period: "重复周期",
+    monthlyBy: "每月按",
     none: "不重复",
     custom: "自定义…",
     special: "在 Google 中设置的自定义重复",

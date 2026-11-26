@@ -124,6 +124,8 @@ export const de: Dict = {
   },
   repeat: {
     label: "Wiederholen",
+    period: "Wiederholungszeitraum",
+    monthlyBy: "Monatlich am",
     none: "Keine Wiederholung",
     custom: "Benutzerdefiniert…",
     special: "Eigene Wiederholung aus Google",
