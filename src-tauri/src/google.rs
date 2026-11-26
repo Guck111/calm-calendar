@@ -188,6 +188,27 @@ mod tests {
         assert_eq!(error_message(&Value::Null), "unknown error");
     }
 
+    const TRICKY: [&str; 16] = ["..", ".", "%2e", "%2E", "%2f", "%2F", "/", "//", "\\", "?", "#", "@", ":", "a", "evil.com", "%00"];
+
+    proptest::proptest! {
+        /// whatever path the interface sends, the request stays on the Calendar API with nothing extra
+        #[test]
+        fn any_path_stays_inside_the_calendar_api(
+            pieces in proptest::collection::vec(proptest::sample::select(TRICKY.to_vec()), 0..12),
+            noise in "\\PC{0,12}",
+        ) {
+            let path = format!("/calendar/v3/{}{noise}", pieces.concat());
+            if let Ok(url) = build_url(&path, &[]) {
+                proptest::prop_assert_eq!(url.scheme(), "https");
+                proptest::prop_assert_eq!(url.host_str(), Some("www.googleapis.com"));
+                proptest::prop_assert!(url.path().starts_with(ALLOWED_PREFIX));
+                proptest::prop_assert!(!url.path().split('/').any(|seg| seg == "." || seg == ".."));
+                proptest::prop_assert_eq!(url.query(), None);
+                proptest::prop_assert_eq!(url.fragment(), None);
+            }
+        }
+    }
+
     /// series occurrences and its master event: needed for "this and following"
     #[test]
     fn allows_series_instances() {
