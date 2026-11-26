@@ -13,9 +13,11 @@ on:
 permissions:
   contents: read
 
+# A new commit to a pull request cancels its older run. Runs on main wait their turn instead: each one
+# saves the Stryker cache the pull requests start from, a cancelled one would leave it out of date
 concurrency:
   group: mutation-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ts:
