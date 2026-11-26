@@ -121,6 +121,7 @@ npm test               # dates, event layout, quick add parser, reminders, forms
 npx tsc --noEmit       # types
 npx tsc -p e2e         # types of the end-to-end tests
 cd src-tauri; cargo test
+cargo clippy --all-targets -- -D warnings   # Rust lints; CI fails on any warning
 ```
 
 #### Interface tests (Playwright)

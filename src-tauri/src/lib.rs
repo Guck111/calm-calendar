@@ -323,13 +323,13 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             // the main window's cross hides it to the tray, quitting is via the tray menu
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                if window.label() == desktop::MAIN {
-                    api.prevent_close();
-                    let _ = window.hide();
-                    // settings belong to the main window: without it they have no reason to stay on screen
-                    settings::close(window.app_handle());
-                }
+            if let WindowEvent::CloseRequested { api, .. } = event
+                && window.label() == desktop::MAIN
+            {
+                api.prevent_close();
+                let _ = window.hide();
+                // settings belong to the main window: without it they have no reason to stay on screen
+                settings::close(window.app_handle());
             }
             // the agenda at the tray icon hides as soon as focus leaves
             if let WindowEvent::Focused(false) = event {
@@ -341,13 +341,13 @@ pub fn run() {
                 }
             }
             // the reminder window was closed with Alt+F4, not a button: forget all open reminders
-            if let WindowEvent::Destroyed = event {
-                if window.label() == desktop::ALERT {
-                    let app = window.app_handle().clone();
-                    tauri::async_runtime::spawn(async move {
-                        app.state::<reminders::Reminders>().dismiss_all().await;
-                    });
-                }
+            if let WindowEvent::Destroyed = event
+                && window.label() == desktop::ALERT
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    app.state::<reminders::Reminders>().dismiss_all().await;
+                });
             }
         })
         .invoke_handler(tauri::generate_handler![
