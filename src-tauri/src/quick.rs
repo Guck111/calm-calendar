@@ -40,17 +40,7 @@ pub fn register(app: &AppHandle, hotkey: Option<&str>) -> Result<()> {
 pub fn setup(app: &AppHandle) {
     let settings = config::load_settings(app);
     if let Some(chosen) = settings.quick_hotkey.clone() {
-        let mut active = None;
-        for hotkey in config::hotkey_candidates(&chosen) {
-            match register(app, Some(hotkey)) {
-                Ok(()) => {
-                    active = Some(hotkey);
-                    break;
-                }
-                Err(e) => log::warn!("quick add shortcut: {e}"),
-            }
-        }
-        match active {
+        match config::pick_hotkey(&chosen, |hotkey| register(app, Some(hotkey))) {
             Some(hotkey) if hotkey != chosen => {
                 log::info!("quick add shortcut: {chosen} is taken, using {hotkey}");
                 let _ = config::save_settings(app, config::Settings { quick_hotkey: Some(hotkey.to_owned()), ..settings });
@@ -76,13 +66,7 @@ fn position(app: &AppHandle) -> Option<tauri::PhysicalPosition<i32>> {
     let monitor = cursor
         .and_then(|p| app.monitor_from_point(p.x, p.y).ok().flatten())
         .or_else(|| app.primary_monitor().ok().flatten())?;
-    let scale = monitor.scale_factor();
-    let area = monitor.work_area();
-    let width = (SIZE.0 * scale) as i32;
-    Some(tauri::PhysicalPosition::new(
-        area.position.x + (area.size.width as i32 - width) / 2,
-        area.position.y + area.size.height as i32 / 4,
-    ))
+    Some(crate::windowing::quick_position(monitor.work_area(), monitor.scale_factor(), SIZE.0))
 }
 
 pub fn show(app: &AppHandle) {

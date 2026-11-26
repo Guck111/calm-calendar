@@ -175,6 +175,13 @@ pub struct WidgetSettings {
     pub on_top: bool,
 }
 
+impl WidgetSettings {
+    /// What the UI changes; whatever isn't passed stays as it was
+    pub fn changed(self, visible: Option<bool>, on_top: Option<bool>) -> Self {
+        Self { visible: visible.unwrap_or(self.visible), on_top: on_top.unwrap_or(self.on_top) }
+    }
+}
+
 impl Default for WidgetSettings {
     fn default() -> Self {
         Self { visible: true, on_top: false }
@@ -228,6 +235,17 @@ pub fn valid_hotkey(hotkey: &str) -> bool {
 pub fn hotkey_candidates(chosen: &str) -> Vec<&'static str> {
     let first = QUICK_HOTKEYS.iter().copied().filter(|h| *h == chosen);
     first.chain(QUICK_HOTKEYS.iter().copied().filter(|h| *h != chosen)).collect()
+}
+
+/// The first hotkey from hotkey_candidates that registers; None — all are taken
+pub fn pick_hotkey(chosen: &str, mut register: impl FnMut(&'static str) -> Result<()>) -> Option<&'static str> {
+    hotkey_candidates(chosen).into_iter().find(|hotkey| match register(hotkey) {
+        Ok(()) => true,
+        Err(e) => {
+            log::warn!("quick add shortcut: {e}");
+            false
+        }
+    })
 }
 
 impl Default for Settings {
@@ -368,6 +386,28 @@ mod tests {
         assert!(client_from_build(Some(""), Some("s")).is_none());
         assert!(client_from_build(Some("x"), None).is_none());
         assert!(client_from_build(None, None).is_none());
+    }
+
+    #[test]
+    fn widget_change_keeps_what_was_not_passed() {
+        let w = WidgetSettings { visible: true, on_top: false };
+        let hidden = w.changed(Some(false), None);
+        assert!(!hidden.visible && !hidden.on_top);
+        let on_top = w.changed(None, Some(true));
+        assert!(on_top.visible && on_top.on_top);
+    }
+
+    #[test]
+    fn taken_hotkey_falls_back_to_the_next_free_one() {
+        let mut tried = Vec::new();
+        let picked = pick_hotkey("ctrl+shift+space", |h| {
+            tried.push(h);
+            if h == "ctrl+shift+space" { Err(Error::Other("taken".into())) } else { Ok(()) }
+        });
+        assert_eq!(picked, Some("ctrl+alt+space"));
+        assert_eq!(tried, ["ctrl+shift+space", "ctrl+alt+space"]);
+        assert_eq!(pick_hotkey("ctrl+alt+space", |_| Ok(())), Some("ctrl+alt+space"));
+        assert_eq!(pick_hotkey("ctrl+alt+space", |_| Err(Error::Other("taken".into()))), None);
     }
 
     #[test]
