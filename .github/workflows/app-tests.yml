@@ -1,6 +1,6 @@
 name: app-tests
 
-# Tests of the real app: debug build on mock data under tauri-driver and msedgedriver.
+# Tests of the real app: debug build on mock data, msedgedriver attached to its WebView2.
 # No Google. Runs on pull requests that change the app, every Monday, and by hand (Actions → app-tests → Run workflow)
 on:
   pull_request:
@@ -46,8 +46,6 @@ jobs:
           workspaces: src-tauri
 
       - run: npm ci
-      - run: cargo install tauri-driver --locked
-
       # msedgedriver of the same version as WebView2 on the machine
       - name: Edge WebDriver
         shell: pwsh
@@ -69,33 +67,16 @@ jobs:
           Get-Content "$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs\calm-calendar.log" -ErrorAction SilentlyContinue
           if (-not $alive) { exit 1 }
 
-      # temporary: does WebView2 on the runner honour the remote debugging port the driver relies on
-      - name: WebView2 remote debugging check
-        continue-on-error: true
+      # the runner runs everything as administrator, and WebView2 then ignores WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS:
+      # the remote debugging port the tests attach to goes into the machine policy instead
+      - name: WebView2 remote debugging port
         shell: pwsh
         run: |
-          "elevated: " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-          "session: " + (Get-Process -Id $PID).SessionId
-          foreach ($k in 'HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') {
-            if (Test-Path $k) { "policy $k"; Get-ItemProperty $k | Out-String }
-          }
-          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=9222"
-          $app = Start-Process src-tauri\target\debug\calm-calendar.exe -PassThru
-          Start-Sleep -Seconds 20
-          try { (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:9222/json/version -TimeoutSec 5).Content } catch { "port 9222: $($_.Exception.Message)" }
-          Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" | Select-Object -First 3 | ForEach-Object { $_.CommandLine }
-          Get-ChildItem $env:LOCALAPPDATA, $env:TEMP -Recurse -Filter DevToolsActivePort -ErrorAction SilentlyContinue | ForEach-Object { "$($_.FullName): $(Get-Content $_.FullName -TotalCount 1)" }
-          Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
-          Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force
-
-      # msedgedriver writes a verbose log next to the test results: how it starts the app and waits for its WebView2
-      - name: Verbose Edge WebDriver
-        shell: pwsh
-        run: |
-          $wrapper = Join-Path $env:RUNNER_TEMP "msedgedriver-verbose.cmd"
-          $driver = Resolve-Path e2e\.drivers\msedgedriver.exe
-          Set-Content $wrapper "@`"$driver`" %* --verbose `"--log-path=$env:RUNNER_TEMP\msedgedriver.log`""
-          Add-Content $env:GITHUB_ENV "CALM_NATIVE_DRIVER=$wrapper"
+          $key = "HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          New-Item $key -Force | Out-Null
+          New-ItemProperty $key -Name "calm-calendar.exe" -Value "--remote-debugging-port=9339" -Force | Out-Null
+          # msedgedriver's verbose log, kept when the tests fail
+          Add-Content $env:GITHUB_ENV "CALM_DRIVER_LOG=$env:RUNNER_TEMP\msedgedriver.log"
 
       - name: App tests
         timeout-minutes: 30
