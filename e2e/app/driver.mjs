@@ -76,7 +76,7 @@ export const startApp = async (env = {}) => {
     env: { ...process.env, ...env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${DEBUG_PORT}` },
     stdio: "ignore",
   });
-  const driverArgs = [`--port=${DRIVER_PORT}`, ...(DRIVER_LOG ? ["--verbose", `--log-path=${DRIVER_LOG}`] : [])];
+  const driverArgs = [`--port=${DRIVER_PORT}`, ...(DRIVER_LOG ? ["--verbose", "--append-log", `--log-path=${DRIVER_LOG}`] : [])];
   const driver = spawn(EDGE_DRIVER, driverArgs, { stdio: ["ignore", "ignore", "inherit"] });
   const kill = async () => {
     driver.kill();
@@ -97,7 +97,12 @@ export const startApp = async (env = {}) => {
       port: DRIVER_PORT,
       logLevel: "warn",
       connectionRetryCount: 1,
-      capabilities: { browserName: "webview2", "ms:edgeOptions": { debuggerAddress: `127.0.0.1:${DEBUG_PORT}` } },
+      capabilities: {
+        browserName: "webview2",
+        "ms:edgeOptions": { debuggerAddress: `127.0.0.1:${DEBUG_PORT}` },
+        // over WebDriver BiDi a window loaded before the driver attached stays about:blank to it
+        "wdio:enforceWebDriverClassic": true,
+      },
     });
   };
   // a driver or app left running keeps the test process alive for good: stop them when the session can't start
@@ -115,10 +120,13 @@ export const startApp = async (env = {}) => {
 /** Switch to one of the app's windows: "main", "widget", "alert" or "agenda" (the ?window= of its page) */
 export const switchToWindow = async (browser, kind, timeout = 20_000) => {
   const deadline = Date.now() + timeout;
+  let seen = [];
   while (Date.now() < deadline) {
+    seen = [];
     for (const handle of await browser.getWindowHandles()) {
       await browser.switchToWindow(handle);
       const url = new URL(await browser.getUrl());
+      seen.push(url.href);
       // a window that has not loaded the app's page yet is still about:blank
       if (!url.protocol.startsWith("http")) continue;
       const found = url.searchParams.get("window") ?? "main";
@@ -126,7 +134,7 @@ export const switchToWindow = async (browser, kind, timeout = 20_000) => {
     }
     await sleep(500);
   }
-  throw new Error(`no "${kind}" window`);
+  throw new Error(`no "${kind}" window among ${seen.join(", ")}`);
 };
 
 /** English interface in the current window: the language is in localStorage, shared by all windows */
