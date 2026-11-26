@@ -67,6 +67,25 @@ jobs:
           Get-Content "$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs\calm-calendar.log" -ErrorAction SilentlyContinue
           if (-not $alive) { exit 1 }
 
+      # temporary: does WebView2 on the runner honour the remote debugging port the driver relies on
+      - name: WebView2 remote debugging check
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          "elevated: " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          "session: " + (Get-Process -Id $PID).SessionId
+          foreach ($k in 'HKLM:\SOFTWARE\Policies\Microsoft\Edge', 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2', 'HKCU:\SOFTWARE\Policies\Microsoft\Edge') {
+            if (Test-Path $k) { "policy $k"; Get-ItemProperty $k | Out-String }
+          }
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=9222"
+          $app = Start-Process src-tauri\target\debug\calm-calendar.exe -PassThru
+          Start-Sleep -Seconds 20
+          try { (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:9222/json/version -TimeoutSec 5).Content } catch { "port 9222: $($_.Exception.Message)" }
+          Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" | Select-Object -First 3 | ForEach-Object { $_.CommandLine }
+          Get-ChildItem $env:LOCALAPPDATA, $env:TEMP -Recurse -Filter DevToolsActivePort -ErrorAction SilentlyContinue | ForEach-Object { "$($_.FullName): $(Get-Content $_.FullName -TotalCount 1)" }
+          Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
+          Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force
+
       # msedgedriver writes a verbose log next to the test results: how it starts the app and waits for its WebView2
       - name: Verbose Edge WebDriver
         shell: pwsh
