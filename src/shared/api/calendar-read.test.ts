@@ -133,6 +133,18 @@ describe("event times", () => {
     expect(read({ start, end: { dateTime: "2026-11-04T10:00:00", timeZone: "Europe/London" } })?.endTimeZone).toBe("Europe/London");
     expect(read({ start, end: { dateTime: "2026-11-04T10:00:00", timeZone: "Asia/Tokyo" } })).not.toHaveProperty("endTimeZone");
   });
+
+  it("a time zone name the system doesn't know falls back to the calendar's, so the event still opens", () => {
+    const unknown = "Mars/Olympus";
+    const e = read(
+      { start: { dateTime: "2026-11-04T10:00:00", timeZone: unknown }, end: { dateTime: "2026-11-04T11:00:00", timeZone: unknown } },
+      "Asia/Tokyo",
+    );
+    expect(e?.timeZone).toBe("Asia/Tokyo");
+    expect(e).not.toHaveProperty("endTimeZone");
+    expect(e?.start.toISOString()).toBe("2026-11-04T01:00:00.000Z");
+    expect(read({ start: { dateTime: "2026-11-04T10:00:00Z", timeZone: unknown } }, unknown)).not.toHaveProperty("timeZone");
+  });
 });
 
 describe("event fields", () => {

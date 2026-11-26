@@ -126,6 +126,8 @@ cargo clippy --all-targets -- -D warnings   # Rust lints; CI fails on any warnin
 
 Property tests run inside `npm test` and `cargo test`: they feed hundreds of random inputs to the day layout, dates, dragging, recurrence rules, quick add, .ics reading (`src/shared/lib/properties.test.ts`, fast-check) and to the Google API path and feed link checks (proptest in `google.rs`, `feeds.rs`). On a failure fast-check prints the seed and the smallest failing input.
 
+Component tests (`src/ui/*.test.tsx`) render single React components in jsdom with Testing Library and check them the way a person uses them: roles, names, clicks, keys. They are also part of `npm test`; a component with such tests is added to the Stryker `mutate` list.
+
 #### Interface tests (Playwright)
 
 `npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 13 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.

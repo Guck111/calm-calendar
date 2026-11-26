@@ -209,9 +209,12 @@ export const listAllCalendars = async (accounts: string[]): Promise<AllCalendars
 
 const OFFSET_FREE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/i;
 
+/** a zone name the system doesn't know (newer than its time zone data) is treated as absent */
+const knownZone = (zone: string | undefined): string | undefined => (isTimeZone(zone) ? zone : undefined);
+
 const parseTime = (t: RawTime | undefined, fallbackZone?: string): { date: Date; allDay: boolean } | null => {
   if (t?.dateTime) {
-    const zone = t.timeZone ?? fallbackZone;
+    const zone = knownZone(t.timeZone) ?? fallbackZone;
     const local = OFFSET_FREE.exec(t.dateTime);
     if (local && isTimeZone(zone)) {
       const [, y, mo, d, h, mi, s = "0", fraction = ""] = local;
@@ -231,9 +234,10 @@ export const toCalendarEvent = (calendarId: string, raw: RawEvent, calendarZone?
   const start = parseTime(raw.start, calendarZone);
   if (!start) return null;
   const fallbackEnd = start.allDay ? addDays(start.date, 1) : start.date;
-  const timeZone = start.allDay ? undefined : (raw.start?.timeZone ?? calendarZone);
+  const timeZone = start.allDay ? undefined : (knownZone(raw.start?.timeZone) ?? knownZone(calendarZone));
   const end = parseTime(raw.end, timeZone);
-  const endTimeZone = raw.end?.timeZone && raw.end.timeZone !== timeZone ? raw.end.timeZone : undefined;
+  const endZone = knownZone(raw.end?.timeZone);
+  const endTimeZone = endZone && endZone !== timeZone ? endZone : undefined;
   return {
     key: `${calendarId}\u0000${raw.id}`,
     id: raw.id,

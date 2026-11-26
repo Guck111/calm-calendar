@@ -6,6 +6,11 @@
   "coverageAnalysis": "perTest",
   "mutate": [
     "src/**/*.ts",
+    "src/ui/ErrorBoundary.tsx",
+    "src/ui/FeedbackForm.tsx",
+    "src/ui/RepeatField.tsx",
+    "src/ui/Shortcuts.tsx",
+    "src/ui/TimeZoneSelect.tsx",
     "!src/**/*.test.ts",
     "!src/**/*.d.ts",
     "!src/shared/i18n/!(index).ts",
