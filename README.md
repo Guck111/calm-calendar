@@ -139,7 +139,7 @@ npm run build:app-e2e                                                # debug bui
 npm run test:app                                                     # main window, widget, alert, tray agenda, log, first-start card, widget and launch switches, Ctrl+Z
 ```
 
-Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.
+Tests are in `e2e/app/*.app.mjs`. In CI (`app-tests` workflow): on pull requests that change the app, every Monday, and by hand (Actions → app-tests → Run workflow); on a failure the test app's log is saved as the `app-log` artifact. The tests open windows and take focus, so locally run them when the computer is free.
 
 #### Mutation tests
 

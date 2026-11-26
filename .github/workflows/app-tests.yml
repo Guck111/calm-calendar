@@ -1,16 +1,34 @@
 name: app-tests
 
 # Tests of the real app: debug build on mock data under tauri-driver and msedgedriver.
-# No Google. Run manually: Actions → app-tests → Run workflow
+# No Google. Runs on pull requests that change the app, every Monday, and by hand (Actions → app-tests → Run workflow)
 on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "src-tauri/**"
+      - "e2e/app/**"
+      - "scripts/msedgedriver.ps1"
+      - "package.json"
+      - "package-lock.json"
+      - "index.html"
+      - "vite.config.ts"
+      - ".github/workflows/app-tests.yml"
+  schedule:
+    - cron: "0 4 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: app-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   app:
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -40,3 +58,14 @@ jobs:
 
       - name: App tests
         run: npm run test:app
+
+      # the test app's own log: what the Rust side saw when a test failed
+      - if: failure()
+        shell: pwsh
+        run: Add-Content $env:GITHUB_ENV "APP_LOG=$env:LOCALAPPDATA\com.arseni.calmcalendar.e2e\logs"
+
+      - if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: app-log
+          path: ${{ env.APP_LOG }}
