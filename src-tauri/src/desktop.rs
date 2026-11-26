@@ -4,6 +4,7 @@
 use crate::autostart;
 use crate::config::{self, WidgetSettings};
 use crate::i18n;
+use crate::windowing::{self, AGENDA_SIZE};
 use std::sync::Mutex;
 use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
@@ -18,12 +19,7 @@ const DEV_IDENTIFIER_SUFFIX: &str = ".dev";
 pub const ALERT: &str = "alert";
 /// agenda for today and tomorrow on a click on the tray icon
 pub const AGENDA: &str = "agenda";
-/// agenda size in logical pixels and the margin from the work area corner
-const AGENDA_SIZE: (f64, f64) = (340.0, 440.0);
-const AGENDA_MARGIN: f64 = 12.0;
 const TRAY: &str = "main";
-/// with this flag the app starts at Windows sign-in: without the main window
-pub const HIDDEN_ARG: &str = "--hidden";
 
 #[derive(Clone, Serialize)]
 struct OpenDate {
@@ -280,27 +276,13 @@ pub fn agenda_lost_focus(app: &AppHandle) {
 /// Bottom right corner of the work area of the monitor with the icon: like system flyouts
 fn agenda_position(app: &AppHandle, x: f64, y: f64) -> Option<tauri::PhysicalPosition<i32>> {
     let monitor = app.monitor_from_point(x, y).ok().flatten().or_else(|| app.primary_monitor().ok().flatten())?;
-    let scale = monitor.scale_factor();
-    let area = monitor.work_area();
-    let (w, h) = AGENDA_SIZE;
-    let right = area.position.x + area.size.width as i32;
-    let bottom = area.position.y + area.size.height as i32;
-    Some(tauri::PhysicalPosition::new(
-        right - ((w + AGENDA_MARGIN) * scale) as i32,
-        bottom - ((h + AGENDA_MARGIN) * scale) as i32,
-    ))
+    Some(windowing::agenda_position(monitor.work_area(), monitor.scale_factor()))
 }
 
 /// Left click on the icon: show the agenda or hide it if it's open
 fn toggle_agenda(app: &AppHandle, x: f64, y: f64) {
-    let just_hidden = app
-        .state::<AgendaHidden>()
-        .0
-        .lock()
-        .ok()
-        .and_then(|at| *at)
-        .is_some_and(|at| at.elapsed() < std::time::Duration::from_millis(400));
-    if just_hidden {
+    let hidden_at = app.state::<AgendaHidden>().0.lock().ok().and_then(|at| *at);
+    if windowing::recently_hidden(hidden_at, std::time::Instant::now()) {
         return;
     }
     let w = match window(app, AGENDA) {
@@ -359,8 +341,7 @@ fn mark_config_windows(app: &AppHandle) {
 
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
     mark_config_windows(app);
-    let hidden = std::env::args().any(|a| a == HIDDEN_ARG) || autostart::launched_at_startup();
-    if !hidden {
+    if !windowing::starts_hidden(std::env::args(), autostart::launched_at_startup()) {
         show_main(app, None);
     }
     let widget = config::load_widget(app);

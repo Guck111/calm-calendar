@@ -88,6 +88,12 @@ impl Reminders {
         self.changed.notify_one();
     }
 
+    /// The whole new schedule from the UI. With notifications off only prominent reminders remain:
+    /// they have their own setting, checked at show time
+    pub async fn schedule(&self, items: Vec<Reminder>, notifications: bool) {
+        self.replace(items.into_iter().filter(|r| notifications || r.alert).collect()).await;
+    }
+
     /// Notifications turned off: only prominent reminders remain, they have their own setting
     pub async fn keep_alerts_only(&self) {
         self.items.lock().await.retain(|r| r.alert);
@@ -110,8 +116,9 @@ impl Reminders {
         self.open.lock().await.clear();
     }
 
-    /// Snooze for minutes minutes; true — no more open ones
+    /// Snooze for minutes minutes (1 to 60); true — no more open ones
     pub async fn snooze(&self, key: &str, minutes: i64) -> bool {
+        let minutes = minutes.clamp(1, 60);
         let mut open = self.open.lock().await;
         if let Some(pos) = open.iter().position(|r| r.key == key) {
             let r = open.remove(pos);
@@ -446,6 +453,30 @@ mod tests {
         assert_eq!(notification_text(&rem, true), ("Calm Calendar", ""));
         let with_private = Reminder { private_title: Some("Event".into()), private_body: Some("in 5 min".into()), ..rem };
         assert_eq!(notification_text(&with_private, true), ("Event", "in 5 min"));
+    }
+
+    #[tokio::test]
+    async fn with_notifications_off_only_prominent_reminders_are_scheduled() {
+        let state = Reminders::default();
+        state.schedule(vec![r("plain", MIN), alert("call", MIN)], false).await;
+        assert_eq!(keys(&state.items.lock().await), ["call"]);
+        state.schedule(vec![r("plain", MIN), alert("call", MIN)], true).await;
+        assert_eq!(keys(&state.items.lock().await), ["plain", "call"]);
+    }
+
+    #[tokio::test]
+    async fn snooze_is_between_one_minute_and_an_hour() {
+        let state = Reminders::default();
+        state.open.lock().await.extend([alert("short", 0), alert("long", 0), alert("ok", 0)]);
+        let before = now_ms();
+        state.snooze("short", 0).await;
+        state.snooze("long", 600).await;
+        state.snooze("ok", 15).await;
+        let after = now_ms();
+        let snoozed = state.snoozed.lock().await;
+        for (r, minutes) in snoozed.iter().zip([1, 60, 15]) {
+            assert!((before + minutes * MIN..=after + minutes * MIN).contains(&r.at), "{} must wait {minutes} min", r.key);
+        }
     }
 
     #[test]
