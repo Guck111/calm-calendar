@@ -39,12 +39,9 @@ fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
         return Err(rejected());
     }
     let mut url = Url::parse(&format!("{API_BASE}{path}"))?;
-    // the final check is on the already parsed URL, after path normalization
-    if url.scheme() != "https"
-        || url.host_str() != Some("www.googleapis.com")
-        || !url.path().starts_with(ALLOWED_PREFIX)
-        || url.path().split('/').any(|seg| seg == "." || seg == "..")
-    {
+    // the final check is on the already parsed URL: the parser drops tabs and newlines and then resolves
+    // the dot segments they hid. The scheme and host can't change: the path starts with "/" after a fixed base
+    if !url.path().starts_with(ALLOWED_PREFIX) {
         return Err(rejected());
     }
     if !query.is_empty() {
@@ -158,6 +155,14 @@ mod tests {
             assert_eq!(parse_method(name).unwrap(), method);
         }
         assert!(matches!(parse_method("head"), Err(Error::Other(m)) if m == "Method HEAD is not supported"));
+    }
+
+    #[test]
+    fn dot_segments_hidden_by_tabs_or_newlines_are_refused() {
+        for p in ["/calendar/v3/.\t./.\t./oauth2/v2/userinfo", "/calendar/v3/.\n./.\r./x"] {
+            assert!(build_url(p, &[]).is_err(), "{p:?} must be rejected");
+        }
+        assert!(build_url("/calendar/v3/a\t/b", &[]).is_ok_and(|u| u.path() == "/calendar/v3/a/b"));
     }
 
     /// each piece alone, in a path that would otherwise stay inside /calendar/v3/

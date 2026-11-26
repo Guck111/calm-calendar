@@ -647,6 +647,17 @@ mod tests {
         assert!((16 * 1024..20 * 1024).contains(&line.len()));
     }
 
+    /// 16 KiB and the browser goes quiet: the line is taken as it is, no waiting for more
+    #[tokio::test]
+    async fn exactly_16_kib_is_enough() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut browser = TcpStream::connect(listener.local_addr().unwrap()).await.unwrap();
+        let (mut stream, _) = listener.accept().await.unwrap();
+        browser.write_all(&[b'a'; 16 * 1024]).await.unwrap();
+        let line = tokio::time::timeout(Duration::from_secs(2), read_request_line(&mut stream)).await.unwrap().unwrap();
+        assert_eq!(line.len(), 16 * 1024);
+    }
+
     #[test]
     fn sign_in_page_follows_the_language_direction() {
         let arabic = page(Lang::Ar, true);
