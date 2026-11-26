@@ -56,12 +56,14 @@ fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
 async fn google_error(resp: reqwest::Response) -> Error {
     let status = resp.status().as_u16();
     let body: Value = resp.json().await.unwrap_or(Value::Null);
-    let message = body
-        .pointer("/error/message")
+    Error::Google { status, message: error_message(&body) }
+}
+
+fn error_message(body: &Value) -> String {
+    body.pointer("/error/message")
         .and_then(Value::as_str)
         .unwrap_or("unknown error")
-        .to_owned();
-    Error::Google { status, message }
+        .to_owned()
 }
 
 pub async fn request(
@@ -142,6 +144,48 @@ mod tests {
         .unwrap();
         assert!(url.as_str().contains("en.polish%23holiday%40group"));
         assert!(url.as_str().ends_with("?singleEvents=true"));
+    }
+
+    #[test]
+    fn accepts_only_the_methods_the_calendar_uses() {
+        for (name, method) in [
+            ("get", Method::GET),
+            ("POST", Method::POST),
+            ("patch", Method::PATCH),
+            ("PUT", Method::PUT),
+            ("Delete", Method::DELETE),
+        ] {
+            assert_eq!(parse_method(name).unwrap(), method);
+        }
+        assert!(matches!(parse_method("head"), Err(Error::Other(m)) if m == "Method HEAD is not supported"));
+    }
+
+    /// each piece alone, in a path that would otherwise stay inside /calendar/v3/
+    #[test]
+    fn every_forbidden_piece_is_refused_on_its_own() {
+        for p in [
+            "/calendar/v3/a..b",
+            "/calendar/v3/https://evil.com/x",
+            "/calendar/v3/a/%2E%2e/b",
+            "/calendar/v3/a\\b",
+            "/calendar/v3/a?b",
+            "/calendar/v3/a#b",
+        ] {
+            assert!(build_url(p, &[]).is_err(), "{p} must be rejected");
+        }
+    }
+
+    #[test]
+    fn no_query_leaves_no_question_mark() {
+        let url = build_url("/calendar/v3/users/me/calendarList", &[]).unwrap();
+        assert_eq!(url.as_str(), "https://www.googleapis.com/calendar/v3/users/me/calendarList");
+    }
+
+    #[test]
+    fn google_error_text_is_passed_to_the_interface() {
+        let body = serde_json::json!({ "error": { "code": 403, "message": "Rate Limit Exceeded" } });
+        assert_eq!(error_message(&body), "Rate Limit Exceeded");
+        assert_eq!(error_message(&Value::Null), "unknown error");
     }
 
     /// series occurrences and its master event: needed for "this and following"

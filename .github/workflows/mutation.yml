@@ -48,11 +48,16 @@ jobs:
           name: stryker-report
           path: reports/mutation
 
-  # Rust builds once per mutant: too slow for every push to main
-  rust:
+  # Rust builds once per mutant: too slow for every push to main.
+  # Four runners take a quarter of the mutants each; --in-place builds in the checkout and reuses the cached target
+  rust-shard:
     if: github.event_name != 'push'
     runs-on: windows-latest
     timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -69,25 +74,33 @@ jobs:
       - name: Install cargo-mutants
         run: cargo install cargo-mutants --locked --version 27.1.0
 
-      # Pull request: only mutants in the changed lines. Advisory while the crate score is low (34% in Nov 2026)
+      # Pull request: only mutants in the changed lines; a missed one fails the job (exit 2).
+      # A mutant that hangs the tests (exit 3 = timeouts) counts as caught
       - name: Mutation tests on the diff (Rust)
         if: github.event_name == 'pull_request'
-        continue-on-error: true
         shell: bash
         working-directory: src-tauri
         run: |
           git diff --relative "origin/${{ github.base_ref }}...HEAD" > ../pr.diff
-          cargo mutants --in-diff ../pr.diff
+          cargo mutants --in-place --shard ${{ matrix.shard }}/4 --in-diff ../pr.diff || [ $? -eq 3 ]
 
       # Weekly and manual run: the whole crate, a report without blocking (exit 2 = missed mutants, 3 = timeouts)
       - name: Mutation tests on the whole crate (Rust)
         if: github.event_name != 'pull_request'
         shell: bash
         working-directory: src-tauri
-        run: cargo mutants || { code=$?; [ "$code" -eq 2 ] || [ "$code" -eq 3 ]; }
+        run: cargo mutants --in-place --shard ${{ matrix.shard }}/4 || { code=$?; [ "$code" -eq 2 ] || [ "$code" -eq 3 ]; }
 
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: cargo-mutants-report
+          name: cargo-mutants-report-${{ matrix.shard }}
           path: src-tauri/mutants.out
+
+  # The one check to require for main: passes only if every shard passed
+  rust:
+    if: always() && github.event_name != 'push'
+    needs: rust-shard
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ needs.rust-shard.result }}" = success

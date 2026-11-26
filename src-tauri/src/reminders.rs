@@ -121,33 +121,22 @@ impl Reminders {
         open.is_empty()
     }
 
-    async fn fire_due(&self, app: &AppHandle) -> Option<i64> {
-        let now = now_ms();
+    /// Marks due reminders as shown and puts new prominent ones into the open list
+    async fn take_due(&self, now: i64, mode: AlertMode) -> Pass {
         let mut items = self.items.lock().await.clone();
         items.extend(self.snoozed.lock().await.iter().cloned());
-        let settings = crate::config::load_settings(app);
+        let mut notifications = Vec::new();
         let mut new_alerts = Vec::new();
         {
             let mut shown = self.shown.lock().await;
-            let due: Vec<&Reminder> = items.iter().filter(|r| r.at <= now && !shown.contains(&r.key)).collect();
-            for r in due {
-                shown.insert(r.key.clone());
-                if now - r.at > LATE_LIMIT_MS {
+            for r in items.iter().filter(|r| r.at <= now) {
+                if !shown.insert(r.key.clone()) || now - r.at > LATE_LIMIT_MS {
                     continue;
                 }
-                if r.alert {
-                    if r.snoozed || alert_allowed(settings.alerts, r) {
-                        new_alerts.push(r.clone());
-                    }
-                    continue;
-                }
-                let (title, body) = if settings.private_notifications {
-                    (r.private_title.as_deref().unwrap_or("Calm Calendar"), r.private_body.as_deref().unwrap_or(""))
-                } else {
-                    (r.title.as_str(), r.body.as_str())
-                };
-                if !show_with_link(app, r, title, body) {
-                    let _ = app.notification().builder().title(title).body(body).show();
+                if !r.alert {
+                    notifications.push(r.clone());
+                } else if r.snoozed || alert_allowed(mode, r) {
+                    new_alerts.push(r.clone());
                 }
             }
             // snoozed ones are shown once; so the set doesn't grow forever,
@@ -156,19 +145,51 @@ impl Reminders {
             let keys: HashSet<&String> = items.iter().map(|r| &r.key).collect();
             shown.retain(|k| keys.contains(k));
         }
-        if !new_alerts.is_empty() {
-            {
-                let mut open = self.open.lock().await;
-                for r in new_alerts {
-                    if !open.iter().any(|o| o.key == r.key) {
-                        open.push(r);
-                    }
-                }
+        let alerted = !new_alerts.is_empty();
+        let mut open = self.open.lock().await;
+        for r in new_alerts {
+            if !open.iter().any(|o| o.key == r.key) {
+                open.push(r);
             }
+        }
+        Pass { notifications, alerted, next: items.iter().filter(|r| r.at > now).map(|r| r.at).min() }
+    }
+
+    async fn fire_due(&self, app: &AppHandle) -> Option<i64> {
+        let settings = crate::config::load_settings(app);
+        let pass = self.take_due(now_ms(), settings.alerts).await;
+        for r in &pass.notifications {
+            let (title, body) = notification_text(r, settings.private_notifications);
+            if !show_with_link(app, r, title, body) {
+                let _ = app.notification().builder().title(title).body(body).show();
+            }
+        }
+        if pass.alerted {
             crate::desktop::show_alert(app);
         }
-        items.iter().filter(|r| r.at > now).map(|r| r.at).min()
+        pass.next
     }
+}
+
+/// One scheduler pass: notifications to show now, whether the prominent reminder window is needed, the next reminder time
+struct Pass {
+    notifications: Vec<Reminder>,
+    alerted: bool,
+    next: Option<i64>,
+}
+
+/// In the "hide titles" mode the notification has no event title and location
+fn notification_text(r: &Reminder, private: bool) -> (&str, &str) {
+    if private {
+        (r.private_title.as_deref().unwrap_or("Calm Calendar"), r.private_body.as_deref().unwrap_or(""))
+    } else {
+        (r.title.as_str(), r.body.as_str())
+    }
+}
+
+/// How long the scheduler sleeps: until the next reminder, but no longer than MAX_SLEEP
+fn sleep_time(next: Option<i64>, now: i64) -> Duration {
+    next.map(|at| Duration::from_millis((at - now).max(0) as u64)).unwrap_or(MAX_SLEEP).min(MAX_SLEEP)
 }
 
 /// A notification with a "Join" button if the event has a video meeting. false — show a regular one
@@ -219,10 +240,7 @@ pub fn start(app: AppHandle) {
         loop {
             let state = app.state::<Reminders>();
             let next = state.fire_due(&app).await;
-            let wait = next
-                .map(|at| Duration::from_millis((at - now_ms()).max(0) as u64))
-                .unwrap_or(MAX_SLEEP)
-                .min(MAX_SLEEP);
+            let wait = sleep_time(next, now_ms());
             tokio::select! {
                 _ = tokio::time::sleep(wait) => {}
                 _ = state.changed.notified() => {}
@@ -295,5 +313,146 @@ mod tests {
             assert_eq!(state.snoozed.lock().await.len(), 1);
             assert!(state.dismiss("b").await);
         });
+    }
+
+    const MIN: i64 = 60_000;
+
+    fn alert(key: &str, at: i64) -> Reminder {
+        Reminder { alert: true, url: Some("https://meet.google.com/abc-defg-hij".into()), ..r(key, at) }
+    }
+
+    fn keys(list: &[Reminder]) -> Vec<&str> {
+        list.iter().map(|r| r.key.as_str()).collect()
+    }
+
+    async fn open_keys(state: &Reminders) -> Vec<String> {
+        state.open_alerts().await.into_iter().map(|r| r.key).collect()
+    }
+
+    #[tokio::test]
+    async fn due_reminder_is_shown_once_and_the_next_one_sets_the_wake_up() {
+        let state = Reminders::default();
+        state.replace(vec![r("now", 10 * MIN), r("later", 20 * MIN), r("soon", 15 * MIN)]).await;
+        let pass = state.take_due(10 * MIN, AlertMode::Off).await;
+        assert_eq!(keys(&pass.notifications), ["now"]);
+        assert!(!pass.alerted);
+        assert_eq!(pass.next, Some(15 * MIN));
+        let again = state.take_due(11 * MIN, AlertMode::Off).await;
+        assert!(again.notifications.is_empty());
+    }
+
+    #[tokio::test]
+    async fn nothing_ahead_leaves_no_wake_up_time() {
+        let state = Reminders::default();
+        state.replace(vec![r("past", MIN)]).await;
+        assert_eq!(state.take_due(2 * MIN, AlertMode::Off).await.next, None);
+    }
+
+    #[tokio::test]
+    async fn reminder_late_after_sleep_is_skipped_for_good() {
+        let state = Reminders::default();
+        state.replace(vec![r("on_limit", 0), r("too_late", -1)]).await;
+        let pass = state.take_due(LATE_LIMIT_MS, AlertMode::Off).await;
+        assert_eq!(keys(&pass.notifications), ["on_limit"]);
+        assert!(state.shown.lock().await.contains("too_late"));
+    }
+
+    #[tokio::test]
+    async fn reminder_up_to_five_minutes_late_is_still_shown() {
+        let state = Reminders::default();
+        state.replace(vec![r("four", 0), r("six", -2 * MIN)]).await;
+        let pass = state.take_due(4 * MIN, AlertMode::Off).await;
+        assert_eq!(keys(&pass.notifications), ["four"]);
+    }
+
+    #[tokio::test]
+    async fn reminder_returning_to_the_schedule_is_shown_again() {
+        let state = Reminders::default();
+        state.replace(vec![r("a", 0)]).await;
+        state.take_due(0, AlertMode::Off).await;
+        state.replace(vec![]).await;
+        state.take_due(MIN, AlertMode::Off).await;
+        state.replace(vec![r("a", MIN)]).await;
+        assert_eq!(keys(&state.take_due(MIN, AlertMode::Off).await.notifications), ["a"]);
+    }
+
+    #[tokio::test]
+    async fn prominent_reminder_opens_the_window_only_when_the_setting_allows() {
+        let state = Reminders::default();
+        state.replace(vec![alert("call", 0), Reminder { url: None, ..alert("plain", 0) }]).await;
+        let pass = state.take_due(0, AlertMode::Calls).await;
+        assert!(pass.notifications.is_empty());
+        assert!(pass.alerted);
+        assert_eq!(open_keys(&state).await, ["call"]);
+
+        let off = Reminders::default();
+        off.replace(vec![alert("call", 0)]).await;
+        assert!(!off.take_due(0, AlertMode::Off).await.alerted);
+        assert!(off.open_alerts().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn snoozed_reminder_comes_back_once_whatever_the_setting() {
+        let state = Reminders::default();
+        state.open.lock().await.push(alert("call", 0));
+        state.snooze("call", 5).await;
+        let at = state.snoozed.lock().await[0].at;
+        state.replace(vec![]).await;
+        assert_eq!(state.take_due(at - 1, AlertMode::Off).await.next, Some(at));
+        assert!(state.take_due(at, AlertMode::Off).await.alerted);
+        assert_eq!(state.open_alerts().await.len(), 1);
+        assert!(state.snoozed.lock().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn already_open_reminder_is_not_added_twice() {
+        let state = Reminders::default();
+        state.open.lock().await.push(alert("call", 0));
+        state.replace(vec![alert("call", 0)]).await;
+        state.take_due(0, AlertMode::All).await;
+        assert_eq!(open_keys(&state).await, ["call"]);
+    }
+
+    #[tokio::test]
+    async fn turning_notifications_off_keeps_only_prominent_reminders() {
+        let state = Reminders::default();
+        state.replace(vec![r("plain", MIN), alert("call", MIN)]).await;
+        state.keep_alerts_only().await;
+        assert_eq!(keys(&state.items.lock().await), ["call"]);
+    }
+
+    #[tokio::test]
+    async fn closing_the_window_closes_every_reminder() {
+        let state = Reminders::default();
+        state.open.lock().await.extend([alert("a", 0), alert("b", 0)]);
+        assert!(!state.dismiss("a").await);
+        assert_eq!(open_keys(&state).await, ["b"]);
+        state.dismiss_all().await;
+        assert!(state.open_alerts().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn snoozing_an_unknown_reminder_changes_nothing() {
+        let state = Reminders::default();
+        state.open.lock().await.push(alert("a", 0));
+        assert!(!state.snooze("gone", 5).await);
+        assert!(state.snoozed.lock().await.is_empty());
+    }
+
+    #[test]
+    fn private_mode_hides_the_event_title() {
+        let rem = Reminder { title: "Doctor".into(), body: "Clinic".into(), ..r("a", 0) };
+        assert_eq!(notification_text(&rem, false), ("Doctor", "Clinic"));
+        assert_eq!(notification_text(&rem, true), ("Calm Calendar", ""));
+        let with_private = Reminder { private_title: Some("Event".into()), private_body: Some("in 5 min".into()), ..rem };
+        assert_eq!(notification_text(&with_private, true), ("Event", "in 5 min"));
+    }
+
+    #[test]
+    fn scheduler_sleeps_until_the_next_reminder_but_at_most_a_minute() {
+        assert_eq!(sleep_time(Some(10_500), 10_000), Duration::from_millis(500));
+        assert_eq!(sleep_time(Some(9_000), 10_000), Duration::ZERO);
+        assert_eq!(sleep_time(Some(10 * MIN), 0), MAX_SLEEP);
+        assert_eq!(sleep_time(None, 0), MAX_SLEEP);
     }
 }

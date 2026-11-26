@@ -9,8 +9,8 @@
 //! the code exchange is protected by PKCE.
 
 use crate::error::{Error, Result};
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
 const CLIENT_FILE: &str = "google-client.json";
@@ -66,11 +66,21 @@ fn config_dir(app: &AppHandle) -> Result<PathBuf> {
     Ok(dir)
 }
 
+fn read_json<T: DeserializeOwned>(dir: &Path, file: &str) -> Option<T> {
+    serde_json::from_str(&std::fs::read_to_string(dir.join(file)).ok()?).ok()
+}
+
+fn write_json<T: Serialize + ?Sized>(dir: &Path, file: &str, value: &T) -> Result<()> {
+    std::fs::write(dir.join(file), serde_json::to_string_pretty(value)?)?;
+    Ok(())
+}
+
 fn build_client() -> Option<ClientConfig> {
-    match (
-        option_env!("CALM_GOOGLE_CLIENT_ID"),
-        option_env!("CALM_GOOGLE_CLIENT_SECRET"),
-    ) {
+    client_from_build(option_env!("CALM_GOOGLE_CLIENT_ID"), option_env!("CALM_GOOGLE_CLIENT_SECRET"))
+}
+
+fn client_from_build(id: Option<&str>, secret: Option<&str>) -> Option<ClientConfig> {
+    match (id, secret) {
         (Some(id), Some(secret)) if !id.is_empty() => Some(ClientConfig {
             client_id: id.to_owned(),
             client_secret: secret.to_owned(),
@@ -93,8 +103,11 @@ fn parse_client(text: &str) -> Option<ClientConfig> {
 }
 
 fn file_client(app: &AppHandle) -> Option<ClientConfig> {
-    let path = config_dir(app).ok()?.join(CLIENT_FILE);
-    parse_client(&std::fs::read_to_string(path).ok()?)
+    read_client(&config_dir(app).ok()?)
+}
+
+fn read_client(dir: &Path) -> Option<ClientConfig> {
+    parse_client(&std::fs::read_to_string(dir.join(CLIENT_FILE)).ok()?)
 }
 
 pub fn client_source(app: &AppHandle) -> ClientSource {
@@ -115,6 +128,11 @@ pub fn client(app: &AppHandle) -> Result<ClientConfig> {
 
 /// Saves the client. Input is either JSON from Google Cloud or an id/secret pair.
 pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Result<()> {
+    let client = client_from_input(client_id, client_secret)?;
+    write_json(&config_dir(app)?, CLIENT_FILE, &client)
+}
+
+fn client_from_input(client_id: &str, client_secret: &str) -> Result<ClientConfig> {
     let id = client_id.trim();
     let parsed = if id.starts_with('{') {
         parse_client(id).ok_or_else(|| Error::Other("Could not read the client JSON".into()))?
@@ -129,27 +147,25 @@ pub fn save_client(app: &AppHandle, client_id: &str, client_secret: &str) -> Res
             "The client ID must end with .apps.googleusercontent.com".into(),
         ));
     }
-    let path = config_dir(app)?.join(CLIENT_FILE);
-    std::fs::write(path, serde_json::to_string_pretty(&parsed)?)?;
-    Ok(())
+    Ok(parsed)
 }
 
 /// Accounts in sign-in order; None — no file yet (first run or an old version)
 pub fn load_accounts(app: &AppHandle) -> Option<Vec<Account>> {
-    let text = std::fs::read_to_string(config_dir(app).ok()?.join(ACCOUNTS_FILE)).ok()?;
-    serde_json::from_str(&text).ok()
+    read_json(&config_dir(app).ok()?, ACCOUNTS_FILE)
 }
 
 pub fn save_accounts(app: &AppHandle, accounts: &[Account]) -> Result<()> {
-    let path = config_dir(app)?.join(ACCOUNTS_FILE);
-    std::fs::write(path, serde_json::to_string_pretty(accounts)?)?;
-    Ok(())
+    write_json(&config_dir(app)?, ACCOUNTS_FILE, accounts)
 }
 
 /// email from the old version's account.json. The file is not deleted: version 0.4 needs it if it is run again
 pub fn legacy_email(app: &AppHandle) -> Option<String> {
-    let text = std::fs::read_to_string(config_dir(app).ok()?.join(LEGACY_ACCOUNT_FILE)).ok()?;
-    serde_json::from_str::<LegacyAccount>(&text).ok()?.email
+    read_legacy_email(&config_dir(app).ok()?)
+}
+
+fn read_legacy_email(dir: &Path) -> Option<String> {
+    read_json::<LegacyAccount>(dir, LEGACY_ACCOUNT_FILE)?.email
 }
 
 /// Widget window settings: whether it's shown and whether it stays on top
@@ -166,19 +182,11 @@ impl Default for WidgetSettings {
 }
 
 pub fn load_widget(app: &AppHandle) -> WidgetSettings {
-    config_dir(app)
-        .ok()
-        .and_then(|d| std::fs::read_to_string(d.join(WIDGET_FILE)).ok())
-        .and_then(|t| serde_json::from_str(&t).ok())
-        .unwrap_or_default()
+    config_dir(app).ok().and_then(|d| read_json(&d, WIDGET_FILE)).unwrap_or_default()
 }
 
 pub fn save_widget(app: &AppHandle, settings: WidgetSettings) {
-    if let Ok(dir) = config_dir(app) {
-        if let Ok(text) = serde_json::to_string_pretty(&settings) {
-            let _ = std::fs::write(dir.join(WIDGET_FILE), text);
-        }
-    }
+    let _ = config_dir(app).and_then(|d| write_json(&d, WIDGET_FILE, &settings));
 }
 
 /// Prominent reminder: a window on top of all windows a minute before the event starts
@@ -236,17 +244,11 @@ impl Default for Settings {
 }
 
 pub fn load_settings(app: &AppHandle) -> Settings {
-    config_dir(app)
-        .ok()
-        .and_then(|d| std::fs::read_to_string(d.join(SETTINGS_FILE)).ok())
-        .and_then(|t| serde_json::from_str(&t).ok())
-        .unwrap_or_default()
+    config_dir(app).ok().and_then(|d| read_json(&d, SETTINGS_FILE)).unwrap_or_default()
 }
 
 pub fn save_settings(app: &AppHandle, settings: Settings) -> Result<()> {
-    let path = config_dir(app)?.join(SETTINGS_FILE);
-    std::fs::write(path, serde_json::to_string_pretty(&settings)?)?;
-    Ok(())
+    write_json(&config_dir(app)?, SETTINGS_FILE, &settings)
 }
 
 #[cfg(test)]
@@ -297,12 +299,84 @@ mod tests {
             list.iter().map(|a| a.email.as_str()).collect::<Vec<_>>(),
             ["me@gmail.com", "Work@Company.com"]
         );
-        assert_eq!(without_account(list, "work@company.com").len(), 1);
+        assert_eq!(without_account(list, "work@company.com"), [Account { email: "me@gmail.com".into() }]);
     }
 
     #[test]
     fn reads_legacy_account_file() {
         let a: LegacyAccount = serde_json::from_str(r#"{"email":"me@gmail.com"}"#).unwrap();
         assert_eq!(a.email.as_deref(), Some("me@gmail.com"));
+    }
+
+    fn temp_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("calm-calendar-config-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn saved_files_are_read_back() {
+        let dir = temp_dir("round-trip");
+        let accounts = vec![Account { email: "me@gmail.com".into() }];
+        write_json(&dir, ACCOUNTS_FILE, &accounts).unwrap();
+        assert_eq!(read_json::<Vec<Account>>(&dir, ACCOUNTS_FILE), Some(accounts));
+        let settings = Settings { alerts: AlertMode::All, ..Settings::default() };
+        write_json(&dir, SETTINGS_FILE, &settings).unwrap();
+        assert_eq!(read_json::<Settings>(&dir, SETTINGS_FILE).unwrap().alerts, AlertMode::All);
+    }
+
+    #[test]
+    fn missing_or_broken_file_reads_as_nothing() {
+        let dir = temp_dir("broken");
+        assert!(read_json::<Vec<Account>>(&dir, ACCOUNTS_FILE).is_none());
+        std::fs::write(dir.join(ACCOUNTS_FILE), "{not json").unwrap();
+        assert!(read_json::<Vec<Account>>(&dir, ACCOUNTS_FILE).is_none());
+        assert!(write_json(&dir.join("missing"), ACCOUNTS_FILE, &[0]).is_err());
+    }
+
+    #[test]
+    fn reads_the_old_versions_email_and_client_files() {
+        let dir = temp_dir("legacy");
+        assert_eq!(read_legacy_email(&dir), None);
+        assert!(read_client(&dir).is_none());
+        std::fs::write(dir.join(LEGACY_ACCOUNT_FILE), r#"{"email":"me@gmail.com"}"#).unwrap();
+        std::fs::write(dir.join(CLIENT_FILE), r#"{"installed":{"client_id":"x.apps.googleusercontent.com","client_secret":"s"}}"#).unwrap();
+        assert_eq!(read_legacy_email(&dir).as_deref(), Some("me@gmail.com"));
+        assert_eq!(read_client(&dir).unwrap().client_id, "x.apps.googleusercontent.com");
+    }
+
+    #[test]
+    fn client_typed_by_hand_is_trimmed_and_checked() {
+        let c = client_from_input(" x.apps.googleusercontent.com ", " s ").unwrap();
+        assert_eq!((c.client_id.as_str(), c.client_secret.as_str()), ("x.apps.googleusercontent.com", "s"));
+        assert!(client_from_input("x.example.com", "s").is_err());
+    }
+
+    #[test]
+    fn client_json_can_be_pasted_into_the_id_field() {
+        let pasted = r#" {"installed":{"client_id":"x.apps.googleusercontent.com","client_secret":"s"}}"#;
+        assert_eq!(client_from_input(pasted, "").unwrap().client_secret, "s");
+        assert!(client_from_input("{broken", "").is_err());
+        assert!(client_from_input(r#"{"client_id":"x.example.com","client_secret":"s"}"#, "").is_err());
+    }
+
+    #[test]
+    fn build_client_needs_a_non_empty_id() {
+        let c = client_from_build(Some("x.apps.googleusercontent.com"), Some("s")).unwrap();
+        assert_eq!((c.client_id.as_str(), c.client_secret.as_str()), ("x.apps.googleusercontent.com", "s"));
+        assert!(client_from_build(Some(""), Some("s")).is_none());
+        assert!(client_from_build(Some("x"), None).is_none());
+        assert!(client_from_build(None, None).is_none());
+    }
+
+    #[test]
+    fn first_run_defaults() {
+        let w = WidgetSettings::default();
+        assert!(w.visible && !w.on_top);
+        let s: Settings = serde_json::from_str("{}").unwrap();
+        assert!(s.glass && s.notifications && !s.private_notifications);
+        assert_eq!(s.language, None);
+        assert_eq!(s.alerts, AlertMode::Off);
     }
 }

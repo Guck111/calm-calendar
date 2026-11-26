@@ -151,7 +151,9 @@ cargo install cargo-mutants --locked     # once
 cd src-tauri; cargo mutants -j 2          # Rust; report in src-tauri/mutants.out
 ```
 
-What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out). In CI (`mutation` workflow): on every pull request, TypeScript in incremental mode with a minimum score (a required check for `main`) and Rust on the changed lines only (a report, not blocking yet); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
+What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out, and so are the thin functions that only hand data to the running app, Google, the password store or notifications: keep logic out of them). In CI (`mutation` workflow): on every pull request, TypeScript in incremental mode with a minimum score (a required check for `main`) and Rust on the changed lines only, split across four runners (the `rust` check fails if a mutant there survives); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
+
+With little free memory, keep `-j 2` and don't build the crate elsewhere while it runs: each job builds its own copy of the crate.
 
 ### Project layout
 
