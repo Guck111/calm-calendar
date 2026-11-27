@@ -62,7 +62,7 @@
   "faq_q_2": "Which Windows versions are supported?",
   "faq_a_2": "Windows 10 version 1809 or later, and Windows 11.",
   "faq_q_3": "Does it work with Outlook?",
-  "faq_a_3": "Partly. Calm Calendar is made for Google Calendar, but you can add an Outlook calendar, or any other, by its .ics link in Settings → Calendar subscriptions. Such calendars are read only.",
+  "faq_a_3": "Partly. Calm Calendar is made for Google Calendar, but you can add an Outlook calendar, or any other, by its .ics link in Settings → Calendar subscriptions. Such calendars are read-only.",
   "faq_q_4": "Which languages is the app in?",
   "faq_a_4": "English, Spanish, Portuguese, French, German, Russian, Ukrainian, Belarusian, Chinese, Japanese, Hindi, Bengali and Arabic. The app follows the Windows language, or you can pick one in Settings → Language.",
   "faq_q_5": "Can I use more than one Google account?",

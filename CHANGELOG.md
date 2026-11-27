@@ -11,6 +11,8 @@ What changed in each version of Calm Calendar, newest first. The section of a ve
 - Month view in languages whose week starts on Sunday: an event over several days shows its title again at the start of each week row. Before, the title showed again on Monday, in the middle of the row.
 - A screen reader tells apart the lists of a custom repeat rule: "Repeat", "Repeat period" and "Monthly on". Before, all three were called "Repeat".
 - "Start with Windows" turned on while the app ran as administrator now starts it only for you. Before, it started the app for everyone who signs in to the computer.
+- The translations in all 13 languages were checked. Wrong and inconsistent words are corrected: the Schedule view and "Does not repeat" now carry Google Calendar's own names in German, French, Portuguese and Arabic, Chinese says 活动 for an event everywhere, event colors are named as in Google Calendar in every language (in Russian, "Помидор" instead of "Томат"), and Quit in the tray menu no longer reads as Close in Hindi and Bengali. Phrases that broke around a time or a date are fixed, and texts that assumed the user is a man are neutral in Russian, Ukrainian and Belarusian.
+- The first section of Settings is called "Appearance" in English instead of "Look".
 
 ## 0.14.1 — 2026-11-23
 

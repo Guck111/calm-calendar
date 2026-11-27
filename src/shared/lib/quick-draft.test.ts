@@ -51,6 +51,6 @@ describe("quick add: hint under the input", () => {
     expect(quickWhen(quick("завтра 19:00 ужин"))).toBe("Чт, 5 ноября · 19:00–20:00");
     expect(quickWhen(quick("завтра 23-1 вечеринка"))).toBe("Чт, 5 ноября · 23:00–01:00 (на следующий день)");
     expect(quickWhen(quick("завтра отпуск"))).toBe("Чт, 5 ноября · весь день");
-    expect(quickWhen(quick("завтра 25:30 встреча"))).toBe("Проверь дату и время");
+    expect(quickWhen(quick("завтра 25:30 встреча"))).toBe("Проверьте дату и время");
   });
 });

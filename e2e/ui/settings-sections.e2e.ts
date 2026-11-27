@@ -1,7 +1,7 @@
 // Settings: the list of sections at the start edge, the options of one section at a time next to it.
 import { test, expect, openApp, openSettings } from "./fixtures";
 
-test("sections are listed on the left; the first one, Look, is open", async ({ page, t }) => {
+test("sections are listed on the left; the first one, Appearance, is open", async ({ page, t }) => {
   await openApp(page);
   const settings = await openSettings(page, t);
   const tabs = settings.getByRole("tablist", { name: t.common.settings }).getByRole("tab");

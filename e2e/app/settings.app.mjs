@@ -39,7 +39,7 @@ test("the window has the list of sections, the app version and, under Help, the 
     width: window.innerWidth,
     version: document.body.textContent?.match(/Version \d+\.\d+\.\d+/)?.[0] ?? null,
   }));
-  assert.deepEqual(seen.tabs, ["Look", "Calendar", "Reminders", "Quick access", "Help"]);
+  assert.deepEqual(seen.tabs, ["Appearance", "Calendar", "Reminders", "Quick access", "Help"]);
   assert.equal(seen.width, 720);
   assert.match(seen.version ?? "", /^Version \d+\.\d+\.\d+$/);
 

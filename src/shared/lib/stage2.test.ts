@@ -85,7 +85,7 @@ describe("free time", () => {
   it("text for a messenger", () => {
     setLang("ru", "ru-RU");
     const text = formatFreeSlots(freeSlots([ev("a", "me", 10, 11)], [monday], o, early), early, "Europe/Warsaw");
-    expect(text.split("\n")).toEqual(["Когда я свободен (Warsaw, GMT+1):", "Пн, 9 ноября: 09:00–10:00 и 11:00–18:00"]);
+    expect(text.split("\n")).toEqual(["Моё свободное время (Warsaw, GMT+1):", "Пн, 9 ноября: 09:00–10:00 и 11:00–18:00"]);
     expect(formatFreeSlots([], early)).toBe("Свободного времени нет");
   });
 });
