@@ -1,5 +1,6 @@
 // Reading calendars and events from Google: field defaults, paging, time parsing, search and ordering
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { addDays } from "../lib/date";
 import { FEED_ACCOUNT } from "../lib/feeds";
 import {
   calendarRef,
@@ -236,8 +237,9 @@ describe("search", () => {
       q: "йога",
       singleEvents: "true",
       orderBy: "startTime",
-      timeMin: "2024-11-04T00:00:00.000Z",
-      timeMax: "2028-11-03T00:00:00.000Z",
+      // two years each way in local days: a daylight saving change in between shifts the edge by an hour
+      timeMin: addDays(now, -730).toISOString(),
+      timeMax: addDays(now, 730).toISOString(),
       maxResults: "50",
     }, undefined);
     googleRequest.mockResolvedValueOnce({});
