@@ -99,7 +99,7 @@
             <tbody>
               <tr>
                 <th scope="row"><code>calendar.calendarlist.readonly</code><strong>Voir la liste de vos agendas</strong></th>
-                <td>Affiche vos agendas dans la barre latérale avec leurs noms et couleurs, vous permet d’afficher ou de masquer chacun d’eux et lit les rappels par défaut de chaque agenda pour les notifications.</td>
+                <td>Affiche vos agendas dans le panneau latéral avec leurs noms et couleurs, vous permet d’afficher ou de masquer chacun d’eux et lit les rappels par défaut de chaque agenda pour les notifications.</td>
               </tr>
               <tr>
                 <th scope="row"><code>calendar.events</code><strong>Voir et modifier les événements de vos agendas</strong></th>
@@ -123,13 +123,13 @@
       <section aria-labelledby="data-storage">
         <h2 id="data-storage">Où les données sont stockées</h2>
         <p>Tout le traitement se fait sur votre ordinateur. Calm Calendar communique directement avec les serveurs de Google (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) via des connexions HTTPS chiffrées. Rien n’est envoyé à nous ni à aucun autre tiers.</p>
-        <p>Si vous ajoutez un abonnement à un calendrier par lien (Paramètres → Abonnements à des calendriers), l’application télécharge aussi ce fichier .ics directement depuis l’adresse saisie ; ce site voit une demande de téléchargement ordinaire venant de votre ordinateur. Un clic sur le lieu d’un événement ouvre Google Maps dans votre navigateur avec ce lieu en recherche.</p>
+        <p>Si vous ajoutez un abonnement à un agenda par lien (Paramètres → Abonnements à des agendas), l’application télécharge aussi ce fichier .ics directement depuis l’adresse saisie ; ce site voit une demande de téléchargement ordinaire venant de votre ordinateur. Un clic sur le lieu d’un événement ouvre Google Maps dans votre navigateur avec ce lieu en recherche.</p>
         <p>L’application conserve sur votre ordinateur :</p>
         <ul>
           <li><strong>Jeton de connexion.</strong> Le jeton d’actualisation Google est stocké dans le Gestionnaire d’identification Windows, protégé par votre compte Windows. Le jeton d’accès à courte durée de vie est conservé uniquement en mémoire pendant que l’application fonctionne.</li>
           <li><strong>Les adresses e-mail des comptes</strong>, pour indiquer quels comptes sont connectés.</li>
           <li><strong>Les données d’agenda chargées récemment.</strong> Les dernières listes d’agendas et les derniers événements reçus de Google sont enregistrés dans le stockage local de l’application, afin que votre agenda et le widget affichent votre planning hors ligne. Au plus les 80 réponses les plus récentes sont conservées ; les plus anciennes sont supprimées automatiquement.</li>
-          <li><strong>Les abonnements à des calendriers.</strong> Les liens que vous ajoutez et la dernière copie téléchargée de chaque calendrier, pour l’afficher hors ligne. Supprimer un abonnement supprime sa copie.</li>
+          <li><strong>Les abonnements à des agendas.</strong> Les liens que vous ajoutez et la dernière copie téléchargée de chaque agenda, pour l’afficher hors ligne. Supprimer un abonnement supprime sa copie.</li>
           <li><strong>Les paramètres</strong>, comme le thème, la langue, la position du widget et les agendas affichés.</li>
           <li><strong>Fichier journal.</strong> Un journal technique dans <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> enregistre les démarrages de l’application, les connexions, les déconnexions et les erreurs, afin de pouvoir analyser les problèmes. Il ne contient ni titres ni descriptions d’événements, ni jetons ; les adresses e-mail sont réduites à la première lettre et au domaine (<code>a***@gmail.com</code>). Jusqu’à cinq fichiers de 1&nbsp;Mo sont conservés, les plus anciens étant supprimés automatiquement. Le journal ne quitte jamais votre ordinateur de lui-même : nous ne le voyons que si vous le joignez à un e-mail au support (Paramètres → « Ouvrir le dossier du journal »).</li>
         </ul>
@@ -155,7 +155,7 @@
       <section aria-labelledby="deleting">
         <h2 id="deleting">Supprimer vos données</h2>
         <ul>
-          <li><strong>Déconnectez-vous</strong> dans l’application (le bouton à côté du compte dans la barre latérale). Cela révoque l’accès de l’application chez Google, supprime le jeton du Gestionnaire d’identification Windows et efface de votre ordinateur l’adresse e-mail et les données d’agenda enregistrées. Vos agendas eux-mêmes restent dans votre compte Google.</li>
+          <li><strong>Déconnectez-vous</strong> dans l’application (le bouton à côté du compte dans le panneau latéral). Cela révoque l’accès de l’application chez Google, supprime le jeton du Gestionnaire d’identification Windows et efface de votre ordinateur l’adresse e-mail et les données d’agenda enregistrées. Vos agendas eux-mêmes restent dans votre compte Google.</li>
           <li><strong>Retirez l’accès</strong> à tout moment depuis votre compte Google : <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
           <li><strong>Désinstallez</strong> l’application pour supprimer ses paramètres. Si vous l’avez installée depuis le Microsoft Store, Windows supprime les données locales de l’application avec elle. Pour les autres installations, vous pouvez aussi supprimer les dossiers <code>%APPDATA%\com.arseni.calmcalendar</code> et <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> (ce dernier contient le journal).</li>
         </ul>

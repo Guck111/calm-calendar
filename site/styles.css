@@ -108,6 +108,8 @@ code {
   overflow-wrap: anywhere;
 }
 
+[dir="rtl"] code { direction: ltr; unicode-bidi: isolate; }
+
 .wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
 
 .skip-link {

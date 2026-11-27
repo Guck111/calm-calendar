@@ -2,6 +2,13 @@
 
 What changed in each version of Calm Calendar, newest first. The section of a version goes to its page on GitHub Releases, so write for people who use the app. Before a release, move "Unreleased" under the new version number and date.
 
+## Unreleased
+
+### Fixed
+
+- The translations in all 13 languages were checked. Wrong and inconsistent words are corrected: the Schedule view and "Does not repeat" now carry Google Calendar's own names in German, French, Portuguese and Arabic, Chinese says 活动 for an event everywhere, event colors are named as in Google Calendar in every language (in Russian, "Помидор" instead of "Томат"), and Quit in the tray menu no longer reads as Close in Hindi and Bengali. Phrases that broke around a time or a date are fixed, and texts that assumed the user is a man are neutral in Russian, Ukrainian and Belarusian.
+- The first section of Settings is called "Appearance" in English instead of "Look".
+
 ## 0.14.1 — 2026-11-23
 
 ### Fixed

@@ -17,7 +17,7 @@ export const parseQuickPt = makeEuParser({
   numericDate: "slash",
   weekdays: [
     `seg(?:unda)?${FEIRA}`,
-    // «ter» sozinho é o verbo, por isso só «terça»
+    // a bare «ter» is the verb, so only «terça»
     `ter[çc]a${FEIRA}`,
     `qua(?:rta)?${FEIRA}`,
     `qui(?:nta)?${FEIRA}`,
@@ -31,7 +31,7 @@ export const parseQuickPt = makeEuParser({
   at: "[àa]s?",
   from: "das?|de",
   to: "[àa]s?|at[ée]",
-  // «19h» é horário; duração é «durante 2h» ou «2 horas»
+  // «19h» is a time; a duration is «durante 2h» or «2 horas»
   hourWord: "h",
   hourWordAfterAt: "horas?",
   am: "da\\s+(?:manh[ãa]|madrugada)",

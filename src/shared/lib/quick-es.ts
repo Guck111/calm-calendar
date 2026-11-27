@@ -30,7 +30,7 @@ export const parseQuickEs = makeEuParser({
   at: "a\\s+las?",
   from: "de|desde",
   to: "a|hasta",
-  // «2h» por sí solo es una duración; «a las 19h» es una hora
+  // a bare «2h» is a duration; «a las 19h» is a time
   hourWord: "(?!)",
   hourWordAfterAt: "h|hs|horas?",
   am: `(?:de|por)\\s+la\\s+(?:${MAÑANA}|madrugada)`,

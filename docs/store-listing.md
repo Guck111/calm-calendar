@@ -115,7 +115,7 @@ Expected rating: 3+ / Everyone.
 >
 > Виджет на рабочем столе показывает часы, отсчёт до следующего события, месяц и ближайшие дела. Щелчок по значку в трее покажет сегодня и завтра.
 >
-> Ещё есть повторяющиеся события, гости и ответы на приглашения, второй часовой пояс, время в дороге, праздники 76 стран и подписки на календари .ics. Когда спрашивают, когда вы свободны, скопируйте свободные окна текстом и вставьте в чат.
+> Ещё есть повторяющиеся события, гости и ответы на приглашения, второй часовой пояс, время в пути, праздники 76 стран и подписки на календари .ics. Когда спрашивают, когда вы свободны, скопируйте свободные окна текстом и вставьте в чат.
 >
 > Пять стилей, у каждого светлый и тёмный вариант, и шрифты на ваш выбор. Большинство действий доступно с клавиатуры, полный список откроется по клавише ?.
 >
@@ -130,7 +130,7 @@ Expected rating: 3+ / Everyone.
 - Перетаскивание событий: перенос и изменение длительности, отмена по Ctrl+Z
 - Быстрое создание: «завтра 19:00 спортзал 50 мин» и Enter
 - Быстрое создание из любого приложения по Ctrl+Alt+Space
-- Кнопка входа в звонки Google Meet, Zoom, Teams и других сервисов
+- Кнопка «Подключиться» для звонков Google Meet, Zoom, Teams и других сервисов
 - Напоминания Google Календаря уведомлениями Windows
 - Окно поверх всех окон за минуту до звонка (по желанию)
 - Виджет на рабочем столе: часы, отсчёт, месяц и ближайшие события
@@ -152,7 +152,7 @@ Expected rating: 3+ / Everyone.
 
 > - «Что нового» под версией приложения в настройках открывает изменения вашей версии.
 > - При открытой боковой панели поиск и выбор вида больше не уходят за край окна.
-> - В узком окне выдвинутая боковая панель больше не просвечивает со стеклянным эффектом и стилем Obsidian.
+> - В узком окне выдвинутая боковая панель больше не просвечивает со стеклянным эффектом и стилем «Обсидиан».
 
 ## Ukrainian (uk-ua)
 
@@ -166,13 +166,13 @@ Expected rating: 3+ / Everyone.
 
 > Calm Calendar переносить ваш Google Календар на робочий стіл Windows: без реклами й без вкладки браузера, яку треба тримати відкритою.
 >
-> Плани видно за днями, тижнями, місяцями або списком на чотири тижні вперед. Подію можна перетягнути на інший час або розтягнути, а Ctrl+Z поверне її назад. Кілька акаунтів Google вміщуються в одне вікно, і якщо події з різних акаунтів накладаються, обидві позначаються червоним.
+> Плани видно за днями, тижнями, місяцями або списком на чотири тижні вперед. Подію можна перетягнути на інший час або розтягнути, а Ctrl+Z поверне її назад. Кілька облікових записів Google вміщуються в одне вікно, і якщо події з різних облікових записів накладаються, обидві позначаються червоним.
 >
 > Події пишуться так, як ви сказали б їх уголос: «завтра 19:00 англійська 50 хв #особисте» стане подією на 50 хвилин завтра о 19:00 в календарі «Особисте». Ctrl+Alt+Space відкриває той самий рядок поверх будь-якої програми, перемикатися на календар не треба.
 >
 > У дзвінків є кнопка «Приєднатися» в події, віджеті, треї та нагадуванні. Нагадування Google Календаря приходять сповіщеннями Windows. Якщо сповіщення легко пропустити, увімкніть невелике вікно, яке з'явиться поверх усіх вікон за хвилину до початку.
 >
-> Віджет на робочому столі показує годинник, відлік до наступної події, місяць і найближчі справи. Клацання по значку в треї покаже сьогодні й завтра.
+> Віджет на робочому столі показує годинник, відлік до наступної події, місяць і найближчі справи. Клацніть значок у треї, щоб побачити сьогодні й завтра.
 >
 > Ще є повторювані події, гості й відповіді на запрошення, другий часовий пояс, час у дорозі, свята 76 країн і підписки на календарі .ics. Коли питають, коли ви вільні, скопіюйте вільні вікна текстом і вставте в чат.
 >
@@ -180,20 +180,20 @@ Expected rating: 3+ / Everyone.
 >
 > У Calm Calendar немає власних серверів, і він не надсилає жодної аналітики: дані календаря йдуть лише між вашим комп'ютером і Google. Без мережі застосунок показує останній завантажений розклад.
 >
-> Потрібен акаунт Google. Інтерфейс і швидке створення працюють 13 мовами, серед них українська, англійська, російська та білоруська.
+> Потрібен обліковий запис Google. Інтерфейс і швидке створення працюють 13 мовами, серед них українська, англійська, російська та білоруська.
 
 **Product features:**
 
 - Перегляд Google Календаря на день, тиждень, місяць і списком
-- Кілька акаунтів Google в одному вікні з позначкою перетинів
+- Кілька облікових записів Google в одному вікні з позначкою перетинів
 - Перетягування подій: перенесення й зміна тривалості, скасування через Ctrl+Z
 - Швидке створення: «завтра 19:00 спортзал 50 хв» і Enter
-- Швидке створення з будь-якого застосунку через Ctrl+Alt+Space
-- Кнопка входу в дзвінки Google Meet, Zoom, Teams та інших сервісів
+- Швидке створення з будь-якої програми через Ctrl+Alt+Space
+- Кнопка «Приєднатися» для дзвінків Google Meet, Zoom, Teams та інших сервісів
 - Нагадування Google Календаря сповіщеннями Windows
 - Вікно поверх усіх вікон за хвилину до дзвінка (за бажанням)
 - Віджет на робочому столі: годинник, відлік, місяць і найближчі події
-- Справи на сьогодні й завтра одним клацанням по значку в треї
+- Справи на сьогодні й завтра одним клацанням значка в треї
 - Повторювані події, гості й відповіді на запрошення
 - Другий часовий пояс і свій пояс у кожної події
 - Свята 76 країн і номери тижнів
@@ -211,7 +211,7 @@ Expected rating: 3+ / Everyone.
 
 > - «Що нового» під версією застосунку в налаштуваннях відкриває зміни вашої версії.
 > - Коли бічна панель відкрита, пошук і вибір вигляду більше не виходять за край вікна.
-> - У вузькому вікні висунута бічна панель більше не просвічується зі скляним ефектом і стилем Obsidian.
+> - У вузькому вікні висунута бічна панель більше не просвічується з ефектом скла та стилем «Обсидіан».
 
 ## Belarusian (be-by)
 
@@ -219,41 +219,41 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> Google Каляндар на працоўным стале Windows, без рэкламы: дзень, тыдзень, месяц і спіс, віджэт, хуткае стварэнне з любой праграмы і напамінанні, якія цяжка прапусціць.
+> Google Каляндар на працоўным стале Windows, без рэкламы: дзень, тыдзень, месяц і спіс, віджэт, хуткае стварэнне з любой праграмы і напаміны, якія цяжка прапусціць.
 
 **Description:**
 
 > Calm Calendar пераносіць ваш Google Каляндар на працоўны стол Windows: без рэкламы і без укладкі браўзера, якую трэба трымаць адкрытай.
 >
-> Планы відаць па днях, тыднях, месяцах або спісам на чатыры тыдні наперад. Падзею можна перацягнуць на іншы час або расцягнуць, а Ctrl+Z верне яе назад. Некалькі акаўнтаў Google змяшчаюцца ў адно акно, і калі падзеі з розных акаўнтаў накладваюцца, абедзве пазначаюцца чырвоным.
+> Планы відаць па днях, тыднях, месяцах або спісам на чатыры тыдні наперад. Падзею можна перацягнуць на іншы час або расцягнуць, а Ctrl+Z верне яе назад. Некалькі ўліковых запісаў Google змяшчаюцца ў адно акно, і калі падзеі з розных уліковых запісаў накладваюцца, абедзве пазначаюцца чырвоным.
 >
 > Падзеі пішуцца так, як вы сказалі б іх уголас: «заўтра 19:00 англійская 50 хв #асабістае» стане падзеяй на 50 хвілін заўтра а 19:00 у календары «Асабістае». Ctrl+Alt+Space адкрывае той самы радок паверх любой праграмы, пераключацца на каляндар не трэба.
 >
-> У званкоў ёсць кнопка «Падключыцца» ў падзеі, віджэце, трэі і напамінанні. Напамінанні Google Календара прыходзяць апавяшчэннямі Windows. Калі апавяшчэнні лёгка прапусціць, уключыце невялікае акно, якое з'явіцца паверх усіх вокнаў за хвіліну да пачатку.
+> У званкоў ёсць кнопка «Падключыцца» ў падзеі, віджэце, трэі і напаміне. Напаміны Google Календара прыходзяць апавяшчэннямі Windows. Калі апавяшчэнні лёгка прапусціць, уключыце невялікае акно, якое з'явіцца паверх усіх вокнаў за хвіліну да пачатку.
 >
 > Віджэт на працоўным стале паказвае гадзіннік, адлік да наступнай падзеі, месяц і бліжэйшыя справы. Пстрычка па значку ў трэі пакажа сёння і заўтра.
 >
-> Яшчэ ёсць паўторныя падзеі, госці і адказы на запрашэнні, другі часавы пояс, час у дарозе, святы 76 краін і падпіскі на календары .ics. Калі пытаюцца, калі вы вольныя, скапіюйце вольныя вокны тэкстам і ўстаўце ў чат.
+> Яшчэ ёсць паўтаральныя падзеі, госці і адказы на запрашэнні, другі часавы пояс, час у дарозе, святы 76 краін і падпіскі на календары .ics. Калі пытаюцца, калі вы вольныя, скапіюйце вольныя вокны тэкстам і ўстаўце ў чат.
 >
 > Пяць стыляў, у кожнага светлы і цёмны варыянт, і шрыфты на ваш выбар. Большасць дзеянняў даступная з клавіятуры, поўны спіс адкрыецца клавішай ?.
 >
 > У Calm Calendar няма сваіх сервераў, і ён не адпраўляе ніякай аналітыкі: даныя календара ідуць толькі паміж вашым камп'ютарам і Google. Без сеткі праграма паказвае апошні загружаны расклад.
 >
-> Патрэбны акаўнт Google. Інтэрфейс і хуткае стварэнне працуюць на 13 мовах, сярод іх беларуская, англійская, руская і ўкраінская.
+> Патрэбны ўліковы запіс Google. Інтэрфейс і хуткае стварэнне працуюць на 13 мовах, сярод іх беларуская, англійская, руская і ўкраінская.
 
 **Product features:**
 
 - Прагляд Google Календара на дзень, тыдзень, месяц і спісам
-- Некалькі акаўнтаў Google у адным акне з адзнакай перасячэнняў
+- Некалькі ўліковых запісаў Google у адным акне з адзнакай перасячэнняў
 - Перацягванне падзей: перанос і змена працягласці, адмена праз Ctrl+Z
 - Хуткае стварэнне: «заўтра 19:00 спартзала 50 хв» і Enter
 - Хуткае стварэнне з любой праграмы праз Ctrl+Alt+Space
-- Кнопка ўваходу ў званкі Google Meet, Zoom, Teams і іншых сэрвісаў
-- Напамінанні Google Календара апавяшчэннямі Windows
+- Кнопка «Падключыцца» для званкоў Google Meet, Zoom, Teams і іншых сэрвісаў
+- Напаміны Google Календара апавяшчэннямі Windows
 - Акно паверх усіх вокнаў за хвіліну да званка (па жаданні)
 - Віджэт на працоўным стале: гадзіннік, адлік, месяц і бліжэйшыя падзеі
 - Справы на сёння і заўтра адной пстрычкай па значку ў трэі
-- Паўторныя падзеі, госці і адказы на запрашэнні
+- Паўтаральныя падзеі, госці і адказы на запрашэнні
 - Другі часавы пояс і свой пояс у кожнай падзеі
 - Святы 76 краін і нумары тыдняў
 - Падпіскі на календары .ics
@@ -264,13 +264,13 @@ Expected rating: 3+ / Everyone.
 - Без рэкламы і аналітыкі
 - Інтэрфейс і хуткае стварэнне на 13 мовах, сярод іх арабская справа налева
 
-**Search terms:** `каляндар`, `google каляндар`, `віджэт`, `планавальнік`, `расклад`, `напамінанні`, `штодзённік`
+**Search terms:** `каляндар`, `google каляндар`, `віджэт`, `планавальнік`, `расклад`, `напаміны`, `штодзённік`
 
 **What's new in this version:**
 
 > - «Што новага» пад версіяй праграмы ў наладах адкрывае змены вашай версіі.
 > - Калі бакавая панэль адкрытая, пошук і выбар выгляду больш не выходзяць за край акна.
-> - У вузкім акне высунутая бакавая панэль больш не прасвечвае са шкляным эфектам і стылем Obsidian.
+> - У вузкім акне высунутая бакавая панэль больш не прасвечвае са шкляным эфектам і стылем «Абсідыян».
 
 ## Spanish (es-es)
 
@@ -292,18 +292,18 @@ Expected rating: 3+ / Everyone.
 >
 > El widget de escritorio muestra un reloj, la cuenta atrás hasta tu próximo evento, el mes y lo que viene después. Un clic en el icono de la bandeja muestra hoy y mañana.
 >
-> También hay eventos periódicos, invitados y respuestas a invitaciones, una segunda zona horaria, tiempo de desplazamiento, festivos de 76 países y suscripciones .ics. Cuando alguien te pregunte cuándo estás libre, copia tus huecos libres como texto y pégalos en el chat.
+> También hay eventos periódicos, invitados y respuestas a invitaciones, una segunda zona horaria, tiempo de viaje, festivos de 76 países y suscripciones .ics. Cuando alguien te pregunte cuándo estás libre, copia tus huecos libres como texto y pégalos en el chat.
 >
 > Cinco estilos, cada uno en claro y oscuro, y las fuentes que prefieras. Casi todo se puede hacer con el teclado; pulsa ? para ver la lista completa.
 >
-> Calm Calendar no tiene servidores propios ni envía analíticas: los datos de tu calendario solo viajan entre tu PC y Google. Sin conexión, muestra la última agenda que cargó.
+> Calm Calendar no tiene servidores propios ni envía datos de analítica: los datos de tu calendario solo viajan entre tu PC y Google. Sin conexión, muestra la última agenda que cargó.
 >
 > Necesitas una cuenta de Google. La interfaz y la creación rápida funcionan en 13 idiomas, entre ellos español, inglés, portugués y francés.
 
 **Product features:**
 
-- Vistas de día, semana, mes y lista de tu Google Calendar
-- Varias cuentas de Google en una ventana, con las coincidencias marcadas
+- Vistas de día, semana, mes y agenda de tu Google Calendar
+- Varias cuentas de Google en una ventana, con los solapamientos marcados
 - Arrastra eventos para moverlos o cambiar su duración, deshaz con Ctrl+Z
 - Creación rápida: escribe «mañana a las 19:00 gimnasio 50 min» y pulsa Enter
 - Creación rápida desde cualquier aplicación con Ctrl+Alt+Space
@@ -320,7 +320,7 @@ Expected rating: 3+ / Everyone.
 - Cinco estilos en claro y oscuro, tus propias fuentes, efecto cristal
 - Atajos de teclado y menú de comandos (Ctrl+K)
 - Funciona sin conexión con la última agenda cargada
-- Sin anuncios ni analíticas
+- Sin anuncios ni analítica
 - Interfaz y creación rápida en 13 idiomas, incluido el árabe de derecha a izquierda
 
 **Search terms:** `calendario`, `google calendar`, `widget de escritorio`, `agenda`, `planificador`, `recordatorios`, `horario`
@@ -329,7 +329,7 @@ Expected rating: 3+ / Everyone.
 
 > - «Novedades», bajo la versión de la app en Ajustes, abre los cambios de tu versión.
 > - Con el panel lateral abierto, la búsqueda y las vistas ya no se salen del borde de la ventana.
-> - En una ventana estrecha, el panel lateral desplegado ya no es transparente con el efecto cristal o el estilo Obsidian.
+> - En una ventana estrecha, el panel lateral desplegado ya no es transparente con el efecto cristal o el estilo Obsidiana.
 
 ## French (fr-fr)
 
@@ -343,7 +343,7 @@ Expected rating: 3+ / Everyone.
 
 > Calm Calendar installe votre Google Agenda sur le bureau Windows, sans publicité et sans onglet de navigateur à garder ouvert.
 >
-> Consultez vos projets par jour, semaine ou mois, ou sous forme de liste des quatre prochaines semaines. Faites glisser un événement pour le déplacer ou changer sa durée, et Ctrl+Z le remet en place. Plusieurs comptes Google tiennent dans une seule fenêtre, et quand deux événements de comptes différents se chevauchent, les deux sont marqués en rouge.
+> Consultez votre emploi du temps par jour, semaine ou mois, ou sous forme de liste des quatre prochaines semaines. Faites glisser un événement pour le déplacer ou changer sa durée, et Ctrl+Z le remet en place. Plusieurs comptes Google tiennent dans une seule fenêtre, et quand deux événements de comptes différents se chevauchent, les deux sont marqués en rouge.
 >
 > Écrivez vos événements comme vous les diriez : « demain 19h cours d’anglais 50 min #perso » devient un événement de 50 minutes demain à 19h dans votre agenda Perso. Ctrl+Alt+Space ouvre la même ligne par-dessus n’importe quelle application, sans passer par l’agenda.
 >
@@ -361,7 +361,7 @@ Expected rating: 3+ / Everyone.
 
 **Product features:**
 
-- Vues jour, semaine, mois et liste de votre Google Agenda
+- Vues jour, semaine, mois et planning de votre Google Agenda
 - Plusieurs comptes Google dans une fenêtre, chevauchements signalés
 - Glisser un événement pour le déplacer ou changer sa durée, annuler avec Ctrl+Z
 - Ajout rapide : tapez « demain 19h sport 50 min » puis Entrée
@@ -380,15 +380,15 @@ Expected rating: 3+ / Everyone.
 - Raccourcis clavier et menu de commandes (Ctrl+K)
 - Fonctionne hors ligne avec le dernier emploi du temps chargé
 - Sans publicité ni statistiques
-- Interface et ajout rapide en 13 langues, dont l’arabe de droite à gauche
+- Interface et ajout rapide en 13 langues, dont l’arabe, écrit de droite à gauche
 
 **Search terms:** `agenda`, `calendrier`, `google agenda`, `widget de bureau`, `planning`, `rappels`, `emploi du temps`
 
 **What's new in this version:**
 
-> - « Nouveautés », sous la version de l'app dans Paramètres, ouvre les changements de votre version.
+> - « Nouveautés », sous la version de l’application dans Paramètres, ouvre les changements de votre version.
 > - Avec le panneau latéral ouvert, la recherche et les vues ne dépassent plus du bord de la fenêtre.
-> - Dans une fenêtre étroite, le panneau latéral déployé n'est plus transparent avec l'effet verre ou le style Obsidian.
+> - Dans une fenêtre étroite, le panneau latéral déployé n’est plus transparent avec l’effet verre ou le style Obsidienne.
 
 ## Portuguese, Brazil (pt-br)
 
@@ -396,7 +396,7 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> Seu Google Agenda como app do Windows sem anúncios: dia, semana, mês e lista, widget na área de trabalho, criação rápida em qualquer aplicativo e lembretes difíceis de perder.
+> Seu Google Agenda como app do Windows sem anúncios: dia, semana, mês e lista, widget na área de trabalho, criação rápida em qualquer aplicativo e lembretes difíceis de ignorar.
 
 **Description:**
 
@@ -414,13 +414,13 @@ Expected rating: 3+ / Everyone.
 >
 > Cinco estilos, cada um em claro e escuro, e as fontes que você escolher. Quase tudo funciona pelo teclado; pressione ? para ver a lista completa.
 >
-> O Calm Calendar não tem servidores próprios e não envia análises: os dados da sua agenda trafegam apenas entre o seu PC e o Google. Sem internet, ele mostra a última programação carregada.
+> O Calm Calendar não tem servidores próprios e não envia dados de uso: os dados da sua agenda trafegam apenas entre o seu PC e o Google. Sem internet, ele mostra a última programação carregada.
 >
 > É necessária uma conta do Google. A interface e a criação rápida funcionam em 13 idiomas, entre eles português, inglês e espanhol.
 
 **Product features:**
 
-- Visualizações de dia, semana, mês e lista do seu Google Agenda
+- Visualizações de dia, semana, mês e programação do seu Google Agenda
 - Várias contas do Google em uma janela, com sobreposições marcadas
 - Arraste eventos para mover ou mudar a duração, desfaça com Ctrl+Z
 - Criação rápida: digite "amanhã 19h academia 50 min" e pressione Enter
@@ -438,7 +438,7 @@ Expected rating: 3+ / Everyone.
 - Cinco estilos em claro e escuro, suas fontes, efeito de vidro
 - Atalhos de teclado e menu de comandos (Ctrl+K)
 - Funciona sem internet com a última programação carregada
-- Sem anúncios e sem análises
+- Sem anúncios e sem coleta de dados de uso
 - Interface e criação rápida em 13 idiomas, incluindo árabe da direita para a esquerda
 
 **Search terms:** `agenda`, `calendário`, `google agenda`, `widget`, `planejador`, `lembretes`, `compromissos`
@@ -447,7 +447,7 @@ Expected rating: 3+ / Everyone.
 
 > - "Novidades", abaixo da versão do app em Configurações, abre as mudanças da sua versão.
 > - Com o painel lateral aberto, a busca e as visualizações não passam mais da borda da janela.
-> - Em uma janela estreita, o painel lateral aberto sobre o calendário não fica mais transparente com o efeito vidro ou o estilo Obsidian.
+> - Em uma janela estreita, o painel lateral aberto sobre a agenda não fica mais transparente com o efeito de vidro ou o estilo Obsidiana.
 
 ## German (de-de)
 
@@ -455,7 +455,7 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> Dein Google Kalender als werbefreie Windows-App: Tag, Woche, Monat und Liste, Desktop-Widget, Schnelleingabe aus jeder App und Erinnerungen, die du kaum verpasst.
+> Dein Google Kalender als werbefreie Windows-App: Tag, Woche, Monat und Liste, Desktop-Widget, Schnelleingabe aus jeder App und Erinnerungen, die kaum zu übersehen sind.
 
 **Description:**
 
@@ -479,7 +479,7 @@ Expected rating: 3+ / Everyone.
 
 **Product features:**
 
-- Tages-, Wochen-, Monats- und Listenansicht deines Google Kalenders
+- Tages-, Wochen- und Monatsansicht sowie Terminübersicht deines Google Kalenders
 - Mehrere Google-Konten in einem Fenster, Überschneidungen markiert
 - Termine ziehen, um sie zu verschieben oder die Dauer zu ändern, Strg+Z macht es rückgängig
 - Schnelleingabe: „morgen 19 Uhr Fitness 50 min“ tippen und Enter drücken
@@ -494,7 +494,7 @@ Expected rating: 3+ / Everyone.
 - Feiertage aus 76 Ländern und Kalenderwochen
 - Abos von .ics-Kalendern
 - Freie Zeiten als Text zum Einfügen in den Chat
-- Fünf Stile in hell und dunkel, eigene Schriften, Glaseffekt
+- Fünf Stile in Hell und Dunkel, eigene Schriften, Glaseffekt
 - Tastenkürzel und Befehlsmenü (Strg+K)
 - Funktioniert offline mit den zuletzt geladenen Terminen
 - Keine Werbung, keine Analysedaten
@@ -514,7 +514,7 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> 広告のない Windows アプリで Google カレンダーを。日・週・月・リスト表示、デスクトップ ウィジェット、どのアプリからでも使えるすばやい予定追加、見逃しにくいリマインダー。
+> 広告のない Windows アプリで Google カレンダーを。日・週・月・リスト表示、デスクトップ ウィジェット、どのアプリからでも使えるクイック追加、見逃しにくいリマインダー。
 
 **Description:**
 
@@ -534,20 +534,20 @@ Expected rating: 3+ / Everyone.
 >
 > Calm Calendar は独自のサーバーを持たず、分析データも送信しません。カレンダーのデータはお使いの PC と Google の間でのみやり取りされます。オフラインのときは最後に読み込んだ予定を表示します。
 >
-> Google アカウントが必要です。画面とすばやい予定追加は、日本語、英語、中国語を含む 13 言語に対応しています。
+> Google アカウントが必要です。画面とクイック追加は、日本語、英語、中国語を含む 13 言語に対応しています。
 
 **Product features:**
 
-- Google カレンダーを日・週・月・リストで表示
+- Google カレンダーを日・週・月・スケジュールで表示
 - 複数の Google アカウントを 1 つのウィンドウで、重なる予定には印
 - ドラッグで予定を移動、長さを変更、Ctrl+Z で元に戻す
-- すばやい予定追加：「明日19時 ジム 50分」と入力して Enter
-- どのアプリからでも Ctrl+Alt+Space で予定を追加
+- クイック追加：「明日19時 ジム 50分」と入力して Enter
+- どのアプリからでも Ctrl+Alt+Space でクイック追加
 - Google Meet、Zoom、Teams などの通話に参加するボタン
 - Google カレンダーのリマインダーを Windows の通知で
 - 通話の 1 分前にすべてのウィンドウの上に出るお知らせ（任意）
 - 時計、カウントダウン、月表示、これからの予定を表示するデスクトップ ウィジェット
-- タスクトレイのアイコンをクリックして今日と明日の予定
+- タスクトレイのアイコンをクリックすると今日と明日の予定を表示
 - 繰り返しの予定、ゲスト、招待への返信
 - 2 つ目のタイムゾーンと予定ごとのタイムゾーン
 - 76 か国の祝日と週番号
@@ -557,7 +557,7 @@ Expected rating: 3+ / Everyone.
 - キーボード ショートカットとコマンド メニュー（Ctrl+K）
 - 最後に読み込んだ予定でオフラインでも使える
 - 広告なし、分析データの送信なし
-- 13 言語の画面とすばやい予定追加（右から左に書くアラビア語も）
+- 画面とクイック追加は 13 言語に対応（右から左に書くアラビア語も）
 
 **Search terms:** `カレンダー`, `Google カレンダー`, `ウィジェット`, `スケジュール`, `予定表`, `リマインダー`, `手帳`
 
@@ -565,7 +565,7 @@ Expected rating: 3+ / Everyone.
 
 > - 設定のアプリバージョンの下にある「新機能」から、お使いのバージョンの変更点を開けます。
 > - サイドパネルを開いたときに、検索と表示の切り替えがウィンドウの端からはみ出さなくなりました。
-> - 狭いウィンドウで引き出したサイドパネルが、ガラス効果や Obsidian スタイルで透けなくなりました。
+> - 狭いウィンドウで引き出したサイドパネルが、ガラス効果や「オブシディアン」スタイルで透けなくなりました。
 
 ## Chinese, Simplified (zh-cn)
 
@@ -573,21 +573,21 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> 把 Google 日历变成无广告的 Windows 应用：日、周、月和列表视图，桌面小组件，在任何应用中快速添加日程，以及不易错过的提醒。
+> 把 Google 日历变成无广告的 Windows 应用：日、周、月和日程视图，桌面小组件，在任何应用中快速添加活动，以及不易错过的提醒。
 
 **Description:**
 
 > Calm Calendar 把你的 Google 日历搬到 Windows 桌面上，没有广告，也不用一直开着浏览器标签页。
 >
-> 按日、周、月查看安排，或者用列表查看接下来四周。拖动日程即可移动或调整时长，按 Ctrl+Z 恢复原样。多个 Google 账号可以放在同一个窗口里，不同账号的日程时间冲突时，两条都会标红。
+> 按日、周、月查看安排，或者用列表查看接下来四周。拖动活动即可移动或调整时长，按 Ctrl+Z 恢复原样。多个 Google 账号可以放在同一个窗口里，不同账号的活动时间冲突时，两条都会标红。
 >
-> 像说话一样输入日程：输入“明天晚上7点 英语课 50分钟 #个人”，就会在“个人”日历里添加明天晚上 7 点、时长 50 分钟的日程。在任何应用中按 Ctrl+Alt+Space 都会弹出同一个输入框，不用切换到日历。
+> 像说话一样输入活动：输入“明天晚上7点 英语课 50分钟 #个人”，就会在“个人”日历里添加明天晚上 7 点、时长 50 分钟的活动。在任何应用中按 Ctrl+Alt+Space 都会弹出同一个输入框，不用切换到日历。
 >
-> 通话在日程、小组件、系统托盘和提醒中都有“加入”按钮。Google 日历的提醒以 Windows 通知送达。如果通知容易被忽略，可以打开一个小窗口，在开始前一分钟显示在所有窗口之上。
+> 通话在活动、小组件、系统托盘和提醒中都有“加入”按钮。Google 日历的提醒以 Windows 通知送达。如果通知容易被忽略，可以打开一个小窗口，在开始前一分钟显示在所有窗口之上。
 >
-> 桌面小组件显示时钟、距下一个日程的倒计时、月历和接下来的安排。点击托盘图标即可查看今天和明天。
+> 桌面小组件显示时钟、距下一个活动的倒计时、月历和接下来的安排。点击托盘图标即可查看今天和明天。
 >
-> 还支持重复日程、嘉宾和邀请回复、第二时区、路程时间、76 个国家的公共假日以及 .ics 订阅。有人问你什么时候有空，把空闲时段复制成文字粘贴到聊天里就行。
+> 还支持周期性活动、邀请对象和邀请回复、第二时区、路程时间、76 个国家的法定节假日以及 .ics 订阅。有人问你什么时候有空，把空闲时段复制成文字粘贴到聊天里就行。
 >
 > 五种风格，每种都有浅色和深色版本，字体也可以自选。大部分操作都能用键盘完成，按 ? 查看完整列表。
 >
@@ -597,19 +597,19 @@ Expected rating: 3+ / Everyone.
 
 **Product features:**
 
-- 按日、周、月和列表查看 Google 日历
-- 多个 Google 账号同在一个窗口，冲突日程会被标出
-- 拖动日程以移动或调整时长，Ctrl+Z 撤销
+- 以日、周、月和日程视图查看 Google 日历
+- 多个 Google 账号同在一个窗口，冲突的活动会被标出
+- 拖动活动以移动或调整时长，Ctrl+Z 撤销
 - 快速添加：输入“明天晚上7点 健身 50分钟”后按 Enter
 - 在任何应用中按 Ctrl+Alt+Space 快速添加
 - 一键加入 Google Meet、Zoom、Teams 等通话
 - Google 日历提醒以 Windows 通知送达
-- 通话前一分钟在所有窗口之上弹出提示（可选）
-- 桌面小组件：时钟、倒计时、月历和接下来的日程
+- 通话前一分钟在所有窗口之上弹出提醒（可选）
+- 桌面小组件：时钟、倒计时、月历和即将到来的活动
 - 点击托盘图标查看今天和明天的安排
-- 重复日程、嘉宾和邀请回复
-- 第二时区，每个日程可设单独时区
-- 76 个国家的公共假日和周数
+- 周期性活动、邀请对象和邀请回复
+- 第二时区，每个活动可设单独时区
+- 76 个国家的法定节假日和周数
 - 订阅 .ics 日历
 - 把空闲时段复制成文字，粘贴到聊天里
 - 五种浅色和深色风格、自选字体、玻璃效果
@@ -624,7 +624,7 @@ Expected rating: 3+ / Everyone.
 
 > - 设置中应用版本下方的“更新内容”可打开当前版本的更新说明。
 > - 侧边栏打开时，搜索和视图切换不再超出窗口边缘。
-> - 在窄窗口中，拉出的侧边栏在玻璃效果或 Obsidian 风格下不再透明。
+> - 在窄窗口中，拉出的侧边栏在玻璃效果或 “黑曜石”风格下不再透明。
 
 ## Hindi (hi-in)
 
@@ -632,7 +632,7 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> बिना विज्ञापन वाले Windows ऐप में आपका Google Calendar: दिन, हफ़्ता, महीना और सूची, डेस्कटॉप विजेट, किसी भी ऐप से जल्दी इवेंट जोड़ना और ऐसे रिमाइंडर जिन्हें चूकना मुश्किल है।
+> बिना विज्ञापन वाले Windows ऐप में आपका Google Calendar: दिन, हफ़्ता, महीना और सूची, डेस्कटॉप विजेट, किसी भी ऐप से झटपट इवेंट जोड़ना और ऐसे रिमाइंडर जिन्हें चूकना मुश्किल है।
 
 **Description:**
 
@@ -648,22 +648,22 @@ Expected rating: 3+ / Everyone.
 >
 > इसमें दोहराए जाने वाले इवेंट, मेहमान और निमंत्रण के जवाब, दूसरा टाइम ज़ोन, यात्रा का समय, 76 देशों की छुट्टियां और .ics सदस्यताएं भी हैं। जब कोई पूछे कि आप कब खाली हैं, तो अपना खाली समय टेक्स्ट के रूप में कॉपी करके चैट में चिपका दें।
 >
-> पांच स्टाइल, हर एक का हल्का और गहरा रूप, और अपनी पसंद के फ़ॉन्ट। ज़्यादातर काम कीबोर्ड से हो जाते हैं; पूरी सूची के लिए ? दबाएं।
+> पांच शैलियां, हर एक का हल्का और गहरा रूप, और अपनी पसंद के फ़ॉन्ट। ज़्यादातर काम कीबोर्ड से हो जाते हैं; पूरी सूची के लिए ? दबाएं।
 >
 > Calm Calendar के अपने कोई सर्वर नहीं हैं और यह कोई एनालिटिक्स नहीं भेजता: आपके कैलेंडर का डेटा सिर्फ़ आपके PC और Google के बीच जाता है। इंटरनेट न होने पर यह आखिरी बार लोड किया गया शेड्यूल दिखाता है।
 >
-> Google खाता ज़रूरी है। इंटरफ़ेस और जल्दी से जोड़ना हिन्दी, अंग्रेज़ी और बांग्ला सहित 13 भाषाओं में काम करते हैं।
+> Google खाता ज़रूरी है। इंटरफ़ेस और झटपट जोड़ना हिन्दी, अंग्रेज़ी और बांग्ला सहित 13 भाषाओं में काम करते हैं।
 
 **Product features:**
 
 - Google Calendar को दिन, हफ़्ते, महीने और सूची में देखें
 - एक विंडो में कई Google खाते, आपस में टकराने वाले इवेंट पर निशान
 - इवेंट को खींचकर खिसकाएं या अवधि बदलें, Ctrl+Z से वापस लें
-- जल्दी से जोड़ें: "कल शाम 7 बजे जिम 50 मिनट" लिखें और Enter दबाएं
-- किसी भी ऐप से Ctrl+Alt+Space दबाकर जल्दी से जोड़ें
-- Google Meet, Zoom, Teams और दूसरी कॉल में शामिल होने का बटन
+- झटपट जोड़ें: "कल शाम 7 बजे जिम 50 मिनट" लिखें और Enter दबाएं
+- किसी भी ऐप से Ctrl+Alt+Space दबाकर झटपट जोड़ें
+- Google Meet, Zoom, Teams और दूसरी कॉल के लिए "जुड़ें" बटन
 - Google Calendar के रिमाइंडर Windows सूचनाओं के रूप में
-- कॉल से एक मिनट पहले सभी विंडो के ऊपर सूचना (वैकल्पिक)
+- कॉल से एक मिनट पहले सभी विंडो के ऊपर न छूटने वाला रिमाइंडर (वैकल्पिक)
 - घड़ी, उलटी गिनती, महीना और आने वाले इवेंट वाला डेस्कटॉप विजेट
 - ट्रे आइकन पर एक क्लिक में आज और कल
 - दोहराए जाने वाले इवेंट, मेहमान और निमंत्रण के जवाब
@@ -671,11 +671,11 @@ Expected rating: 3+ / Everyone.
 - 76 देशों की छुट्टियां और हफ़्ते के नंबर
 - .ics कैलेंडर की सदस्यता
 - खाली समय टेक्स्ट में कॉपी करके चैट में चिपकाएं
-- हल्के और गहरे रूप में पांच स्टाइल, अपने फ़ॉन्ट, ग्लास इफ़ेक्ट
-- कीबोर्ड शॉर्टकट और कमांड मेनू (Ctrl+K)
+- हल्के और गहरे रूप में पांच शैलियां, अपने फ़ॉन्ट, ग्लास इफ़ेक्ट
+- कीबोर्ड शॉर्टकट और कमांड मेन्यू (Ctrl+K)
 - आखिरी बार लोड किए गए शेड्यूल के साथ ऑफ़लाइन काम करता है
 - कोई विज्ञापन नहीं, कोई एनालिटिक्स नहीं
-- 13 भाषाओं में इंटरफ़ेस और जल्दी से जोड़ना, दाएं से बाएं लिखी जाने वाली अरबी भी
+- 13 भाषाओं में इंटरफ़ेस और झटपट जोड़ना, दाएं से बाएं लिखी जाने वाली अरबी भी
 
 **Search terms:** `कैलेंडर`, `google calendar`, `विजेट`, `शेड्यूल`, `रिमाइंडर`, `प्लानर`, `डायरी`
 
@@ -683,7 +683,7 @@ Expected rating: 3+ / Everyone.
 
 > - सेटिंग में ऐप संस्करण के नीचे "नया क्या है" आपके संस्करण के बदलाव खोलता है।
 > - साइड पैनल खुला होने पर खोज और व्यू बटन अब विंडो के किनारे से बाहर नहीं जाते।
-> - संकरी विंडो में बाहर खींचा गया साइड पैनल अब ग्लास इफ़ेक्ट या Obsidian स्टाइल में पारदर्शी नहीं दिखता।
+> - संकरी विंडो में बाहर खींचा गया साइड पैनल अब ग्लास इफ़ेक्ट या ऑब्सीडियन शैली में पारदर्शी नहीं दिखता।
 
 ## Arabic (ar-sa)
 
@@ -701,21 +701,21 @@ Expected rating: 3+ / Everyone.
 >
 > اكتب الأحداث كما تقولها: «غدًا الساعة 7 مساءً درس إنجليزي 50 دقيقة #شخصي» يصبح حدثًا مدته 50 دقيقة غدًا الساعة 7 مساءً في تقويم «شخصي». ويفتح Ctrl+Alt+Space السطر نفسه فوق أي تطبيق، دون الانتقال إلى التقويم.
 >
-> للمكالمات زر «انضمام» في الحدث والأداة ومنطقة الإعلامات والتذكير. تصلك تذكيرات تقويم Google كإشعارات في Windows. وإذا كانت الإشعارات تفوتك بسهولة، فشغّل نافذة صغيرة تظهر فوق كل النوافذ قبل البدء بدقيقة.
+> للمكالمات زر «انضمام» في الحدث والأداة وعلبة النظام والتذكير. تصلك تذكيرات تقويم Google كإشعارات في Windows. وإذا كانت الإشعارات تفوتك بسهولة، فشغّل نافذة صغيرة تظهر فوق كل النوافذ قبل البدء بدقيقة.
 >
-> تعرض أداة سطح المكتب ساعة وعدًّا تنازليًا حتى حدثك التالي والشهر وما يأتي بعده. ونقرة على أيقونة منطقة الإعلامات تعرض اليوم والغد.
+> تعرض أداة سطح المكتب ساعة وعدًّا تنازليًا حتى حدثك التالي والشهر والأحداث القادمة. ونقرة على أيقونة علبة النظام تعرض اليوم والغد.
 >
-> وفيه أيضًا الأحداث المتكررة والضيوف والرد على الدعوات ومنطقة زمنية ثانية ووقت التنقل والعطلات الرسمية في 76 دولة واشتراكات .ics. وعندما يسألك أحد متى تكون متفرغًا، انسخ أوقات فراغك نصًّا والصقها في المحادثة.
+> وفيه أيضًا الأحداث المتكررة والمدعوّون والرد على الدعوات ومنطقة زمنية ثانية ووقت التنقل والعطلات الرسمية في 76 دولة واشتراكات ‎.ics. وعندما يسألك أحد متى تكون متفرغًا، انسخ أوقات فراغك نصًّا والصقها في المحادثة.
 >
 > خمسة أنماط، لكل منها نسخة فاتحة وأخرى داكنة، وخطوط من اختيارك. معظم الإجراءات متاحة من لوحة المفاتيح؛ اضغط ? لترى القائمة كاملة.
 >
 > لا يملك Calm Calendar خوادم خاصة به ولا يرسل أي تحليلات: تنتقل بيانات تقويمك بين جهازك وGoogle فقط. وعند انقطاع الاتصال يعرض آخر جدول حمّله.
 >
-> يلزم حساب Google. الواجهة والإضافة السريعة متاحتان بـ 13 لغة، منها العربية بالكامل من اليمين إلى اليسار، والإضافة السريعة تفهم الأرقام العربية أيضًا.
+> يلزم حساب Google. الواجهة والإضافة السريعة متاحتان بـ 13 لغة، منها العربية بالكامل من اليمين إلى اليسار، والإضافة السريعة تفهم الأرقام ٠١٢٣ أيضًا.
 
 **Product features:**
 
-- عرض تقويم Google حسب اليوم والأسبوع والشهر وكقائمة
+- عرض تقويم Google حسب اليوم والأسبوع والشهر وجدول المواعيد
 - عدة حسابات Google في نافذة واحدة مع علامة على التعارضات
 - اسحب الأحداث لنقلها أو تغيير مدتها، وتراجع بـ Ctrl+Z
 - إضافة سريعة: اكتب «غدًا الساعة 7 مساءً نادي رياضي 50 دقيقة» واضغط Enter
@@ -724,15 +724,15 @@ Expected rating: 3+ / Everyone.
 - تذكيرات تقويم Google كإشعارات Windows
 - تنبيه اختياري فوق كل النوافذ قبل المكالمة بدقيقة
 - أداة سطح المكتب: ساعة وعد تنازلي وشهر وأحداث قادمة
-- اليوم والغد بنقرة على أيقونة منطقة الإعلامات
-- أحداث متكررة وضيوف وردود على الدعوات
+- اليوم والغد بنقرة على أيقونة علبة النظام
+- أحداث متكررة ومدعوّون وردود على الدعوات
 - منطقة زمنية ثانية ومنطقة زمنية لكل حدث
 - العطلات الرسمية في 76 دولة وأرقام الأسابيع
-- الاشتراك في تقويمات .ics
+- الاشتراك في تقويمات ‎.ics
 - انسخ أوقات فراغك نصًّا والصقها في المحادثة
 - خمسة أنماط فاتحة وداكنة وخطوط من اختيارك وتأثير الزجاج
 - اختصارات لوحة المفاتيح وقائمة الأوامر (Ctrl+K)
-- يعمل دون اتصال بآخر جدول محمّل
+- يعمل دون اتصال ويعرض آخر جدول محمّل
 - بلا إعلانات ولا تحليلات
 - الواجهة والإضافة السريعة بـ 13 لغة، منها العربية من اليمين إلى اليسار
 
@@ -742,7 +742,7 @@ Expected rating: 3+ / Everyone.
 
 > - «ما الجديد» تحت إصدار التطبيق في الإعدادات يفتح تغييرات إصدارك.
 > - عندما تكون اللوحة الجانبية مفتوحة، لم يعد البحث وأزرار العرض يتجاوزان حافة النافذة.
-> - في النافذة الضيقة، لم تعد اللوحة الجانبية المسحوبة شفافة مع تأثير الزجاج أو نمط Obsidian.
+> - في النافذة الضيقة، لم تعد اللوحة الجانبية المسحوبة شفافة مع تأثير الزجاج أو نمط «أوبسيديان».
 
 ## Bengali (bn-bd)
 
@@ -750,17 +750,17 @@ Expected rating: 3+ / Everyone.
 
 **Short description:**
 
-> বিজ্ঞাপনহীন Windows অ্যাপে আপনার Google ক্যালেন্ডার: দিন, সপ্তাহ, মাস ও তালিকা, ডেস্কটপ উইজেট, যেকোনো অ্যাপ থেকে দ্রুত ইভেন্ট যোগ আর এমন রিমাইন্ডার যা মিস করা কঠিন।
+> বিজ্ঞাপনহীন Windows অ্যাপে আপনার Google Calendar: দিন, সপ্তাহ, মাস ও তালিকা, ডেস্কটপ উইজেট, যেকোনো অ্যাপ থেকে দ্রুত ইভেন্ট যোগ আর এমন রিমাইন্ডার যা মিস করা কঠিন।
 
 **Description:**
 
-> Calm Calendar আপনার Google ক্যালেন্ডারকে Windows ডেস্কটপে নিয়ে আসে, বিজ্ঞাপন ছাড়া এবং ব্রাউজারের ট্যাব খুলে রাখার ঝামেলা ছাড়া।
+> Calm Calendar আপনার Google Calendar-কে Windows ডেস্কটপে নিয়ে আসে, বিজ্ঞাপন ছাড়া এবং ব্রাউজারের ট্যাব খুলে রাখার ঝামেলা ছাড়া।
 >
 > আপনার পরিকল্পনা দিন, সপ্তাহ বা মাস ধরে দেখুন, অথবা পরের চার সপ্তাহের তালিকায়। ইভেন্ট টেনে সরান বা সময়কাল বদলান, আর Ctrl+Z সেটি আগের জায়গায় ফিরিয়ে আনে। একাধিক Google অ্যাকাউন্ট এক উইন্ডোতেই থাকে, আর আলাদা অ্যাকাউন্টের ইভেন্ট একই সময়ে পড়লে দুটোই লাল চিহ্নে দেখা যায়।
 >
 > ইভেন্ট লিখুন যেভাবে মুখে বলেন: "কাল সন্ধ্যা 7টায় ইংরেজি ক্লাস 50 মিনিট #ব্যক্তিগত" লিখলে "ব্যক্তিগত" ক্যালেন্ডারে কাল সন্ধ্যা 7টায় 50 মিনিটের একটি ইভেন্ট তৈরি হয়। যেকোনো অ্যাপে Ctrl+Alt+Space চাপলে একই লাইন খুলে যায়, ক্যালেন্ডারে যেতে হয় না।
 >
-> কলের জন্য ইভেন্ট, উইজেট, ট্রে আর রিমাইন্ডারে "যোগ দিন" বোতাম থাকে। Google ক্যালেন্ডারের রিমাইন্ডার আসে Windows বিজ্ঞপ্তি হয়ে। বিজ্ঞপ্তি সহজে চোখ এড়িয়ে গেলে একটি ছোট উইন্ডো চালু করুন, যা শুরুর এক মিনিট আগে সব উইন্ডোর ওপরে দেখা যায়।
+> কলের জন্য ইভেন্ট, উইজেট, ট্রে আর রিমাইন্ডারে "যোগ দিন" বোতাম থাকে। Google Calendar-এর রিমাইন্ডার আসে Windows বিজ্ঞপ্তি হয়ে। বিজ্ঞপ্তি সহজে চোখ এড়িয়ে গেলে একটি ছোট উইন্ডো চালু করুন, যা শুরুর এক মিনিট আগে সব উইন্ডোর ওপরে দেখা যায়।
 >
 > ডেস্কটপ উইজেটে থাকে ঘড়ি, পরের ইভেন্ট পর্যন্ত কাউন্টডাউন, মাস আর এরপর কী আছে। ট্রে আইকনে ক্লিক করলে আজ আর কাল দেখা যায়।
 >
@@ -774,13 +774,13 @@ Expected rating: 3+ / Everyone.
 
 **Product features:**
 
-- Google ক্যালেন্ডার দিন, সপ্তাহ, মাস ও তালিকায়
-- এক উইন্ডোতে একাধিক Google অ্যাকাউন্ট, সংঘর্ষে চিহ্ন
+- Google Calendar দিন, সপ্তাহ, মাস ও সময়সূচি ভিউতে
+- এক উইন্ডোতে একাধিক Google অ্যাকাউন্ট, সময়ের সংঘাত চিহ্নিত
 - ইভেন্ট টেনে সরান বা সময়কাল বদলান, Ctrl+Z দিয়ে ফেরান
 - দ্রুত যোগ: "কাল সন্ধ্যা 7টায় জিম 50 মিনিট" লিখে Enter চাপুন
 - যেকোনো অ্যাপ থেকে Ctrl+Alt+Space দিয়ে দ্রুত যোগ
 - Google Meet, Zoom, Teams ও অন্যান্য কলে যোগ দেওয়ার বোতাম
-- Google ক্যালেন্ডারের রিমাইন্ডার Windows বিজ্ঞপ্তি হিসেবে
+- Google Calendar-এর রিমাইন্ডার Windows বিজ্ঞপ্তি হিসেবে
 - কলের এক মিনিট আগে সব উইন্ডোর ওপরে সতর্কতা (ঐচ্ছিক)
 - ঘড়ি, কাউন্টডাউন, মাস ও আসন্ন ইভেন্টসহ ডেস্কটপ উইজেট
 - ট্রে আইকনে এক ক্লিকে আজ আর কাল
@@ -789,7 +789,7 @@ Expected rating: 3+ / Everyone.
 - 76টি দেশের সরকারি ছুটি ও সপ্তাহের নম্বর
 - .ics ক্যালেন্ডারের সাবস্ক্রিপশন
 - ফাঁকা সময় টেক্সটে কপি করে চ্যাটে পেস্ট করুন
-- হালকা ও গাঢ় রূপে পাঁচটি স্টাইল, নিজের ফন্ট, কাচের ইফেক্ট
+- হালকা ও গাঢ় রূপে পাঁচটি স্টাইল, নিজের ফন্ট, গ্লাস ইফেক্ট
 - কিবোর্ড শর্টকাট ও কমান্ড মেনু (Ctrl+K)
 - শেষবার লোড করা সময়সূচি নিয়ে অফলাইনে কাজ করে
 - বিজ্ঞাপন নেই, অ্যানালিটিক্স নেই
@@ -800,8 +800,8 @@ Expected rating: 3+ / Everyone.
 **What's new in this version:**
 
 > - সেটিংসে অ্যাপের সংস্করণের নিচে "নতুন কী" আপনার সংস্করণের পরিবর্তনগুলো খোলে।
-> - পাশের প্যানেল খোলা থাকলে খোঁজা আর ভিউ বোতাম আর উইন্ডোর কিনারা ছাড়িয়ে যায় না।
-> - সরু উইন্ডোতে টেনে আনা পাশের প্যানেল কাচের ইফেক্ট বা Obsidian স্টাইলে আর স্বচ্ছ দেখায় না।
+> - সাইড প্যানেল খোলা থাকলে খোঁজার বক্স ও ভিউ বোতাম আর উইন্ডোর কিনারা ছাড়িয়ে যায় না।
+> - সরু উইন্ডোতে টেনে আনা সাইড প্যানেল গ্লাস ইফেক্ট বা “অবসিডিয়ান” স্টাইলে আর স্বচ্ছ দেখায় না।
 
 ## Screenshots
 

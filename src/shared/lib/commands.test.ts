@@ -69,17 +69,17 @@ describe("command menu: selected event", () => {
   });
 
   it("colors are found by name, 'calendar color' too", () => {
-    expect(eventKinds("томат")).toContain("color:11");
+    expect(eventKinds("помидор")).toContain("color:11");
     expect(eventKinds("цвет")).toEqual(expect.arrayContaining(["color:", "color:1", "color:11"]));
     // no colors without a selected event
-    expect(kinds("томат")).not.toContain("color");
+    expect(kinds("помидор")).not.toContain("color");
   });
 
   it("action labels", () => {
     expect(commandLabel({ kind: "tomorrow" })).toBe(t.commands.moveTomorrow);
     expect(commandLabel({ kind: "later" })).toBe(t.commands.hourLater);
     expect(commandLabel({ kind: "meet" })).toBe(t.editor.addMeet);
-    expect(commandLabel({ kind: "color", colorId: "11" })).toBe(t.commands.color("Томат"));
+    expect(commandLabel({ kind: "color", colorId: "11" })).toBe(t.commands.color("Помидор"));
     expect(commandLabel({ kind: "color", colorId: "" })).toBe(t.commands.color(t.editor.calendarColor));
   });
 });

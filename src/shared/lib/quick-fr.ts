@@ -20,7 +20,7 @@ export const parseQuickFr = makeEuParser({
   at: "à|a",
   from: "de|entre",
   to: `à|a|et|jusqu${APOS}à`,
-  // «19h» — c'est une heure ; une durée s'écrit «pendant 2h» ou «2 heures»
+  // «19h» is a time; a duration is written «pendant 2h» or «2 heures»
   hourWord: "h",
   hourWordAfterAt: "heures?",
   am: "du\\s+matin",
