@@ -122,6 +122,8 @@ export const hi: Dict = {
   },
   repeat: {
     label: "दोहराएँ",
+    period: "दोहराने की अवधि",
+    monthlyBy: "हर महीने",
     none: "दोहराया नहीं जाएगा",
     custom: "अपने हिसाब से…",
     special: "Google में सेट किया गया खास दोहराव",

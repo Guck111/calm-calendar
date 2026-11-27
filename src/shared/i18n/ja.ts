@@ -119,6 +119,8 @@ export const ja: Dict = {
   },
   repeat: {
     label: "繰り返し",
+    period: "繰り返しの単位",
+    monthlyBy: "毎月の基準",
     none: "繰り返さない",
     custom: "カスタム…",
     special: "Google で設定された独自の繰り返し",

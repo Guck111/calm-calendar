@@ -37,9 +37,22 @@ const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
 /// the browser sends the request right away; a connection that stays silent longer is not the browser
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 
+/// a minute of margin so the token doesn't expire in the middle of a request
+const TOKEN_MARGIN: Duration = Duration::from_secs(60);
+
 struct AccessToken {
     value: String,
     expires_at: Instant,
+}
+
+impl AccessToken {
+    fn issued(value: String, expires_in: u64, now: Instant) -> Self {
+        Self { value, expires_at: now + Duration::from_secs(expires_in) }
+    }
+
+    fn is_fresh(&self, now: Instant) -> bool {
+        self.expires_at > now + TOKEN_MARGIN
+    }
 }
 
 pub struct Auth {
@@ -98,6 +111,22 @@ struct TokenError {
     error_description: Option<String>,
 }
 
+/// invalid_grant: the token was revoked or expired — a new sign-in to this account is needed; the account stays in the list
+fn token_failure(status: u16, err: TokenError) -> Error {
+    if err.error == "invalid_grant" {
+        return Error::NotSignedIn;
+    }
+    Error::Google {
+        status,
+        message: err.error_description.unwrap_or(err.error),
+    }
+}
+
+/// Google may grant only some of the requested scopes: the calendar needs all of them
+fn has_calendar_scopes(granted: &str) -> bool {
+    CALENDAR_SCOPES.iter().all(|s| granted.split(' ').any(|g| g == *s))
+}
+
 fn random_string(len: usize) -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -122,10 +151,10 @@ fn stored_refresh_token(service: &str, email: &str) -> Option<String> {
 fn delete_refresh_token(service: &str, email: &str) {
     let Ok(entry) = keyring_entry(service, &keyring_user(email)) else { return };
     // the old version's entry with the same token is removed too: otherwise sign-out would be incomplete
-    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(service, LEGACY_KEYRING_USER)) {
-        if legacy.get_password().is_ok_and(|old| old == token) {
-            let _ = legacy.delete_credential();
-        }
+    if let (Ok(token), Ok(legacy)) = (entry.get_password(), keyring_entry(service, LEGACY_KEYRING_USER))
+        && legacy.get_password().is_ok_and(|old| old == token)
+    {
+        let _ = legacy.delete_credential();
     }
     let _ = entry.delete_credential();
 }
@@ -140,10 +169,10 @@ pub fn migrate_legacy(app: &AppHandle) {
     let service = &app.config().identifier;
     let token = keyring_entry(service, LEGACY_KEYRING_USER).ok().and_then(|e| e.get_password().ok());
     let mut accounts = Vec::new();
-    if let (Some(email), Some(token)) = (config::legacy_email(app), token) {
-        if keyring_entry(service, &keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok() {
-            accounts.push(Account { email });
-        }
+    if let (Some(email), Some(token)) = (config::legacy_email(app), token)
+        && keyring_entry(service, &keyring_user(&email)).and_then(|e| Ok(e.set_password(&token)?)).is_ok()
+    {
+        accounts.push(Account { email });
     }
     let _ = config::save_accounts(app, &accounts);
 }
@@ -274,10 +303,10 @@ impl Auth {
 
     /// The person changed their mind: sign_in stops waiting for the browser and returns Error::Cancelled
     pub fn cancel_sign_in(&self) {
-        if let Ok(p) = self.pending.lock() {
-            if let Some(p) = p.as_ref() {
-                p.cancel.notify_one();
-            }
+        if let Ok(p) = self.pending.lock()
+            && let Some(p) = p.as_ref()
+        {
+            p.cancel.notify_one();
         }
     }
 
@@ -308,17 +337,11 @@ impl Auth {
             error: "unknown".into(),
             error_description: None,
         });
-        if err.error == "invalid_grant" {
-            // the token was revoked or expired — a new sign-in to this account is needed; the account stays in the list
-            if let Some(email) = account {
-                delete_refresh_token(&self.keyring_service, email);
-            }
-            return Err(Error::NotSignedIn);
+        let failure = token_failure(status, err);
+        if let (Error::NotSignedIn, Some(email)) = (&failure, account) {
+            delete_refresh_token(&self.keyring_service, email);
         }
-        Err(Error::Google {
-            status,
-            message: err.error_description.unwrap_or(err.error),
-        })
+        Err(failure)
     }
 
     /// Sign in to one more account (or again to an already added one). Returns the email
@@ -379,8 +402,7 @@ impl Auth {
             .exchange_code(&client, &code, &verifier, &redirect_uri)
             .await?;
 
-        let granted = tokens.scope.clone().unwrap_or_default();
-        if !CALENDAR_SCOPES.iter().all(|s| granted.split(' ').any(|g| g == *s)) {
+        if !has_calendar_scopes(tokens.scope.as_deref().unwrap_or_default()) {
             return Err(Error::MissingScope);
         }
         let refresh = tokens
@@ -400,10 +422,7 @@ impl Auth {
 
         self.tokens.lock().await.insert(
             email.to_ascii_lowercase(),
-            AccessToken {
-                value: tokens.access_token,
-                expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
-            },
+            AccessToken::issued(tokens.access_token, tokens.expires_in, Instant::now()),
         );
         Ok(email)
     }
@@ -431,11 +450,8 @@ impl Auth {
     pub async fn access_token(&self, app: &AppHandle, account: &str) -> Result<String> {
         let key = account.to_ascii_lowercase();
         let mut guard = self.tokens.lock().await;
-        if let Some(t) = guard.get(&key) {
-            // a minute of margin so the token doesn't expire in the middle of a request
-            if t.expires_at > Instant::now() + Duration::from_secs(60) {
-                return Ok(t.value.clone());
-            }
+        if let Some(t) = guard.get(&key).filter(|t| t.is_fresh(Instant::now())) {
+            return Ok(t.value.clone());
         }
         let refresh = stored_refresh_token(&self.keyring_service, account).ok_or(Error::NotSignedIn)?;
         let client = config::client(app)?;
@@ -451,13 +467,7 @@ impl Auth {
             )
             .await?;
         let value = tokens.access_token.clone();
-        guard.insert(
-            key,
-            AccessToken {
-                value: tokens.access_token,
-                expires_at: Instant::now() + Duration::from_secs(tokens.expires_in),
-            },
-        );
+        guard.insert(key, AccessToken::issued(tokens.access_token, tokens.expires_in, Instant::now()));
         Ok(value)
     }
 
@@ -571,6 +581,153 @@ mod tests {
     #[test]
     fn cancelled_error_reaches_the_interface_as_its_own_kind() {
         assert_eq!(Error::Cancelled.kind(), "cancelled");
+    }
+
+    /// Sends a request to handle_redirect over a real connection; returns its result and the response text
+    async fn redirect(request: &[u8]) -> (Option<Result<String>>, String) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut browser = TcpStream::connect(listener.local_addr().unwrap()).await.unwrap();
+        let (stream, _) = listener.accept().await.unwrap();
+        browser.write_all(request).await.unwrap();
+        let result = handle_redirect(stream, "st".into(), Lang::En).await;
+        let mut response = String::new();
+        browser.read_to_string(&mut response).await.unwrap();
+        (result, response)
+    }
+
+    #[tokio::test]
+    async fn browser_gets_the_success_page_with_the_code() {
+        let (result, response) = redirect(b"GET /?code=good&state=st HTTP/1.1\r\n\r\n").await;
+        assert_eq!(result.unwrap().unwrap(), "good");
+        let body = page(Lang::En, true);
+        assert!(response.starts_with("HTTP/1.1 200 OK\r\n"));
+        assert!(response.contains(&format!("Content-Length: {}\r\n", body.len())));
+        assert!(response.ends_with(&body));
+    }
+
+    #[tokio::test]
+    async fn refused_consent_ends_the_sign_in() {
+        let (result, response) = redirect(b"GET /?error=access_denied&state=st HTTP/1.1\r\n\r\n").await;
+        assert!(matches!(result, Some(Err(Error::Denied(e))) if e == "access_denied"));
+        assert!(response.ends_with(&page(Lang::En, false)));
+    }
+
+    #[tokio::test]
+    async fn other_requests_are_answered_and_ignored() {
+        let (result, response) = redirect(b"GET /favicon.ico HTTP/1.1\r\n\r\n").await;
+        assert!(result.is_none());
+        assert!(response.starts_with("HTTP/1.1 404 Not Found\r\n"));
+        for request in [&b"GET /?state=st HTTP/1.1\r\n\r\n"[..], b"GET /?code=x&state=other HTTP/1.1\r\n\r\n", b"GET :99999 HTTP/1.1\r\n\r\n"] {
+            let (result, response) = redirect(request).await;
+            assert!(result.is_none());
+            assert!(response.starts_with("HTTP/1.1 400 Bad Request\r\n"));
+        }
+    }
+
+    #[tokio::test]
+    async fn request_line_may_arrive_in_parts() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut browser = TcpStream::connect(listener.local_addr().unwrap()).await.unwrap();
+        let (mut stream, _) = listener.accept().await.unwrap();
+        browser.write_all(b"GET /?code=1").await.unwrap();
+        let reader = tokio::spawn(async move { read_request_line(&mut stream).await });
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        browser.write_all(b"&state=st HTTP/1.1\r\n").await.unwrap();
+        browser.shutdown().await.unwrap();
+        assert_eq!(reader.await.unwrap().as_deref(), Some("GET /?code=1&state=st HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn endless_request_is_cut_at_16_kib() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut browser = TcpStream::connect(listener.local_addr().unwrap()).await.unwrap();
+        let (mut stream, _) = listener.accept().await.unwrap();
+        browser.write_all(&[b'a'; 20 * 1024]).await.unwrap();
+        let line = tokio::time::timeout(Duration::from_secs(2), read_request_line(&mut stream)).await.unwrap().unwrap();
+        assert!((16 * 1024..20 * 1024).contains(&line.len()));
+    }
+
+    /// 16 KiB and the browser goes quiet: the line is taken as it is, no waiting for more
+    #[tokio::test]
+    async fn exactly_16_kib_is_enough() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let mut browser = TcpStream::connect(listener.local_addr().unwrap()).await.unwrap();
+        let (mut stream, _) = listener.accept().await.unwrap();
+        browser.write_all(&[b'a'; 16 * 1024]).await.unwrap();
+        let line = tokio::time::timeout(Duration::from_secs(2), read_request_line(&mut stream)).await.unwrap().unwrap();
+        assert_eq!(line.len(), 16 * 1024);
+    }
+
+    #[test]
+    fn sign_in_page_follows_the_language_direction() {
+        let arabic = page(Lang::Ar, true);
+        assert!(arabic.contains("lang=ar dir=rtl"));
+        assert!(arabic.contains(i18n::sign_in_page(Lang::Ar, true)));
+        assert!(page(Lang::En, false).contains("lang=en dir=ltr"));
+    }
+
+    #[test]
+    fn invalid_grant_means_signing_in_again() {
+        let err = |error: &str, description: Option<&str>| TokenError {
+            error: error.into(),
+            error_description: description.map(str::to_owned),
+        };
+        assert!(matches!(token_failure(400, err("invalid_grant", None)), Error::NotSignedIn));
+        assert!(matches!(
+            token_failure(401, err("invalid_client", Some("The OAuth client was not found."))),
+            Error::Google { status: 401, message } if message == "The OAuth client was not found."
+        ));
+        assert!(matches!(
+            token_failure(500, err("server_error", None)),
+            Error::Google { status: 500, message } if message == "server_error"
+        ));
+    }
+
+    #[test]
+    fn calendar_needs_every_requested_scope() {
+        let all = format!("openid {} email", CALENDAR_SCOPES.join(" "));
+        assert!(has_calendar_scopes(&all));
+        assert!(!has_calendar_scopes(CALENDAR_SCOPES[0]));
+        assert!(!has_calendar_scopes(""));
+    }
+
+    #[test]
+    fn token_is_renewed_a_minute_before_it_expires() {
+        let now = Instant::now();
+        let token = |expires_in| AccessToken::issued(String::new(), expires_in, now);
+        assert!(token(3600).is_fresh(now));
+        assert!(token(61).is_fresh(now));
+        assert!(!token(60).is_fresh(now));
+        assert!(!token(0).is_fresh(now));
+        assert!(!token(3600).is_fresh(now + Duration::from_secs(3600)));
+    }
+
+    #[test]
+    fn pkce_strings_are_random_and_url_safe() {
+        let a = random_string(64);
+        assert_eq!(a.len(), 64);
+        assert!(a.chars().all(|c| c.is_ascii_alphanumeric()));
+        assert_ne!(a, random_string(64));
+    }
+
+    #[tokio::test]
+    async fn cancel_reaches_the_pending_sign_in_and_the_guard_clears_it() {
+        let auth = Auth::new("test");
+        let cancel = Arc::new(Notify::new());
+        *auth.pending.lock().unwrap() = Some(PendingSignIn { url: "u".into(), cancel: cancel.clone() });
+        auth.cancel_sign_in();
+        tokio::time::timeout(Duration::from_secs(1), cancel.notified()).await.unwrap();
+        drop(PendingGuard(&auth.pending));
+        assert!(auth.pending.lock().unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn forgetting_a_token_ignores_email_case() {
+        let auth = Auth::new("test");
+        let token = AccessToken { value: "t".into(), expires_at: Instant::now() };
+        auth.tokens.lock().await.insert("me@gmail.com".into(), token);
+        auth.forget_access_token("Me@Gmail.com").await;
+        assert!(auth.tokens.lock().await.is_empty());
     }
 
     #[test]

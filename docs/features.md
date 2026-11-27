@@ -2,7 +2,7 @@
 
 Everything the app can do today, by area. Keep this file up to date with every feature: it is the reference for the README, the Store listing, the website and the release notes. Code paths point to where each feature lives.
 
-Last updated: 2026-11-23 (the toolbar folds by the width of the calendar panel, not the window, and the pulled-out side panel is opaque; the "What's new" link in Settings and its page on the website).
+Last updated: 2026-11-24 (mutation tests of the unit tests: StrykerJS and cargo-mutants).
 
 ## Contents
 
@@ -208,7 +208,7 @@ The sections:
 - **Look**: theme, style, the two fonts, glass effect.
 - **Calendar**: language, second time zone, week numbers, holidays (a country or "Don't show"), calendar subscriptions.
 - **Reminders**: event notifications, hide titles in notifications, hard-to-miss alert (off, calls only, all events).
-- **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off.
+- **Quick access**: the quick add shortcut, the desktop widget, keeping it on top, starting with Windows. The last three are the same switches as in the tray menu, whose check marks follow (`get_desktop`, `set_widget`, `set_autostart`); in the browser they are off. Starting with Windows writes only the current user's `Run` key, even when the app runs as administrator.
 - **Help**: "Write to us" and, in the app only, "Open log folder". "Write to us" is a form for a suggestion, a problem or a question: the kind, the text, "Open in mail" and "Copy the text". "Open in mail" opens a letter to support@calmcalendar.co.uk in the user's own mail app (`mailto:`), with the subject "Calm Calendar 0.12.4: Problem" and, under the text, the app version, where it was installed from (Microsoft Store or installer), the interface language and the WebView2 and Windows line. The app sends nothing itself: the user sees the whole letter and sends it. A text too long for a link (about 1900 characters after encoding) is put on the clipboard, and the letter opens with "(Paste the copied text here: Ctrl+V)" in its place. "Copy the text" copies the whole letter for a web mailbox and shows the address. The text stays in the form after sending (`src/ui/FeedbackForm.tsx`, `src/shared/lib/feedback.ts`).
 - In a low window the open section scrolls.
 - Under the list of sections: the app version ("Version 0.14.1"), the same number as in `package.json`, `tauri.conf.json` and `Cargo.toml`; it can be selected and copied (`src/shared/lib/version.ts`). Under it, "What's new" opens this version's notes in the browser: `https://calmcalendar.co.uk/whats-new.html#v<version>`. The page is built from `CHANGELOG.md` with the website (`scripts/build-site.mjs`, `scripts/lib/changelog.mjs`), in English only.
@@ -249,6 +249,7 @@ Planned next: Google Tasks, attaching a file from the computer through Google Dr
 
 ## Tests
 
-- Unit tests (`npm test`, `cargo test`).
+- Unit tests (`npm test`, `cargo test`), including property tests on random inputs (fast-check, proptest) and tests of single interface components (Testing Library).
 - Interface tests in Chrome on mock data with a fixed clock, on every push (`e2e/ui`, README → Checks).
-- Tests of the real app on Windows under tauri-driver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, run by hand).
+- Tests of the real app on Windows under Edge WebDriver, without Google: main window, widget, hard-to-miss alert, tray agenda, the log without personal data (`e2e/app`, on pull requests that change the app and weekly).
+- Mutation tests of the unit tests: StrykerJS for TypeScript, cargo-mutants for Rust; on pull requests and weekly; a surviving Rust mutant in a pull request's changed lines fails the check (README → Mutation tests).

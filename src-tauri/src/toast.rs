@@ -33,10 +33,14 @@ pub fn xml(title: &str, body: &str, button: &str, url: &str) -> String {
 
 /// The same AppUserModelID as the notification plugin: in the installed app — identifier
 fn app_id(identifier: &str) -> String {
-    let dev = tauri::utils::platform::current_exe()
+    let exe_dir = tauri::utils::platform::current_exe()
         .ok()
-        .and_then(|exe| exe.parent().map(|dir| dir.display().to_string()))
-        .is_some_and(|dir| dir.ends_with(r"\target\debug") || dir.ends_with(r"\target\release"));
+        .and_then(|exe| exe.parent().map(|dir| dir.display().to_string()));
+    app_id_for(identifier, exe_dir.as_deref())
+}
+
+fn app_id_for(identifier: &str, exe_dir: Option<&str>) -> String {
+    let dev = exe_dir.is_some_and(|dir| dir.ends_with(r"\target\debug") || dir.ends_with(r"\target\release"));
     if dev { POWERSHELL_APP_ID.to_owned() } else { identifier.to_owned() }
 }
 
@@ -57,6 +61,20 @@ mod tests {
         assert!(x.contains("<text>Q&amp;A &lt;team&gt;</text>"));
         assert!(x.contains("arguments=\"https://zoom.us/j/1?pwd=a&amp;b=&quot;c&quot;\""));
         assert!(x.contains("activationType=\"protocol\""));
+    }
+
+    #[test]
+    fn escapes_every_xml_special_character() {
+        assert_eq!(escape(r#"&<>"'"#), "&amp;&lt;&gt;&quot;&apos;");
+    }
+
+    #[test]
+    fn uninstalled_build_borrows_the_powershell_app_id() {
+        let id = "com.arseni.calmcalendar";
+        assert_eq!(app_id_for(id, Some(r"C:\repo\src-tauri\target\debug")), POWERSHELL_APP_ID);
+        assert_eq!(app_id_for(id, Some(r"C:\repo\src-tauri\target\release")), POWERSHELL_APP_ID);
+        assert_eq!(app_id_for(id, Some(r"C:\Program Files\WindowsApps\Calm")), id);
+        assert_eq!(app_id_for(id, None), id);
     }
 
     /// Shows a real notification: `cargo test toast::tests::shows -- --ignored`

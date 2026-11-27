@@ -9,16 +9,20 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CONFIG_DIR, resetAppData, startApp, switchToWindow, useEnglish, waitForText } from "./driver.mjs";
 
-const RUN_KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+// the app writes only the user's Run key, even as administrator (CI): the machine's key would start it for everyone
+const [USER_RUN, MACHINE_RUN] = ["HKCU", "HKLM"].map((root) => `${root}\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`);
+const RUN_KEYS = [USER_RUN, MACHINE_RUN];
 
-/** the Run key value of the app, or null */
-const runEntry = () => {
+const query = (key) => {
   try {
-    return execFileSync("reg", ["query", RUN_KEY, "/v", "Calm Calendar"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return execFileSync("reg", ["query", key, "/v", "Calm Calendar"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   } catch {
     return null;
   }
 };
+
+/** the Run key value of the app, or null */
+const runEntry = () => RUN_KEYS.map(query).find((entry) => entry !== null) ?? null;
 
 const widgetSettings = () => {
   const file = join(CONFIG_DIR, "widget.json");
@@ -50,7 +54,8 @@ before(async () => {
 after(async () => {
   await app?.stop();
   // whatever happened, the test app leaves no launch entry behind
-  if (!hadRunEntry && runEntry() !== null) execFileSync("reg", ["delete", RUN_KEY, "/v", "Calm Calendar", "/f"]);
+  if (hadRunEntry) return;
+  for (const key of RUN_KEYS.filter((k) => query(k) !== null)) execFileSync("reg", ["delete", key, "/v", "Calm Calendar", "/f"]);
 });
 
 test("first start: the card shows the real state and turns the widget on", async () => {
@@ -102,7 +107,8 @@ test("Settings → Quick access: launch with Windows writes and removes the Run 
   assert.equal((await switchState(browser, "Start with Windows")).checked, false);
   await flip(browser, "Start with Windows");
   await browser.waitUntil(async () => runEntry() !== null, { timeout: 5_000, timeoutMsg: "no Run entry" });
-  assert.match(runEntry(), /calm-calendar\.exe/i);
+  assert.match(query(USER_RUN) ?? "", /calm-calendar\.exe.*--hidden/i);
+  assert.equal(query(MACHINE_RUN), null, "the launch entry is the user's, not the machine's");
   assert.equal((await switchState(browser, "Start with Windows")).checked, true);
   await flip(browser, "Start with Windows");
   await browser.waitUntil(async () => runEntry() === null, { timeout: 5_000, timeoutMsg: "the Run entry stayed" });

@@ -147,6 +147,8 @@ export const be: Dict = {
   },
   repeat: {
     label: "Паўтор",
+    period: "Перыяд паўтору",
+    monthlyBy: "Штомесяц па",
     none: "Не паўтараецца",
     custom: "Наладзіць…",
     special: "Асаблівы паўтор, наладжаны ў Google",

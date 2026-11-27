@@ -16,6 +16,7 @@ import {
   isSameMonth,
   monthGrid,
   startOfDay,
+  weekdayIndex,
   weekdayLabels,
 } from "../shared/lib/date";
 import { eventsForDay, isAllDayLike } from "../shared/lib/layout";
@@ -46,7 +47,8 @@ export const MonthView = () => {
 
   const chip = (event: CalendarEvent, day: Date) => {
     const block = isAllDayLike(event);
-    const continues = block && !isSameDay(event.start, day) && day.getDay() !== 1;
+    // the title shows again at the start of each week row: Monday or Sunday, by the language
+    const continues = block && !isSameDay(event.start, day) && weekdayIndex(day) !== 0;
     return (
       <button
         key={event.key}

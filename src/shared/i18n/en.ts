@@ -121,6 +121,8 @@ export const en: Dict = {
   },
   repeat: {
     label: "Repeat",
+    period: "Repeat period",
+    monthlyBy: "Monthly on",
     none: "Does not repeat",
     custom: "Custom…",
     special: "Custom repeat set in Google",

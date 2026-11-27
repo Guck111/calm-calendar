@@ -1,20 +1,46 @@
 //! Autostart at Windows sign-in.
 //!
-//! Regular build (NSIS, MSI): the Run registry key via tauri-plugin-autostart,
-//! the app starts with the --hidden flag.
+//! Regular build (NSIS, MSI): the current user's Run registry key, the app starts with the --hidden flag.
+//! Only the user's key, even when the app runs as administrator: the default of auto-launch writes the
+//! machine's key then, and the app would start for everyone who signs in to the computer.
 //! MSIX build: StartupTask from the manifest (src-tauri/msix/AppxManifest.xml).
 //! The Run key doesn't suit it: the exe path inside the package changes with every update.
 //! StartupTask passes no arguments, so a sign-in launch is detected by the activation kind.
 
-use tauri::AppHandle;
-use tauri_plugin_autostart::ManagerExt;
+use auto_launch::{AutoLaunch, AutoLaunchBuilder, WindowsEnableMode};
+use tauri::{AppHandle, Manager};
+
+use crate::windowing::HIDDEN_ARG;
+
+/// The Run key entry of the regular build
+struct Launcher(AutoLaunch);
+
+fn launcher(name: &str, exe: &str) -> Option<AutoLaunch> {
+    AutoLaunchBuilder::new()
+        .set_app_name(name)
+        .set_app_path(exe)
+        .set_args(&[HIDDEN_ARG])
+        .set_windows_enable_mode(WindowsEnableMode::CurrentUser)
+        .build()
+        .ok()
+}
+
+pub fn setup(app: &AppHandle) {
+    let exe = std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default();
+    match launcher(&app.package_info().name, &exe) {
+        Some(l) => {
+            app.manage(Launcher(l));
+        }
+        None => log::warn!("autostart: no launcher for {exe}"),
+    }
+}
 
 /// Whether autostart is on now
 pub fn is_enabled(app: &AppHandle) -> bool {
     if packaged::is_packaged() {
         packaged::is_enabled()
     } else {
-        app.autolaunch().is_enabled().unwrap_or(false)
+        app.try_state::<Launcher>().is_some_and(|l| l.0.is_enabled().unwrap_or(false))
     }
 }
 
@@ -24,9 +50,9 @@ pub fn set_enabled(app: &AppHandle, enabled: bool) -> bool {
     if packaged::is_packaged() {
         return packaged::set_enabled(enabled);
     }
-    let manager = app.autolaunch();
-    let _ = if enabled { manager.enable() } else { manager.disable() };
-    manager.is_enabled().unwrap_or(false)
+    let Some(launcher) = app.try_state::<Launcher>() else { return false };
+    let _ = if enabled { launcher.0.enable() } else { launcher.0.disable() };
+    launcher.0.is_enabled().unwrap_or(false)
 }
 
 /// The packaged app was started by Windows at user sign-in
@@ -102,5 +128,18 @@ mod packaged {
     }
     pub fn launched_at_startup() -> bool {
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::launcher;
+
+    #[test]
+    fn the_launch_entry_starts_the_app_hidden() {
+        let l = launcher("Calm Calendar", r"C:\Apps\calm-calendar.exe").expect("a launcher");
+        assert_eq!(l.get_app_name(), "Calm Calendar");
+        assert_eq!(l.get_app_path(), r"C:\Apps\calm-calendar.exe");
+        assert_eq!(l.get_args(), ["--hidden"]);
     }
 }

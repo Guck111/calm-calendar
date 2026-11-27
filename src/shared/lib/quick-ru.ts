@@ -108,7 +108,7 @@ const parseTime = (cut: Cut): TimeRange | null => {
     const m = Number(exact[2]);
     if (validTime(h, m)) return { h, m };
   }
-  const short = cut.take(re(`в\\s+(\\d{1,2})(?:\\s*${PART})?(?!\\s*(?:мин|ч))`));
+  const short = cut.take(re(`в\\s+(\\d{1,2})(?:\\s*${PART})?(?!\\s*(?:мин(?:ут[аы]?)?|ч|час(?:а|ов)?)${R})`));
   if (short) {
     const h = toHour(Number(short[1]), short[2]);
     if (validTime(h, 0)) return { h, m: 0 };
@@ -134,7 +134,7 @@ const DAY_WORDS = [
   "\\d{1,2}\\.\\d{1,2}(?:\\.\\d{4})?",
 ].join("|");
 const BARE_HOUR = new RegExp(
-  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:мин|м${R}|ч|час|дн|недел))`,
+  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:мин(?:ут[аы]?)?|м|ч|час(?:а|ов)?|дн(?:я|ей|ь)?|день|недел(?:ю|и|ь))${R})`,
   "iu",
 );
 

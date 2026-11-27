@@ -116,7 +116,7 @@ const parseTime = (cut: Cut, evening: boolean): TimeRange | null => {
     const m = Number(exact[2]);
     if (validTime(h, m)) return { h, m };
   }
-  const short = cut.take(re("at\\s+(\\d{1,2})(?!\\s*(?:min|h|hour|day|week))"));
+  const short = cut.take(re("at\\s+(\\d{1,2})(?!\\s*(?:m|mins?|minutes?|h|hrs?|hours?|days?|weeks?)(?![\\p{L}]))"));
   if (short) {
     const h = evening24(Number(short[1]));
     if (validTime(h, 0)) return { h, m: 0 };
@@ -142,7 +142,7 @@ const DAY_WORDS = [
   `${MONTH.replace("(", "(?:")}\\s+\\d{1,2}${ORDINAL}`,
 ].join("|");
 const BARE_HOUR = new RegExp(
-  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:[ap]\\.?m|min|m(?![\\p{L}])|h|hour|hr|day|week|st|nd|rd|th|of))`,
+  `${L}(${DAY_WORDS})\\s+(\\d{1,2})(?![\\d:.,])(?!\\s*(?:[ap]\\.?m|m|mins?|minutes?|h|hrs?|hours?|days?|weeks?|st|nd|rd|th|of)(?![\\p{L}]))`,
   "iu",
 );
 

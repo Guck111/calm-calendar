@@ -106,10 +106,10 @@ npm run tauri build    # installers in src-tauri\target\release\bundle\
 
 ### Releases
 
-Every push to `main` runs tests only (the `ci` workflow). Installers come from the `release` workflow:
+`main` takes changes only through pull requests, and only when the `test` (`ci` workflow) and `ts` (`mutation` workflow) checks are green: direct pushes, force pushes and deleting the branch are blocked by the "main: pull requests only" ruleset. Installers come from the `release` workflow:
 
-1. Bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
-2. Commit and tag: `git tag v0.9.0` and `git push origin main v0.9.0`.
+1. On a branch, bump the version in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, and move the "Unreleased" notes in `CHANGELOG.md` under the new version. The release workflow puts that section on the GitHub release page.
+2. Open a pull request, merge it once the checks are green, then tag the merge commit on `main`: `git switch main`, `git pull`, `git tag v0.9.0`, `git push origin v0.9.0`.
 3. In 10–15 minutes a release with `.exe` and `.msi` appears under Releases.
 
 To build without a tag: Actions → release → Run workflow. The installers will be in that run's Artifacts.
@@ -121,24 +121,43 @@ npm test               # dates, event layout, quick add parser, reminders, forms
 npx tsc --noEmit       # types
 npx tsc -p e2e         # types of the end-to-end tests
 cd src-tauri; cargo test
+cargo clippy --all-targets -- -D warnings   # Rust lints; CI fails on any warning
 ```
+
+Property tests run inside `npm test` and `cargo test`: they feed hundreds of random inputs to the day layout, dates, dragging, recurrence rules, quick add, .ics reading (`src/shared/lib/properties.test.ts`, fast-check) and to the Google API path and feed link checks (proptest in `google.rs`, `feeds.rs`). On a failure fast-check prints the seed and the smallest failing input.
+
+Component tests (`src/ui/*.test.tsx`) render single React components in jsdom with Testing Library and check them the way a person uses them: roles, names, clicks, keys. They are also part of `npm test`; a component with such tests is added to the Stryker `mutate` list. A component that reads the model (the event card and form, the week and month grids) runs in its own effector scope from `src/ui/app-scope.test-utils.tsx`: accounts, calendars and events are what the test gives, nothing comes from the demo data.
 
 #### Interface tests (Playwright)
 
 `npm run test:ui` runs the UI flows in the installed Google Chrome against `npm run dev` with mock data (it starts the dev server itself, or uses one already on port 1420). The clock is fixed at Wednesday 11 November 2026, 9:50, Warsaw time, so every run sees the same week. Tests are in `e2e/ui/*.e2e.ts`: quick add in all 13 languages, the event card and form, drag and resize, recurring events, time zones, guests, travel time, free time, the views, week numbers, holidays, search, settings, sign-out, the window error screen, right-to-left Arabic and the widget page. They run in CI on every push. On a failure, `npx playwright show-trace test-results\…\trace.zip` replays it.
 
-#### App tests (tauri-driver)
+#### App tests (Edge WebDriver)
 
-The real app on Windows, without Google: a debug build where sign-in and Google requests go to the mock data, with its own identifier `com.arseni.calmcalendar.e2e`, so the installed app, its settings and its sign-in are not touched.
+The real app on Windows, without Google: a debug build where sign-in and Google requests go to the mock data, with its own identifier `com.arseni.calmcalendar.e2e`, so the installed app, its settings and its sign-in are not touched. The tests start the app with the WebView2 remote debugging port 9339 open and attach Edge WebDriver to it. WebView2 ignores the port in an app that runs as administrator, so run the tests from a normal (not elevated) terminal; CI, where everything runs as administrator, sets the port in the machine policy.
 
 ```powershell
-cargo install tauri-driver --locked                                  # once
 powershell -ExecutionPolicy Bypass -File scripts/msedgedriver.ps1    # Edge WebDriver for the installed WebView2, again after WebView2 updates
 npm run build:app-e2e                                                # debug build with mock data
 npm run test:app                                                     # main window, widget, alert, tray agenda, log, first-start card, widget and launch switches, Ctrl+Z
 ```
 
-Tests are in `e2e/app/*.app.mjs`. In CI: Actions → app-tests → Run workflow.
+Tests are in `e2e/app/*.app.mjs`. In CI (`app-tests` workflow): on pull requests that change the app, every Monday, and by hand (Actions → app-tests → Run workflow). The workflow starts on every pull request: one that doesn't change the app skips the tests, and its `app` check still counts as passed, so `app` can be a required check; on a failure the test app's log is saved as the `app-log` artifact. The tests open windows and take focus, so locally run them when the computer is free.
+
+#### Mutation tests
+
+They check the unit tests themselves: small bugs (mutants) are planted in the code one at a time, and a mutant the tests do not notice points to a gap.
+
+```powershell
+npm run test:mutation -- --incremental   # StrykerJS on src/**/*.ts; report in reports/mutation/index.html
+npm run test:mutation -- --incremental --concurrency 2   # with little free memory: 2 test processes, about 1.5 GB
+cargo install cargo-mutants --locked     # once
+cd src-tauri; cargo mutants -j 2          # Rust; report in src-tauri/mutants.out
+```
+
+What is mutated: `stryker.config.json` and `src-tauri/.cargo/mutants.toml` (window, tray and OS code in Rust is left out, and so are the thin functions that only hand data to the running app, Google, the password store or notifications: keep logic out of them). In CI (`mutation` workflow): on every pull request, TypeScript in incremental mode with a minimum score (a required check for `main`) and Rust on the changed lines only, split across four runners (the `rust` check fails if a mutant there survives); on a push to `main`, TypeScript in incremental mode to refresh the saved results; on Mondays, a full run of both.
+
+With little free memory, keep `-j 2` and don't build the crate elsewhere while it runs: each job builds its own copy of the crate.
 
 ### Project layout
 

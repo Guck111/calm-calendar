@@ -58,7 +58,7 @@
     <article class="wrap prose">
       <header class="doc-head" id="top">
         <h1>Calm Calendar 隐私政策</h1>
-        <p class="doc-meta">生效日期：<time datetime="2026-11-11">2026 年 11 月 11 日</time></p>
+        <p class="doc-meta">生效日期：<time datetime="2026-11-23">2026 年 11 月 23 日</time></p>
         <p class="doc-note">本文为译文。如与<a href="../privacy.html" hreflang="en">英文版</a>有出入，以英文版为准。</p>
       </header>
 
@@ -87,6 +87,7 @@
       <section aria-labelledby="data-accessed">
         <h2 id="data-accessed">应用访问的数据</h2>
         <p>使用 Google 登录时，你会被要求授予 Calm Calendar 以下权限。应用仅将每项权限用于所述功能。</p>
+        <p>两项日历权限是必需的。标有“可选”的三项在 Google 登录页面上是单独的复选框：您可以不勾选其中任何一项，应用的其余部分照常工作。只有当您使用需要某项可选权限的功能时，应用才会再次请求该权限。</p>
         <div class="table-wrap">
           <table>
             <caption class="visually-hidden">Calm Calendar 请求的 Google 权限及各自用途</caption>
@@ -109,10 +110,22 @@
                 <th scope="row"><code>openid</code>、<code>email</code><strong>你的 Google 账号电子邮件地址</strong></th>
                 <td>显示你登录的是哪个账号。</td>
               </tr>
+              <tr>
+                <th scope="row"><code>tasks</code><strong>创建、修改、整理和删除您的所有任务 (可选)</strong></th>
+                <td>在侧边栏以及日历中对应的日期显示您的 Google Tasks 列表和任务；当您在应用中操作时，创建、修改、完成和删除任务。</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>drive.file</code><strong>仅查看、修改、创建和删除您通过本应用使用的 Google 云端硬盘文件 (可选)</strong></th>
+                <td>当您为日程添加附件时，将您在电脑上选择的文件上传到您的 Google 云端硬盘；仅当您在保存时同意，才向该日程的来宾授予此文件的查看权限；如果您在保存日程前移除了文件，则将其移入云端硬盘回收站。应用无法查看或更改您云端硬盘中的任何其他文件。</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>calendar.events.freebusy</code><strong>查看您有权访问的 Google 日历中的忙闲状态 (可选)</strong></th>
+                <td>显示您正在编辑的日程的来宾在该时间是否有安排，并建议所有人都空闲的时间。Google 只返回忙碌的时间段，绝不返回日程的标题或详情。这些信息仅在日程表单打开期间显示，不会被保存。</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p>应用不会访问你的 Gmail、联系人、Google 云端硬盘或任何其他 Google 数据，除非你自己创建、编辑、移动或删除活动，否则不会更改你的日历。</p>
+        <p>应用不会访问您的 Gmail、联系人、除您通过应用上传的文件之外的任何 Google 云端硬盘文件，也不会访问其他任何 Google 数据。除非您自己在应用中操作，否则它不会更改您的日历、任务或文件。</p>
       </section>
 
       <section aria-labelledby="data-use">
@@ -124,11 +137,14 @@
         <h2 id="data-storage">数据的存储位置</h2>
         <p>所有处理都在你的电脑上进行。Calm Calendar 通过加密的 HTTPS 连接直接与 Google 的服务器（<code>accounts.google.com</code>、<code>oauth2.googleapis.com</code>、<code>www.googleapis.com</code>）通信。不会向我们或任何其他第三方发送任何内容。</p>
         <p>如果你通过链接添加日历订阅（设置 → 日历订阅），应用还会直接从你输入的地址下载该 .ics 文件；该网站会看到一个来自你电脑的普通下载请求。点击活动的地点会在浏览器中打开 Google 地图并搜索该地点。</p>
+        <p>您为日程添加的附件会从您的电脑直接传到您的 Google 云端硬盘。应用不保留任何副本。</p>
         <p>应用会在你的电脑上保存以下内容：</p>
         <ul>
           <li><strong>登录令牌。</strong>Google 刷新令牌存储在 Windows 凭据管理器中，受你的 Windows 账户保护。短期访问令牌仅在应用运行期间保存在内存中。</li>
           <li><strong>账号电子邮件地址</strong>，用于显示已登录的账号。</li>
           <li><strong>最近加载的日历数据。</strong>从 Google 收到的最新日历列表和活动保存在应用的本地存储中，以便在离线时日历和小组件仍能显示你的日程。最多保留最近 80 次响应，更早的会被自动删除。</li>
+          <li><strong>任务。</strong>从 Google 收到的任务列表和任务保存在同一本地存储中，以便离线时显示。</li>
+          <li><strong>已授予的权限。</strong>每个账号授予了哪些可选权限，以便应用知道显示哪些功能。</li>
           <li><strong>日历订阅。</strong>你添加的链接以及每个日历最近一次下载的副本，用于离线显示。删除订阅时会同时删除其副本。</li>
           <li><strong>设置</strong>，例如主题、语言、小组件位置以及显示哪些日历。</li>
           <li><strong>日志文件。</strong>位于 <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> 的技术日志会记录应用启动、登录、退出登录和错误，以便排查问题。其中不包含活动标题或说明，也不包含令牌；电子邮件地址会缩写为首字母加域名（<code>a***@gmail.com</code>）。最多保留五个 1&nbsp;MB 的文件，更早的会被自动删除。日志不会自行离开你的电脑：只有当你把它附在发给技术支持的电子邮件中时（设置 → “打开日志文件夹”），我们才会看到。</li>
@@ -142,7 +158,7 @@
           <li><strong>传输加密。</strong>与 Google 的所有通信均使用 HTTPS（TLS）。应用没有其他网络目的地，中间也没有我们的服务器。</li>
           <li><strong>安全登录。</strong>你在常用浏览器中、在 Google 自己的页面上登录，因此应用永远看不到你的 Google 密码。登录使用面向桌面应用的 OAuth 2.0 授权码流程，配合 PKCE（RFC 7636）和随机 <code>state</code> 校验，并且只在一个临时本地地址（<code>127.0.0.1</code>）上接收响应，登录结束后该地址即关闭。</li>
           <li><strong>受保护的登录令牌。</strong>长期刷新令牌只存储在 Windows 凭据管理器中，它使用与你的 Windows 账户绑定的密钥（Windows Data Protection API）对其加密。该令牌从不写入明文文件、日志或设置。短期访问令牌只保存在内存中。</li>
-          <li><strong>最小权限。</strong>应用只请求上面列出的 Google 权限，不请求 Gmail、云端硬盘或联系人的任何权限。</li>
+          <li><strong>最小权限。</strong>应用只请求上面列出的 Google 权限，其中三项是可选的。云端硬盘权限是 Google 提供的范围最窄的一项：只涵盖应用自己上传的文件。不请求任何 Gmail 或联系人权限。</li>
           <li><strong>受限的应用窗口。</strong>应用界面在严格的内容安全策略（Content Security Policy）下运行：它只能加载自身的文件，不能发起网络请求，也不能加载远程代码。只有应用的原生部分与 Google 通信，而且只与上述三个 Google 主机通信。</li>
           <li><strong>本地缓存。</strong>最近加载的日历数据保存在你 Windows 用户配置文件内的应用私有存储中，因此同一台电脑上的其他 Windows 用户默认无法读取。应用不会为该缓存额外加密；为了防范能实际接触你电脑的人，我们建议开启 Windows 设备加密（BitLocker）。退出登录时缓存会被删除。</li>
           <li><strong>我们无法访问。</strong>我们不运行服务器，也不接收数据，因此我们这边不存在可能被访问或泄露的用户数据库，Calm Calendar 的任何人都无法读取你的日历。</li>
@@ -158,6 +174,7 @@
           <li>在应用中<strong>退出登录</strong>（侧边栏中账号旁边的按钮）。这会撤销应用在 Google 的访问权限，从 Windows 凭据管理器中删除登录令牌，并从你的电脑中删除已保存的电子邮件地址和日历数据。你的日历本身仍保留在 Google 账号中。</li>
           <li>随时在 Google 账号中<strong>撤销访问权限</strong>：<a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>。</li>
           <li><strong>卸载</strong>应用以删除其设置。如果你是从 Microsoft Store 安装的，Windows 会一并删除应用的本地数据。对于其他安装方式，你还可以删除 <code>%APPDATA%\com.arseni.calmcalendar</code> 和 <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> 文件夹（后者存放日志）。</li>
+          <li><strong>任务和已上传的文件。</strong>退出登录时，保存在您电脑上的任务也会被删除。您的任务本身仍保留在 Google Tasks 中，您上传的文件仍保留在您的 Google 云端硬盘中：如果不再需要，请在那里删除。</li>
         </ul>
       </section>
 

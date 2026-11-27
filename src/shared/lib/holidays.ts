@@ -25,7 +25,7 @@ export const HOLIDAY_REGIONS: Record<string, string> = {
   UZ: "uz", VE: "ve", VN: "vietnamese", ZA: "sa",
 };
 
-export const isHolidayRegion = (v: unknown): v is string => typeof v === "string" && v in HOLIDAY_REGIONS;
+export const isHolidayRegion = (v: unknown): v is string => typeof v === "string" && Object.hasOwn(HOLIDAY_REGIONS, v);
 
 /** id of the country's holiday calendar with names in the app language */
 export const holidayCalendarId = (region: string, language: string = lang): string =>

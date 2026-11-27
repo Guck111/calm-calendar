@@ -102,6 +102,65 @@ pub fn command_failed(what: &str, e: &Error) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::Level;
+    use std::sync::{Mutex, Once};
+
+    static RECORDS: Mutex<Vec<(Level, String, String)>> = Mutex::new(Vec::new());
+
+    struct Capture;
+
+    impl log::Log for Capture {
+        fn enabled(&self, _: &log::Metadata) -> bool {
+            true
+        }
+        fn log(&self, r: &log::Record) {
+            RECORDS.lock().unwrap().push((r.level(), r.target().to_owned(), r.args().to_string()));
+        }
+        fn flush(&self) {}
+    }
+
+    fn capture() {
+        static INIT: Once = Once::new();
+        INIT.call_once(|| {
+            log::set_logger(&Capture).unwrap();
+            log::set_max_level(log::LevelFilter::Trace);
+        });
+    }
+
+    /// Records whose text contains the marker: tests run in parallel and share the logger
+    fn logged(marker: &str) -> Vec<(Level, String, String)> {
+        RECORDS.lock().unwrap().iter().filter(|r| r.2.contains(marker)).cloned().collect()
+    }
+
+    #[test]
+    fn interface_messages_keep_their_level() {
+        capture();
+        from_ui("error", "main", "ui-level-error");
+        from_ui("warn", "main", "ui-level-warn");
+        from_ui("debug", "main", "ui-level-other");
+        assert_eq!(logged("ui-level-error"), [(Level::Error, String::from("ui"), String::from("[main] ui-level-error"))]);
+        assert_eq!(logged("ui-level-warn")[0].0, Level::Warn);
+        assert_eq!(logged("ui-level-other")[0].0, Level::Info);
+    }
+
+    #[test]
+    fn long_interface_message_is_cut() {
+        capture();
+        from_ui("error", "w", &format!("ui-long{}", "x".repeat(5000)));
+        assert_eq!(logged("ui-long")[0].2.chars().count(), "[w] ".len() + 4000);
+    }
+
+    #[test]
+    fn expected_command_errors_are_only_info() {
+        capture();
+        command_failed("cmd-signed-out", &Error::NotSignedIn);
+        command_failed("cmd-cancelled", &Error::Cancelled);
+        command_failed("cmd-broken", &Error::Other("disk full".into()));
+        assert_eq!(logged("cmd-signed-out")[0].0, Level::Info);
+        assert_eq!(logged("cmd-cancelled")[0].0, Level::Info);
+        let broken = &logged("cmd-broken")[0];
+        assert_eq!((broken.0, broken.2.as_str()), (Level::Warn, "cmd-broken: other — disk full"));
+    }
 
     #[test]
     fn masks_emails() {

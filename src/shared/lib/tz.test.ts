@@ -59,7 +59,9 @@ describe("time zones", () => {
     const at = (h: number) => new Date(2026, 10, 4, h);
     const tokyo = zoneHours(day, "Asia/Tokyo");
     expect(tokyo).toHaveLength(24);
-    tokyo.forEach((x, h) => expect(x).toEqual({ hour: wallClock(at(h), "Asia/Tokyo").getHours(), minute: 0 }));
+    // minutes are 0 unless the system zone itself is off the hour (India, Nepal…)
+    const minuteOff = (zone: string) => (((zoneOffset(zone, at(12)) + at(12).getTimezoneOffset()) % 60) + 60) % 60;
+    tokyo.forEach((x, h) => expect(x).toEqual({ hour: wallClock(at(h), "Asia/Tokyo").getHours(), minute: minuteOff("Asia/Tokyo") }));
     expect(new Set(tokyo.map((x) => x.hour)).size).toBe(24);
     // India has a half hour: minutes 30 on every line, unless the system is in the same kind of time zone
     const india = zoneHours(day, "Asia/Kolkata");

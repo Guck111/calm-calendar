@@ -53,7 +53,7 @@ const CustomRule = ({ rule, start, onChange }: { rule: Rule; start: Date; onChan
           onChange={(e) => patch({ interval: clamp(e.target.value, 99) })}
           aria-label={r.interval}
         />
-        <select value={rule.freq} onChange={(e) => setFreq(e.target.value as Freq)} aria-label={r.label}>
+        <select value={rule.freq} onChange={(e) => setFreq(e.target.value as Freq)} aria-label={r.period}>
           {FREQS.map((f) => (
             <option key={f} value={f}>
               {r.unit(f, rule.interval)}
@@ -83,7 +83,7 @@ const CustomRule = ({ rule, start, onChange }: { rule: Rule; start: Date; onChan
         <select
           value={rule.nth ? "nth" : "day"}
           onChange={(e) => patch({ nth: e.target.value === "nth" ? monthlyNth(start) : undefined })}
-          aria-label={r.label}
+          aria-label={r.monthlyBy}
         >
           <option value="day">{r.onMonthDay(start.getDate())}</option>
           <option value="nth">{r.onNth(monthlyNth(start), start.getDay(), weekdayLongName(weekdayOf(start)))}</option>

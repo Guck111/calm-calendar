@@ -3,6 +3,7 @@
 //! closes completely — the next open is centered again and with fresh settings.
 
 use crate::desktop;
+use crate::windowing;
 use tauri::{AppHandle, Manager, PhysicalPosition, WebviewWindow};
 
 pub const SETTINGS: &str = "settings";
@@ -61,29 +62,19 @@ pub fn close(app: &AppHandle) {
 
 /// window height: no taller than the work area of the main window's monitor, with a margin
 fn height(main: Option<&WebviewWindow>) -> f64 {
-    let area = main.and_then(|m| m.current_monitor().ok().flatten()).map(|m| {
-        let scale = m.scale_factor();
-        m.work_area().size.height as f64 / scale
-    });
-    match area {
-        Some(h) => SIZE.1.min(h - 48.0).max(320.0),
-        None => SIZE.1,
-    }
+    let work_height = main
+        .and_then(|m| m.current_monitor().ok().flatten())
+        .map(|m| m.work_area().size.height as f64 / m.scale_factor());
+    windowing::settings_height(SIZE.1, work_height)
 }
 
 /// centered on the main window, but entirely on its monitor
 fn centered(main: &WebviewWindow, w: &WebviewWindow) -> Option<PhysicalPosition<i32>> {
-    let pos = main.outer_position().ok()?;
-    let size = main.outer_size().ok()?;
-    let own = w.outer_size().ok()?;
-    let mut x = pos.x + (size.width as i32 - own.width as i32) / 2;
-    let mut y = pos.y + (size.height as i32 - own.height as i32) / 2;
-    if let Some(m) = main.current_monitor().ok().flatten() {
-        let area = m.work_area();
-        let (ax, ay) = (area.position.x, area.position.y);
-        let (aw, ah) = (area.size.width as i32, area.size.height as i32);
-        x = x.clamp(ax, (ax + aw - own.width as i32).max(ax));
-        y = y.clamp(ay, (ay + ah - own.height as i32).max(ay));
-    }
-    Some(PhysicalPosition::new(x, y))
+    let monitor = main.current_monitor().ok().flatten();
+    Some(windowing::centered(
+        main.outer_position().ok()?,
+        main.outer_size().ok()?,
+        w.outer_size().ok()?,
+        monitor.as_ref().map(|m| m.work_area()),
+    ))
 }

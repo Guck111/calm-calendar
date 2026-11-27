@@ -13,6 +13,7 @@ mod settings;
 mod store;
 #[cfg(windows)]
 mod toast;
+mod windowing;
 
 use config::ClientSource;
 use error::Result;
@@ -20,7 +21,6 @@ use oauth::Auth;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::{AppHandle, Manager, State, WindowEvent};
-use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_window_state::StateFlags;
 
 #[derive(Serialize)]
@@ -176,14 +176,7 @@ fn get_desktop(app: AppHandle) -> desktop::DesktopState {
 /// visible, on_top: what to change; whatever isn't passed stays as it was
 #[tauri::command]
 fn set_widget(app: AppHandle, visible: Option<bool>, on_top: Option<bool>) {
-    let current = config::load_widget(&app);
-    desktop::set_widget(
-        &app,
-        config::WidgetSettings {
-            visible: visible.unwrap_or(current.visible),
-            on_top: on_top.unwrap_or(current.on_top),
-        },
-    );
+    desktop::set_widget(&app, config::load_widget(&app).changed(visible, on_top));
 }
 
 /// Returns whether autostart is on after the attempt
@@ -242,7 +235,7 @@ async fn snooze_alert(
     key: String,
     minutes: i64,
 ) -> Result<()> {
-    let empty = reminders.snooze(&key, minutes.clamp(1, 60)).await;
+    let empty = reminders.snooze(&key, minutes).await;
     desktop::alerts_changed(&app, empty);
     Ok(())
 }
@@ -273,8 +266,7 @@ async fn schedule_reminders(
     reminders: State<'_, reminders::Reminders>,
     items: Vec<reminders::Reminder>,
 ) -> Result<()> {
-    let enabled = config::load_settings(&app).notifications;
-    reminders.replace(items.into_iter().filter(|r| enabled || r.alert).collect()).await;
+    reminders.schedule(items, config::load_settings(&app).notifications).await;
     Ok(())
 }
 
@@ -299,10 +291,6 @@ pub fn run() {
                 .with_denylist(&[desktop::ALERT, desktop::AGENDA, quick::QUICK, settings::SETTINGS])
                 .build(),
         )
-        .plugin(tauri_plugin_autostart::init(
-            MacosLauncher::LaunchAgent,
-            Some(vec![desktop::HIDDEN_ARG]),
-        ))
         .manage(reminders::Reminders::default())
         .manage(desktop::TrayItems::default())
         .manage(desktop::AgendaHidden::default())
@@ -314,6 +302,7 @@ pub fn run() {
                 std::env::consts::ARCH
             );
             app.manage(Auth::new(app.config().identifier.clone()));
+            autostart::setup(app.handle());
             // the old version's sign-in (single account) moves into the account list
             oauth::migrate_legacy(app.handle());
             desktop::setup(app.handle())?;
@@ -323,13 +312,13 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             // the main window's cross hides it to the tray, quitting is via the tray menu
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                if window.label() == desktop::MAIN {
-                    api.prevent_close();
-                    let _ = window.hide();
-                    // settings belong to the main window: without it they have no reason to stay on screen
-                    settings::close(window.app_handle());
-                }
+            if let WindowEvent::CloseRequested { api, .. } = event
+                && window.label() == desktop::MAIN
+            {
+                api.prevent_close();
+                let _ = window.hide();
+                // settings belong to the main window: without it they have no reason to stay on screen
+                settings::close(window.app_handle());
             }
             // the agenda at the tray icon hides as soon as focus leaves
             if let WindowEvent::Focused(false) = event {
@@ -341,13 +330,13 @@ pub fn run() {
                 }
             }
             // the reminder window was closed with Alt+F4, not a button: forget all open reminders
-            if let WindowEvent::Destroyed = event {
-                if window.label() == desktop::ALERT {
-                    let app = window.app_handle().clone();
-                    tauri::async_runtime::spawn(async move {
-                        app.state::<reminders::Reminders>().dismiss_all().await;
-                    });
-                }
+            if let WindowEvent::Destroyed = event
+                && window.label() == desktop::ALERT
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    app.state::<reminders::Reminders>().dismiss_all().await;
+                });
             }
         })
         .invoke_handler(tauri::generate_handler![

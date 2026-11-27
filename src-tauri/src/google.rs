@@ -39,12 +39,9 @@ fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
         return Err(rejected());
     }
     let mut url = Url::parse(&format!("{API_BASE}{path}"))?;
-    // the final check is on the already parsed URL, after path normalization
-    if url.scheme() != "https"
-        || url.host_str() != Some("www.googleapis.com")
-        || !url.path().starts_with(ALLOWED_PREFIX)
-        || url.path().split('/').any(|seg| seg == "." || seg == "..")
-    {
+    // the final check is on the already parsed URL: the parser drops tabs and newlines and then resolves
+    // the dot segments they hid. The scheme and host can't change: the path starts with "/" after a fixed base
+    if !url.path().starts_with(ALLOWED_PREFIX) {
         return Err(rejected());
     }
     if !query.is_empty() {
@@ -56,12 +53,14 @@ fn build_url(path: &str, query: &[(String, String)]) -> Result<Url> {
 async fn google_error(resp: reqwest::Response) -> Error {
     let status = resp.status().as_u16();
     let body: Value = resp.json().await.unwrap_or(Value::Null);
-    let message = body
-        .pointer("/error/message")
+    Error::Google { status, message: error_message(&body) }
+}
+
+fn error_message(body: &Value) -> String {
+    body.pointer("/error/message")
         .and_then(Value::as_str)
         .unwrap_or("unknown error")
-        .to_owned();
-    Error::Google { status, message }
+        .to_owned()
 }
 
 pub async fn request(
@@ -142,6 +141,77 @@ mod tests {
         .unwrap();
         assert!(url.as_str().contains("en.polish%23holiday%40group"));
         assert!(url.as_str().ends_with("?singleEvents=true"));
+    }
+
+    #[test]
+    fn accepts_only_the_methods_the_calendar_uses() {
+        for (name, method) in [
+            ("get", Method::GET),
+            ("POST", Method::POST),
+            ("patch", Method::PATCH),
+            ("PUT", Method::PUT),
+            ("Delete", Method::DELETE),
+        ] {
+            assert_eq!(parse_method(name).unwrap(), method);
+        }
+        assert!(matches!(parse_method("head"), Err(Error::Other(m)) if m == "Method HEAD is not supported"));
+    }
+
+    #[test]
+    fn dot_segments_hidden_by_tabs_or_newlines_are_refused() {
+        for p in ["/calendar/v3/.\t./.\t./oauth2/v2/userinfo", "/calendar/v3/.\n./.\r./x"] {
+            assert!(build_url(p, &[]).is_err(), "{p:?} must be rejected");
+        }
+        assert!(build_url("/calendar/v3/a\t/b", &[]).is_ok_and(|u| u.path() == "/calendar/v3/a/b"));
+    }
+
+    /// each piece alone, in a path that would otherwise stay inside /calendar/v3/
+    #[test]
+    fn every_forbidden_piece_is_refused_on_its_own() {
+        for p in [
+            "/calendar/v3/a..b",
+            "/calendar/v3/https://evil.com/x",
+            "/calendar/v3/a/%2E%2e/b",
+            "/calendar/v3/a\\b",
+            "/calendar/v3/a?b",
+            "/calendar/v3/a#b",
+        ] {
+            assert!(build_url(p, &[]).is_err(), "{p} must be rejected");
+        }
+    }
+
+    #[test]
+    fn no_query_leaves_no_question_mark() {
+        let url = build_url("/calendar/v3/users/me/calendarList", &[]).unwrap();
+        assert_eq!(url.as_str(), "https://www.googleapis.com/calendar/v3/users/me/calendarList");
+    }
+
+    #[test]
+    fn google_error_text_is_passed_to_the_interface() {
+        let body = serde_json::json!({ "error": { "code": 403, "message": "Rate Limit Exceeded" } });
+        assert_eq!(error_message(&body), "Rate Limit Exceeded");
+        assert_eq!(error_message(&Value::Null), "unknown error");
+    }
+
+    const TRICKY: [&str; 16] = ["..", ".", "%2e", "%2E", "%2f", "%2F", "/", "//", "\\", "?", "#", "@", ":", "a", "evil.com", "%00"];
+
+    proptest::proptest! {
+        /// whatever path the interface sends, the request stays on the Calendar API with nothing extra
+        #[test]
+        fn any_path_stays_inside_the_calendar_api(
+            pieces in proptest::collection::vec(proptest::sample::select(TRICKY.to_vec()), 0..12),
+            noise in "\\PC{0,12}",
+        ) {
+            let path = format!("/calendar/v3/{}{noise}", pieces.concat());
+            if let Ok(url) = build_url(&path, &[]) {
+                proptest::prop_assert_eq!(url.scheme(), "https");
+                proptest::prop_assert_eq!(url.host_str(), Some("www.googleapis.com"));
+                proptest::prop_assert!(url.path().starts_with(ALLOWED_PREFIX));
+                proptest::prop_assert!(!url.path().split('/').any(|seg| seg == "." || seg == ".."));
+                proptest::prop_assert_eq!(url.query(), None);
+                proptest::prop_assert_eq!(url.fragment(), None);
+            }
+        }
     }
 
     /// series occurrences and its master event: needed for "this and following"

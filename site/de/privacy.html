@@ -58,7 +58,7 @@
     <article class="wrap prose">
       <header class="doc-head" id="top">
         <h1>Datenschutzerklärung von Calm Calendar</h1>
-        <p class="doc-meta">Gültig ab: <time datetime="2026-11-11">11. November 2026</time></p>
+        <p class="doc-meta">Gültig ab: <time datetime="2026-11-23">23. November 2026</time></p>
         <p class="doc-note">Dies ist eine Übersetzung. Bei Abweichungen von der <a href="../privacy.html" hreflang="en">englischen Fassung</a> gilt die englische Fassung.</p>
       </header>
 
@@ -87,6 +87,7 @@
       <section aria-labelledby="data-accessed">
         <h2 id="data-accessed">Daten, auf die die App zugreift</h2>
         <p>Wenn Sie sich mit Google anmelden, werden Sie gebeten, Calm Calendar die folgenden Berechtigungen zu erteilen. Die App nutzt jede nur für die beschriebene Funktion.</p>
+        <p>Die beiden Kalenderberechtigungen sind erforderlich. Die drei mit „optional“ gekennzeichneten sind eigene Kästchen auf der Anmeldeseite von Google: Sie können jedes davon frei lassen, und der Rest der App funktioniert. Die App fragt eine optionale Berechtigung nur dann erneut an, wenn Sie die Funktion nutzen, die sie benötigt.</p>
         <div class="table-wrap">
           <table>
             <caption class="visually-hidden">Von Calm Calendar angefragte Google-Berechtigungen und ihre Verwendung</caption>
@@ -109,10 +110,22 @@
                 <th scope="row"><code>openid</code>, <code>email</code><strong>E-Mail-Adresse Ihres Google-Kontos</strong></th>
                 <td>Zeigt, mit welchem Konto Sie angemeldet sind.</td>
               </tr>
+              <tr>
+                <th scope="row"><code>tasks</code><strong>Alle Ihre Aufgaben erstellen, bearbeiten, organisieren und löschen (optional)</strong></th>
+                <td>Zeigt Ihre Listen und Aufgaben aus Google Tasks in der Seitenleiste und an ihrem Tag im Kalender; erstellt, bearbeitet, erledigt und löscht eine Aufgabe, wenn Sie dies in der App tun.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>drive.file</code><strong>Nur die Google Drive-Dateien ansehen, bearbeiten, erstellen und löschen, die Sie mit dieser App verwenden (optional)</strong></th>
+                <td>Lädt eine Datei, die Sie auf Ihrem Computer auswählen, in Ihr Google Drive hoch, wenn Sie sie an einen Termin anhängen; gibt den Gästen dieses Termins nur dann Lesezugriff auf die Datei, wenn Sie dies beim Speichern bestätigen; verschiebt die Datei in den Drive-Papierkorb, wenn Sie sie vor dem Speichern des Termins entfernen. Andere Dateien in Ihrem Drive kann die App weder sehen noch ändern.</td>
+              </tr>
+              <tr>
+                <th scope="row"><code>calendar.events.freebusy</code><strong>Verfügbarkeit in Google-Kalendern ansehen, auf die Sie Zugriff haben (optional)</strong></th>
+                <td>Zeigt, ob die Gäste eines Termins, den Sie bearbeiten, zu dieser Zeit beschäftigt sind, und schlägt Zeiten vor, zu denen alle frei sind. Google liefert nur die belegten Zeiträume, niemals Titel oder Details der Termine. Diese Angaben werden angezeigt, solange das Terminformular geöffnet ist, und nicht gespeichert.</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p>Die App greift nicht auf Gmail, Kontakte, Google Drive oder andere Google-Daten zu und ändert Ihre Kalender nur, wenn Sie selbst einen Termin erstellen, bearbeiten, verschieben oder löschen.</p>
+        <p>Die App greift nicht auf Ihr Gmail, Ihre Kontakte, auf Dateien in Ihrem Google Drive außer den von Ihnen über die App hochgeladenen oder auf andere Google-Daten zu. Sie ändert Ihre Kalender, Aufgaben und Dateien nur, wenn Sie dies selbst in der App tun.</p>
       </section>
 
       <section aria-labelledby="data-use">
@@ -124,11 +137,14 @@
         <h2 id="data-storage">Wo die Daten gespeichert werden</h2>
         <p>Die gesamte Verarbeitung findet auf Ihrem Computer statt. Calm Calendar kommuniziert direkt mit den Servern von Google (<code>accounts.google.com</code>, <code>oauth2.googleapis.com</code>, <code>www.googleapis.com</code>) über verschlüsselte HTTPS-Verbindungen. Nichts wird an uns oder an andere Dritte gesendet.</p>
         <p>Wenn Sie ein Kalender-Abo per Link hinzufügen (Einstellungen → Kalender-Abos), lädt die App diese .ics-Datei außerdem direkt von der eingegebenen Adresse herunter; die Website unter dieser Adresse sieht eine gewöhnliche Download-Anfrage von Ihrem Computer. Ein Klick auf den Ort eines Termins öffnet Google Maps in Ihrem Browser mit diesem Ort als Suche.</p>
+        <p>Eine Datei, die Sie an einen Termin anhängen, geht von Ihrem Computer direkt in Ihr Google Drive. Die App behält keine Kopie.</p>
         <p>Die App speichert auf Ihrem Computer:</p>
         <ul>
           <li><strong>Anmelde-Token.</strong> Das Google-Aktualisierungstoken wird in der Windows-Anmeldeinformationsverwaltung gespeichert, geschützt durch Ihr Windows-Konto. Das kurzlebige Zugriffstoken wird nur im Arbeitsspeicher gehalten, solange die App läuft.</li>
           <li><strong>E-Mail-Adressen der Konten</strong>, um anzuzeigen, welche Konten angemeldet sind.</li>
           <li><strong>Zuletzt geladene Kalenderdaten.</strong> Die neuesten Kalenderlisten und Termine, die von Google empfangen wurden, werden im lokalen Speicher der App gesichert, damit Kalender und Widget Ihren Terminplan auch offline zeigen. Es werden höchstens die 80 neuesten Antworten aufbewahrt; ältere werden automatisch entfernt.</li>
+          <li><strong>Aufgaben.</strong> Die von Google empfangenen Aufgabenlisten und Aufgaben werden im selben lokalen Speicher abgelegt, damit sie offline angezeigt werden.</li>
+          <li><strong>Erteilte Berechtigungen.</strong> Welche optionalen Berechtigungen jedes Konto erteilt hat, damit die App weiß, welche Funktionen sie anzeigen soll.</li>
           <li><strong>Kalender-Abos.</strong> Die von Ihnen hinzugefügten Links und die zuletzt heruntergeladene Kopie jedes Kalenders, damit er offline angezeigt wird. Beim Entfernen eines Abos wird seine Kopie gelöscht.</li>
           <li><strong>Einstellungen</strong>, etwa Design, Sprache, Position des Widgets und welche Kalender angezeigt werden.</li>
           <li><strong>Protokolldatei.</strong> Ein technisches Protokoll in <code>%LOCALAPPDATA%\com.arseni.calmcalendar\logs</code> zeichnet App-Starts, An- und Abmeldungen sowie Fehler auf, damit Probleme untersucht werden können. Es enthält keine Titel oder Beschreibungen von Terminen und keine Token; E-Mail-Adressen werden auf den ersten Buchstaben und die Domain gekürzt (<code>a***@gmail.com</code>). Es werden bis zu fünf Dateien à 1&nbsp;MB aufbewahrt, ältere werden automatisch gelöscht. Das Protokoll verlässt Ihren Computer nie von selbst: Wir sehen es nur, wenn Sie es an eine E-Mail an den Support anhängen (Einstellungen → „Protokollordner öffnen“).</li>
@@ -142,7 +158,7 @@
           <li><strong>Verschlüsselung bei der Übertragung.</strong> Die gesamte Kommunikation mit Google erfolgt über HTTPS (TLS). Die App hat kein anderes Netzwerkziel und keine Server von uns dazwischen.</li>
           <li><strong>Sichere Anmeldung.</strong> Sie melden sich in Ihrem normalen Browser auf der Seite von Google selbst an, daher sieht die App Ihr Google-Passwort nie. Die Anmeldung nutzt den OAuth-2.0-Autorisierungscode-Flow für Desktop-Apps mit PKCE (RFC 7636) und einer zufälligen <code>state</code>-Prüfung und empfängt die Antwort nur über eine vorübergehende lokale Adresse (<code>127.0.0.1</code>), die nach der Anmeldung geschlossen wird.</li>
           <li><strong>Geschütztes Anmelde-Token.</strong> Das langlebige Aktualisierungstoken wird nur in der Windows-Anmeldeinformationsverwaltung gespeichert, die es mit an Ihr Windows-Konto gebundenen Schlüsseln verschlüsselt (Windows Data Protection API). Es wird nie in eine unverschlüsselte Datei, ins Protokoll oder in die Einstellungen geschrieben. Das kurzlebige Zugriffstoken wird nur im Arbeitsspeicher gehalten.</li>
-          <li><strong>Minimale Rechte.</strong> Die App fordert nur die oben genannten Google-Berechtigungen an, nichts für Gmail, Drive oder Kontakte.</li>
+          <li><strong>Minimale Berechtigungen.</strong> Die App fordert nur die oben aufgeführten Google-Berechtigungen an, und drei davon sind optional. Die Drive-Berechtigung ist die engste, die Google anbietet: Sie umfasst nur die Dateien, die die App selbst hochgeladen hat. Für Gmail und Kontakte wird nichts angefordert.</li>
           <li><strong>Eingeschränktes App-Fenster.</strong> Die Oberfläche der App läuft unter einer strengen Content Security Policy: Sie kann nur ihre eigenen Dateien laden und weder Netzwerkanfragen stellen noch entfernten Code laden. Nur der native Teil der App kommuniziert mit Google, und zwar nur mit den drei oben genannten Google-Hosts.</li>
           <li><strong>Lokaler Cache.</strong> Zuletzt geladene Kalenderdaten liegen im privaten Speicher der App innerhalb Ihres Windows-Benutzerprofils, daher können andere Windows-Benutzer auf demselben Computer sie standardmäßig nicht lesen. Die App fügt diesem Cache keine eigene Verschlüsselung hinzu; zum Schutz vor Personen mit physischem Zugang zu Ihrem Computer empfehlen wir, die Windows-Geräteverschlüsselung (BitLocker) einzuschalten. Der Cache wird bei der Abmeldung gelöscht.</li>
           <li><strong>Kein Zugriff durch uns.</strong> Wir betreiben keine Server und erhalten keine Daten. Auf unserer Seite gibt es also keine Datenbank mit Nutzerdaten, auf die zugegriffen werden oder die abfließen könnte, und niemand bei Calm Calendar kann Ihren Kalender lesen.</li>
@@ -158,6 +174,7 @@
           <li><strong>Melden Sie sich</strong> in der App <strong>ab</strong> (die Schaltfläche neben dem Konto in der Seitenleiste). Damit wird der Zugriff der App bei Google widerrufen, das Anmelde-Token aus der Windows-Anmeldeinformationsverwaltung gelöscht und die gespeicherte E-Mail-Adresse sowie die gespeicherten Kalenderdaten von Ihrem Computer entfernt. Ihre Kalender selbst bleiben in Ihrem Google-Konto.</li>
           <li><strong>Entziehen Sie den Zugriff</strong> jederzeit in Ihrem Google-Konto: <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
           <li><strong>Deinstallieren</strong> Sie die App, um ihre Einstellungen zu entfernen. Wenn Sie sie aus dem Microsoft Store installiert haben, entfernt Windows die lokalen Daten der App mit ihr. Bei anderen Installationen können Sie zusätzlich die Ordner <code>%APPDATA%\com.arseni.calmcalendar</code> und <code>%LOCALAPPDATA%\com.arseni.calmcalendar</code> löschen (in Letzterem liegt das Protokoll).</li>
+          <li><strong>Aufgaben und hochgeladene Dateien.</strong> Beim Abmelden werden auch die gespeicherten Aufgaben von Ihrem Computer gelöscht. Ihre Aufgaben selbst bleiben in Google Tasks, und die hochgeladenen Dateien bleiben in Ihrem Google Drive: Löschen Sie sie dort, wenn Sie sie nicht mehr benötigen.</li>
         </ul>
       </section>
 

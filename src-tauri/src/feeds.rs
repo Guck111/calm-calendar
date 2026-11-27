@@ -68,7 +68,86 @@ pub async fn fetch(url: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::normalize;
+    use super::{fetch, normalize};
+    use crate::error::Error;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
+
+    /// One-request HTTP server on 127.0.0.1; returns the link to it
+    async fn serve(head: impl Into<String>, body: Vec<u8>) -> String {
+        let head = head.into();
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}/a.ics", listener.local_addr().unwrap());
+        tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut request = [0u8; 4096];
+            let _ = stream.read(&mut request).await;
+            let _ = stream.write_all(head.as_bytes()).await;
+            let _ = stream.write_all(&body).await;
+            let _ = stream.shutdown().await;
+        });
+        url
+    }
+
+    const TEN_MIB: usize = 10 * 1024 * 1024;
+
+    fn too_large(r: Result<String, Error>) -> bool {
+        matches!(r, Err(Error::Other(m)) if m == "the calendar file is too large")
+    }
+
+    #[tokio::test]
+    async fn returns_the_calendar_text() {
+        let url = serve("HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n", b"BEGIN:VCALENDAR".to_vec()).await;
+        assert_eq!(fetch(&url).await.unwrap(), "BEGIN:VCALENDAR");
+    }
+
+    #[tokio::test]
+    async fn http_error_is_reported_with_its_code() {
+        let url = serve("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n", vec![]).await;
+        assert!(matches!(fetch(&url).await, Err(Error::Other(m)) if m == "HTTP 404"));
+    }
+
+    #[tokio::test]
+    async fn refuses_a_file_announced_as_too_large() {
+        let head = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", TEN_MIB + 1);
+        assert!(too_large(fetch(&serve(head, vec![]).await).await));
+    }
+
+    #[tokio::test]
+    async fn stops_reading_a_file_that_grows_too_large() {
+        let head = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n";
+        assert!(too_large(fetch(&serve(head, vec![b'a'; TEN_MIB + 1]).await).await));
+    }
+
+    #[tokio::test]
+    async fn accepts_a_file_of_exactly_the_limit() {
+        let head = format!("HTTP/1.1 200 OK\r\nContent-Length: {TEN_MIB}\r\n\r\n");
+        assert_eq!(fetch(&serve(head, vec![b'a'; TEN_MIB]).await).await.unwrap().len(), TEN_MIB);
+    }
+
+    #[tokio::test]
+    async fn introduces_itself_as_calm_calendar() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}/a.ics", listener.local_addr().unwrap());
+        let server = tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut request = vec![0u8; 4096];
+            let n = stream.read(&mut request).await.unwrap();
+            stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n").await.unwrap();
+            String::from_utf8_lossy(&request[..n]).to_lowercase()
+        });
+        fetch(&url).await.unwrap();
+        let request = server.await.unwrap();
+        assert!(request.contains(concat!("user-agent: calmcalendar/", env!("CARGO_PKG_VERSION"))));
+    }
+
+    #[tokio::test]
+    async fn unreachable_site_is_a_network_error() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}/a.ics", listener.local_addr().unwrap());
+        drop(listener);
+        assert!(matches!(fetch(&url).await, Err(Error::Network(_))));
+    }
 
     #[test]
     fn webcal_becomes_https() {
@@ -90,6 +169,16 @@ mod tests {
             .await
             .unwrap();
         assert!(text.contains("BEGIN:VCALENDAR"));
+    }
+
+    proptest::proptest! {
+        /// whatever the person pastes, only a web link is ever downloaded
+        #[test]
+        fn only_web_links_pass(link in "(webcal|WEBCAL|https?|file|ftp|javascript|data)?:?/{0,3}\\PC{0,30}") {
+            if let Ok(url) = normalize(&link) {
+                proptest::prop_assert!(matches!(url.scheme(), "http" | "https"));
+            }
+        }
     }
 
     #[test]

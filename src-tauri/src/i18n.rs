@@ -322,6 +322,32 @@ mod tests {
     }
 
     #[test]
+    fn google_sign_in_gets_its_own_language_codes() {
+        assert_eq!(Lang::Ru.hl(), "ru");
+        assert_eq!(Lang::Pt.hl(), "pt-BR");
+        assert_eq!(Lang::Zh.hl(), "zh-CN");
+    }
+
+    #[test]
+    fn only_arabic_is_right_to_left() {
+        for &l in ALL {
+            assert_eq!(l.dir(), if l == Lang::Ar { "rtl" } else { "ltr" });
+        }
+    }
+
+    #[test]
+    fn sign_in_page_tells_how_it_went() {
+        assert_eq!(sign_in_page(Lang::En, true), "Done. You can close this tab and go back to the app.");
+        assert_eq!(sign_in_page(Lang::En, false), "Sign-in failed. Go back to the app and try again.");
+    }
+
+    #[test]
+    fn tray_menu_follows_the_language() {
+        assert_eq!(tray(Lang::En).quit, "Quit");
+        assert_eq!(tray(Lang::Ru).open, "Открыть календарь");
+    }
+
+    #[test]
     fn maps_windows_language_ids() {
         // 0x0419 — Russian (Russia), 0x0809 — English (United Kingdom)
         assert_eq!(Lang::from_langid(0x0419), Some(Lang::Ru));
