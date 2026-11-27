@@ -8,6 +8,8 @@
     "src/**/*.ts",
     "src/agenda/AgendaWindow.tsx",
     "src/alert/AlertWindow.tsx",
+    "src/app/App.tsx",
+    "src/main.tsx",
     "src/quick/QuickWindow.tsx",
     "src/settings/SettingsWindow.tsx",
     "src/ui/AuthScreen.tsx",
