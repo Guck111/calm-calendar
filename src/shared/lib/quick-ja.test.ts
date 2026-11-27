@@ -22,6 +22,10 @@ describe("quick add in Japanese", () => {
     });
   });
 
+  it("drops a particle left alone between title words", () => {
+    expect(ja("明日19時 田中さん と 打ち合わせ")).toMatchObject({ title: "田中さん 打ち合わせ", start: at(5, 19) });
+  });
+
   it("書き方がつながっていても読む", () => {
     expect(ja("明日午後3時から会議")).toMatchObject({ title: "会議", start: at(5, 15), end: at(5, 16) });
     expect(ja("金曜日の夜7時半にディナー")).toMatchObject({ title: "ディナー", start: at(6, 19, 30) });
