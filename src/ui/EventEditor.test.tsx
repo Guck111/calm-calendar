@@ -6,6 +6,7 @@ import { deleteArmed, deleteRequested, draftOpened, editorClosed, eventOpened, l
 import type { Calendar, CalendarEvent, EventDraft } from "../shared/api/types";
 import { setLang } from "../shared/i18n";
 import { formatFullDate, formatShortDate, formatTime, localTimeZone } from "../shared/lib/date";
+import { fromZoned } from "../shared/lib/tz";
 import { CALENDARS, ME, MINE, SHARED, TEAM, WORK, WORK_CAL, appScope, calendar, event, renderIn } from "./app-scope.test-utils";
 import { EventEditor } from "./EventEditor";
 
@@ -528,7 +529,8 @@ describe("More in the form", () => {
     expect(screen.queryByText(/^Your time:/)).toBeNull();
     const zone = screen.getByText("Time zone").parentElement?.querySelector("select") as HTMLSelectElement;
     fireEvent.change(zone, { target: { value: OTHER_ZONE } });
-    expect(screen.getByText(/^Your time:/).textContent).toContain(formatShortDate(new Date(2026, 10, 11)).slice(0, 3));
+    const start = fromZoned("2026-11-11", "09:00", OTHER_ZONE);
+    expect(screen.getByText(/^Your time:/).textContent).toContain(`${formatShortDate(start)}, ${formatTime(start)}`);
   });
 
   it("attachments: a Drive link is added once, other links are refused, a file can be removed", async () => {

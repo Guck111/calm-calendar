@@ -305,7 +305,8 @@ describe("the card and the form", () => {
   it("saving an invalid form shows why and asks nothing", async () => {
     const scope = fork({ handlers: handlers() });
     await allSettled(eventOpened, { scope, params: occurrence });
-    await allSettled(draftChanged, { scope, params: { endTime: "08:00" } });
+    const { startDate, startTime } = scope.getState($draft) as EventDraft;
+    await allSettled(draftChanged, { scope, params: { endDate: startDate, endTime: startTime } });
     await allSettled(saveClicked, { scope });
     expect(scope.getState($editorError)).toBe(t.errors.endBeforeStart);
     expect(scope.getState($askScope)).toBeNull();

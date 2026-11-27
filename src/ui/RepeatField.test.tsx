@@ -5,6 +5,9 @@ import type { EventDraft } from "../shared/api/types";
 import { setLang } from "../shared/i18n";
 import { RepeatField } from "./RepeatField";
 
+/** RRULE UNTIL of the end of this local day: "20261230T225959Z" in Warsaw */
+const untilOf = (y: number, m: number, d: number) => new Date(y, m, d, 23, 59, 59).toISOString().replace(/[-:]|\.\d+/g, "");
+
 beforeEach(() => setLang("en"));
 afterEach(() => {
   cleanup();
@@ -132,7 +135,7 @@ describe("custom repeat", () => {
     fireEvent.click(radios[0]);
     expect(counted.onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE"]);
     cleanup();
-    custom("RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;UNTIL=20261230T225959Z");
+    custom(`RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;UNTIL=${untilOf(2026, 11, 30)}`);
     expect((screen.getAllByRole("radio") as HTMLInputElement[]).map((r) => r.checked)).toEqual([false, true, false]);
     expect((document.querySelector("input[type=date]") as HTMLInputElement).value).toBe("2026-12-30");
     cleanup();
@@ -179,7 +182,7 @@ describe("custom repeat", () => {
     fireEvent.change(screen.getByRole("spinbutton", { name: "After" }), { target: { value: "5000" } });
     expect(onChange).toHaveBeenLastCalledWith(["RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;COUNT=999"]);
     fireEvent.click(screen.getAllByRole("radio")[1]);
-    expect(onChange.mock.lastCall?.[0][0]).toMatch(/^RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;UNTIL=20270204/);
+    expect(onChange.mock.lastCall?.[0][0]).toBe(`RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;UNTIL=${untilOf(2027, 1, 4)}`);
   });
 
   it("switching to monthly can repeat on the nth weekday", () => {

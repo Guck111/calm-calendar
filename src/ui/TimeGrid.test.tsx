@@ -318,7 +318,8 @@ describe("grid details", () => {
   });
 
   it("a second zone with a half-hour offset labels its hours with minutes, midnight row empty", async () => {
-    const { container } = await show({ secondZone: "Asia/Kolkata" });
+    // half an hour off the system zone: India, or UTC when the system itself is off the hour
+    const { container } = await show({ secondZone: new Date().getTimezoneOffset() % 60 === 0 ? "Asia/Kolkata" : "UTC" });
     const hours = [...container.querySelectorAll("[class*=secondHours] [class*=hour]")].map((h) => h.textContent);
     expect(hours[0]).toBe("");
     expect(hours.slice(1).every((h) => /:30/.test(h ?? ""))).toBe(true);
