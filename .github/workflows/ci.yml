@@ -53,3 +53,25 @@ jobs:
       - name: Rust lints
         working-directory: src-tauri
         run: cargo clippy --all-targets -- -D warnings
+
+  # Unit tests in other time zones: Node on Windows ignores TZ, so the test job only sees the runner's zone.
+  # A zone behind UTC with daylight saving, a half-hour one, and one with summer time in the other half of the year
+  time-zones:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tz: [America/Los_Angeles, Asia/Kolkata, Pacific/Auckland]
+    name: unit tests in ${{ matrix.tz }}
+    env:
+      TZ: ${{ matrix.tz }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
