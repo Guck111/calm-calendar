@@ -207,7 +207,7 @@ describe("calendars", () => {
     });
     const group = screen.getByRole("group", { name: ME });
     expect(within(group).queryByRole("checkbox")).toBeNull();
-    expect(within(group).getByText(/Signed out\./)).toBeTruthy();
+    expect(within(group).getByText(/Sign-in expired\./)).toBeTruthy();
     fireEvent.click(within(group).getByRole("button", { name: "Sign in again" }));
     await waitFor(() => expect((within(group).getByRole("button", { name: "Sign in again" }) as HTMLButtonElement).disabled).toBe(true));
     await act(async () => finish());

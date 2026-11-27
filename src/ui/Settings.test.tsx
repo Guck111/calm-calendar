@@ -102,13 +102,13 @@ const select = (name: string) => screen.getByRole("combobox", { name }) as HTMLS
 const error = (text: string) => waitFor(() => expect(screen.getByText(text)).toBeTruthy());
 
 describe("settings window", () => {
-  it("opens on Look; a click on a section opens it and hides the rest", async () => {
+  it("opens on Appearance; a click on a section opens it and hides the rest", async () => {
     await show();
     expect(screen.getByRole("dialog", { name: "Settings" }).getAttribute("aria-modal")).toBe("true");
     const tabs = screen.getAllByRole("tab").map((t) => t.textContent);
-    expect(tabs).toEqual(["Look", "Calendar", "Reminders", "Quick access", "Help"]);
-    expect(tab("Look").getAttribute("aria-selected")).toBe("true");
-    expect(tab("Look").tabIndex).toBe(0);
+    expect(tabs).toEqual(["Appearance", "Calendar", "Reminders", "Quick access", "Help"]);
+    expect(tab("Appearance").getAttribute("aria-selected")).toBe("true");
+    expect(tab("Appearance").tabIndex).toBe(0);
     expect(tab("Help").tabIndex).toBe(-1);
     expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe("settings-tab-look");
     open("Reminders");
@@ -124,7 +124,7 @@ describe("settings window", () => {
     expect(tab("Help").getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(tab("Help"));
     fireEvent.keyDown(list, { key: "ArrowDown" });
-    expect(tab("Look").getAttribute("aria-selected")).toBe("true");
+    expect(tab("Appearance").getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(list, { key: "ArrowDown" });
     expect(tab("Calendar").getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(list, { key: "ArrowRight" });
@@ -170,7 +170,7 @@ describe("settings window", () => {
   });
 });
 
-describe("Look", () => {
+describe("Appearance", () => {
   it("a theme is picked and remembered", async () => {
     // the window theme itself is set through Tauri: not in a test
     mocks.tauri = false;
@@ -547,7 +547,7 @@ describe("settings in detail", () => {
   it("the open section, the theme and the style are highlighted", async () => {
     mocks.tauri = false;
     await show();
-    expect(cls(tab("Look"))).toContain("navActive");
+    expect(cls(tab("Appearance"))).toContain("navActive");
     expect(cls(tab("Help"))).not.toContain("navActive");
     expect(tab("Help").getAttribute("aria-controls")).toBe("settings-panel-help");
     const theme = (name: string) => within(screen.getByRole("radiogroup", { name: "Theme" })).getByRole("radio", { name });
@@ -688,7 +688,7 @@ describe("settings in detail", () => {
     fireEvent.click(toggle("Glass effect"));
     await error("Couldn't change the glass effect");
     open("Reminders");
-    open("Look");
+    open("Appearance");
     mocks.setNotifications.mockImplementationOnce(failing);
     open("Reminders");
     fireEvent.click(toggle("Event notifications"));

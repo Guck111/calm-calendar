@@ -168,7 +168,7 @@ export const dayNumber = (page: Page, day: number): Promise<string> =>
 
 type SettingsSection = "groupLook" | "groupCalendar" | "groupReminders" | "groupQuick" | "groupHelp";
 
-/** Opens Settings (the gear) on one of its sections; without a section it is the first one, Look */
+/** Opens Settings (the gear) on one of its sections; without a section it is the first one, Appearance */
 export const openSettings = async (page: Page, t: typeof en, section?: SettingsSection) => {
   await page.getByRole("button", { name: t.common.settings }).click();
   const settings = page.getByRole("dialog", { name: t.common.settings });
